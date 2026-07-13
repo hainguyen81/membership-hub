@@ -1,0 +1,107 @@
+{
+  "phase_id": "PHASE_01_06_CORE_INFRASTRUCTURE",
+  "phase_name": "CORE INFRASTRUCTURE BOILERPLATE (DAYS 1 - 6)",
+  "global_context_file": "./.ai/.context/context.en.md",
+  "package_root": "org.nlh4j.saas.membership.hub",
+  "source_target_dir": "./sources",
+  "days": [
+    {
+      "day": 1,
+      "context_file": "./.ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
+      "context_section": "DAY 1",
+      "target_component": "./sources/backend/src/main/resources/db/migration/V1.0.0__init_schema.sql",
+      "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/infrastructure/DatabaseMigrationValidationTest.java",
+      "doc_component": "./docs/architecture/database_schema_v1.md",
+      "gcp_component": "infrastructure/k8s",
+      "gke_component": "infrastructure/k8s",
+      "sub_tasks": [
+        {"id": "D1_ST1", "desc": "Coder Agent: Generate core DDL migration scripts for multi-tenant schema including sys_tenants, app_users, student_cards, attendance_logs, sys_promotions, and notification_delivery_logs."},
+        {"id": "D1_ST2", "desc": "Tester Agent: Author automated migration syntax integrity and schema composite index verification test suites."},
+        {"id": "D1_ST3", "desc": "Bug Fixer Agent: Execute native SQL migration linter checks, catch syntax conflicts, and patch DDL bugs iteratively."},
+        {"id": "D1_ST4", "desc": "Documentation Agent: Compile the comprehensive data dictionary, entity-relationship diagrams, and enterprise high-throughput index catalogs."}
+      ]
+    },
+    {
+      "day": 2,
+      "context_file": "./.ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
+      "context_section": "DAY 2",
+      "target_component": "./sources/backend/pom.xml",
+      "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/infrastructure/QuarkusReactiveDependencyTest.java",
+      "doc_component": "./docs/architecture/backend_bootstrap_spec.md",
+      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
+      "gke_component": "backend-service-deployment",
+      "sub_tasks": [
+        {"id": "D2_ST1", "desc": "Coder Agent: Configure pom.xml extensions and application.properties utilizing non-blocking reactive connection pools and transaction boundaries."},
+        {"id": "D2_ST2", "desc": "Inject core enterprise dependencies including Panache Hibernate Reactive, Kafka Messaging, MapStruct, and quarkus-smallrye-openapi wrappers."},
+        {"id": "D2_ST3", "desc": "Tester Agent: Formulate dependency matrix verification, environment boot lifecycle validation, and Dev Services wiring tests."},
+        {"id": "D2_ST4", "desc": "Bug Fixer Agent: Trigger native maven compilation ('mvn clean test-compile'), catch dependency anomalies, and execute auto-patch iterations."},
+        {"id": "D2_ST5", "desc": "Documentation Agent: Map system execution topologies, reactive pipeline patterns, and automatic Swagger UI route configurations."}
+      ]
+    },
+    {
+      "day": 3,
+      "context_file": "./.ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
+      "context_section": "DAY 3",
+      "target_component": "./sources/frontend/package.json",
+      "test_component": "./sources/frontend/src/tests/NextRouterBoilerplate.test.ts",
+      "doc_component": "./docs/architecture/frontend_layout_routing.md",
+      "gcp_component": "./sources/frontend/Dockerfile",
+      "gke_component": "frontend-service-deployment",
+      "sub_tasks": [
+        {"id": "D3_ST1", "desc": "Coder Agent: Instantiate strict TypeScript Next.js 14+ App Router boilerplate integrated with next-intl for dynamic multi-locale resolution."},
+        {"id": "D3_ST2", "desc": "Tester Agent: Author layout validation test targets, viewport navigation constraint scenarios, and localized redirection paths."},
+        {"id": "D3_ST3", "desc": "Bug Fixer Agent: Trigger node compile checking, identify broken import pathways or component syntax issues, and auto-repair assets."},
+        {"id": "D3_ST4", "desc": "Documentation Agent: Standardize multi-language folder structures, frontend compilation targets, and Next.js packaging blueprints."}
+      ]
+    },
+    {
+      "day": 4,
+      "context_file": "./.ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
+      "context_section": "DAY 4",
+      "target_component": "./sources/frontend/src/middleware.ts",
+      "test_component": "./sources/frontend/src/tests/EdgeLocaleDetection.test.ts",
+      "doc_component": "./docs/architecture/seo_and_edge_middleware.md",
+      "gcp_component": "./sources/frontend/Dockerfile",
+      "gke_component": "frontend-service-deployment",
+      "sub_tasks": [
+        {"id": "D4_ST1", "desc": "Coder Agent: Author Next.js Edge Middleware for sequential localization inspection and dynamic SEO alternate hypermedia hreflang mapping generation."},
+        {"id": "D4_ST2", "desc": "Tester Agent: Deploy mock execution suites simulating distinct browser header states, geolocation vectors, and native Capacitor hardware triggers."},
+        {"id": "D4_ST3", "desc": "Bug Fixer Agent: Trigger build pipelines, capture TypeScript compilation warnings or edge router rejections, and auto-patch scripts."},
+        {"id": "D4_ST4", "desc": "Documentation Agent: Chart edge navigation lifecycle schemas, crawl index compliance rule books, and dynamic sitemap.ts generation specifications."}
+      ]
+    },
+    {
+      "day": 5,
+      "context_file": "./.ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
+      "context_section": "DAY 5",
+      "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/service/AuthService.java",
+      "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/service/InternalAuthServiceTest.java",
+      "doc_component": "./docs/security/internal_authentication_spec.md",
+      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
+      "gke_component": "backend-service-deployment",
+      "sub_tasks": [
+        {"id": "D5_ST1", "desc": "Coder Agent: Construct multi-tenant User domains with automated Hibernate filters, write internal BCrypt matching processors, and decorate resource endpoint controls with microprofile OpenAPI annotations."},
+        {"id": "D5_ST2", "desc": "Tester Agent: Author unit verification scripts inspecting credential rejections, tenant data isolation boundaries, and invalid token claim blocks."},
+        {"id": "D5_ST3", "desc": "Bug Fixer Agent: Run java test compiling, capture entity filter validation errors or security claims exceptions, and patch code rules."},
+        {"id": "D5_ST4", "desc": "Documentation Agent: Formulate system threat modeling graphs, secure authentication flowcharts, and custom claims structural schema layouts."}
+      ]
+    },
+    {
+      "day": 6,
+      "context_file": "./.ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
+      "context_section": "DAY 6",
+      "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/config/SecurityOidcFilter.java",
+      "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/config/FederatedOidcFilterTest.java",
+      "doc_component": "./docs/security/federated_identity_jit.md",
+      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
+      "gke_component": "backend-service-deployment",
+      "sub_tasks": [
+        {"id": "D6_ST1", "desc": "Coder Agent: Inject reactive security filters intercepting third-party social tokens (Firebase/Google/Facebook), triggering JIT provisioning mutations, and exposing endpoints documented via OpenAPI."},
+        {"id": "D6_ST2", "desc": "Tester Agent: Build execution mocks validating authentic public signatures against remote JWKS providers alongside corrupted cryptographic injections."},
+        {"id": "D6_ST3", "desc": "Bug Fixer Agent: Execute project validation checks, catch unhandled signature null-pointer exceptions or reactive streaming crashes, and rewrite code blocks."},
+        {"id": "D6_ST4", "desc": "Documentation Agent: Compile federated JIT state transition charts, vendor handshake parameters, and data masking log standards."}
+      ]
+    }
+  ]
+}
+

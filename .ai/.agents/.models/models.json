@@ -1,0 +1,38 @@
+[
+  {
+    "model_name": "gemini-2.5-pro",
+    "provider": "google",
+    "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "api_key_env": "GEMINI_API_KEY",
+    "best_for": "Principal Code Generation & Complex Multi-Tenant Architecture Logic"
+  },
+  {
+    "model_name": "gemini-2.5-flash",
+    "provider": "google",
+    "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "api_key_env": "GEMINI_API_KEY",
+    "best_for": "Heavy Documentation Agent Frameworks & Fast General Sub-tasks Generation"
+  },
+  {
+    "model_name": "deepseek-coder",
+    "provider": "deepseek",
+    "api_endpoint": "https://api.deepseek.com/v1",
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "best_for": "Elite Bug Fixer Agent Compiler-Driven Iterative Repair Loops"
+  },
+  {
+    "model_name": "gpt-4o-mini",
+    "provider": "openai",
+    "api_endpoint": "https://api.openai.com/v1",
+    "api_key_env": "OPENAI_API_KEY",
+    "best_for": "Standard High-Fidelity Test Suites Generation for Tester Agent"
+  },
+  {
+    "model_name": "qwen-coder-32b-instruct",
+    "provider": "groq",
+    "api_endpoint": "https://api.groq.com/openai/v1",
+    "api_key_env": "GROQ_API_KEY",
+    "best_for": "Fallback Resilient Open-Source Architectural Code Generation Engine"
+  }
+]
+
