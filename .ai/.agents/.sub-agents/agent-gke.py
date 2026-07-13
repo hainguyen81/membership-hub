@@ -12,18 +12,16 @@ STEPS_PLAN_DIR = "./.ai/.agents/.steps"
 
 class GKEAgent:
     """
-    Kubernetes Release Engineer Agent. Parses centralized GKE_SECRETS JSON from GitHub,
-    connects securely to GKE cluster API, and triggers rolling updates.
+    Kubernetes Release Engineer Agent. Connects securely to GKE cluster API, 
+    applies orchestration files, and triggers safe zero-downtime rolling updates.
     """
     def __init__(self, phase_str, day_num):
         self.phase_str = phase_str
         self.day_num = int(day_num)
         self.image_tag = f"day-{self.day_num}"
-        # Parse centralized cluster secrets dictionary dynamically
         self.secrets = self.load_gke_secrets()
 
     def load_gke_secrets(self):
-        """Loads and parses the centralized GKE_SECRETS JSON string."""
         raw_secrets = os.environ.get("GKE_SECRETS")
         if not raw_secrets:
             print("[GKE-AGENT CRITICAL] The environment variable 'GKE_SECRETS' is completely absent.")
@@ -35,7 +33,6 @@ class GKEAgent:
             sys.exit(1)
 
     def configure_gke_credentials(self):
-        """Fetches runtime authentication structures mapping down to active GKE Kubernetes endpoints."""
         cluster_name = self.secrets.get("GKE_CLUSTER_NAME")
         region = self.secrets.get("GCP_REGION")
         project_id = self.secrets.get("GCP_PROJECT_ID")
@@ -50,34 +47,40 @@ class GKEAgent:
             print("[GKE-AGENT WARNING] Missing data keys inside GKE_SECRETS array map framework parameters.")
 
     def execute_gke_deployment(self):
-        """Connects to the cluster and applies raw manifests or container image rolling updates."""
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
         with open(steps_path, "r", encoding="utf-8") as f:
             steps_data = json.load(f)
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
 
-        # Ingest cluster endpoint tokens
+        # FIXED RULE: Ingest target deployment string identifier directly from the steps mappings
+        k8s_deployment_name = target_day.get("gke_component", "none")
+        
+        # UNIFIED CHECK GATE: If explicitly marked as 'none', skip the GKE deployment parameters cleanly
+        if k8s_deployment_name == "none":
+            print("[GKE-AGENT SKIP] Step is explicitly marked as 'none'. Skipping GKE cluster rollout update loops framework entirely.")
+            return
+
         self.configure_gke_credentials()
 
-        # CASE 1: Infrastructure Day with raw Kubernetes YAML manifests
+        # Check if the target day represents a dedicated infrastructure day targeting raw K8s deployment manifests (like Day 23)
         if "infrastructure/k8s" in target_day["target_component"]:
             print(f"[GKE-AGENT] Applying raw enterprise infrastructure update manifests: {target_day['target_component']}")
             subprocess.run(["kubectl", "apply", "-f", target_day["target_component"]], check=True)
-            print("[GKE-AGENT SUCCESS] Cloud infrastructure manifest rules applied safely on GKE compute pools!")
+            print("[GKE-AGENT SUCCESS] Cloud infrastructure manifest rules applied securely on GKE compute pools!")
             return
 
-        # CASE 2: Standard Application Service Update Rollout
+        # Standard Microservice Application Rollout Logic using your custom prefixed parameters name (e.g. gke-membership-hub-backend)
         is_backend = "backend" in target_day["target_component"]
         app_domain = "backend" if is_backend else "frontend"
         
         project_id = self.secrets.get("GCP_PROJECT_ID")
         region = self.secrets.get("GCP_REGION")
-        gar_repository = self.secrets.get("GAR_REPOSITORY")
         
-        registry_image = f"{region}-docker.pkg.dev/{project_id}/{gar_repository}/{app_domain}-service:{self.image_tag}"
+        # Read the clean matching GAR repository mapping to compile image context accurately
+        gar_repo_name = target_day.get("gcp_component")
+        registry_image = f"{region}-docker.pkg.dev/{project_id}/{gar_repo_name}:{self.image_tag}"
 
-        print(f"[GKE-AGENT ROLLOUT] Activating safe, zero-downtime rolling update across container workloads...")
-        k8s_deployment_name = f"{app_domain}-service-deployment"
+        print(f"[GKE-AGENT ROLLOUT] Activating safe, zero-downtime rolling update across container workloads for deployment: {k8s_deployment_name}")
         subprocess.run([
             "kubectl", "set", "image", f"deployment/{k8s_deployment_name}",
             f"{app_domain}-container={registry_image}"

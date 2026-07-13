@@ -1,0 +1,38 @@
+name: "📝 Documentation Agent Worker"
+
+on:
+  workflow_call:
+    inputs:
+      phase:
+        required: true
+        type: string
+      day:
+        required: true
+        type: string
+
+jobs:
+  execute_doc:
+    name: "📝 Documentation Agent Worker"
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Sync local workspace instances with current stable branches to capture working layout variables
+      - name: "📦 Checkout Source Code Repository Artifacts"
+        uses: actions/checkout@v4
+
+      # Step 2: Bring up the baseline Python system needed to invoke formatting and structural markup tools
+      - name: "🐍 Provision Core Python 3.10 Runtime Environment Architecture"
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      # Step 3: Establish required operational modules to transmit parsed business requirements blocks safely
+      - name: "🛠️ Install Core Enterprise Pipeline Third-Party Dependency Libraries"
+        run: pip install requests google-generativeai openai anthropic
+
+      # Step 4: Convert verified clean code parameters into high-precision entity design charts and data dictionaries
+      - name: "📝 Execute Senior Technical Writer Architectural Documentation Blueprint Script Task"
+        env:
+          AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
+        run: python3 .ai/.agents/.sub-agents/agent-doc.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"

@@ -263,10 +263,29 @@ When provisioning codebases for Controller/Resource boundary classes, the Coder 
 
 ## 9. ENTERPRISE SECURITY CODES & INJECTION COUNTERMEASURES
 
-- SQL Injection Protection: String concatenation for query building is strictly banned. All parameterization tasks must compile through parameterized query bindings supplied natively by Hibernate Reactive / Panache.
-- Cross-Site Scripting (XSS) Remediation: Client layouts inside the Next.js runtime enforce rigid Content Security Policies (CSP). Context strings mapping to the view automatically process through safe entity encodings native to React JSX engines.
-- Cross-Origin Resource Sharing (CORS): Access control layers define unique origin whitelists map to environmental configurations. Universal wildcard configurations (*) are banned in Production environments.
-- Log Scrubbing & Data Masking: Identity metadata, account credentials, OTP structures, or token secrets must undergo automated payload masking prior to execution routing into logging subsystems.
+### 9.1. SQL Injection (SQLi) Absolute Countermeasures
+- **Parameterized Boundaries:** Raw SQL string concatenation, custom dynamic string formatting (`String.format()`), or string interpolations inside Panache/Hibernate queries are strictly prohibited. 
+- **Reactive Parameter Bindings:** All query operations must explicitly bind parameters using named attributes or ordered indices through Panache positional parameters (e.g., `repository.find("tenantId = ?1 AND email = ?2", tenantId, email)`).
+- **Dynamic Sort Injection Protection:** Dynamic sorting inputs from user requests must be strictly validated against an explicit whitelist of entity field names. Direct injection of untrusted text strings into `Panache.sort()` or `ORDER BY` predicates is forbidden.
+
+### 9.2. Cross-Site Scripting (XSS) & Content Security Policy (CSP)
+- **Immutable Context Sanitization:** Any client-side data binding inside the Next.js runtime must rely on native React JSX token auto-escaping mechanisms. 
+- **Dangerous Render Restrictions:** The utilization of Next.js `dangerouslySetInnerHTML` is completely banned across all application interfaces, unless the input is proven to pass through a backend-verified, cryptographically signed HTML sanitizer whitelist wrapper.
+- **Strict Content Security Headers:** The Edge Middleware framework must inject non-negotiable HTTP security headers into every routing response. This includes: `Content-Security-Policy` (strictly enforcing script-src restrictions, forbidding `unsafe-inline` or unsafe source execution paths), `X-Frame-Options: DENY` (anti-clickjacking), and `X-Content-Type-Options: nosniff`.
+
+### 9.3. Multi-Tenant Cross-Origin Resource Sharing (CORS) Security Rails
+- **Wildcard Prohibition:** Universal wildcard declarations (`Access-Control-Allow-Origin: *`) are completely restricted inside production runtime environmental blocks.
+- **Dynamic Tenant Origin Validation:** CORS interceptor filter components inside Quarkus must read authorized domain metrics strictly linked to individual registered profiles inside the `sys_tenants` active configurations pool. 
+- **Credential & Preflight Safety:** Responses validating tenant cross-origins must preserve strict security boundaries, allowing `Access-Control-Allow-Credentials: true` only when the specific inbound origin perfectly intersects with the verified workspace domain registry.
+
+### 9.4. Zero-Leak Log Scrubbing & PII Data Masking Engines
+- **Non-Negotiable Log Sanitization:** Personal Identifiable Information (PII) including plain-text passwords, Firebase/Google/Facebook authorization tokens, JWT secret payload keys, credit card digits, and Zalo API connection hashes must never leak into the system console or centralized logging pipelines.
+- **Automated Masking Interceptors:** All incoming Web Resource DTO controllers and outbound integration integrations (ZaloClient, FCMClient) must utilize structured logging interceptors or customized Jackson annotation serializers (`@JsonSerialize`) to apply automated masking filters (e.g., replacing raw password inputs with `[MASKED_SECURITY_CREDENTIAL]`).
+- **Cryptographic Trace Masking:** Exception logs captured by the `Reviewer & Fixer Agent` during internal execution failures must never print raw dynamic runtime variables alongside stack traces to shield operational metrics against downstream security analysis.
+
+### 9.5. Cryptographic Boundary Isolation & Token Verification Rails
+- **Cryptographic Asymmetric Controls:** Verification of downstream internal tokens requires strict RS256 algorithm enforcement utilizing distinct public keys matching specific environment blocks. Downstream validation filtering components must actively verify the signature, the `exp` expiration threshold, and match the target embedded `tenant_id` claim.
+- **QR Code Replay-Attack Infrastructure:** The validation filter processing inbound QR scan requests must instantly verify the temporal threshold bound to the high-precision timestamp payload. Scans reaching backend servers after more than 30 seconds since initial client cryptographic compilation must trigger immediate validation rejection (`400 Bad Request`) to mitigate screenshot or recording replay threats.
 
 ---
 
@@ -424,7 +443,7 @@ The generative AI model must pass all functional requests through the following 
 
 ## 16. STRICT MULTI-AGENT OPERATION RULES (PIPELINE EXECUTION)
 Every development issue dispatched to the system must execute through an isolated sequential 4-Agent pipeline. No execution step can be skipped:
-- **Coder Agent:** Reads the main `context.md` and day context slices. Generates 100% production-ready, non-blocking domain code and outputs it into the exact path specified by the `target_component` key.
+- **Coder Agent**: Reads the main `context.en.md` and day context slices. Acts strictly as a Principal Quarkus & Cloud Native Architect (completely avoiding Spring Boot idioms). Generates 100% production-ready, non-blocking domain code using Mutiny and Jakarta EE standards, and outputs it into the exact path specified by the `target_component` key.
 - **Tester Agent:** Ingests the generated domain file and writes complete, high-fidelity automated test suites to the exact path defined by `test_component`. No fake assertions or empty blocks allowed.
 - **Reviewer & Fixer Agent:** Monitors compilation logs and test run outputs. Executes up to 3 automated repair attempts to secure raw queries, eliminate JWT loopholes, and clean compiler rejections.
 - **Documentation Agent:** Reviews the approved codebase and tests to automatically compile clean, granular markdown technical specs into the exact path specified by `doc_component`.
@@ -434,6 +453,9 @@ Every development issue dispatched to the system must execute through an isolate
 - **Deploy Agent (GKE):**
   * Role: Kubernetes Container Release Engineer.
   * Task: Activated exclusively via the manual execution toggle flag `--release`. Connects securely to the live GKE cluster endpoint, applies raw cloud infrastructure manifests (`infrastructure/k8s`) directly, or triggers safe zero-downtime rolling-update rollouts commands on live compute pod pools.
+- **DockerHub Agent:**
+  * Role: Cross-Platform Public/Private Cloud Registry Engineer.
+  * Task: Trigger manually via the manual execution toggle flag `--release`. Responsible for processing dynamic credentials fetched straight from `DOCKERHUB_SECRETS`, executing non-interactive authorization handshakes, compiling dual multi-stage native images containers for both Backend (GraalVM Mandrel) and Frontend (Next.js production runtime bundle assets), and pushing artifacts cleanly to Docker Hub registries under the specified target namespace.
 
 ## 17. AUTOMATED DAILY SESSION GIT BRANCH MANAGEMENT COMPLIANCE FLOW
 

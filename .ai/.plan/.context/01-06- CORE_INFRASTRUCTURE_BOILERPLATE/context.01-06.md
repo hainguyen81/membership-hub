@@ -1,5 +1,9 @@
 # PHASE 1 CONTEXT: CORE INFRASTRUCTURE BOILERPLATE (DAYS 1 - 6)
 
+## GLOBAL REGISTRY MANAGEMENT ARCHITECTURE ENFORCEMENT (DOCKER HUB SPEC)
+- Every application image compiled for the public registry must strictly bám theo alphanumeric production naming matrices: `<DOCKERHUB_NAMESPACE>/<app_domain>-service:day-<X>`.
+- The compilation workflow must directly inherit base optimization layer specifications defined inside the target native Dockerfiles without injecting dynamic static environment overhead variables at image bake-time to protect cross-tenant security containment definitions.
+
 ## DAY 1: MULTI-TENANCY DATABASE SCHEMA SPECIFICATION
 ### Target Path: ./sources/backend/src/main/resources/db/migration/V1.0.0__init_schema.sql
 ### Architecture Requirements
@@ -23,6 +27,7 @@ Construct the foundational enterprise configuration files bootstrapping a non-bl
 - Register an OpenID Connect (OIDC) Bearer JWT security scheme definition and a global multi-tenant parameter header layout (X-Tenant-Id) within the SmallRye OpenAPI bootstrap context.
 - Establish native configurations wiring automated Dev Services containers for PostgreSQL and Kafka Docker networks.
 - Configure Swagger UI pathways inside application.properties: enable `/q/swagger-ui` route within Dev/Staging layers, but secure production cloud nodes strictly by hardcoding `quarkus.swagger-ui.always-include=false` to cloaking endpoints schemas and mitigate infrastructure exposure risks.
+- Generate a multi-stage native compilation Dockerfile targeting path `./sources/backend/src/main/docker/Dockerfile.native`. Stage 1 must ingest a Mandrel/GraalVM builder image layer to build the Quarkus binary runner. Stage 2 must leverage a stripped micro-base native container runtime (ubi-micro or distroless) to host the final production executable, ensuring minimal memory footprint and cold-start mitigations.
 
 ## DAY 3: NEXT.JS MULTI-LANGUAGE BOILERPLATE DEVELOPMENT
 ### Target Path: ./sources/frontend/package.json
@@ -31,6 +36,7 @@ Initialize a modern Frontend client framework optimized for highly responsive mu
 - Configure a strict TypeScript Next.js 14+ application tree deploying structural App Router architectures.
 - Integrate the next-intl enterprise package at the root routing engine to intercept, format, and handle multi-language localized domain variables (/vi/, /en/).
 - Isolate workspace layouts into clear structural folder layers: design /src/app/[locale]/admin to encapsulate B2B enterprise operator views, and configure /src/app/[locale]/app to handle high-fidelity B2C mobile client viewport rendering frames.
+- Generate a standard multi-stage production Dockerfile targeting path `./sources/frontend/Dockerfile`. Stage 1 must invoke `npm run build` executing static assets export trees compilation. Stage 2 must set up an optimized lightweight alpine node/nginx execution stack to serve the finalized build bundle files cleanly with cached security headers.
 
 ## DAY 4: EDGE-LAYER LOCALE DETECTION MIDDLEWARE & DYNAMIC SEO META
 ### Target Path: ./sources/frontend/src/middleware.ts
@@ -57,3 +63,4 @@ Extend the identity engine to support multi-provider federated login ecosystems 
 - Interface with provider remote JWKS certificate key arrays dynamically to perform real-time cryptographic signature checks.
 - Implement an automated Just-In-Time (JIT) identity provisioning database mutation system: upon confirmation of a valid third-party signature where the email is absent from app_users under the current tenant context, execute an immediate inline execution inserting a new user record seamlessly.
 - Expose the JIT Callback endpoints fully documented via OpenAPI: declare @Operation data contracts, @APIResponse 200 (JIT Provisioned Profile Token), 400 (Bad Cryptographic Provider Identity), and @Parameter models for header access control interception configurations.
+

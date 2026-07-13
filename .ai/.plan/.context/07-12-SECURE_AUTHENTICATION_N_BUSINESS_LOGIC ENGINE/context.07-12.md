@@ -1,5 +1,9 @@
 # PHASE 2 CONTEXT: SECURE AUTHENTICATION & BUSINESS LOGIC ENGINE (DAYS 7 - 12)
 
+## GLOBAL REGISTRY MANAGEMENT ARCHITECTURE ENFORCEMENT (DOCKER HUB SPEC)
+- Every application image compiled for the public registry must strictly bám theo alphanumeric production naming matrices: `<DOCKERHUB_NAMESPACE>/<app_domain>-service:day-<X>`.
+- The compilation workflow must directly inherit base optimization layer specifications defined inside the target native Dockerfiles without injecting dynamic static environment overhead variables at image bake-time to protect cross-tenant security containment definitions.
+
 ## DAY 7: NEXT.JS UNIFIED FEDERATED LOGIN INTERFACE
 ### Target Path: ./sources/frontend/src/app/[locale]/login/page.tsx
 ### Architecture Requirements

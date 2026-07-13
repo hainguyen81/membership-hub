@@ -50,6 +50,18 @@
         }
         ```
 
+#### 2.3. DOCKER HUB REGISTRY SECRETS (CENTRALIZED JSON)
+*   **`DOCKERHUB_SECRETS`**
+    *   *Description:* Khối JSON lưu trữ thông tin tài khoản và namespace để xác thực đẩy ảnh container lên Docker Hub.
+    *   *Format to paste into GitHub Secrets:*
+        ```json
+        {
+          "DOCKERHUB_USERNAME": "your_dockerhub_username",
+          "DOCKERHUB_PASSWORD": "your_dockerhub_access_token_or_password",
+          "DOCKERHUB_NAMESPACE": "your_organization_or_username"
+        }
+        ```
+
 ### 3. CRM CHANNELS & EXTERNAL NOTIFICATIONS INTEGRATIONS
 
 #### 3.1. CRM CHANNELS & EXTERNAL NOTIFICATIONS INTEGRATIONS

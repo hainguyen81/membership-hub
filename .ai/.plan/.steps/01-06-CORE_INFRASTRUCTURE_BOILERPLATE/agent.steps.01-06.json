@@ -12,8 +12,9 @@
       "target_component": "./sources/backend/src/main/resources/db/migration/V1.0.0__init_schema.sql",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/infrastructure/DatabaseMigrationValidationTest.java",
       "doc_component": "./docs/architecture/database_schema_v1.md",
-      "gcp_component": "infrastructure/k8s",
-      "gke_component": "infrastructure/k8s",
+      "gcp_component": "none",
+      "dockerhub_component": "none",
+      "gke_component": "none",
       "sub_tasks": [
         {"id": "D1_ST1", "desc": "Coder Agent: Generate core DDL migration scripts for multi-tenant schema including sys_tenants, app_users, student_cards, attendance_logs, sys_promotions, and notification_delivery_logs."},
         {"id": "D1_ST2", "desc": "Tester Agent: Author automated migration syntax integrity and schema composite index verification test suites."},
@@ -28,14 +29,16 @@
       "target_component": "./sources/backend/pom.xml",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/infrastructure/QuarkusReactiveDependencyTest.java",
       "doc_component": "./docs/architecture/backend_bootstrap_spec.md",
-      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
-      "gke_component": "backend-service-deployment",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
         {"id": "D2_ST1", "desc": "Coder Agent: Configure pom.xml extensions and application.properties utilizing non-blocking reactive connection pools and transaction boundaries."},
         {"id": "D2_ST2", "desc": "Inject core enterprise dependencies including Panache Hibernate Reactive, Kafka Messaging, MapStruct, and quarkus-smallrye-openapi wrappers."},
         {"id": "D2_ST3", "desc": "Tester Agent: Formulate dependency matrix verification, environment boot lifecycle validation, and Dev Services wiring tests."},
         {"id": "D2_ST4", "desc": "Bug Fixer Agent: Trigger native maven compilation ('mvn clean test-compile'), catch dependency anomalies, and execute auto-patch iterations."},
-        {"id": "D2_ST5", "desc": "Documentation Agent: Map system execution topologies, reactive pipeline patterns, and automatic Swagger UI route configurations."}
+        {"id": "D2_ST5", "desc": "Documentation Agent: Map system execution topologies, reactive pipeline patterns, and automatic Swagger UI route configurations."},
+		{"id": "D2_ST6", "desc": "Coder Agent: Generate an enterprise multi-stage GraalVM native image container instruction file located exactly at path: `./sources/backend/src/main/docker/Dockerfile.native` targeting Mandrel base images."}
       ]
     },
     {
@@ -45,13 +48,15 @@
       "target_component": "./sources/frontend/package.json",
       "test_component": "./sources/frontend/src/tests/NextRouterBoilerplate.test.ts",
       "doc_component": "./docs/architecture/frontend_layout_routing.md",
-      "gcp_component": "./sources/frontend/Dockerfile",
-      "gke_component": "frontend-service-deployment",
+      "gcp_component": "gcp-membership-hub-frontend",
+      "dockerhub_component": "docker-membership-hub-frontend",
+      "gke_component": "gke-membership-hub-frontend",
       "sub_tasks": [
         {"id": "D3_ST1", "desc": "Coder Agent: Instantiate strict TypeScript Next.js 14+ App Router boilerplate integrated with next-intl for dynamic multi-locale resolution."},
         {"id": "D3_ST2", "desc": "Tester Agent: Author layout validation test targets, viewport navigation constraint scenarios, and localized redirection paths."},
         {"id": "D3_ST3", "desc": "Bug Fixer Agent: Trigger node compile checking, identify broken import pathways or component syntax issues, and auto-repair assets."},
-        {"id": "D3_ST4", "desc": "Documentation Agent: Standardize multi-language folder structures, frontend compilation targets, and Next.js packaging blueprints."}
+        {"id": "D3_ST4", "desc": "Documentation Agent: Standardize multi-language folder structures, frontend compilation targets, and Next.js packaging blueprints."},
+		{"id": "D3_ST5", "desc": "Coder Agent: Generate a production-grade multi-stage Dockerfile located exactly at path: `./sources/frontend/Dockerfile` optimized for strict static Next.js compilation runtime layers."}
       ]
     },
     {
@@ -61,8 +66,9 @@
       "target_component": "./sources/frontend/src/middleware.ts",
       "test_component": "./sources/frontend/src/tests/EdgeLocaleDetection.test.ts",
       "doc_component": "./docs/architecture/seo_and_edge_middleware.md",
-      "gcp_component": "./sources/frontend/Dockerfile",
-      "gke_component": "frontend-service-deployment",
+      "gcp_component": "gcp-membership-hub-frontend",
+      "dockerhub_component": "docker-membership-hub-frontend",
+      "gke_component": "gke-membership-hub-frontend",
       "sub_tasks": [
         {"id": "D4_ST1", "desc": "Coder Agent: Author Next.js Edge Middleware for sequential localization inspection and dynamic SEO alternate hypermedia hreflang mapping generation."},
         {"id": "D4_ST2", "desc": "Tester Agent: Deploy mock execution suites simulating distinct browser header states, geolocation vectors, and native Capacitor hardware triggers."},
@@ -77,8 +83,9 @@
       "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/service/AuthService.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/service/InternalAuthServiceTest.java",
       "doc_component": "./docs/security/internal_authentication_spec.md",
-      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
-      "gke_component": "backend-service-deployment",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
         {"id": "D5_ST1", "desc": "Coder Agent: Construct multi-tenant User domains with automated Hibernate filters, write internal BCrypt matching processors, and decorate resource endpoint controls with microprofile OpenAPI annotations."},
         {"id": "D5_ST2", "desc": "Tester Agent: Author unit verification scripts inspecting credential rejections, tenant data isolation boundaries, and invalid token claim blocks."},
@@ -93,8 +100,9 @@
       "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/config/SecurityOidcFilter.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/config/FederatedOidcFilterTest.java",
       "doc_component": "./docs/security/federated_identity_jit.md",
-      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
-      "gke_component": "backend-service-deployment",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
         {"id": "D6_ST1", "desc": "Coder Agent: Inject reactive security filters intercepting third-party social tokens (Firebase/Google/Facebook), triggering JIT provisioning mutations, and exposing endpoints documented via OpenAPI."},
         {"id": "D6_ST2", "desc": "Tester Agent: Build execution mocks validating authentic public signatures against remote JWKS providers alongside corrupted cryptographic injections."},
@@ -104,4 +112,5 @@
     }
   ]
 }
+
 

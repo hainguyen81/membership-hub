@@ -1,5 +1,9 @@
 # PHASE 4 CONTEXT: MULTI-TENANT UI & DEVOPS PIPELINES (DAYS 19 - 24)
 
+## GLOBAL REGISTRY MANAGEMENT ARCHITECTURE ENFORCEMENT (DOCKER HUB SPEC)
+- Every application image compiled for the public registry must strictly bám theo alphanumeric production naming matrices: `<DOCKERHUB_NAMESPACE>/<app_domain>-service:day-<X>`.
+- The compilation workflow must directly inherit base optimization layer specifications defined inside the target native Dockerfiles without injecting dynamic static environment overhead variables at image bake-time to protect cross-tenant security containment definitions.
+
 ## DAY 19: ENTERPRISE WEB PORTAL ADMINISTRATIVE DASHBOARD & CRM RESOURCE
 - Target Component: ./sources/frontend/src/app/[locale]/admin/dashboard/page.tsx & org.nlh4j.saas.membership.hub.web.AdminCrmResource
 

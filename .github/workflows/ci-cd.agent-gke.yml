@@ -1,0 +1,34 @@
+name: "☸️ GKE Deployment Agent Worker"
+
+on:
+  workflow_call:
+    inputs:
+      phase:
+        required: true
+        type: string
+      day:
+        required: true
+        type: string
+
+jobs:
+  execute_gke:
+    name: "☸️ GKE Deployment Agent Worker"
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Retrieve configuration charts and active manifest profiles into the operational layer
+      - name: "📦 Checkout Source Code Repository Artifacts"
+        uses: actions/checkout@v4
+
+      # Step 2: Create a secure local sandbox to initialize environment connection filters
+      - name: "🐍 Provision Core Python 3.10 Runtime Environment Architecture"
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      # Step 3: Fetch active cluster contexts, declare target configurations, and execute zero-downtime microservice rolling updates
+      - name: "☸️ Execute Kubernetes Production Pod Orchestration Rollout Script Task"
+        env:
+          GKE_SECRETS: ${{ secrets.GKE_SECRETS }}
+        run: python3 .ai/.agents/.sub-agents/agent-gke.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"

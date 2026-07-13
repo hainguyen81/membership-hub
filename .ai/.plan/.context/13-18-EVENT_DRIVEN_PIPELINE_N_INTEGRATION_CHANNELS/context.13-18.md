@@ -1,5 +1,9 @@
 # PHASE 3 CONTEXT: EVENT-DRIVEN PIPELINE & INTEGRATION CHANNELS (DAYS 13 - 18)
 
+## GLOBAL REGISTRY MANAGEMENT ARCHITECTURE ENFORCEMENT (DOCKER HUB SPEC)
+- Every application image compiled for the public registry must strictly bám theo alphanumeric production naming matrices: `<DOCKERHUB_NAMESPACE>/<app_domain>-service:day-<X>`.
+- The compilation workflow must directly inherit base optimization layer specifications defined inside the target native Dockerfiles without injecting dynamic static environment overhead variables at image bake-time to protect cross-tenant security containment definitions.
+
 ## DAY 13: INTEGRATION TESTING CORE TRANSACTION LOOPS
 ### Target Path: ./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/service/AttendanceCheckinIntegrationTest.java
 ### Architecture Requirements
@@ -49,3 +53,4 @@ Integrate official Google Firebase Admin SDK components inside the reactive fram
 Author multi-layered asynchronous stream reliability validation suites leveraging Testcontainers architectures to manage an active Apache Kafka orchestration mesh.
 - Push validation payloads directly into ingestion streams and trace transmission accuracy across all discrete lower distribution targets.
 - Inject deliberate connectivity drop-outs mimicking external API server failures to verify backoff retry profiles operate correctly. Confirm failed payloads migrate to isolated Dead Letter Queues (DLQ) without causing data blockages in the primary channels.
+

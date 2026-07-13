@@ -49,17 +49,18 @@ class CoderAgent:
         while self.active_model_index < len(self.models_pool):
             config = self.models_pool[self.active_model_index]
             target_model_name = config["model_name"]
+            target_model_endpoint = config["api_endpoint"]
             
             # Lookup the API Key inside the GitHub Secret JSON dictionary using the model_name from models.json
-            api_key = secrets_dict.get(target_model_name)
+            api_key = secrets_dict.get(target_model_endpoint)
             
             if api_key:
                 self.current_model_config = config
-                self.client = OpenAI(api_key=api_key, base_url=config["api_endpoint"])
-                print(f"[FAILOVER ENGAGED] Coder Agent successfully authenticated model: {target_model_name}")
+                self.client = OpenAI(api_key=api_key, base_url=target_model_endpoint)
+                print(f"[FAILOVER ENGAGED] Coder Agent successfully authenticated model: {target_model_name} | endpoint: {target_model_endpoint}")
                 return
             else:
-                print(f"[WARNING] API key missing inside GitHub JSON for model: {target_model_name}. Skipping tier.")
+                print(f"[WARNING] API key missing inside GitHub JSON for model: {target_model_name} | endpoint: {target_model_endpoint}. Skipping tier.")
                 self.active_model_index += 1
                 
         print("[CRITICAL SHUTDOWN] Coder Agent exhausted all registered AI models without valid keys.")

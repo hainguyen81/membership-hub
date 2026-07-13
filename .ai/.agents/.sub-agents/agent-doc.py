@@ -45,12 +45,13 @@ class DocumentationAgent:
         while self.active_model_index < len(self.models_pool):
             config = self.models_pool[self.active_model_index]
             target_model_name = config["model_name"]
-            api_key = secrets_dict.get(target_model_name)
+            target_model_endpoint = config["api_endpoint"]
+            api_key = secrets_dict.get(target_model_endpoint)
             
             if api_key:
                 self.current_model_config = config
-                self.client = OpenAI(api_key=api_key, base_url=config["api_endpoint"])
-                print(f"[FAILOVER ENGAGED] Docs Agent successfully authenticated model: {target_model_name}")
+                self.client = OpenAI(api_key=api_key, base_url=target_model_endpoint)
+                print(f"[FAILOVER ENGAGED] Docs Agent successfully authenticated model: {target_model_name} | endpoint: {target_model_endpoint}")
                 return
             self.active_model_index += 1
         print("[CRITICAL ERROR] Documentation Agent exhausted all registered fallback models.")
