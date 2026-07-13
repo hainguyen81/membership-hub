@@ -1,38 +1,142 @@
 [
   {
     "model_name": "gemini-2.5-pro",
-    "provider": "google",
+    "provider": "google_ai_studio",
     "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
-    "api_key_env": "GEMINI_API_KEY",
-    "best_for": "Principal Code Generation & Complex Multi-Tenant Architecture Logic"
+    "context_window": "2,000,000 tokens",
+    "best_for": "FREE TIER - Massive context ingestion. Best for Coder Agent to parse deep multi-tenant code rules."
   },
   {
     "model_name": "gemini-2.5-flash",
-    "provider": "google",
+    "provider": "google_ai_studio",
     "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
-    "api_key_env": "GEMINI_API_KEY",
-    "best_for": "Heavy Documentation Agent Frameworks & Fast General Sub-tasks Generation"
+    "context_window": "1,000,000 tokens",
+    "best_for": "FREE TIER - Ultra-fast execution speed. Best for Doc Agent to write system architecture charts."
   },
   {
-    "model_name": "deepseek-coder",
-    "provider": "deepseek",
+    "model_name": "deepseek-v4-flash",
+    "provider": "deepseek_platform",
     "api_endpoint": "https://api.deepseek.com/v1",
-    "api_key_env": "DEEPSEEK_API_KEY",
-    "best_for": "Elite Bug Fixer Agent Compiler-Driven Iterative Repair Loops"
+    "context_window": "1,000,000 tokens",
+    "best_for": "FREE CREDITS - Elite coding capabilities. Best for Bug Fixer Agent to handle compiler stack traces."
   },
   {
-    "model_name": "gpt-4o-mini",
-    "provider": "openai",
-    "api_endpoint": "https://api.openai.com/v1",
-    "api_key_env": "OPENAI_API_KEY",
-    "best_for": "Standard High-Fidelity Test Suites Generation for Tester Agent"
+    "model_name": "deepseek-v4-pro",
+    "provider": "deepseek_platform",
+    "api_endpoint": "https://api.deepseek.com/v1",
+    "context_window": "1,000,000 tokens",
+    "best_for": "FREE CREDITS - Deep reasoning logic. Best for non-duplicable QR processing and dynamic partition logic."
   },
   {
-    "model_name": "qwen-coder-32b-instruct",
-    "provider": "groq",
+    "model_name": "meta-llama/llama-3.3-70b-instruct",
+    "provider": "openrouter_free",
+    "api_endpoint": "https://openrouter.ai/api/v1",
+    "context_window": "128,000 tokens",
+    "best_for": "PERMANENT FREE - Clean instruction boundaries. Best for Tester Agent to compose strict JUnit 5 suites."
+  },
+  {
+    "model_name": "qwen/qwen-2.5-coder-32b-instruct",
+    "provider": "openrouter_free",
+    "api_endpoint": "https://openrouter.ai/api/v1",
+    "context_window": "128,000 tokens",
+    "best_for": "PERMANENT FREE - Dedicated source code engineering. Best for building enterprise Next.js layout blocks."
+  },
+  {
+    "model_name": "google/gemma-4-31b-instruct",
+    "provider": "openrouter_free",
+    "api_endpoint": "https://openrouter.ai/api/v1",
+    "context_window": "256,000 tokens",
+    "best_for": "PERMANENT FREE - Resilient backup instance. Activates when primary model providers encounter network timeouts."
+  },
+  {
+    "model_name": "minimax/minimax-m3",
+    "provider": "openrouter_free",
+    "api_endpoint": "https://openrouter.ai/api/v1",
+    "context_window": "1,000,000 tokens",
+    "best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+  },
+  {
+    "model_name": "codestral-latest",
+    "provider": "mistral_ai",
+    "api_endpoint": "https://api.mistral.ai/v1",
+    "context_window": "32,000 tokens",
+    "best_for": "FREE DEVELOPER ACCOUNT - Premium Java compilation metrics. Best for designing Quarkus non-blocking modules."
+  },
+  {
+    "model_name": "qwen-2.5-coder-32b-instruct",
+    "provider": "sambanova_cloud",
+    "api_endpoint": "https://api.sambanova.ai/v1",
+    "context_window": "128,000 tokens",
+    "best_for": "FREE DEVELOPER TIER - Ultra-fast tokens token-per-second generation. Best for rapid parsing of rough code drafts."
+  },
+  {
+    "model_name": "nvidia/deepseek-v4-flash",
+    "provider": "siliconflow_console",
+    "api_endpoint": "https://api.siliconflow.cn/v1",
+    "context_window": "1,000,000 tokens",
+    "best_for": "FREE SIGNUP CREDITS - Secondary redundant failover rail to bypass upstream primary DeepSeek server congestions."
+  },
+  {
+    "model_name": "qwen-2.5-coder-32b-instruct",
+    "provider": "groq_console",
     "api_endpoint": "https://api.groq.com/openai/v1",
-    "api_key_env": "GROQ_API_KEY",
-    "best_for": "Fallback Resilient Open-Source Architectural Code Generation Engine"
+    "context_window": "128,000 tokens",
+    "best_for": "FREE TIER - Instantaneous processing speed via LPU hardware. Exceptional for rapid syntax fixes."
+  },
+  {
+    "model_name": "meta-llama/llama-3.3-70b-specdec",
+    "provider": "groq_console",
+    "api_endpoint": "https://api.groq.com/openai/v1",
+    "context_window": "128,000 tokens",
+    "best_for": "FREE TIER - Speculative decoding layout optimized for accelerated multi-agent logic validation passes."
+  },
+  {
+    "model_name": "meta-llama/llama-3.3-70b-instruct",
+    "provider": "together_ai",
+    "api_endpoint": "https://api.together.xyz/v1",
+    "context_window": "128,000 tokens",
+    "best_for": "FREE SIGNUP CREDITS - Distributed open-source backup node. Strong compliance with dense system prompt structures."
+  },
+  {
+    "model_name": "qwen/qwen-2.5-coder-32b-instruct",
+    "provider": "together_ai",
+    "api_endpoint": "https://api.together.xyz/v1",
+    "context_window": "128,000 tokens",
+    "best_for": "FREE SIGNUP CREDITS - High-fidelity Java parameter auto-binding mapping arrays check loops."
+  },
+  {
+    "model_name": "deepseek-ai/deepseek-v4-flash",
+    "provider": "together_ai",
+    "api_endpoint": "https://api.together.xyz/v1",
+    "context_window": "1,000,000 tokens",
+    "best_for": "FREE SIGNUP CREDITS - Redundant 1M token sandbox pipeline targeting dynamic database migrations schema."
+  },
+  {
+    "model_name": "qwen-2.5-coder-32b",
+    "provider": "fireworks_ai",
+    "api_endpoint": "https://api.fireworks.ai/inference/v1",
+    "context_window": "128,000 tokens",
+    "best_for": "FREE DEVELOPER CREDITS - Extremely structured JSON schema output enforcement. Ideal for pipeline automated configs parsing."
+  },
+  {
+    "model_name": "meta/llama-3.3-70b-instruct",
+    "provider": "fireworks_ai",
+    "api_endpoint": "https://api.fireworks.ai/inference/v1",
+    "context_window": "128,000 tokens",
+    "best_for": "FREE DEVELOPER CREDITS - Robust architectural auditing context layout engine for the Fixer Agent compile gates."
+  },
+  {
+    "model_name": "llama3.3-70b",
+    "provider": "cerebras_cloud",
+    "api_endpoint": "https://api.cerebras.ai/v1",
+    "context_window": "128,000 tokens",
+    "best_for": "FREE BETA TIER - Hyper-speed inference execution metrics. Resolves light component tasks in sub-second timelines."
+  },
+  {
+    "model_name": "meta-llama/llama-3.3-70b-instruct",
+    "provider": "lepton_ai",
+    "api_endpoint": "https://api.lepton.ai/v1",
+    "context_window": "128,000 tokens",
+    "best_for": "FREE TIER SANDBOX - Confined deployment script verifier. Cross-checks GCP deployment parameters cleanly before build execution."
   }
 ]
-
