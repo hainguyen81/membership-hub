@@ -1,0 +1,44 @@
+name: "🐳 DockerHub Agent Worker"
+
+on:
+  workflow_call:
+    inputs:
+      phase:
+        required: true
+        type: string
+      day:
+        required: true
+        type: string
+
+jobs:
+  execute_dockerhub:
+    name: "🐳 DockerHub Agent Worker"
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Check whether allow for running workflow
+      - name: 🛡️ Gatekeeper - Validate Administrative Access
+        env:
+          ALLOW_AGENTS: ${{ secrets.ALLOW_AGENTS }}
+        if: ${{ env.ALLOW_AGENTS != 'true' }}
+        run: |
+          echo "❌ Deployment is administratively DISABLED via GitHub Secrets (secrets.ALLOW_AGENTS is not true)."
+          echo "Terminating pipeline execution immediately to protect production infrastructure."
+          exit 1 # Require Admin Rights
+      
+      # Step 1: Checkout the underlying code metrics to prepare binary distribution containers
+      - name: "📦 Checkout Source Code Repository Artifacts"
+        uses: actions/checkout@v4
+
+      # Step 2: Establish the isolated Python runtime engine to evaluate custom skip condition gates
+      - name: "🐍 Provision Core Python 3.10 Runtime Environment Architecture"
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      # Step 3: Intercept target registry endpoints, perform secure credential handshakes, and stream images to public repositories
+      - name: "🐳 Execute Public Container Hub Integration Delivery Script Task"
+        env:
+          DOCKERHUB_SECRETS: ${{ secrets.DOCKERHUB_SECRETS }}
+        run: python3 .ai/.agents/.sub-agents/agent-dockerhub.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"

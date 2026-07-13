@@ -1,0 +1,206 @@
+name: "🤖 Enterprise SaaS AI Agents Pipeline"
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Automated daily schedule trigger at 00:00 UTC
+  workflow_dispatch:
+    inputs:
+      execution_mode:
+        description: '🎯 Execution Mode Selection'
+        required: true
+        default: 'all_scheduled'
+        type: choice
+        options:
+          - 'all_scheduled'     # Run full agent sequence / Reset schedule timeline
+          - 'standalone_agent'  # Run a SINGLE Sub-Agent for a specific Day/Phase
+      target_scope:
+        description: '📅 Target Scope Configuration (Day or Phase focused)'
+        required: true
+        default: 'by_day'
+        type: choice
+        options:
+          - 'by_day'            # Evaluate parameters based on target Day number
+          - 'by_phase'          # Evaluate parameters based on target Phase number
+      input_value:
+        description: '⏱️ Enter Day number (1-24) OR Phase number (1-4). Leave EMPTY for Auto-Advance.'
+        required: false
+        type: string
+        default: ''
+      standalone_target:
+        description: '🧩 IF standalone_agent mode is active, select the target Sub-Agent:'
+        required: false
+        default: 'none'
+        type: choice
+        options:
+          - 'none'
+          - 'coder'
+          - 'tester'
+          - 'fixer'
+          - 'doc'
+          - 'docker'
+          - 'gcp'
+          - 'gke'
+      release_flag:
+        description: '📢 Enable Release Flag (Activates infrastructure Agents: Docker, GCP, GKE)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  # JOB 1: Resolve states, calculate mathematical boundaries, and compute target outputs
+  state_resolver_job:
+    runs-on: ubuntu-latest
+    outputs:
+      run_day: ${{ steps.resolver.outputs.RUN_DAY }}
+      run_phase: ${{ steps.resolver.outputs.RUN_PHASE }}
+      exec_mode: ${{ github.event.inputs.execution_mode || 'all_scheduled' }}
+      standalone_target: ${{ github.event.inputs.standalone_target || 'none' }}
+      release_flag: ${{ github.event.inputs.release_flag || 'false' }}
+    steps:
+      # Check whether allow for running workflow
+      - name: 🛡️ Gatekeeper - Validate Administrative Access
+        env:
+          ALLOW_AGENTS: ${{ secrets.ALLOW_AGENTS }}
+        if: ${{ env.ALLOW_AGENTS != 'true' }}
+        run: |
+          echo "❌ Deployment is administratively DISABLED via GitHub Secrets (secrets.ALLOW_AGENTS is not true)."
+          echo "Terminating pipeline execution immediately to protect production infrastructure."
+          exit 1 # Require Admin Rights
+      
+      - name: "📦 Checkout Repository"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "🔧 Configure Git Credentials"
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+
+      - name: "🗄️ Resolve State and Schedule Parameters"
+        id: resolver
+        run: |
+          STATE_FILE=".ai/.plan/pipeline_state.json"
+          if [ ! -f "$STATE_FILE" ]; then
+            mkdir -p .ai/.plan
+            echo '{"current_day": 1, "current_phase": 1}' > "$STATE_FILE"
+          fi
+          
+          CUR_DAY=$(python3 -c "import json; print(json.load(open('$STATE_FILE'))['current_day'])")
+          CUR_PHASE=$(python3 -c "import json; print(json.load(open('$STATE_FILE'))['current_phase'])")
+          
+          EXEC_MODE="${{ github.event.inputs.execution_mode || 'auto_cron' }}"
+          SCOPE="${{ github.event.inputs.target_scope }}"
+          VAL="${{ github.event.inputs.input_value }}"
+          
+          FINAL_DAY=$CUR_DAY
+          FINAL_PHASE=$CUR_PHASE
+          
+          if [ "$EXEC_MODE" != "auto_cron" ] && [ ! -z "$VAL" ]; then
+            if [ "$SCOPE" == "by_day" ]; then
+              FINAL_DAY=$VAL
+              FINAL_PHASE=$(( (FINAL_DAY - 1) / 6 + 1 ))
+            else
+              FINAL_PHASE=$VAL
+              FINAL_DAY=$(( (FINAL_PHASE - 1) * 6 + 1 ))
+            fi
+            echo "{\"current_day\": $FINAL_DAY, \"current_phase\": $FINAL_PHASE}" > "$STATE_FILE"
+            git add "$STATE_FILE"
+            git commit -m "chore(pipeline): reset pipeline schedule endpoint to Day $FINAL_DAY [AI Pipeline]" || true
+            git push origin HEAD:${{ github.ref }} || true
+          fi
+          
+          FORMATTED_PHASE=$(printf "%02d" $FINAL_PHASE)
+          echo "RUN_DAY=$FINAL_DAY" >> $GITHUB_OUTPUT
+          echo "RUN_PHASE=$FORMATTED_PHASE" >> $GITHUB_OUTPUT
+
+  # JOBS 2-8: Dynamic routing definitions to invoke isolated Sub-Agent reusable files
+  run_coder:
+    needs: state_resolver_job
+    if: |
+      needs.state_resolver_job.outputs.exec_mode == 'all_scheduled' || 
+      (needs.state_resolver_job.outputs.exec_mode == 'standalone_agent' && needs.state_resolver_job.outputs.standalone_target == 'coder')
+    uses: ./.github/workflows/agent-coder.yml
+    with:
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
+    secrets: inherit
+
+  run_tester:
+    needs: [state_resolver_job, run_coder]
+    if: always() && (needs.run_coder.result == 'success' || needs.run_coder.result == 'skipped') && !contains(needs.state_resolver_job.outputs.standalone_target, 'none')
+    uses: ./.github/workflows/agent-tester.yml
+    with:
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
+    secrets: inherit
+
+  run_fixer:
+    needs: [state_resolver_job, run_tester]
+    if: always() && (needs.run_tester.result == 'success' || needs.run_tester.result == 'skipped') && !contains(needs.state_resolver_job.outputs.standalone_target, 'none')
+    uses: ./.github/workflows/agent-fixer.yml
+    with:
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
+    secrets: inherit
+
+  run_doc:
+    needs: [state_resolver_job, run_fixer]
+    if: always() && (needs.run_fixer.result == 'success' || needs.run_fixer.result == 'skipped') && !contains(needs.state_resolver_job.outputs.standalone_target, 'none')
+    uses: ./.github/workflows/agent-doc.yml
+    with:
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
+    secrets: inherit
+
+  run_gcp:
+    needs: [state_resolver_job, run_doc]
+    if: always() && (needs.run_doc.result == 'success' || needs.run_doc.result == 'skipped') && needs.state_resolver_job.outputs.release_flag == 'true'
+    uses: ./.github/workflows/agent-gcp.yml
+    with:
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
+    secrets: inherit
+
+  run_dockerhub:
+    needs: [state_resolver_job, run_gcp]
+    if: always() && (needs.run_gcp.result == 'success' || needs.run_gcp.result == 'skipped') && needs.state_resolver_job.outputs.release_flag == 'true'
+    uses: ./.github/workflows/agent-dockerhub.yml
+    with:
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
+    secrets: inherit
+
+  run_gke:
+    needs: [state_resolver_job, run_dockerhub]
+    if: always() && (needs.run_dockerhub.result == 'success' || needs.run_dockerhub.result == 'skipped') && needs.state_resolver_job.outputs.release_flag == 'true'
+    uses: ./.github/workflows/agent-gke.yml
+    with:
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
+    secrets: inherit
+
+  # JOB 9: Automated Timeline Post-Execution Advanced Gate
+  advance_schedule_tracker:
+    needs: [state_resolver_job, run_gke, run_doc]
+    if: always() && needs.state_resolver_job.outputs.exec_mode == 'all_scheduled'
+    runs-on: ubuntu-latest
+    steps:
+      - name: "📦 Checkout Repository"
+        uses: actions/checkout@v4
+      - name: "🔧 Configure Git Credentials"
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+      - name: "🗄️ Save State indicators"
+        run: |
+          STATE_FILE=".ai/.plan/pipeline_state.json"
+          RUN_DAY=${{ needs.state_resolver_job.outputs.run_day }}
+          NEXT_DAY=$(( RUN_DAY + 1 ))
+          if [ $NEXT_DAY -le 24 ]; then
+            NEXT_PHASE=$(( (NEXT_DAY - 1) / 6 + 1 ))
+            echo "{\"current_day\": $NEXT_DAY, \"current_phase\": $NEXT_PHASE}" > "$STATE_FILE"
+            git add "$STATE_FILE"
+            git commit -m "chore(pipeline): auto-advance schedule indicators to Day $NEXT_DAY [AI Pipeline]"
+            git push origin HEAD:${{ github.ref }}
+          fi

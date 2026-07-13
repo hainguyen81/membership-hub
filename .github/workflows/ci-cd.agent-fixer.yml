@@ -1,0 +1,64 @@
+name: "🩹 Fixer Agent Worker"
+
+on:
+  workflow_call:
+    inputs:
+      phase:
+        required: true
+        type: string
+      day:
+        required: true
+        type: string
+
+jobs:
+  execute_fixer:
+    name: "🩹 Fixer Agent Worker"
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Check whether allow for running workflow
+      - name: 🛡️ Gatekeeper - Validate Administrative Access
+        env:
+          ALLOW_AGENTS: ${{ secrets.ALLOW_AGENTS }}
+        if: ${{ env.ALLOW_AGENTS != 'true' }}
+        run: |
+          echo "❌ Deployment is administratively DISABLED via GitHub Secrets (secrets.ALLOW_AGENTS is not true)."
+          echo "Terminating pipeline execution immediately to protect production infrastructure."
+          exit 1 # Require Admin Rights
+      
+      # Step 1: Pull the complete development context files from remote hosting mirrors into the runtime system
+      - name: "📦 Checkout Source Code Repository Artifacts"
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Java OpenJDK virtual containers required to trigger native Quarkus test-compilation verification gates
+      - name: "☕ Initialize Enterprise Backend OpenJDK 21 & Maven Compilation Tools"
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # Step 3: Secure clean JavaScript package pools to execute complete Next.js integration compilation build tests
+      - name: "🟢 Initialize Next.js Enterprise Frontend Server Node.js 20 Framework Environment"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './sources/frontend/package-lock.json'
+
+      # Step 4: Prepare the core Python instance to execute iterative error boundary processing workflows
+      - name: "🐍 Provision Core Python 3.10 Runtime Environment Architecture"
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      # Step 5: Install communication pipeline packages to pass real-time compiler traces over to AI networks
+      - name: "🛠️ Install Core Enterprise Pipeline Third-Party Dependency Libraries"
+        run: pip install requests google-generativeai openai anthropic
+
+      # Step 6: Start self-healing loops to catch structural compilation syntax failures and rewrite patches automatically
+      - name: "🩹 Execute Elite Security Architect Automated Self-Healing Compiler Script Task"
+        env:
+          AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
+        run: python3 .ai/.agents/.sub-agents/agent-fixer.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"

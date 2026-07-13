@@ -1,0 +1,48 @@
+name: "🧪 Tester Agent Worker"
+
+on:
+  workflow_call:
+    inputs:
+      phase:
+        required: true
+        type: string
+      day:
+        required: true
+        type: string
+
+jobs:
+  execute_tester:
+    name: "🧪 Tester Agent Worker"
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Check whether allow for running workflow
+      - name: 🛡️ Gatekeeper - Validate Administrative Access
+        env:
+          ALLOW_AGENTS: ${{ secrets.ALLOW_AGENTS }}
+        if: ${{ env.ALLOW_AGENTS != 'true' }}
+        run: |
+          echo "❌ Deployment is administratively DISABLED via GitHub Secrets (secrets.ALLOW_AGENTS is not true)."
+          echo "Terminating pipeline execution immediately to protect production infrastructure."
+          exit 1 # Require Admin Rights
+      
+      # Step 1: Clone the active repository state to verify newly written source file structural placements
+      - name: "📦 Checkout Source Code Repository Artifacts"
+        uses: actions/checkout@v4
+
+      # Step 2: Initialize clean Python operations to activate high-fidelity automated test case parsing engines
+      - name: "🐍 Provision Core Python 3.10 Runtime Environment Architecture"
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      # Step 3: Satisfy external API execution requirements by importing necessary operational SDK modules
+      - name: "🛠️ Install Core Enterprise Pipeline Third-Party Dependency Libraries"
+        run: pip install requests google-generativeai openai anthropic
+
+      # Step 4: Process the newly committed business files to build zero-placeholder JUnit or Jest specification layouts
+      - name: "🧪 Execute Lead Automation QA Validation Framework Engineering Script Task"
+        env:
+          AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
+        run: python3 .ai/.agents/.sub-agents/agent-tester.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"

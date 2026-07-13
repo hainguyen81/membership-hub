@@ -1,0 +1,114 @@
+{
+  "phase_id": "PHASE_07_12_SECURE_AUTHENTICATION",
+  "phase_name": "SECURE AUTHENTICATION & BUSINESS LOGIC ENGINE (DAYS 7 - 12)",
+  "global_context_file": "./.ai/.context/context.en.md",
+  "package_root": "org.nlh4j.saas.membership.hub",
+  "source_target_dir": "./sources",
+  "days": [
+    {
+      "day": 7,
+      "context_file": "./.ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
+      "context_section": "DAY 7",
+      "target_component": "./sources/frontend/src/app/[locale]/login/page.tsx",
+      "test_component": "./sources/frontend/src/tests/LoginComponent.test.tsx",
+      "doc_component": "./docs/architecture/frontend_auth_bindings.md",
+      "gcp_component": "gcp-membership-hub-frontend",
+      "dockerhub_component": "docker-membership-hub-frontend",
+      "gke_component": "gke-membership-hub-frontend",
+      "sub_tasks": [
+        {"id": "D7_ST1", "desc": "Coder Agent: Develop standardized login UI components mapping credentials entry and social SSO fields via Tailwind CSS and Shadcn UI."},
+        {"id": "D7_ST2", "desc": "Coder Agent: Build centralized API client interceptor capture mechanisms mapping web token storage inside Axios transport layers."},
+        {"id": "D7_ST3", "desc": "Tester Agent: Author component interaction specs rendering form behaviors and validation feedback handling parameters."},
+        {"id": "D7_ST4", "desc": "Bug Fixer Agent: Validate frontend component compilation against strict Next.js App Router rules and check strict multi-tenant isolation gates."},
+        {"id": "D7_ST5", "desc": "Documentation Agent: Compile state storage management guidelines, dynamic cookie storage paths, and network interceptor protocols."}
+      ]
+    },
+    {
+      "day": 8,
+      "context_file": "./.ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
+      "context_section": "DAY 8",
+      "target_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/service/AuthServiceTest.java",
+      "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/web/AuthResourceTest.java",
+      "doc_component": "./docs/testing/identity_verification_suite.md",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
+      "sub_tasks": [
+        {"id": "D8_ST1", "desc": "Coder Agent & Tester Agent: Construct QuarkusComponentTest boundary validation suites mocking JWT signature validation behaviors."},
+        {"id": "D8_ST2", "desc": "Tester Agent: Author client UI verification scenarios using Jest and React Testing Library for credential rejections and fallback routes."},
+        {"id": "D8_ST3", "desc": "Bug Fixer Agent: Trigger native maven compilation ('mvn clean test-compile'), catch dependency or syntax anomalies, and execute auto-patch iterations."},
+        {"id": "D8_ST4", "desc": "Documentation Agent: Record mock structural policies ensuring independent execution capabilities during pipeline integration scans."}
+      ]
+    },
+    {
+      "day": 9,
+      "context_file": "./.ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
+      "context_section": "DAY 9",
+      "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/service/QrEngineService.java",
+      "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/service/QrEngineServiceTest.java",
+      "doc_component": "./docs/architecture/cryptographic_qr_spec.md",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
+      "sub_tasks": [
+        {"id": "D9_ST1", "desc": "Coder Agent: Implement cryptographic data processing layers using symmetric AES-256-GCM encryption wrappers for transient secure strings."},
+        {"id": "D9_ST2", "desc": "Tester Agent: Deploy rigorous validation suites asserting decryption accuracy and cryptographic format constraints."},
+        {"id": "D9_ST3", "desc": "Bug Fixer Agent: Run java test compiling, capture entity filter validation errors or security claims exceptions, and patch code rules."},
+        {"id": "D9_ST4", "desc": "Documentation Agent: Document bitwise package serialization layouts and dynamic time-window validation safety rules."}
+      ]
+    },
+    {
+      "day": 10,
+      "context_file": "./.ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
+      "context_section": "DAY 10",
+      "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/web/AttendanceResource.java",
+      "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/web/AttendanceResourceTest.java",
+      "doc_component": "./docs/architecture/idempotent_checkin_api.md",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
+      "sub_tasks": [
+        {"id": "D10_ST1", "desc": "Coder Agent: Expose non-blocking REST endpoints consuming dynamic barcodes and enforcing transaction filtering via composite keys to guarantee processing idempotency. Decorate resources using strict OpenAPI @Operation and @APIResponse annotations."},
+        {"id": "D10_ST2", "desc": "Tester Agent: Model mock concurrent multi-thread requests to verify soft success fallback handling on identical date matches."},
+        {"id": "D10_ST3", "desc": "Bug Fixer Agent: Intercept compiler or test errors, apply automated code repairs with real-time logs, and monitor structural compilation boundaries."},
+        {"id": "D10_ST4", "desc": "Documentation Agent: Formulate endpoint payload documentation tables, network transaction status charts, and API response error matrices."}
+      ]
+    },
+    {
+      "day": 11,
+      "context_file": "./.ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
+      "context_section": "DAY 11",
+      "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/service/impl/CardEvaluationServiceImpl.java",
+      "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/service/CardEvaluationServiceTest.java",
+      "doc_component": "./docs/architecture/gym_countdown_and_marketing_entities.md",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
+      "sub_tasks": [
+        {"id": "D11_ST1", "desc": "Coder Agent: Map persistent domain abstractions, entities, and repositories for sys_promotions and notification_delivery_logs, and implement gym countdown logic dynamically at runtime."},
+        {"id": "D11_ST2", "desc": "Tester Agent: Author domain lifecycle assertions evaluating active, expiring (<=3 days), and dead state boundaries."},
+        {"id": "D11_ST3", "desc": "Bug Fixer Agent: Execute project validation checks, catch entity filter validation errors or mapping mismatches, and patch repository files."},
+        {"id": "D11_ST4", "desc": "Documentation Agent: Chart entity relation graphs, runtime calculation strategies, and tracking flag definitions."}
+      ]
+    },
+    {
+      "day": 12,
+      "context_file": "./.ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
+      "context_section": "DAY 12",
+      "target_component": "./sources/frontend/src/app/[locale]/app/dashboard/page.tsx",
+      "test_component": "./sources/frontend/src/tests/StudentDashboardViewport.test.tsx",
+      "doc_component": "./docs/architecture/mobile_dashboard_view.md",
+      "gcp_component": "gcp-membership-hub-frontend",
+      "dockerhub_component": "docker-membership-hub-frontend",
+      "gke_component": "gke-membership-hub-frontend",
+      "sub_tasks": [
+        {"id": "D12_ST1", "desc": "Coder Agent: Architect mobile dashboard viewports featuring live barcode painters and warning panels wrapped within Tailwind Safe Area and Capacitor notch constraints."},
+        {"id": "D12_ST2", "desc": "Tester Agent: Deploy interface testing mocks verifying accurate multi-language string transformations and layout threshold handling across mobile screen frames."},
+        {"id": "D12_ST3", "desc": "Bug Fixer Agent: Run TypeScript compilation, catch layout bounds layout mismatches, and fix styling rules dynamically."},
+        {"id": "D12_ST4", "desc": "Documentation Agent: Record UI style mappings, notch containment rules, and offline local device interaction frameworks."}
+      ]
+    }
+  ]
+}
+
+
