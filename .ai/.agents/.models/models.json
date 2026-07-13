@@ -70,13 +70,6 @@
     "best_for": "FREE DEVELOPER TIER - Ultra-fast tokens token-per-second generation. Best for rapid parsing of rough code drafts."
   },
   {
-    "model_name": "nvidia/deepseek-v4-flash",
-    "provider": "siliconflow_console",
-    "api_endpoint": "https://api.siliconflow.cn/v1",
-    "context_window": "1,000,000 tokens",
-    "best_for": "FREE SIGNUP CREDITS - Secondary redundant failover rail to bypass upstream primary DeepSeek server congestions."
-  },
-  {
     "model_name": "qwen-2.5-coder-32b-instruct",
     "provider": "groq_console",
     "api_endpoint": "https://api.groq.com/openai/v1",
@@ -89,27 +82,6 @@
     "api_endpoint": "https://api.groq.com/openai/v1",
     "context_window": "128,000 tokens",
     "best_for": "FREE TIER - Speculative decoding layout optimized for accelerated multi-agent logic validation passes."
-  },
-  {
-    "model_name": "meta-llama/llama-3.3-70b-instruct",
-    "provider": "together_ai",
-    "api_endpoint": "https://api.together.xyz/v1",
-    "context_window": "128,000 tokens",
-    "best_for": "FREE SIGNUP CREDITS - Distributed open-source backup node. Strong compliance with dense system prompt structures."
-  },
-  {
-    "model_name": "qwen/qwen-2.5-coder-32b-instruct",
-    "provider": "together_ai",
-    "api_endpoint": "https://api.together.xyz/v1",
-    "context_window": "128,000 tokens",
-    "best_for": "FREE SIGNUP CREDITS - High-fidelity Java parameter auto-binding mapping arrays check loops."
-  },
-  {
-    "model_name": "deepseek-ai/deepseek-v4-flash",
-    "provider": "together_ai",
-    "api_endpoint": "https://api.together.xyz/v1",
-    "context_window": "1,000,000 tokens",
-    "best_for": "FREE SIGNUP CREDITS - Redundant 1M token sandbox pipeline targeting dynamic database migrations schema."
   },
   {
     "model_name": "qwen-2.5-coder-32b",
@@ -135,7 +107,7 @@
   {
     "model_name": "meta-llama/llama-3.3-70b-instruct",
     "provider": "lepton_ai",
-    "api_endpoint": "https://api.lepton.ai/v1",
+    "api_endpoint": "https://integrate.api.nvidia.com/v1",
     "context_window": "128,000 tokens",
     "best_for": "FREE TIER SANDBOX - Confined deployment script verifier. Cross-checks GCP deployment parameters cleanly before build execution."
   }
