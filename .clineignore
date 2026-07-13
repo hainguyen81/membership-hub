@@ -7,6 +7,8 @@
 **/.gradle/
 **/out/
 **/bin/
+.secrets/
+**/.secrets/**
 secrets/
 **/secrets/**
 
