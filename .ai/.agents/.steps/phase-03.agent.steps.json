@@ -12,8 +12,9 @@
       "target_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/service/AttendanceCheckinIntegrationTest.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/repository/TenantIsolationIntegrationTest.java",
       "doc_component": "./docs/testing/core_integration_flows.md",
-      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
-      "gke_component": "backend-service-deployment",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
         {"id": "D13_ST1", "desc": "Coder Agent & Tester Agent: Formulate functional integration suites utilizing Testcontainers to deploy isolated transient PostgreSQL instances."},
         {"id": "D13_ST2", "desc": "Tester Agent: Execute automated horizontal multi-tenant penetration tests to confirm zero cross-tenant database isolation leaks."},
@@ -28,8 +29,9 @@
       "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/integration/KafkaEventProducer.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/integration/KafkaEventProducerTest.java",
       "doc_component": "./docs/architecture/kafka_producer_fabric.md",
-      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
-      "gke_component": "backend-service-deployment",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
         {"id": "D14_ST1", "desc": "Coder Agent: Configure SmallRye Reactive Messaging to serialize and publish validated transaction structures to the primary attendance-events channel."},
         {"id": "D14_ST2", "desc": "Tester Agent: Verify structural packet serialization correctness and partition key routing assignments based on active tenant IDs."},
@@ -44,8 +46,9 @@
       "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/integration/AttendanceEventRouterConsumer.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/integration/AttendanceEventRouterConsumerTest.java",
       "doc_component": "./docs/architecture/reactive_fanout_router.md",
-      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
-      "gke_component": "backend-service-deployment",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
         {"id": "D15_ST1", "desc": "Coder Agent: Deploy asynchronous message consumers implementing Mutiny fan-out operators to multiply transactions across split routes while immediately committing PENDING tracking logs to notification_delivery_logs."},
         {"id": "D15_ST2", "desc": "Tester Agent: Validate parallel message routing performance and assert non-blocking streaming isolation profiles."},
@@ -60,8 +63,9 @@
       "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/integration/client/ZaloApiClient.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/integration/client/ZaloApiClientTest.java",
       "doc_component": "./docs/integration/zalo_openapi_gateway.md",
-      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
-      "gke_component": "backend-service-deployment",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
         {"id": "D16_ST1", "desc": "Coder Agent: Build declarative REST Client Reactive interfaces driving personal alerts and group CRM messages, mutating log states to SENT or FAILED on response inside notification_delivery_logs dynamically."},
         {"id": "D16_ST2", "desc": "Tester Agent: Mock third-party API return strings to verify accurate error parsing and log mutation compliance."},
@@ -76,8 +80,9 @@
       "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/integration/client/FcmPushClient.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/integration/client/FcmPushClientTest.java",
       "doc_component": "./docs/integration/firebase_push_alerts.md",
-      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
-      "gke_component": "backend-service-deployment",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
         {"id": "D17_ST1", "desc": "Coder Agent: Mount core Firebase Admin SDK abstractions dispatching system notifications via fcm_tokens and managing lifecycle tracking states inside notification_delivery_logs audit records."},
         {"id": "D17_ST2", "desc": "Tester Agent: Verify structural visual alert building parameters and exception interception routing metrics."},
@@ -92,8 +97,9 @@
       "target_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/integration/KafkaNotificationPipelineTest.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/integration/DeadLetterQueueIsolationTest.java",
       "doc_component": "./docs/testing/event_stream_resilience.md",
-      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
-      "gke_component": "backend-service-deployment",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
         {"id": "D18_ST1", "desc": "Coder Agent & Tester Agent: Deploy comprehensive Testcontainers clusters verifying multi-node data stream orchestration logic under system stress constraints."},
         {"id": "D18_ST2", "desc": "Tester Agent: Inject network blocks to verify automatic retry profiles and poison pill isolation boundaries inside structural DLQ topics."},
@@ -103,4 +109,5 @@
     }
   ]
 }
+
 

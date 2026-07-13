@@ -12,14 +12,16 @@
       "target_component": "./sources/frontend/src/app/[locale]/admin/dashboard/page.tsx",
       "test_component": "./sources/frontend/src/tests/AdminDashboardAnalytics.test.ts",
       "doc_component": "./docs/architecture/admin_crm_dashboard.md",
-      "gcp_component": "./sources/frontend/Dockerfile",
-      "gke_component": "frontend-service-deployment",
+      "gcp_component": "gcp-membership-hub-frontend",
+      "dockerhub_component": "docker-membership-hub-frontend",
+      "gke_component": "gke-membership-hub-frontend",
       "sub_tasks": [
-        {"id": "D19_ST1", "desc": "Coder Agent: Construct the Admin CRM Dashboard displaying student status tables, real-time alerts (remaining_days <= 3), sys_promotions views, and real-time notification delivery log grids. Expose backend AdminCrmResource fully decorated via OpenAPI Swagger annotations."},
-        {"id": "D19_ST2", "desc": "Coder Agent: Mount programmatic 'Send Notice' and 'Launch Promotion Campaign' elements communicating seamlessly with the backend Kafka-backed notification resource layers."},
-        {"id": "D19_ST3", "desc": "Tester Agent: Author UI validation routines testing data masking security rules and automated delivery log state changes under Playwright simulator spaces."},
-        {"id": "D19_ST4", "desc": "Bug Fixer Agent: Validate frontend component compilation against strict Next.js App Router rules and check strict multi-tenant isolation gates."},
-        {"id": "D19_ST5", "desc": "Documentation Agent: Map dashboard data structures, promo lifecycle parameters, notice logs tracking flows, and CRM-to-Zalo communication sequence charts."}
+        {"id": "D19_ST1", "desc": "Coder Agent: Construct the Admin CRM Dashboard displaying student status tables and real-time alerts filtering candidates with remaining_days <= 3."},
+        {"id": "D19_ST2", "desc": "Coder Agent: Build promotion management views (sys_promotions) and real-time notification delivery log grids mapping transactional history channels (Zalo/FCM) bounded by tenant isolation rules."},
+        {"id": "D19_ST3", "desc": "Coder Agent: Mount programmatic 'Send Notice' and 'Launch Promotion Campaign' elements communicating with the backend Kafka resource layers."},
+        {"id": "D19_ST4", "desc": "Tester Agent: Author UI validation routines testing data masking security rules and automated delivery log state changes under Playwright simulator spaces."},
+        {"id": "D19_ST5", "desc": "Bug Fixer Agent: Validate frontend component compilation against strict Next.js App Router rules and check strict multi-tenant isolation gates."},
+        {"id": "D19_ST6", "desc": "Documentation Agent: Map data contracts, promotion lifecycle triggers, notice logs tracking flows, and CRM-to-Zalo communication sequence charts."}
       ]
     },
     {
@@ -29,8 +31,9 @@
       "target_component": "./sources/frontend/capacitor.config.json",
       "test_component": "./sources/frontend/src/tests/MobileCapacitorExport.test.ts",
       "doc_component": "./docs/deployment/hybrid_mobile_packaging.md",
-      "gcp_component": "./sources/frontend/Dockerfile",
-      "gke_component": "frontend-service-deployment",
+      "gcp_component": "gcp-membership-hub-frontend",
+      "dockerhub_component": "docker-membership-hub-frontend",
+      "gke_component": "gke-membership-hub-frontend",
       "sub_tasks": [
         {"id": "D20_ST1", "desc": "Coder Agent: Formulate static bundle next export build configurations and map application bridge parameters inside capacitor.config.json files."},
         {"id": "D20_ST2", "desc": "Tester Agent: Author build verification scripts auditing the static asset tree compile structures against target native mobile sub-projects (/ios and /android)."},
@@ -45,8 +48,9 @@
       "target_component": "./sources/frontend/tests/e2e/attendance-flow.spec.ts",
       "test_component": "./sources/frontend/tests/e2e/admin-retention.spec.ts",
       "doc_component": "./docs/testing/end_to_end_verification.md",
-      "gcp_component": "./sources/frontend/Dockerfile",
-      "gke_component": "frontend-service-deployment",
+      "gcp_component": "gcp-membership-hub-frontend",
+      "dockerhub_component": "docker-membership-hub-frontend",
+      "gke_component": "gke-membership-hub-frontend",
       "sub_tasks": [
         {"id": "D21_ST1", "desc": "Coder Agent & Tester Agent: Develop full-scale end-to-end automation scripts utilizing Playwright to challenge complete integration systems under real headless browser profiles."},
         {"id": "D21_ST2", "desc": "Tester Agent: Model continuous journey simulations validating concurrent multi-language swapping, token creation, dynamic barcode rendering, and administrative CRM push triggers."},
@@ -61,8 +65,9 @@
       "target_component": "./sources/backend/src/main/docker/Dockerfile.native",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/infrastructure/DockerOrchestrationVerificationTest.java",
       "doc_component": "./docs/deployment/graalvm_docker_orchestration.md",
-      "gcp_component": "./sources/backend/src/main/docker/Dockerfile.native",
-      "gke_component": "backend-service-deployment",
+      "gcp_component": "gcp-membership-hub-backend",
+      "dockerhub_component": "docker-membership-hub-backend",
+      "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
         {"id": "D22_ST1", "desc": "Coder Agent: Construct multi-stage GraalVM native Docker configurations utilizing Mandrel container engines to output stripped production binaries."},
         {"id": "D22_ST2", "desc": "Tester Agent: Configure a centralized local orchestration compose stack checking initial boot health bounds across backend services, queues, and databases."},
@@ -77,8 +82,9 @@
       "target_component": "./sources/infrastructure/k8s/deployment.yaml",
       "test_component": "./sources/infrastructure/k8s/KubeManifestValidation.test.ts",
       "doc_component": "./docs/deployment/gke_cloud_infrastructure.md",
-      "gcp_component": "infrastructure/k8s",
-      "gke_component": "infrastructure/k8s",
+      "gcp_component": "none",
+      "dockerhub_component": "none",
+      "gke_component": "none",
       "sub_tasks": [
         {"id": "D23_ST1", "desc": "Coder Agent: Generate declarative Kubernetes infrastructure manifest files controlling GKE pod deployment specifications, SEO ingress path rewrites, and autoscale rules."},
         {"id": "D23_ST2", "desc": "Tester Agent: Execute automated linter scripts and boundary compliance test sweeps checking active K8s manifest files against deployment specifications."},
@@ -93,8 +99,9 @@
       "target_component": ".github/workflows/deploy.yml",
       "test_component": ".github/workflows/SecurityStaticScanning.yml",
       "doc_component": "./docs/deployment/cicd_pipeline_automation.md",
-      "gcp_component": "infrastructure/k8s",
-      "gke_component": "infrastructure/k8s",
+      "gcp_component": "none",
+      "dockerhub_component": "none",
+      "gke_component": "none",
       "sub_tasks": [
         {"id": "D24_ST1", "desc": "Coder Agent: Construct automated pipeline deployment workflows running via GitHub Actions bound strictly to merge states on the master release branch."},
         {"id": "D24_ST2", "desc": "Tester Agent: Connect static analysis security checkers (SAST) and automated code coverage reporting components to enforce strict quality gates before cloud deployment."},
@@ -104,5 +111,6 @@
     }
   ]
 }
+
 
 
