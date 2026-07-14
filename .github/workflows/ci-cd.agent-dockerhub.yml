@@ -51,8 +51,8 @@ jobs:
       - name: "📦 Clone Workspace Branch Assets"
         uses: actions/checkout@v4
         with:
-          clean: true    # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
-          path: '.' # force checkout code to root context (not ./sources, to next steps working context in ./sources)
+          clean: true     # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
+          path: '../'     # force checkout code to root context (not ./sources, to next steps working context in ./sources)
 
       # Step 2: Provision a clean Python 3.10 virtual space to run local container automation scripts
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"

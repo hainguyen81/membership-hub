@@ -96,8 +96,8 @@ jobs:
       - name: "📦 Fetch Core Codebase Repository Assets"
         uses: actions/checkout@v4
         with:
-          clean: true    # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
-          path: '.' # force checkout code to root context (not ./sources, to next steps working context in ./sources)
+          clean: true     # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
+          path: '../'     # force checkout code to root context (not ./sources, to next steps working context in ./sources)
       
       # Block 1.3: Inject secure global environment parameters and service boundaries
       - name: "🔧 Configure Machine Git Automation Credentials"
@@ -285,7 +285,7 @@ jobs:
         with:
           ref: "features/development-day-${{ needs.state_resolver_job.outputs.run_day }}"
           clean: true    # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
-          path: '.' # force checkout code to root context (not ./sources, to next steps working context in ./sources)
+          path: '../' # force checkout code to root context (not ./sources, to next steps working context in ./sources)
       
       - name: "🔧 Configure Machine Git Automation Credentials"
         run: |
