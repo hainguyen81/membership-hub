@@ -1,20 +1,28 @@
+# ==============================================================================
+# 🧑‍💻 CODER SUB-AGENT ISOLATED VERIFICATION WORKFLOW
+# ==============================================================================
+# Engineered to orchestrate autonomous business logic development tasks.
+# Inputs parameters are passed down sequentially from the main orchestrator engine.
+# ==============================================================================
+
 name: "🧑‍💻 Coder Agent Worker"
 
 on:
   workflow_call:
     inputs:
       phase:
+        description: '🗂️ Target Phase indicator passed from master pipeline'
         required: true
         type: string
       day:
+        description: '季度 Target operational execution Day number'
         required: true
         type: string
 
 jobs:
   execute_coder:
-    name: "🧑‍💻 Coder Agent Worker"
+    name: "🧑‍💻 Execute Core Architectural Generation Task"
     runs-on: ubuntu-latest
-    
     steps:
       # Check whether allow for running workflow
       - name: 🛡️ Gatekeeper - Validate Administrative Access
@@ -26,23 +34,28 @@ jobs:
           echo "Terminating pipeline execution immediately to protect production infrastructure."
           exit 1 # Require Admin Rights
       
-      # Step 1: Clone the core architecture codebase history into the active workspace execution environment
-      - name: "📦 Checkout Source Code Repository Artifacts"
+      # Step 1: Clone the active daily isolated feature branch into the runner execution pool
+      - name: "📦 Clone Workspace Branch Assets"
         uses: actions/checkout@v4
 
-      # Step 2: Establish the isolated Python 3.10 deployment environment required by the AI core layers
-      - name: "🐍 Provision Core Python 3.10 Runtime Environment Architecture"
+      # Step 2: Provision a clean Python 3.10 virtual space to handle core LLM prompts
+      - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          cache: 'pip'
 
-      # Step 3: Install mandatory enterprise foundational packages to open connection pipes to external LLMs
-      - name: "🛠️ Install Core Enterprise Pipeline Third-Party Dependency Libraries"
-        run: pip install requests google-generativeai openai anthropic
+      # Step 3: Satisfy upstream communication dependencies by executing pip manager installs
+      - name: "🛠️ Install Enterprise Cloud API Connecting Libraries"
+        run: |
+          echo "⚡ Upgrading deployment packet management frameworks..."
+          python -m pip install --upgrade pip
+          echo "📦 Securing vendor connection pipelines for generative network systems..."
+          pip install requests google-generativeai openai anthropic
 
-      # Step 4: Call the specific standalone script to extract day parameters and generate the raw production code blocks
-      - name: "🧑‍💻 Execute Principal Architect Code Generation Script Task"
+      # Step 4: Invoke the localized standalone architect engine to output pristine binaries
+      - name: "🧑‍💻 Trigger Principal Architect LLM Generation Loop"
         env:
           AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
-        run: python3 .ai/.agents/.sub-agents/agent-coder.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+        run: |
+          echo "🚀 Launching autonomous coder agent execution context for Day ${{ inputs.day }}..."
+          python3 .ai/.agents/.sub-agents/agent-coder.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"

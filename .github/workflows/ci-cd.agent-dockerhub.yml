@@ -1,20 +1,28 @@
+# ==============================================================================
+# 🐳 DOCKERHUB SUB-AGENT REMOTE REGISTRY PUBLICATION WORKFLOW
+# ==============================================================================
+# Activated via --release flags to package production components.
+# Authenticates and pushes multi-stage native container packages upstream.
+# ==============================================================================
+
 name: "🐳 DockerHub Agent Worker"
 
 on:
   workflow_call:
     inputs:
       phase:
+        description: '🗂️ Target Phase indicator passed from master pipeline'
         required: true
         type: string
       day:
+        description: '📆 Target operational execution Day number'
         required: true
         type: string
 
 jobs:
   execute_dockerhub:
-    name: "🐳 DockerHub Agent Worker"
+    name: "🐳 Build and Push Cross-Platform Multistage Containers"
     runs-on: ubuntu-latest
-    
     steps:
       # Check whether allow for running workflow
       - name: 🛡️ Gatekeeper - Validate Administrative Access
@@ -26,19 +34,20 @@ jobs:
           echo "Terminating pipeline execution immediately to protect production infrastructure."
           exit 1 # Require Admin Rights
       
-      # Step 1: Checkout the underlying code metrics to prepare binary distribution containers
-      - name: "📦 Checkout Source Code Repository Artifacts"
+      # Step 1: Clone the active daily isolated feature branch into the runner execution pool
+      - name: "📦 Clone Workspace Branch Assets"
         uses: actions/checkout@v4
 
-      # Step 2: Establish the isolated Python runtime engine to evaluate custom skip condition gates
-      - name: "🐍 Provision Core Python 3.10 Runtime Environment Architecture"
+      # Step 2: Provision a clean Python 3.10 virtual space to run local container automation scripts
+      - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          cache: 'pip'
 
-      # Step 3: Intercept target registry endpoints, perform secure credential handshakes, and stream images to public repositories
-      - name: "🐳 Execute Public Container Hub Integration Delivery Script Task"
+      # Step 3: Connect to Docker Hub APIs and stream dual multi-stage native compiled application layers
+      - name: "🐳 Trigger Cross-Platform Native Image Containerization Client"
         env:
           DOCKERHUB_SECRETS: ${{ secrets.DOCKERHUB_SECRETS }}
-        run: python3 .ai/.agents/.sub-agents/agent-dockerhub.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+        run: |
+          echo "🐳 Launching Docker Hub container build and registry publication pipes..."
+          python3 .ai/.agents/.sub-agents/agent-docker.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
