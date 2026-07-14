@@ -109,7 +109,15 @@ class CoderAgent:
                     messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
                     temperature=0.1
                 )
-                code_out = response.choices.message.content
+                # code_out = response.choices.message.content
+                choice = response.choices[0]
+                if hasattr(choice, "message"):
+                    code_out = choice.message.content
+                elif isinstance(choice, dict) and "message" in choice:
+                    code_out = choice["message"]["content"]
+                else:
+                    # Direct text string fallback array
+                    code_out = response.choices[0].text
                 clean_code = code_out.replace("```java", "").replace("```sql", "").replace("```json", "").replace("```markdown", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
                 
                 target_component = resolve_absolute_path(target_day["target_component"])

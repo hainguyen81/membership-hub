@@ -121,7 +121,15 @@ class BugFixerAgent:
                     messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
                     temperature=0.1
                 )
-                patched_code = response.choices.message.content
+                # patched_code = response.choices.message.content
+                choice = response.choices[0]
+                if hasattr(choice, "message"):
+                    patched_code = choice.message.content
+                elif isinstance(choice, dict) and "message" in choice:
+                    patched_code = choice["message"]["content"]
+                else:
+                    # Direct text string fallback array
+                    patched_code = response.choices[0].text
                 clean_code = patched_code.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
                 
                 with open(target_component, "w", encoding="utf-8") as f:

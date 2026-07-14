@@ -107,7 +107,15 @@ class TesterAgent:
                     messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
                     temperature=0.1
                 )
-                test_out = response.choices.message.content
+                # test_out = response.choices.message.content
+                choice = response.choices[0]
+                if hasattr(choice, "message"):
+                    test_out = choice.message.content
+                elif isinstance(choice, dict) and "message" in choice:
+                    test_out = choice["message"]["content"]
+                else:
+                    # Direct text string fallback array
+                    test_out = response.choices[0].text
                 clean_tests = test_out.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
                 
                 test_component = resolve_absolute_path(target_day["test_component"])
