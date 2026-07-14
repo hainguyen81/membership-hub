@@ -76,8 +76,8 @@ jobs:
     runs-on: ubuntu-latest
     
     outputs:
-      run_day: ${{ steps.resolver.outputs.RUN_DAY }}
-      run_phase: ${{ steps.resolver.outputs.RUN_PHASE }}
+      run_day: ${{ steps.resolver.outputs.run_day }}
+      run_phase: ${{ steps.resolver.outputs.run_phase }}
       exec_mode: ${{ github.event.inputs.execution_mode || 'all_scheduled' }}
       standalone_target: ${{ github.event.inputs.standalone_target || 'none' }}
       release_flag: ${{ github.event.inputs.release_flag || 'false' }}
@@ -210,8 +210,8 @@ jobs:
           
           # Export string conversions matching internal sub-agent path expectations
           FORMATTED_PHASE=$(printf "%02d" $FINAL_PHASE)
-          echo "RUN_DAY=$FINAL_DAY" >> $GITHUB_OUTPUT
-          echo "RUN_PHASE=$FORMATTED_PHASE" >> $GITHUB_OUTPUT
+          echo "run_day=$FINAL_DAY" >> $GITHUB_OUTPUT
+          echo "run_phase=$FORMATTED_PHASE" >> $GITHUB_OUTPUT
   
   # ==============================================================================
   # JOBS 2-8: DYNAMIC REUSABLE SUB-AGENT DEPLOYMENT MAPPINGS
@@ -380,9 +380,10 @@ jobs:
       # Block 9.4: Atomically increments schedule indicators inside the localized branch configuration matrix
       - name: "🗄️ Save State Indicators and Commit Generated Workspace Assets Upstream"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
+        env:
+          RUN_DAY: ${{ needs.state_resolver_job.outputs.run_day }}
         run: |
           STATE_FILE=".ai/.plan/pipeline_state.json"
-          RUN_DAY={{ needs.state_resolver_job.outputs.run_day }}
           NEXT_DAY=$(( RUN_DAY + 1 ))
           BRANCH_NAME="features/development-day-$RUN_DAY"
           
