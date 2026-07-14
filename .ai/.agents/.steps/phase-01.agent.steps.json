@@ -7,7 +7,7 @@
   "days": [
     {
       "day": 1,
-      "context_file": ".ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
+      "context_file": "./.ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
       "context_section": "DAY 1",
       "target_component": "./sources/backend/src/main/resources/db/migration/V1.0.0__init_schema.sql",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/infrastructure/DatabaseMigrationValidationTest.java",
@@ -24,7 +24,7 @@
     },
     {
       "day": 2,
-      "context_file": ".ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
+      "context_file": "./.ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
       "context_section": "DAY 2",
       "target_component": "./sources/backend/pom.xml",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/infrastructure/QuarkusReactiveDependencyTest.java",
@@ -43,7 +43,7 @@
     },
     {
       "day": 3,
-      "context_file": ".ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
+      "context_file": "./.ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
       "context_section": "DAY 3",
       "target_component": "./sources/frontend/package.json",
       "test_component": "./sources/frontend/src/tests/NextRouterBoilerplate.test.ts",
@@ -61,7 +61,7 @@
     },
     {
       "day": 4,
-      "context_file": ".ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
+      "context_file": "./.ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
       "context_section": "DAY 4",
       "target_component": "./sources/frontend/src/middleware.ts",
       "test_component": "./sources/frontend/src/tests/EdgeLocaleDetection.test.ts",
@@ -78,7 +78,7 @@
     },
     {
       "day": 5,
-      "context_file": ".ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
+      "context_file": "./.ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
       "context_section": "DAY 5",
       "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/service/AuthService.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/service/InternalAuthServiceTest.java",
@@ -95,7 +95,7 @@
     },
     {
       "day": 6,
-      "context_file": ".ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
+      "context_file": "./.ai/.plan/.context/01-06-CORE_INFRASTRUCTURE_BOILERPLATE/context.01-06.md",
       "context_section": "DAY 6",
       "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/config/SecurityOidcFilter.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/config/FederatedOidcFilterTest.java",
