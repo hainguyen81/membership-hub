@@ -50,11 +50,18 @@ jobs:
       
       # Step 1: Clone the active daily isolated feature branch into the runner execution pool
       - name: "📦 Clone Workspace Branch Assets"
-        uses: actions/checkout@v7
+        id: checkout_step
+        uses: actions/checkout@v4
         with:
+          ref: "features/development-day-${{ needs.state_resolver_job.outputs.run_day }}"
           fetch-depth: 0
-          clean: true     # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
+          clean: true     # force checkout code to root context (not ./sources, to next steps working context in ./sources)
           path: '.'
+      
+      # Re-config working-directory with present check-out project folder
+      defaults:
+        run:
+          working-directory: ${{ steps.checkout_step.outputs.path }}
       
       # Step 1.1: Debug project check-out structure
       - name: "🐛 Debug project check-out structure"
@@ -66,7 +73,8 @@ jobs:
           ls -la ./
           if [ -d "membership-hub" ]; then ls -la membership-hub/; fi
           if [ -d ".ai" ]; then ls -la .ai/; fi
-          echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
+          echo "PROJECT_WORKSPACE=${{ steps.checkout_step.outputs.path }}" >> $GITHUB_ENV
+          echo "PROJECT_WORKSPACE: $PROJECT_WORKSPACE"
       
       # Step 2: Provision a clean Python 3.10 virtual space to handle core LLM prompts
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"

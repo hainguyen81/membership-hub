@@ -14,7 +14,11 @@ def resolve_absolute_path(relative_target_path):
     """
     # 🚀 CORE RAIL: Ingest the absolute repository root path straight from GitHub infrastructure
     # Fallback to current working directory (os.getcwd()) if executing on a local machine
-    repo_root_path = os.environ.get("GITHUB_WORKSPACE", os.getcwd())
+    current_directory_path = os.getcwd()
+    github_workspace = os.environ.get("GITHUB_WORKSPACE", '')
+    project_workspace = os.environ.get("PROJECT_WORKSPACE", '')
+    print(f"CURRENT WORKING DIR: { current_directory_path } | GITHUB_WORKSPACE: { github_workspace } | PROJECT_WORKSPACE: { project_workspace }")
+    repo_root_path = os.environ.get("PROJECT_WORKSPACE", os.environ.get("GITHUB_WORKSPACE", os.getcwd()))
     
     # Clean up the incoming string parameters by removing leading path descriptors
     cleaned_relative_path = relative_target_path.lstrip("./")
