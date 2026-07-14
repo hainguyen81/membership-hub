@@ -50,6 +50,9 @@ jobs:
       # Step 1: Clone the active daily isolated feature branch into the runner execution pool
       - name: "📦 Clone Workspace Branch Assets"
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches full history to enable safe local upstream branching operations
+          clean: true    # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
 
       # Step 2: Establish production OpenJDK 17 binaries required to trigger Quarkus compiler tests
       - name: "☕ Mount Enterprise OpenJDK 17 Compiler Environments"

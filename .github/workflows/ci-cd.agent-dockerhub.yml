@@ -50,6 +50,9 @@ jobs:
       # Step 1: Clone the active daily isolated feature branch into the runner execution pool
       - name: "📦 Clone Workspace Branch Assets"
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches full history to enable safe local upstream branching operations
+          clean: true    # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
 
       # Step 2: Provision a clean Python 3.10 virtual space to run local container automation scripts
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
