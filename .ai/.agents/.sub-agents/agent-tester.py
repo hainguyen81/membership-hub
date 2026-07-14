@@ -83,11 +83,12 @@ class TesterAgent:
             global_context = f.read()
             
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
-        if not os.path.exists(target_day["target_component"]):
+        target_component = resolve_absolute_path(target_day["target_component"])
+        if not os.path.exists(target_component):
             print(f"[TESTER ERROR] Base source component file missing at: {target_day['target_component']}.")
             sys.exit(1)
             
-        with open(target_day["target_component"], "r", encoding="utf-8") as f:
+        with open(target_component, "r", encoding="utf-8") as f:
             clean_code = f.read()
         
         context_file = resolve_absolute_path(target_day["context_file"])
@@ -109,8 +110,9 @@ class TesterAgent:
                 test_out = response.choices.message.content
                 clean_tests = test_out.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
                 
-                os.makedirs(os.path.dirname(target_day["test_component"]), exist_ok=True)
-                with open(target_day["test_component"], "w", encoding="utf-8") as f:
+                test_component = resolve_absolute_path(target_day["test_component"])
+                os.makedirs(os.path.dirname(test_component), exist_ok=True)
+                with open(test_component, "w", encoding="utf-8") as f:
                     f.write(clean_tests)
                 print(f"[TESTER SUCCESS] Quality assurance test framework committed to: {target_day['test_component']}")
                 break

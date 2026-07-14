@@ -81,7 +81,8 @@ class GKEAgent:
         # Check if the target day represents a dedicated infrastructure day targeting raw K8s deployment manifests (like Day 23)
         if "infrastructure/k8s" in target_day["target_component"]:
             print(f"[GKE-AGENT] Applying raw enterprise infrastructure update manifests: {target_day['target_component']}")
-            subprocess.run(["kubectl", "apply", "-f", target_day["target_component"]], check=True)
+            target_component = resolve_absolute_path(target_day["target_component"])
+            subprocess.run(["kubectl", "apply", "-f", target_component], check=True)
             print("[GKE-AGENT SUCCESS] Cloud infrastructure manifest rules applied securely on GKE compute pools!")
             return
 

@@ -84,7 +84,8 @@ class DocumentationAgent:
             global_context = f.read()
             
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
-        with open(target_day["target_component"], "r", encoding="utf-8") as f:
+        target_component = resolve_absolute_path(target_day["target_component"])
+        with open(target_component, "r", encoding="utf-8") as f:
             clean_code = f.read()
         
         context_file = resolve_absolute_path(target_day["context_file"])
@@ -106,8 +107,9 @@ class DocumentationAgent:
                 doc_out = response.choices.message.content
                 clean_docs = doc_out.replace("```markdown", "").replace("```", "").strip()
                 
-                os.makedirs(os.path.dirname(target_day["doc_component"]), exist_ok=True)
-                with open(target_day["doc_component"], "w", encoding="utf-8") as f:
+                doc_component = resolve_absolute_path(target_day["doc_component"])
+                os.makedirs(os.path.dirname(doc_component), exist_ok=True)
+                with open(doc_component, "w", encoding="utf-8") as f:
                     f.write(clean_docs)
                 print(f"[DOCS SUCCESS] Architecture design documentation completed at: {target_day['doc_component']}")
                 break

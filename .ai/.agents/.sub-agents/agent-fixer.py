@@ -103,13 +103,14 @@ class BugFixerAgent:
         
         max_iterations = 3
         for iteration in range(1, max_iterations + 1):
-            is_clean, compiler_log = self.run_compile_check(target_day["target_component"])
+            target_component = resolve_absolute_path(target_day["target_component"])
+            is_clean, compiler_log = self.run_compile_check(target_component)
             if is_clean:
                 print(f"[FIXER SUCCESS] Target codebase component compiled cleanly on iteration loop: {iteration}!")
                 return True
                 
             print(f"[FIXER WARNING] Build check failed on validation loop: {iteration}. Ingesting raw error logs...")
-            with open(target_day["target_component"], "r", encoding="utf-8") as f:
+            with open(target_component, "r", encoding="utf-8") as f:
                 current_code = f.read()
                 
             user_prompt = f"Current Faulty Source Code Implementation:\n{current_code}\n\nReal-time Compiler Error Logs Output Traces:\n{compiler_log}"
@@ -123,7 +124,7 @@ class BugFixerAgent:
                 patched_code = response.choices.message.content
                 clean_code = patched_code.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
                 
-                with open(target_day["target_component"], "w", encoding="utf-8") as f:
+                with open(target_component, "w", encoding="utf-8") as f:
                     f.write(clean_code)
             except Exception as e:
                 print(f"[FIXER RECOVERY] API transaction exception caught. Swapping model: {str(e)}")

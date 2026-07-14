@@ -112,8 +112,9 @@ class CoderAgent:
                 code_out = response.choices.message.content
                 clean_code = code_out.replace("```java", "").replace("```sql", "").replace("```json", "").replace("```markdown", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
                 
-                os.makedirs(os.path.dirname(target_day["target_component"]), exist_ok=True)
-                with open(target_day["target_component"], "w", encoding="utf-8") as f:
+                target_component = resolve_absolute_path(target_day["target_component"])
+                os.makedirs(os.path.dirname(target_component), exist_ok=True)
+                with open(target_component, "w", encoding="utf-8") as f:
                     f.write(clean_code)
                 print(f"[CODER SUCCESS] Production source codebase generated at target destination: {target_day['target_component']}")
                 break
