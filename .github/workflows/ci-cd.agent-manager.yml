@@ -112,9 +112,11 @@ jobs:
           INPUT_TARGET_SCOPE: ${{ github.event.inputs.target_scope }}
           INPUT_VALUE: ${{ github.event.inputs.input_value }}
         run: |
-          # Declare target state location paths matching database indices
+          # 🚀 CONFIGURATION BOUNDARY: Set your exact desired state file path here
           STATE_FILE=".ai/.agents/.states/pipeline_state.json"
-          mkdir -p .ai/.agents/.states
+          
+          # Force create parent directory dynamically if it does not exist natively
+          mkdir -p "$(dirname "$STATE_FILE")"
           
           # Initialize baseline fallback state file using dynamic write overwrite directly
           if [ ! -f "$STATE_FILE" ]; then
@@ -147,21 +149,29 @@ jobs:
           BRANCH_NAME="features/development-day-$FINAL_DAY"
           echo "🌐 [GIT WORKSPACE ROUTER] Target environment branch assigned: $BRANCH_NAME"
           
+          # 🚀 HARD WRITE OVERWRITE GATE: Wipe the file locally from untracked cache BEFORE checkout
+          # This fully eliminates the git conflict block on both trunk and feature branches
+          rm -f "$STATE_FILE"
+          git checkout -- "$STATE_FILE" 2>/dev/null || true
+          
           # Ensure checkout updates tracking hooks mapping features/development as base trunk target
           git fetch origin features/development || true
-          git checkout features/development || git checkout master
+          git checkout -f features/development || git checkout -f main
           
           # Initialize independent sub-branch tracking layer cleanly
           if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME" || git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
             echo "🌿 [GIT ALREADY EXISTS] Target daily workspace branch detected. Shifting contexts..."
-            git checkout "$BRANCH_NAME"
+            # Wipe again right before shifting to the existing target daily development branch
+            rm -f "$STATE_FILE"
+            git checkout -f "$BRANCH_NAME"
             git merge origin/features/development --no-edit || true
           else
             echo "🚀 [GIT BRANCH FORK] Provisioning pristine branch [$BRANCH_NAME] initialized from stable trunk root [features/development]"
-            git checkout -b "$BRANCH_NAME"
+            git checkout -f -b "$BRANCH_NAME"
           fi
           
-          # 🚀 CRITICAL WRITE OVERWRITE: Force overwrite state directly into place right inside the active branch
+          # 🚀 ABSOLUTE WRITE OVERWRITE: Re-write the correct synced JSON payload right inside the active workspace branch
+          mkdir -p "$(dirname "$STATE_FILE")"
           echo '{"current_day": '$FINAL_DAY', "current_phase": '$FINAL_PHASE'}' > "$STATE_FILE"
           
           # Commit parameters mutations safely into the dedicated target active daily feature workspace branch
