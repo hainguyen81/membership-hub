@@ -47,8 +47,7 @@ jobs:
       # Step 3: Trigger safe rolling upgrades or apply raw infrastructure manifests straight to pods
       - name: "☸️ Trigger Kubernetes Cluster Pod Rollout Infrastructure Engine"
         env:
-          # Ingest cluster authorization identifiers containing connection targets and credentials
-          GKE_SECRETS: }} secrets.GKE_SECRETS {{
+          GKE_SECRETS: ${{ secrets.GKE_SECRETS }}
         run: |
           echo "☸️ Initiating secure handshakes towards remote GKE cluster pools..."
-          python3 .ai/.agents/.sub-agents/agent-gke.py --phase "}} inputs.phase {{" --day "}} inputs.day {{"
+          python3 .ai/.agents/.sub-agents/agent-gke.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"

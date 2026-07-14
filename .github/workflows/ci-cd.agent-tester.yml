@@ -15,7 +15,7 @@ on:
         required: true
         type: string
       day:
-        description: '📆 Target operational execution Day number'
+        description: '📅 Target operational execution Day number'
         required: true
         type: string
 
@@ -53,8 +53,7 @@ jobs:
       # Step 4: Evaluate written production logic assets to output complete JUnit/Jest testing frameworks
       - name: "🧪 Trigger Lead QA Test Framework Synthesizer"
         env:
-          # Pass down the encrypted multi-model failover key pool configuration dictionary
-          AI_MODELS_KEYS_JSON: {{ secrets.AI_MODELS_KEYS_JSON }}
+          AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
         run: |
           echo "🧪 Activating quality assurance testing synthesis engine..."
-          python3 .ai/.agents/.sub-agents/agent-tester.py --phase "{{ inputs.phase }}" --day "{{ inputs.day }}"
+          python3 .ai/.agents/.sub-agents/agent-tester.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"

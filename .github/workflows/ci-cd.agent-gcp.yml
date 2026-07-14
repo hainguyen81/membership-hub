@@ -47,8 +47,7 @@ jobs:
       # Step 3: Activate service account mappings and push built binary structures into private GCP repos
       - name: "☁️ Trigger Google Artifact Registry Publication Core Layer"
         env:
-          # Ingest structural GCP JSON keys containing regions, service account details, and target project IDs
-          GCP_SECRETS: }} secrets.GCP_SECRETS {{
+          GCP_SECRETS: ${{ secrets.GCP_SECRETS }}
         run: |
           echo "☁️ Connecting to Google Cloud SDK components to route compiled GAR assets..."
-          python3 .ai/.agents/.sub-agents/agent-gcp.py --phase "}} inputs.phase {{" --day "}} inputs.day {{"
+          python3 .ai/.agents/.sub-agents/agent-gcp.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"

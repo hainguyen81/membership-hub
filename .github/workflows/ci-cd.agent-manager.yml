@@ -62,11 +62,11 @@ jobs:
     name: "🗄️ State Resolver & Git Isolation Gatekeeper"
     runs-on: ubuntu-latest
     outputs:
-      run_day: {{ steps.resolver.outputs.RUN_DAY }}
-      run_phase: {{ steps.resolver.outputs.RUN_PHASE }}
-      exec_mode: {{ github.event.inputs.execution_mode || 'all_scheduled' }}
-      standalone_target: {{ github.event.inputs.standalone_target || 'none' }}
-      release_flag: {{ github.event.inputs.release_flag || 'false' }}
+      run_day: ${{ steps.resolver.outputs.RUN_DAY }}
+      run_phase: ${{ steps.resolver.outputs.RUN_PHASE }}
+      exec_mode: ${{ github.event.inputs.execution_mode || 'all_scheduled' }}
+      standalone_target: ${{ github.event.inputs.standalone_target || 'none' }}
+      release_flag: ${{ github.event.inputs.release_flag || 'false' }}
     
     steps:
       # Block 1.1: Administrative gate check protecting centralized production ecosystems
@@ -84,13 +84,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Fetches full history to enable safe local upstream branching operations
-
+      
       # Block 1.3: Inject secure global environment parameters and service boundaries
       - name: "🔧 Configure Machine Git Automation Credentials"
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@://github.com"
-
+      
       # Block 1.4: Core State Machine execution manipulating temporal parameters and daily isolated branch forks
       - name: "🗄️ Execute Pipeline Parameters Resolution and Git Fork Compliance"
         id: resolver
@@ -168,7 +168,7 @@ jobs:
       phase: {{ needs.state_resolver_job.outputs.run_phase }}
       day: {{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
-
+  
   run_tester:
     name: "🧪 Tester Agent Worker"
     needs: [state_resolver_job, run_coder]
@@ -178,7 +178,7 @@ jobs:
       phase: {{ needs.state_resolver_job.outputs.run_phase }}
       day: {{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
-
+  
   run_fixer:
     name: "🩹 Fixer Agent Worker"
     needs: [state_resolver_job, run_tester]
@@ -188,7 +188,7 @@ jobs:
       phase: {{ needs.state_resolver_job.outputs.run_phase }}
       day: {{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
-
+  
   run_doc:
     name: "📝 Documentation Agent Worker"
     needs: [state_resolver_job, run_fixer]
@@ -198,7 +198,7 @@ jobs:
       phase: {{ needs.state_resolver_job.outputs.run_phase }}
       day: {{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
-
+  
   run_gcp:
     name: "☁️ GCP GAR Agent Worker"
     needs: [state_resolver_job, run_doc]
@@ -208,7 +208,7 @@ jobs:
       phase: {{ needs.state_resolver_job.outputs.run_phase }}
       day: {{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
-
+  
   run_dockerhub:
     name: "🐳 DockerHub Agent Worker"
     needs: [state_resolver_job, run_gcp]
@@ -218,7 +218,7 @@ jobs:
       phase: {{ needs.state_resolver_job.outputs.run_phase }}
       day: {{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
-
+  
   run_gke:
     name: "☸️ GKE Deployment Agent Worker"
     needs: [state_resolver_job, run_dockerhub]
@@ -243,26 +243,26 @@ jobs:
       - name: "📦 Synchronize Active Daily Target Workspace Branch"
         uses: actions/checkout@v4
         with:
-          ref: "features/development-day-{{ needs.state_resolver_job.outputs.run_day }}"
+          ref: "features/development-day-${{ needs.state_resolver_job.outputs.run_day }}"
           fetch-depth: 0
-
+      
       - name: "🔧 Configure Machine Git Automation Credentials"
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@://github.com"
-
+      
       # Block 9.2: STRICT COMPLIANCE RAIL GATE - Native verification to protect repository code integrity
       - name: "☕ Setup Hard Compilation Gate - Enterprise OpenJDK 17 Environment"
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          
+      
       - name: "🟢 Setup Hard Compilation Gate - Next.js Frontend Node 20 Runtime"
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
+      
       # Block 9.3: Absolute Zero Error check validation run executions before remote commit permissions are unlocked
       - name: "🛡️ Execute Mandatory Strict Compilation Verification Audit Loops"
         run: |
@@ -284,7 +284,7 @@ jobs:
             cd ../..
           fi
           echo "🎉 [STRICT AUDIT SUCCESS] Daily code assets cleared compiler validations without structural failure rejections!"
-
+      
       # Block 9.4: Atomically increments schedule indicators inside the localized branch configuration matrix
       - name: "🗄️ Save State Indicators and Commit Generated Workspace Assets Upstream"
         run: |

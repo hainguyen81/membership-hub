@@ -53,8 +53,7 @@ jobs:
       # Step 4: Generate high-precision system documentation artifacts in English markdown formats
       - name: "📝 Trigger Senior Tech Writer Documentation Pipeline"
         env:
-          # Synchronize structural token arrays across the isolated environment network boundaries
-          AI_MODELS_KEYS_JSON: {{ secrets.AI_MODELS_KEYS_JSON }}
+          AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
         run: |
           echo "📝 Activating technical documentation parsing and synchronization..."
-          python3 .ai/.agents/.sub-agents/agent-doc.py --phase "{{ inputs.phase }}" --day "{{ inputs.day }}"
+          python3 .ai/.agents/.sub-agents/agent-doc.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
