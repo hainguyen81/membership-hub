@@ -67,8 +67,17 @@ class CoderAgent:
             target_model_name = config["model_name"]
             target_model_endpoint = config["api_endpoint"]
             
+            print("==============================================")
+            print("🔍 DEBUG: 'config':")
+            try:
+                print(json.dumps(config, indent=4, ensure_ascii=False))
+            except Exception:
+                print(f"Exception while dump 'config' json: {type(config)} - Config: {config}")
+            print("==============================================")
+            
             # If endpoint is missing, None, empty "", or just whitespaces "   ", skip it cleanly
-            if not target_model_endpoint or not str(target_model_endpoint).strip():
+            if not target_model_name or not target_model_endpoint or not str(target_model_endpoint).strip():
+                print(f"Ignore this config due to invalid 'model_name': {target_model_name} or 'model_endpoint': {target_model_endpoint}")
                 self.active_model_index += 1
                 continue # 🔄 Immediately jumps to the next iteration of the while loop
             
