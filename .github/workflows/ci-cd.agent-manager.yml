@@ -116,6 +116,10 @@ jobs:
           # 🚀 CONFIGURATION BOUNDARY: Set your exact desired state file path here
           STATE_FILE=".ai/.agents/.states/pipeline_state.json"
           
+          # 🚀 HARD RESET & WIPE LOCAL CACHE: Vaporize ALL untracked, ignored, and phantom cached indexing files instantly
+          git reset --hard HEAD
+          git clean -ffdx
+          
           # Force create parent directory dynamically if it does not exist natively
           mkdir -p "$(dirname "$STATE_FILE")"
           
