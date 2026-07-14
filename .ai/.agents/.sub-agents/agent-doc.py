@@ -135,7 +135,7 @@ class DocumentationAgent:
                 os.makedirs(os.path.dirname(doc_component), exist_ok=True)
                 with open(doc_component, "w", encoding="utf-8") as f:
                     f.write(clean_docs)
-                print(f"[ ✅ DOCS SUCCESS | Model {self.current_model_config["model_name"]} | API Endpoint {self.current_model_config["api_endpoint"]} | Day {self.day_num} ] Architecture design documentation completed at: {target_day['doc_component']}")
+                print(f"[ ✅ DOCS SUCCESS | Model {self.current_model_config['model_name']} | API Endpoint {self.current_model_config['api_endpoint']} | Day {self.day_num} ] Architecture design documentation completed at: {target_day['doc_component']}")
                 break
             except Exception as e:
                 print(f"[ 💀 DOCS LLM EXHAUSTED ] Failed execution on model {self.current_model_config['model_name']}: {str(e)}")

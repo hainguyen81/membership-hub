@@ -138,7 +138,7 @@ class TesterAgent:
                 os.makedirs(os.path.dirname(test_component), exist_ok=True)
                 with open(test_component, "w", encoding="utf-8") as f:
                     f.write(clean_tests)
-                print(f"[ ✅ TESTER SUCCESS | Model {self.current_model_config["model_name"]} | API Endpoint {self.current_model_config["api_endpoint"]} | Day {self.day_num} ] Quality assurance test framework committed to: {target_day['test_component']}")
+                print(f"[ ✅ TESTER SUCCESS | Model {self.current_model_config['model_name']} | API Endpoint {self.current_model_config['api_endpoint']} | Day {self.day_num} ] Quality assurance test framework committed to: {target_day['test_component']}")
                 break
             except Exception as e:
                 print(f"[ 💀 TESTER ERROR ] Exception caught on model {self.current_model_config['model_name']}: {str(e)}")
