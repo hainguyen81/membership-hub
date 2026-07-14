@@ -16,10 +16,11 @@
       "dockerhub_component": "docker-membership-hub-backend",
       "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
-        {"id": "D13_ST1", "desc": "Coder Agent & Tester Agent: Formulate functional integration suites utilizing Testcontainers to deploy isolated transient PostgreSQL instances."},
-        {"id": "D13_ST2", "desc": "Tester Agent: Execute automated horizontal multi-tenant penetration tests to confirm zero cross-tenant database isolation leaks."},
-        {"id": "D13_ST3", "desc": "Bug Fixer Agent: Trigger native build checks, catch test container configuration anomalies, and execute auto-patch iterations."},
-        {"id": "D13_ST4", "desc": "Documentation Agent: Compile pipeline setup guides, environment container specs, and isolation verification logs."}
+        {"id": "D13_ST1", "agent": "coder", "desc": "Coder Agent: Formulate functional integration suites utilizing Testcontainers to deploy isolated transient PostgreSQL instances."},
+        {"id": "D13_ST2", "agent": "tester", "desc": "Tester Agent: Formulate functional integration suites utilizing Testcontainers to deploy isolated transient PostgreSQL instances."},
+        {"id": "D13_ST3", "agent": "tester", "desc": "Tester Agent: Execute automated horizontal multi-tenant penetration tests to confirm zero cross-tenant database isolation leaks."},
+        {"id": "D13_ST4", "agent": "fixer", "desc": "Bug Fixer Agent: Trigger native build checks, catch test container configuration anomalies, and execute auto-patch iterations."},
+        {"id": "D13_ST5", "agent": "doc", "desc": "Documentation Agent: Compile pipeline setup guides, environment container specs, and isolation verification logs."}
       ]
     },
     {
@@ -33,10 +34,10 @@
       "dockerhub_component": "docker-membership-hub-backend",
       "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
-        {"id": "D14_ST1", "desc": "Coder Agent: Configure SmallRye Reactive Messaging to serialize and publish validated transaction structures to the primary attendance-events channel."},
-        {"id": "D14_ST2", "desc": "Tester Agent: Verify structural packet serialization correctness and partition key routing assignments based on active tenant IDs."},
-        {"id": "D14_ST3", "desc": "Bug Fixer Agent: Identify SmallRye internal messaging anomalies or partition mapping issues, and execute auto-repair iterations."},
-        {"id": "D14_ST4", "desc": "Documentation Agent: Map data stream topologies, partition layout rules, and reactive producer thread execution schemas."}
+        {"id": "D14_ST1", "agent": "coder", "desc": "Coder Agent: Configure SmallRye Reactive Messaging to serialize and publish validated transaction structures to the primary attendance-events channel."},
+        {"id": "D14_ST2", "agent": "tester", "desc": "Tester Agent: Verify structural packet serialization correctness and partition key routing assignments based on active tenant IDs."},
+        {"id": "D14_ST3", "agent": "fixer", "desc": "Bug Fixer Agent: Identify SmallRye internal messaging anomalies or partition mapping issues, and execute auto-repair iterations."},
+        {"id": "D14_ST4", "agent": "doc", "desc": "Documentation Agent: Map data stream topologies, partition layout rules, and reactive producer thread execution schemas."}
       ]
     },
     {
@@ -50,10 +51,10 @@
       "dockerhub_component": "docker-membership-hub-backend",
       "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
-        {"id": "D15_ST1", "desc": "Coder Agent: Deploy asynchronous message consumers implementing Mutiny fan-out operators to multiply transactions across split routes while immediately committing PENDING tracking logs to notification_delivery_logs."},
-        {"id": "D15_ST2", "desc": "Tester Agent: Validate parallel message routing performance and assert non-blocking streaming isolation profiles."},
-        {"id": "D15_ST3", "desc": "Bug Fixer Agent: Mitigate concurrent thread locks or data mapping errors dynamically on reactive loops execution paths."},
-        {"id": "D15_ST4", "desc": "Documentation Agent: Chart stream multiplexing flowcharts, data fork logic parameters, and reactive concurrency settings."}
+        {"id": "D15_ST1", "agent": "coder", "desc": "Coder Agent: Deploy asynchronous message consumers implementing Mutiny fan-out operators to multiply transactions across split routes while immediately committing PENDING tracking logs to notification_delivery_logs."},
+        {"id": "D15_ST2", "agent": "tester", "desc": "Tester Agent: Validate parallel message routing performance and assert non-blocking streaming isolation profiles."},
+        {"id": "D15_ST3", "agent": "fixer", "desc": "Bug Fixer Agent: Mitigate concurrent thread locks or data mapping errors dynamically on reactive loops execution paths."},
+        {"id": "D15_ST4", "agent": "doc", "desc": "Documentation Agent: Chart stream multiplexing flowcharts, data fork logic parameters, and reactive concurrency settings."}
       ]
     },
     {
@@ -67,10 +68,10 @@
       "dockerhub_component": "docker-membership-hub-backend",
       "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
-        {"id": "D16_ST1", "desc": "Coder Agent: Build declarative REST Client Reactive interfaces driving personal alerts and group CRM messages, mutating log states to SENT or FAILED on response inside notification_delivery_logs dynamically."},
-        {"id": "D16_ST2", "desc": "Tester Agent: Mock third-party API return strings to verify accurate error parsing and log mutation compliance."},
-        {"id": "D16_ST3", "desc": "Bug Fixer Agent: Resolve REST Client integration anomalies, fix response proxy mapping gaps, and auto-patch codes."},
-        {"id": "D16_ST4", "desc": "Documentation Agent: Outline certified Zalo communication templates, authentication signature workflows, and error code maps."}
+        {"id": "D16_ST1", "agent": "coder", "desc": "Coder Agent: Build declarative REST Client Reactive interfaces driving personal alerts and group CRM messages, mutating log states to SENT or FAILED on response inside notification_delivery_logs dynamically."},
+        {"id": "D16_ST2", "agent": "tester", "desc": "Tester Agent: Mock third-party API return strings to verify accurate error parsing and log mutation compliance."},
+        {"id": "D16_ST3", "agent": "fixer", "desc": "Bug Fixer Agent: Resolve REST Client integration anomalies, fix response proxy mapping gaps, and auto-patch codes."},
+        {"id": "D16_ST4", "agent": "doc", "desc": "Documentation Agent: Outline certified Zalo communication templates, authentication signature workflows, and error code maps."}
       ]
     },
     {
@@ -84,10 +85,10 @@
       "dockerhub_component": "docker-membership-hub-backend",
       "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
-        {"id": "D17_ST1", "desc": "Coder Agent: Mount core Firebase Admin SDK abstractions dispatching system notifications via fcm_tokens and managing lifecycle tracking states inside notification_delivery_logs audit records."},
-        {"id": "D17_ST2", "desc": "Tester Agent: Verify structural visual alert building parameters and exception interception routing metrics."},
-        {"id": "D17_ST3", "desc": "Bug Fixer Agent: Handle asynchronous SDK initialization failure dependencies, and rewrite code blocks cleanly."},
-        {"id": "D17_ST4", "desc": "Documentation Agent: Compile remote terminal authorization protocols, tracking models, and background device alerting architectures."}
+        {"id": "D17_ST1", "agent": "coder", "desc": "Coder Agent: Mount core Firebase Admin SDK abstractions dispatching system notifications via fcm_tokens and managing lifecycle tracking states inside notification_delivery_logs audit records."},
+        {"id": "D17_ST2", "agent": "tester", "desc": "Tester Agent: Verify structural visual alert building parameters and exception interception routing metrics."},
+        {"id": "D17_ST3", "agent": "fixer", "desc": "Bug Fixer Agent: Handle asynchronous SDK initialization failure dependencies, and rewrite code blocks cleanly."},
+        {"id": "D17_ST4", "agent": "doc", "desc": "Documentation Agent: Compile remote terminal authorization protocols, tracking models, and background device alerting architectures."}
       ]
     },
     {
@@ -101,10 +102,11 @@
       "dockerhub_component": "docker-membership-hub-backend",
       "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
-        {"id": "D18_ST1", "desc": "Coder Agent & Tester Agent: Deploy comprehensive Testcontainers clusters verifying multi-node data stream orchestration logic under system stress constraints."},
-        {"id": "D18_ST2", "desc": "Tester Agent: Inject network blocks to verify automatic retry profiles and poison pill isolation boundaries inside structural DLQ topics."},
-        {"id": "D18_ST3", "desc": "Bug Fixer Agent: Execute test compiler loops, eliminate reactive stream crashes under pipeline breaks, and patch integration dependencies."},
-        {"id": "D18_ST4", "desc": "Documentation Agent: Chart failure containment policies, backoff interval profiles, and disaster recovery procedures."}
+        {"id": "D18_ST1", "agent": "coder", "desc": "Coder Agent: Deploy comprehensive Testcontainers clusters verifying multi-node data stream orchestration logic under system stress constraints."},
+        {"id": "D18_ST2", "agent": "tester", "desc": "Tester Agent: Deploy comprehensive Testcontainers clusters verifying multi-node data stream orchestration logic under system stress constraints."},
+        {"id": "D18_ST3", "agent": "tester", "desc": "Tester Agent: Inject network blocks to verify automatic retry profiles and poison pill isolation boundaries inside structural DLQ topics."},
+        {"id": "D18_ST4", "agent": "fixer", "desc": "Bug Fixer Agent: Execute test compiler loops, eliminate reactive stream crashes under pipeline breaks, and patch integration dependencies."},
+        {"id": "D18_ST5", "agent": "doc", "desc": "Documentation Agent: Chart failure containment policies, backoff interval profiles, and disaster recovery procedures."}
       ]
     }
   ]

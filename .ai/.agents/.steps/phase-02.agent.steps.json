@@ -16,11 +16,11 @@
       "dockerhub_component": "docker-membership-hub-frontend",
       "gke_component": "gke-membership-hub-frontend",
       "sub_tasks": [
-        {"id": "D7_ST1", "desc": "Coder Agent: Develop standardized login UI components mapping credentials entry and social SSO fields via Tailwind CSS and Shadcn UI."},
-        {"id": "D7_ST2", "desc": "Coder Agent: Build centralized API client interceptor capture mechanisms mapping web token storage inside Axios transport layers."},
-        {"id": "D7_ST3", "desc": "Tester Agent: Author component interaction specs rendering form behaviors and validation feedback handling parameters."},
-        {"id": "D7_ST4", "desc": "Bug Fixer Agent: Validate frontend component compilation against strict Next.js App Router rules and check strict multi-tenant isolation gates."},
-        {"id": "D7_ST5", "desc": "Documentation Agent: Compile state storage management guidelines, dynamic cookie storage paths, and network interceptor protocols."}
+        {"id": "D7_ST1", "agent": "coder", "desc": "Coder Agent: Develop standardized login UI components mapping credentials entry and social SSO fields via Tailwind CSS and Shadcn UI."},
+        {"id": "D7_ST2", "agent": "coder", "desc": "Coder Agent: Build centralized API client interceptor capture mechanisms mapping web token storage inside Axios transport layers."},
+        {"id": "D7_ST3", "agent": "tester", "desc": "Tester Agent: Author component interaction specs rendering form behaviors and validation feedback handling parameters."},
+        {"id": "D7_ST4", "agent": "fixer", "desc": "Bug Fixer Agent: Validate frontend component compilation against strict Next.js App Router rules and check strict multi-tenant isolation gates."},
+        {"id": "D7_ST5", "agent": "doc", "desc": "Documentation Agent: Compile state storage management guidelines, dynamic cookie storage paths, and network interceptor protocols."}
       ]
     },
     {
@@ -34,10 +34,11 @@
       "dockerhub_component": "docker-membership-hub-backend",
       "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
-        {"id": "D8_ST1", "desc": "Coder Agent & Tester Agent: Construct QuarkusComponentTest boundary validation suites mocking JWT signature validation behaviors."},
-        {"id": "D8_ST2", "desc": "Tester Agent: Author client UI verification scenarios using Jest and React Testing Library for credential rejections and fallback routes."},
-        {"id": "D8_ST3", "desc": "Bug Fixer Agent: Trigger native maven compilation ('mvn clean test-compile'), catch dependency or syntax anomalies, and execute auto-patch iterations."},
-        {"id": "D8_ST4", "desc": "Documentation Agent: Record mock structural policies ensuring independent execution capabilities during pipeline integration scans."}
+        {"id": "D8_ST1", "agent": "coder", "desc": "Coder Agent: Construct QuarkusComponentTest boundary validation suites mocking JWT signature validation behaviors."},
+        {"id": "D8_ST2", "agent": "tester", "desc": "Tester Agent: Construct QuarkusComponentTest boundary validation suites mocking JWT signature validation behaviors."},
+        {"id": "D8_ST3", "agent": "tester", "desc": "Tester Agent: Author client UI verification scenarios using Jest and React Testing Library for credential rejections and fallback routes."},
+        {"id": "D8_ST4", "agent": "fixer", "desc": "Bug Fixer Agent: Trigger native maven compilation ('mvn clean test-compile'), catch dependency or syntax anomalies, and execute auto-patch iterations."},
+        {"id": "D8_ST5", "agent": "doc", "desc": "Documentation Agent: Record mock structural policies ensuring independent execution capabilities during pipeline integration scans."}
       ]
     },
     {
@@ -51,10 +52,10 @@
       "dockerhub_component": "docker-membership-hub-backend",
       "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
-        {"id": "D9_ST1", "desc": "Coder Agent: Implement cryptographic data processing layers using symmetric AES-256-GCM encryption wrappers for transient secure strings."},
-        {"id": "D9_ST2", "desc": "Tester Agent: Deploy rigorous validation suites asserting decryption accuracy and cryptographic format constraints."},
-        {"id": "D9_ST3", "desc": "Bug Fixer Agent: Run java test compiling, capture entity filter validation errors or security claims exceptions, and patch code rules."},
-        {"id": "D9_ST4", "desc": "Documentation Agent: Document bitwise package serialization layouts and dynamic time-window validation safety rules."}
+        {"id": "D9_ST1", "agent": "coder", "desc": "Coder Agent: Implement cryptographic data processing layers using symmetric AES-256-GCM encryption wrappers for transient secure strings."},
+        {"id": "D9_ST2", "agent": "tester", "desc": "Tester Agent: Deploy rigorous validation suites asserting decryption accuracy and cryptographic format constraints."},
+        {"id": "D9_ST3", "agent": "fixer", "desc": "Bug Fixer Agent: Run java test compiling, capture entity filter validation errors or security claims exceptions, and patch code rules."},
+        {"id": "D9_ST4", "agent": "doc", "desc": "Documentation Agent: Document bitwise package serialization layouts and dynamic time-window validation safety rules."}
       ]
     },
     {
@@ -68,10 +69,10 @@
       "dockerhub_component": "docker-membership-hub-backend",
       "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
-        {"id": "D10_ST1", "desc": "Coder Agent: Expose non-blocking REST endpoints consuming dynamic barcodes and enforcing transaction filtering via composite keys to guarantee processing idempotency. Decorate resources using strict OpenAPI @Operation and @APIResponse annotations."},
-        {"id": "D10_ST2", "desc": "Tester Agent: Model mock concurrent multi-thread requests to verify soft success fallback handling on identical date matches."},
-        {"id": "D10_ST3", "desc": "Bug Fixer Agent: Intercept compiler or test errors, apply automated code repairs with real-time logs, and monitor structural compilation boundaries."},
-        {"id": "D10_ST4", "desc": "Documentation Agent: Formulate endpoint payload documentation tables, network transaction status charts, and API response error matrices."}
+        {"id": "D10_ST1", "agent": "coder", "desc": "Coder Agent: Expose non-blocking REST endpoints consuming dynamic barcodes and enforcing transaction filtering via composite keys to guarantee processing idempotency. Decorate resources using strict OpenAPI @Operation and @APIResponse annotations."},
+        {"id": "D10_ST2", "agent": "tester", "desc": "Tester Agent: Model mock concurrent multi-thread requests to verify soft success fallback handling on identical date matches."},
+        {"id": "D10_ST3", "agent": "fixer", "desc": "Bug Fixer Agent: Intercept compiler or test errors, apply automated code repairs with real-time logs, and monitor structural compilation boundaries."},
+        {"id": "D10_ST4", "agent": "doc", "desc": "Documentation Agent: Formulate endpoint payload documentation tables, network transaction status charts, and API response error matrices."}
       ]
     },
     {
@@ -85,10 +86,10 @@
       "dockerhub_component": "docker-membership-hub-backend",
       "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
-        {"id": "D11_ST1", "desc": "Coder Agent: Map persistent domain abstractions, entities, and repositories for sys_promotions and notification_delivery_logs, and implement gym countdown logic dynamically at runtime."},
-        {"id": "D11_ST2", "desc": "Tester Agent: Author domain lifecycle assertions evaluating active, expiring (<=3 days), and dead state boundaries."},
-        {"id": "D11_ST3", "desc": "Bug Fixer Agent: Execute project validation checks, catch entity filter validation errors or mapping mismatches, and patch repository files."},
-        {"id": "D11_ST4", "desc": "Documentation Agent: Chart entity relation graphs, runtime calculation strategies, and tracking flag definitions."}
+        {"id": "D11_ST1", "agent": "coder", "desc": "Coder Agent: Map persistent domain abstractions, entities, and repositories for sys_promotions and notification_delivery_logs, and implement gym countdown logic dynamically at runtime."},
+        {"id": "D11_ST2", "agent": "tester", "desc": "Tester Agent: Author domain lifecycle assertions evaluating active, expiring (<=3 days), and dead state boundaries."},
+        {"id": "D11_ST3", "agent": "fixer", "desc": "Bug Fixer Agent: Execute project validation checks, catch entity filter validation errors or mapping mismatches, and patch repository files."},
+        {"id": "D11_ST4", "agent": "doc", "desc": "Documentation Agent: Chart entity relation graphs, runtime calculation strategies, and tracking flag definitions."}
       ]
     },
     {
@@ -102,10 +103,10 @@
       "dockerhub_component": "docker-membership-hub-frontend",
       "gke_component": "gke-membership-hub-frontend",
       "sub_tasks": [
-        {"id": "D12_ST1", "desc": "Coder Agent: Architect mobile dashboard viewports featuring live barcode painters and warning panels wrapped within Tailwind Safe Area and Capacitor notch constraints."},
-        {"id": "D12_ST2", "desc": "Tester Agent: Deploy interface testing mocks verifying accurate multi-language string transformations and layout threshold handling across mobile screen frames."},
-        {"id": "D12_ST3", "desc": "Bug Fixer Agent: Run TypeScript compilation, catch layout bounds layout mismatches, and fix styling rules dynamically."},
-        {"id": "D12_ST4", "desc": "Documentation Agent: Record UI style mappings, notch containment rules, and offline local device interaction frameworks."}
+        {"id": "D12_ST1", "agent": "coder", "desc": "Coder Agent: Architect mobile dashboard viewports featuring live barcode painters and warning panels wrapped within Tailwind Safe Area and Capacitor notch constraints."},
+        {"id": "D12_ST2", "agent": "tester", "desc": "Tester Agent: Deploy interface testing mocks verifying accurate multi-language string transformations and layout threshold handling across mobile screen frames."},
+        {"id": "D12_ST3", "agent": "fixer", "desc": "Bug Fixer Agent: Run TypeScript compilation, catch layout bounds layout mismatches, and fix styling rules dynamically."},
+        {"id": "D12_ST4", "agent": "doc", "desc": "Documentation Agent: Record UI style mappings, notch containment rules, and offline local device interaction frameworks."}
       ]
     }
   ]

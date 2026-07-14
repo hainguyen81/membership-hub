@@ -16,12 +16,12 @@
       "dockerhub_component": "docker-membership-hub-frontend",
       "gke_component": "gke-membership-hub-frontend",
       "sub_tasks": [
-        {"id": "D19_ST1", "desc": "Coder Agent: Construct the Admin CRM Dashboard displaying student status tables and real-time alerts filtering candidates with remaining_days <= 3."},
-        {"id": "D19_ST2", "desc": "Coder Agent: Build promotion management views (sys_promotions) and real-time notification delivery log grids mapping transactional history channels (Zalo/FCM) bounded by tenant isolation rules."},
-        {"id": "D19_ST3", "desc": "Coder Agent: Mount programmatic 'Send Notice' and 'Launch Promotion Campaign' elements communicating with the backend Kafka resource layers."},
-        {"id": "D19_ST4", "desc": "Tester Agent: Author UI validation routines testing data masking security rules and automated delivery log state changes under Playwright simulator spaces."},
-        {"id": "D19_ST5", "desc": "Bug Fixer Agent: Validate frontend component compilation against strict Next.js App Router rules and check strict multi-tenant isolation gates."},
-        {"id": "D19_ST6", "desc": "Documentation Agent: Map data contracts, promotion lifecycle triggers, notice logs tracking flows, and CRM-to-Zalo communication sequence charts."}
+        {"id": "D19_ST1", "agent": "coder", "desc": "Coder Agent: Construct the Admin CRM Dashboard displaying student status tables and real-time alerts filtering candidates with remaining_days <= 3."},
+        {"id": "D19_ST2", "agent": "coder", "desc": "Coder Agent: Build promotion management views (sys_promotions) and real-time notification delivery log grids mapping transactional history channels (Zalo/FCM) bounded by tenant isolation rules."},
+        {"id": "D19_ST3", "agent": "coder", "desc": "Coder Agent: Mount programmatic 'Send Notice' and 'Launch Promotion Campaign' elements communicating with the backend Kafka resource layers."},
+        {"id": "D19_ST4", "agent": "tester", "desc": "Tester Agent: Author UI validation routines testing data masking security rules and automated delivery log state changes under Playwright simulator spaces."},
+        {"id": "D19_ST5", "agent": "fixer", "desc": "Bug Fixer Agent: Validate frontend component compilation against strict Next.js App Router rules and check strict multi-tenant isolation gates."},
+        {"id": "D19_ST6", "agent": "doc", "desc": "Documentation Agent: Map data contracts, promotion lifecycle triggers, notice logs tracking flows, and CRM-to-Zalo communication sequence charts."}
       ]
     },
     {
@@ -35,10 +35,10 @@
       "dockerhub_component": "docker-membership-hub-frontend",
       "gke_component": "gke-membership-hub-frontend",
       "sub_tasks": [
-        {"id": "D20_ST1", "desc": "Coder Agent: Formulate static bundle next export build configurations and map application bridge parameters inside capacitor.config.json files."},
-        {"id": "D20_ST2", "desc": "Tester Agent: Author build verification scripts auditing the static asset tree compile structures against target native mobile sub-projects (/ios and /android)."},
-        {"id": "D20_ST3", "desc": "Bug Fixer Agent: Audit Capacitor native bridging layer variables, capturing webview initialization failures, and patch JavaScript wrapper definitions."},
-        {"id": "D20_ST4", "desc": "Documentation Agent: Standardize mobile runtime wrapping instructions, static export parameters, and cross-platform compilation blueprints."}
+        {"id": "D20_ST1", "agent": "coder", "desc": "Coder Agent: Formulate static bundle next export build configurations and map application bridge parameters inside capacitor.config.json files."},
+        {"id": "D20_ST2", "agent": "tester", "desc": "Tester Agent: Author build verification scripts auditing the static asset tree compile structures against target native mobile sub-projects (/ios and /android)."},
+        {"id": "D20_ST3", "agent": "fixer", "desc": "Bug Fixer Agent: Audit Capacitor native bridging layer variables, capturing webview initialization failures, and patch JavaScript wrapper definitions."},
+        {"id": "D20_ST4", "agent": "doc", "desc": "Documentation Agent: Standardize mobile runtime wrapping instructions, static export parameters, and cross-platform compilation blueprints."}
       ]
     },
     {
@@ -52,10 +52,11 @@
       "dockerhub_component": "docker-membership-hub-frontend",
       "gke_component": "gke-membership-hub-frontend",
       "sub_tasks": [
-        {"id": "D21_ST1", "desc": "Coder Agent & Tester Agent: Develop full-scale end-to-end automation scripts utilizing Playwright to challenge complete integration systems under real headless browser profiles."},
-        {"id": "D21_ST2", "desc": "Tester Agent: Model continuous journey simulations validating concurrent multi-language swapping, token creation, dynamic barcode rendering, and administrative CRM push triggers."},
-        {"id": "D21_ST3", "desc": "Bug Fixer Agent: Run comprehensive E2E pipeline executions, capture element lookup errors or state synchronization breaks, and optimize test locators dynamically."},
-        {"id": "D21_ST4", "desc": "Documentation Agent: Compile end-to-end test execution trace metrics, crawl-index compliance validation logs, and hypermedia alternate tag checks."}
+        {"id": "D21_ST1", "agent": "coder", "desc": "Coder Agent: Develop full-scale end-to-end automation scripts utilizing Playwright to challenge complete integration systems under real headless browser profiles."},
+        {"id": "D21_ST2", "agent": "tester", "desc": "Tester Agent: Develop full-scale end-to-end automation scripts utilizing Playwright to challenge complete integration systems under real headless browser profiles."},
+        {"id": "D21_ST3", "agent": "tester", "desc": "Tester Agent: Model continuous journey simulations validating concurrent multi-language swapping, token creation, dynamic barcode rendering, and administrative CRM push triggers."},
+        {"id": "D21_ST4", "agent": "fixer", "desc": "Bug Fixer Agent: Run comprehensive E2E pipeline executions, capture element lookup errors or state synchronization breaks, and optimize test locators dynamically."},
+        {"id": "D21_ST5", "agent": "doc", "desc": "Documentation Agent: Compile end-to-end test execution trace metrics, crawl-index compliance validation logs, and hypermedia alternate tag checks."}
       ]
     },
     {
@@ -69,10 +70,10 @@
       "dockerhub_component": "docker-membership-hub-backend",
       "gke_component": "gke-membership-hub-backend",
       "sub_tasks": [
-        {"id": "D22_ST1", "desc": "Coder Agent: Construct multi-stage GraalVM native Docker configurations utilizing Mandrel container engines to output stripped production binaries."},
-        {"id": "D22_ST2", "desc": "Tester Agent: Configure a centralized local orchestration compose stack checking initial boot health bounds across backend services, queues, and databases."},
-        {"id": "D22_ST3", "desc": "Bug Fixer Agent: Execute container compilation tests, debug runtime GraalVM substitution errors or shared network timeouts, and rewrite Docker layer patterns."},
-        {"id": "D22_ST4", "desc": "Documentation Agent: Chart multi-container system deployment structures, container sizing metrics, and local environment compose configuration logs."}
+        {"id": "D22_ST1", "agent": "coder", "desc": "Coder Agent: Construct multi-stage GraalVM native Docker configurations utilizing Mandrel container engines to output stripped production binaries."},
+        {"id": "D22_ST2", "agent": "tester", "desc": "Tester Agent: Configure a centralized local orchestration compose stack checking initial boot health bounds across backend services, queues, and databases."},
+        {"id": "D22_ST3", "agent": "fixer", "desc": "Bug Fixer Agent: Execute container compilation tests, debug runtime GraalVM substitution errors or shared network timeouts, and rewrite Docker layer patterns."},
+        {"id": "D22_ST4", "agent": "doc", "desc": "Documentation Agent: Chart multi-container system deployment structures, container sizing metrics, and local environment compose configuration logs."}
       ]
     },
     {
@@ -86,10 +87,10 @@
       "dockerhub_component": "none",
       "gke_component": "none",
       "sub_tasks": [
-        {"id": "D23_ST1", "desc": "Coder Agent: Generate declarative Kubernetes infrastructure manifest files controlling GKE pod deployment specifications, SEO ingress path rewrites, and autoscale rules."},
-        {"id": "D23_ST2", "desc": "Tester Agent: Execute automated linter scripts and boundary compliance test sweeps checking active K8s manifest files against deployment specifications."},
-        {"id": "D23_ST3", "desc": "Bug Fixer Agent: Intercept Kubernetes API deployment warnings, diagnose resource limit discrepancies or incorrect path definitions, and fix YAML nodes."},
-        {"id": "D23_ST4", "desc": "Documentation Agent: Compile cluster pod orchestration layout charts, dynamic scale metrics, and Ingress routing translation maps."}
+        {"id": "D23_ST1", "agent": "coder", "desc": "Coder Agent: Generate declarative Kubernetes infrastructure manifest files controlling GKE pod deployment specifications, SEO ingress path rewrites, and autoscale rules."},
+        {"id": "D23_ST2", "agent": "tester", "desc": "Tester Agent: Execute automated linter scripts and boundary compliance test sweeps checking active K8s manifest files against deployment specifications."},
+        {"id": "D23_ST3", "agent": "fixer", "desc": "Bug Fixer Agent: Intercept Kubernetes API deployment warnings, diagnose resource limit discrepancies or incorrect path definitions, and fix YAML nodes."},
+        {"id": "D23_ST4", "agent": "doc", "desc": "Documentation Agent: Compile cluster pod orchestration layout charts, dynamic scale metrics, and Ingress routing translation maps."}
       ]
     },
     {
@@ -103,10 +104,10 @@
       "dockerhub_component": "none",
       "gke_component": "none",
       "sub_tasks": [
-        {"id": "D24_ST1", "desc": "Coder Agent: Construct automated pipeline deployment workflows running via GitHub Actions bound strictly to merge states on the master release branch."},
-        {"id": "D24_ST2", "desc": "Tester Agent: Connect static analysis security checkers (SAST) and automated code coverage reporting components to enforce strict quality gates before cloud deployment."},
-        {"id": "D24_ST3", "desc": "Bug Fixer Agent: Diagnose CI/CD workflow runtime permission rejections, fix encrypted secrets validation breaks, and re-run automation scripts until fully successful."},
-        {"id": "D24_ST4", "desc": "Documentation Agent: Map secrets injection guidelines, cluster authentication handshakes, rolling-update verification parameters, and rollback metrics."}
+        {"id": "D24_ST1", "agent": "coder", "desc": "Coder Agent: Construct automated pipeline deployment workflows running via GitHub Actions bound strictly to merge states on the master release branch."},
+        {"id": "D24_ST2", "agent": "tester", "desc": "Tester Agent: Connect static analysis security checkers (SAST) and automated code coverage reporting components to enforce strict quality gates before cloud deployment."},
+        {"id": "D24_ST3", "agent": "fixer", "desc": "Bug Fixer Agent: Diagnose CI/CD workflow runtime permission rejections, fix encrypted secrets validation breaks, and re-run automation scripts until fully successful."},
+        {"id": "D24_ST4", "agent": "doc", "desc": "Documentation Agent: Map secrets injection guidelines, cluster authentication handshakes, rolling-update verification parameters, and rollback metrics."}
       ]
     }
   ]

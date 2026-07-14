@@ -116,7 +116,8 @@ class CoderAgent:
         day_context = re.search(pattern, phase_content, re.DOTALL | re.IGNORECASE).group(1).strip()
         
         system_prompt = f"{global_context}\n\n## TODAY REQUIREMENTS:\n{day_context}\n\nRole: Principal Software Architect. Generate code for path: {target_day['target_component']}. Output ONLY code without explanations."
-        user_prompt = "Execute Sub-tasks:\n" + "\n".join([f"- {t['desc']}" for t in target_day["sub_tasks"]])
+        sub_tasks = "\n".join([f"- {t['desc']}" for t in target_day["sub_tasks"] if "coder" in t['agent'] or "Coder Agent" in t['desc']])
+        user_prompt = f"Execute Sub-tasks:\n{sub_tasks}"
         
         while True:
             try:

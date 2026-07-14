@@ -116,6 +116,7 @@ class BugFixerAgent:
         day_context = re.search(pattern, phase_content, re.DOTALL | re.IGNORECASE).group(1).strip()
         
         system_prompt = f"{global_context}\n\n## TODAY REQUIREMENTS:\n{day_context}\n\nRole: Elite Security Architect & Code Compiler Fixer. Analyze source code along with real raw compiler error logs. Auto-patch code perfectly. Output ONLY clean executable code blocks."
+        sub_tasks = "\nFix errors and execute sub-tasks".join([f"- {t['desc']}" for t in target_day["sub_tasks"] if "fixer" in t['agent'] or "Bug Fixer Agent" in t['desc']])
         
         max_iterations = 3
         for iteration in range(1, max_iterations + 1):
@@ -128,8 +129,9 @@ class BugFixerAgent:
             print(f"[ ⚠️ FIXER WARNING ] Build check failed on validation loop: {iteration}. Ingesting raw error logs...")
             with open(target_component, "r", encoding="utf-8") as f:
                 current_code = f.read()
-                
-            user_prompt = f"Current Faulty Source Code Implementation:\n{current_code}\n\nReal-time Compiler Error Logs Output Traces:\n{compiler_log}"
+            
+            
+            user_prompt = f"Current Faulty Source Code Implementation:\n{current_code}\n\nReal-time Compiler Error Logs Output Traces:\n{compiler_log}\n{sub_tasks}"
             
             try:
                 response = self.client.chat.completions.create(

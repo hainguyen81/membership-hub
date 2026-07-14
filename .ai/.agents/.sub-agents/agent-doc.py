@@ -112,7 +112,8 @@ class DocumentationAgent:
         day_context = re.search(pattern, phase_content, re.DOTALL | re.IGNORECASE).group(1).strip()
         
         system_prompt = f"{global_context}\n\n## TODAY REQUIREMENTS:\n{day_context}\n\nRole: Senior Technical Writer & System Architect. Analyzeapproved codebase. Compile a high-precision markdown technical specification into target: {target_day['doc_component']}."
-        user_prompt = f"Approved Final Stable Codebase Component to Document:\n{clean_code}"
+        sub_tasks = "\n".join([f"- {t['desc']}" for t in target_day["sub_tasks"] if "doc" in t['agent'] or "Documentation Agent" in t['desc']])
+        user_prompt = f"Approved Final Stable Codebase Component to Document:\n{clean_code}\nExecute Sub-tasks:\n{sub_tasks}"
         
         while True:
             try:

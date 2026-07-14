@@ -115,7 +115,8 @@ class TesterAgent:
         day_context = re.search(pattern, phase_content, re.DOTALL | re.IGNORECASE).group(1).strip()
         
         system_prompt = f"{global_context}\n\n## TODAY REQUIREMENTS:\n{day_context}\n\nRole: Lead Automation QA Engineer. Write automated test suites for target framework destination: {target_day['test_component']}. Core code coverage metrics must remain strictly above 85% with zero placeholder assert statements. Output ONLY pure executable code blocks."
-        user_prompt = f"Target Source Implementation Code to build verification tests for:\n{clean_code}"
+        sub_tasks = "\n".join([f"- {t['desc']}" for t in target_day["sub_tasks"] if "tester" in t['agent'] or "Tester Agent" in t['desc']])
+        user_prompt = f"Target Source Implementation Code to build verification tests for:\n{clean_code}\nExecute Sub-tasks:\n{sub_tasks}"
         
         while True:
             try:
