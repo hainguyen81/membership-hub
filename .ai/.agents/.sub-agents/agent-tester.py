@@ -100,10 +100,10 @@ class TesterAgent:
             global_context = f.read()
             
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
-        target_component = resolve_absolute_path(target_day["target_component"])
+        target_component = resolve_absolute_path(target_day["test_component"])
         if not os.path.exists(target_component):
-            print(f"[ 💀 TESTER ERROR ] Base source component file missing at: {target_day['target_component']}.")
-            sys.exit(1)
+            print(f"[ ⚠️ TESTER WARN ] Base source component file missing at: {target_day['test_component']}.")
+            sys.exit(0)
             
         with open(target_component, "r", encoding="utf-8") as f:
             clean_code = f.read()

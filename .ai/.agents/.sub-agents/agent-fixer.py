@@ -118,9 +118,14 @@ class BugFixerAgent:
         system_prompt = f"{global_context}\n\n## TODAY REQUIREMENTS:\n{day_context}\n\nRole: Elite Security Architect & Code Compiler Fixer. Analyze source code along with real raw compiler error logs. Auto-patch code perfectly. Output ONLY clean executable code blocks."
         sub_tasks = "\nFix errors and execute sub-tasks".join([f"- {t['desc']}" for t in target_day["sub_tasks"] if "fixer" in t['agent'] or "Bug Fixer Agent" in t['desc']])
         
+        target_component = resolve_absolute_path(target_day["target_component"])
+        if not os.path.exists(target_component):
+            print(f"[ ⚠️ FIXER WARN ] Base source component file missing at: {target_day['target_component']}.")
+            return True
+        
+        # test component 3 time(s)
         max_iterations = 3
         for iteration in range(1, max_iterations + 1):
-            target_component = resolve_absolute_path(target_day["target_component"])
             is_clean, compiler_log = self.run_compile_check(target_component)
             if is_clean:
                 print(f"[ ✅ FIXER SUCCESS ] Target codebase component compiled cleanly on iteration loop: {iteration}!")

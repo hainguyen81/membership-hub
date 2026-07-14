@@ -101,9 +101,6 @@ class DocumentationAgent:
             global_context = f.read()
             
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
-        target_component = resolve_absolute_path(target_day["target_component"])
-        with open(target_component, "r", encoding="utf-8") as f:
-            clean_code = f.read()
         
         context_file = resolve_absolute_path(target_day["context_file"])
         with open(context_file, "r", encoding="utf-8") as f:
