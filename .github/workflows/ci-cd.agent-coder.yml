@@ -52,7 +52,6 @@ jobs:
       - name: "📦 Fetch Core Codebase Repository Assets"
         uses: actions/checkout@v4
         with:
-          ref: "features/development-day-${{ needs.state_resolver_job.outputs.run_day }}"
           fetch-depth: 0
           clean: true     # force checkout code to root context (not ./sources, to next steps working context in ./sources)
           path: '.'
