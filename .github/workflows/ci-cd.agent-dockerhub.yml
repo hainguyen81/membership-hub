@@ -47,8 +47,7 @@ jobs:
       # Step 3: Connect to Docker Hub APIs and stream dual multi-stage native compiled application layers
       - name: "🐳 Trigger Cross-Platform Native Image Containerization Client"
         env:
-          # Ingest secure registry credentials containing usernames, password streams, and target namespaces
-          DOCKERHUB_SECRETS: }} secrets.DOCKERHUB_SECRETS }}
+          DOCKERHUB_SECRETS: ${{ secrets.DOCKERHUB_SECRETS }}
         run: |
           echo "🐳 Launching Docker Hub container build and registry publication pipes..."
-          python3 .ai/.agents/.sub-agents/agent-docker.py --phase "}} inputs.phase }}" --day "}} inputs.day }}"
+          python3 .ai/.agents/.sub-agents/agent-docker.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"

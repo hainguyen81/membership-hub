@@ -15,7 +15,7 @@ on:
         required: true
         type: string
       day:
-        description: '📆 Target operational execution Day number'
+        description: '季度 Target operational execution Day number'
         required: true
         type: string
 
@@ -42,7 +42,7 @@ jobs:
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Enforces absolute environment consistency
+          python-version: '3.10'
 
       # Step 3: Satisfy upstream communication dependencies by executing pip manager installs
       - name: "🛠️ Install Enterprise Cloud API Connecting Libraries"
@@ -52,11 +52,10 @@ jobs:
           echo "📦 Securing vendor connection pipelines for generative network systems..."
           pip install requests google-generativeai openai anthropic
 
-      # Step 4: Invoke the localized standalone architect engine to output pristine non-blocking binaries
+      # Step 4: Invoke the localized standalone architect engine to output pristine binaries
       - name: "🧑‍💻 Trigger Principal Architect LLM Generation Loop"
         env:
-          # Ingest the comprehensive centralized secret dictionary containing API authorization credentials
-          AI_MODELS_KEYS_JSON: {{ secrets.AI_MODELS_KEYS_JSON }}
+          AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
         run: |
-          echo "🚀 Launching autonomous coder agent execution context for Day {{ inputs.day }}..."
-          python3 .ai/.agents/.sub-agents/agent-coder.py --phase "{{ inputs.phase }}" --day "{{ inputs.day }}"
+          echo "🚀 Launching autonomous coder agent execution context for Day ${{ inputs.day }}..."
+          python3 .ai/.agents/.sub-agents/agent-coder.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
