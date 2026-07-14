@@ -139,7 +139,7 @@ class CoderAgent:
                 os.makedirs(os.path.dirname(target_component), exist_ok=True)
                 with open(target_component, "w", encoding="utf-8") as f:
                     f.write(clean_code)
-                print(f"[ ✅ CODER SUCCESS ] Production source codebase generated at target destination: {target_day['target_component']}")
+                print(f"[ ✅ CODER SUCCESS | Model {self.current_model_config["model_name"]} | API Endpoint {self.current_model_config["api_endpoint"]} | Day {self.day_num} ] Production source codebase generated at target destination: {target_day['target_component']}")
                 break
             except Exception as e:
                 print(f"[ 💀 CODER LLM EXHAUSTED ] Failed execution on model {self.current_model_config['model_name']}: {str(e)}")
