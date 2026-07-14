@@ -101,6 +101,10 @@ class DocumentationAgent:
             global_context = f.read()
             
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
+        doc_component = resolve_absolute_path(target_day["doc_component"])
+        if os.path.exists(doc_component):
+            with open(doc_component, "r", encoding="utf-8") as f:
+                clean_docs = f.read()
         
         context_file = resolve_absolute_path(target_day["context_file"])
         with open(context_file, "r", encoding="utf-8") as f:
@@ -110,7 +114,10 @@ class DocumentationAgent:
         
         system_prompt = f"{global_context}\n\n## TODAY REQUIREMENTS:\n{day_context}\n\nRole: Senior Technical Writer & System Architect. Analyzeapproved codebase. Compile a high-precision markdown technical specification into target: {target_day['doc_component']}."
         sub_tasks = "\n".join([f"- {t['desc']}" for t in target_day["sub_tasks"] if "doc" in t['agent'] or "Documentation Agent" in t['desc']])
-        user_prompt = f"Approved Final Stable Codebase Component to Document:\n{clean_code}\nExecute Sub-tasks:\n{sub_tasks}"
+        if os.path.exists(doc_component):
+            user_prompt = f"Approved Final Stable Codebase Component to Document:\n{clean_docs}\n. And execute sub-tasks:\n{sub_tasks}"
+        else:
+            user_prompt = f"Execute Sub-tasks:\n{sub_tasks}"
         
         while True:
             try:
