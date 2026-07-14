@@ -36,6 +36,13 @@ jobs:
   execute_gcp:
     name: "☁️ Compile and Publish Cloud Native Images to GAR"
     runs-on: ubuntu-latest
+    
+    # 🚀 GLOBAL WORKSPACE FLATTEN RULE: Forces the entire job container shell 
+    # to execute from the parent workspace root directly, skipping the duplicate subfolder!
+    defaults:
+      run:
+        working-directory: ../ # Points exactly to /home/runner/work/membership-hub
+    
     steps:
       # Check whether allow for running workflow
       - name: 🛡️ Gatekeeper - Validate Administrative Access
@@ -51,8 +58,8 @@ jobs:
       - name: "📦 Clone Workspace Branch Assets"
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           clean: true     # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
-          path: '../'     # force checkout code to root context (not ./sources, to next steps working context in ./sources)
 
       # Step 2: Provision a clean Python 3.10 virtual space to handle shell authentication tasks
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"

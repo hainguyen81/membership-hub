@@ -74,6 +74,13 @@ jobs:
   state_resolver_job:
     name: "🗄️ State Resolver & Git Isolation Gatekeeper"
     runs-on: ubuntu-latest
+    
+    # 🚀 GLOBAL WORKSPACE FLATTEN RULE: Forces the entire job container shell 
+    # to execute from the parent workspace root directly, skipping the duplicate subfolder!
+    defaults:
+      run:
+        working-directory: ../ # Points exactly to /home/runner/work/membership-hub
+    
     outputs:
       run_day: ${{ steps.resolver.outputs.RUN_DAY }}
       run_phase: ${{ steps.resolver.outputs.RUN_PHASE }}
@@ -96,8 +103,8 @@ jobs:
       - name: "📦 Fetch Core Codebase Repository Assets"
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           clean: true     # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
-          path: '../'     # force checkout code to root context (not ./sources, to next steps working context in ./sources)
       
       # Block 1.3: Inject secure global environment parameters and service boundaries
       - name: "🔧 Configure Machine Git Automation Credentials"
@@ -278,14 +285,20 @@ jobs:
     if: always() && needs.state_resolver_job.outputs.exec_mode == 'all_scheduled'
     runs-on: ubuntu-latest
     
+    # 🚀 GLOBAL WORKSPACE FLATTEN RULE: Forces the entire job container shell 
+    # to execute from the parent workspace root directly, skipping the duplicate subfolder!
+    defaults:
+      run:
+        working-directory: ../ # Points exactly to /home/runner/work/membership-hub
+    
     steps:
       # Block 9.1: Ensure we are targeting the newly customized standalone daily branch code states
       - name: "📦 Synchronize Active Daily Target Workspace Branch"
         uses: actions/checkout@v4
         with:
           ref: "features/development-day-${{ needs.state_resolver_job.outputs.run_day }}"
-          clean: true    # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
-          path: '../' # force checkout code to root context (not ./sources, to next steps working context in ./sources)
+          fetch-depth: 0
+          clean: true     # force checkout code to root context (not ./sources, to next steps working context in ./sources)
       
       - name: "🔧 Configure Machine Git Automation Credentials"
         run: |
