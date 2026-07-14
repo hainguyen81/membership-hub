@@ -75,12 +75,6 @@ jobs:
     name: "🗄️ State Resolver & Git Isolation Gatekeeper"
     runs-on: ubuntu-latest
     
-    # 🚀 GLOBAL WORKSPACE FLATTEN RULE: Forces the entire job container shell 
-    # to execute from the parent workspace root directly, skipping the duplicate subfolder!
-    defaults:
-      run:
-        working-directory: ../ # Points exactly to /home/runner/work/membership-hub
-    
     outputs:
       run_day: ${{ steps.resolver.outputs.RUN_DAY }}
       run_phase: ${{ steps.resolver.outputs.RUN_PHASE }}
@@ -105,14 +99,16 @@ jobs:
         with:
           fetch-depth: 0
           clean: true     # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
+          path: '.'
       
       # Block 1.2.1: Debug project check-out structure
       - name: "🐛 Debug project check-out structure"
         run: |
           # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
           echo "🐛 [DEBUG] Auditing active workspace files presence:"
-          ls -la .
-          if [ -d "membership-hub" ]; then ls -la .ai/; fi
+          ls -la ../
+          ls -la ./
+          if [ -d "membership-hub" ]; then ls -la membership-hub/; fi
           if [ -d ".ai" ]; then ls -la .ai/; fi
       
       # Block 1.3: Inject secure global environment parameters and service boundaries
@@ -289,13 +285,17 @@ jobs:
     if: always() && needs.state_resolver_job.outputs.exec_mode == 'all_scheduled'
     runs-on: ubuntu-latest
     
-    # 🚀 GLOBAL WORKSPACE FLATTEN RULE: Forces the entire job container shell 
-    # to execute from the parent workspace root directly, skipping the duplicate subfolder!
-    defaults:
-      run:
-        working-directory: ../ # Points exactly to /home/runner/work/membership-hub
-    
     steps:
+      # Administrative gate check protecting centralized production ecosystems
+      - name: "🛡️ Gatekeeper - Validate Administrative Execution Tokens"
+        env:
+          ALLOW_AGENTS: ${{ secrets.ALLOW_AGENTS }}
+        if: ${{ env.ALLOW_AGENTS != 'true' }}
+        run: |
+          echo "❌ [ADMIN REJECTION] Deployment is administratively DISABLED via GitHub Secrets configuration."
+          echo "Terminating workflow execution thread immediately to secure staging cloud clusters."
+          exit 1
+      
       # Block 9.1: Ensure we are targeting the newly customized standalone daily branch code states
       - name: "📦 Synchronize Active Daily Target Workspace Branch"
         uses: actions/checkout@v4
@@ -303,6 +303,17 @@ jobs:
           ref: "features/development-day-${{ needs.state_resolver_job.outputs.run_day }}"
           fetch-depth: 0
           clean: true     # force checkout code to root context (not ./sources, to next steps working context in ./sources)
+          path: '.'
+      
+      # Block 9.1.1: Debug project check-out structure
+      - name: "🐛 Debug project check-out structure"
+        run: |
+          # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
+          echo "🐛 [DEBUG] Auditing active workspace files presence:"
+          ls -la ../
+          ls -la ./
+          if [ -d "membership-hub" ]; then ls -la membership-hub/; fi
+          if [ -d ".ai" ]; then ls -la .ai/; fi
       
       - name: "🔧 Configure Machine Git Automation Credentials"
         run: |

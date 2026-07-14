@@ -53,7 +53,18 @@ jobs:
         with:
           fetch-depth: 0
           clean: true     # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
-
+          path: '.'
+      
+      # Step 1.1: Debug project check-out structure
+      - name: "🐛 Debug project check-out structure"
+        run: |
+          # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
+          echo "🐛 [DEBUG] Auditing active workspace files presence:"
+          ls -la ../
+          ls -la ./
+          if [ -d "membership-hub" ]; then ls -la membership-hub/; fi
+          if [ -d ".ai" ]; then ls -la .ai/; fi
+      
       # Step 2: Provision a clean Python 3.10 virtual space to handle core LLM prompts
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
         uses: actions/setup-python@v5
