@@ -76,7 +76,6 @@ jobs:
       # Step 2: Provision a clean Python 3.10 virtual space to handle core LLM prompts
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
         uses: actions/setup-python@v5
-        working-directory: ${{ env.PROJECT_WORKSPACE }}
         with:
           python-version: '3.10'
 

@@ -76,7 +76,6 @@ jobs:
       # Step 2: Establish production OpenJDK 17 binaries required to trigger Quarkus compiler tests
       - name: "☕ Mount Enterprise OpenJDK 17 Compiler Environments"
         uses: actions/setup-java@v4
-        working-directory: ${{ env.PROJECT_WORKSPACE }}
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -84,14 +83,12 @@ jobs:
       # Step 3: Secure clean JavaScript container runtimes to compile frontend asset bundles
       - name: "🟢 Mount Next.js Frontend Server Node.js 20 Framework"
         uses: actions/setup-node@v4
-        working-directory: ${{ env.PROJECT_WORKSPACE }}
         with:
           node-version: '20'
 
       # Step 4: Provision a clean Python 3.10 virtual space to handle core LLM prompts
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
         uses: actions/setup-python@v5
-        working-directory: ${{ env.PROJECT_WORKSPACE }}
         with:
           python-version: '3.10'
 

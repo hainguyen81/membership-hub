@@ -339,14 +339,12 @@ jobs:
       # Block 9.2: STRICT COMPLIANCE RAIL GATE - Native verification to protect repository code integrity
       - name: "☕ Setup Hard Compilation Gate - Enterprise OpenJDK 17 Environment"
         uses: actions/setup-java@v4
-        working-directory: ${{ env.PROJECT_WORKSPACE }}
         with:
           java-version: '17'
           distribution: 'temurin'
       
       - name: "🟢 Setup Hard Compilation Gate - Next.js Frontend Node 20 Runtime"
         uses: actions/setup-node@v4
-        working-directory: ${{ env.PROJECT_WORKSPACE }}
         with:
           node-version: '20'
       
