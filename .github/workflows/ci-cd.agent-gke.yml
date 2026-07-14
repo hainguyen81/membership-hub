@@ -19,8 +19,10 @@ on:
         required: true
         type: string
       exec_mode:
-        description: '🎯 Execution Mode from master pipeline'
-        required: true
+        description: '🎯 Commit/Push Standalone Mode'
+        required: false
+        type: boolean
+        default: true
 
 # permissions for GitHub Actions READ/WRITE
 permissions:
@@ -36,7 +38,6 @@ env:
   LC_ALL: 'C.UTF-8'
 
 jobs:
-  using: "composite" # force to run same VM with agent manager
   execute_gke:
     name: "☸️ Trigger Zero-Downtime Rolling Update Operations"
     runs-on: ubuntu-latest
@@ -103,7 +104,7 @@ jobs:
         # conditions in run script
         shell: bash
         run: |
-          if [ "${{ inputs.exec_mode }}" = "standalone_agent" ]; then
+          if [ "${{ inputs.exec_mode }}" = "true" ]; then
             echo "🧩 [STANDALONE DETECTED] Executing immediate isolated branch push for Coder Agent..."
             
             # config GIT
