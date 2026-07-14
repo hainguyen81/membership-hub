@@ -40,7 +40,7 @@ jobs:
     # Re-config working-directory with present check-out project folder
     defaults:
       run:
-        working-directory: ${{ steps.checkout_step.outputs.path }}
+        working-directory: ${{ steps.project-workspace.outputs.project_workspace }}
     
     steps:
       # Check whether allow for running workflow
@@ -55,7 +55,6 @@ jobs:
       
       # Step 1: Clone the active daily isolated feature branch into the runner execution pool
       - name: "📦 Clone Workspace Branch Assets"
-        id: checkout_step
         uses: actions/checkout@v4
         with:
           ref: "features/development-day-${{ needs.state_resolver_job.outputs.run_day }}"
@@ -64,8 +63,13 @@ jobs:
           path: '.'
       
       # Step 1.1: Debug project check-out structure
-      - name: "🐛 Debug project check-out structure"
+      - name: "⚙️ Config $PROJECT_WORKSPACE enviroment after checking out"
+        id: project-workspace
         run: |
+          echo "PROJECT_WORKSPACE=$(pwd)" >> $GITHUB_ENV
+          echo "project_workspace=$(pwd)" >> $GITHUB_OUTPUT
+          echo "PROJECT_WORKSPACE: $PROJECT_WORKSPACE"
+          
           # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
           echo "🐛 [DEBUG] Auditing active workspace files presence:"
           ls -la ../../
@@ -73,8 +77,6 @@ jobs:
           ls -la ./
           if [ -d "membership-hub" ]; then ls -la membership-hub/; fi
           if [ -d ".ai" ]; then ls -la .ai/; fi
-          echo "PROJECT_WORKSPACE=${{ steps.checkout_step.outputs.path }}" >> $GITHUB_ENV
-          echo "PROJECT_WORKSPACE: $PROJECT_WORKSPACE"
       
       # Step 2: Provision a clean Python 3.10 virtual space to run local container automation scripts
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
@@ -85,6 +87,7 @@ jobs:
       # Step 3: Connect to Docker Hub APIs and stream dual multi-stage native compiled application layers
       - name: "🐳 Trigger Cross-Platform Native Image Containerization Client"
         env:
+          PROJECT_WORKSPACE: ${{ PROJECT_WORKSPACE }}
           DOCKERHUB_SECRETS: ${{ secrets.DOCKERHUB_SECRETS }}
         run: |
           echo "🐳 Launching Docker Hub container build and registry publication pipes..."

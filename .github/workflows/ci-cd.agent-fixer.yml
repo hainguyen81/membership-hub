@@ -40,7 +40,7 @@ jobs:
     # Re-config working-directory with present check-out project folder
     defaults:
       run:
-        working-directory: ${{ steps.checkout_step.outputs.path }}
+        working-directory: ${{ steps.project-workspace.outputs.project_workspace }}
     
     steps:
       # Check whether allow for running workflow
@@ -55,7 +55,6 @@ jobs:
       
       # Step 1: Clone the active daily isolated feature branch into the runner execution pool
       - name: "📦 Clone Workspace Branch Assets"
-        id: checkout_step
         uses: actions/checkout@v4
         with:
           ref: "features/development-day-${{ needs.state_resolver_job.outputs.run_day }}"
@@ -64,8 +63,13 @@ jobs:
           path: '.'
       
       # Step 1.1: Debug project check-out structure
-      - name: "🐛 Debug project check-out structure"
+      - name: "⚙️ Config $PROJECT_WORKSPACE enviroment after checking out"
+        id: project-workspace
         run: |
+          echo "PROJECT_WORKSPACE=$(pwd)" >> $GITHUB_ENV
+          echo "project_workspace=$(pwd)" >> $GITHUB_OUTPUT
+          echo "PROJECT_WORKSPACE: $PROJECT_WORKSPACE"
+          
           # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
           echo "🐛 [DEBUG] Auditing active workspace files presence:"
           ls -la ../../
@@ -73,8 +77,6 @@ jobs:
           ls -la ./
           if [ -d "membership-hub" ]; then ls -la membership-hub/; fi
           if [ -d ".ai" ]; then ls -la .ai/; fi
-          echo "PROJECT_WORKSPACE=${{ steps.checkout_step.outputs.path }}" >> $GITHUB_ENV
-          echo "PROJECT_WORKSPACE: $PROJECT_WORKSPACE"
       
       # Step 2: Establish production OpenJDK 17 binaries required to trigger Quarkus compiler tests
       - name: "☕ Mount Enterprise OpenJDK 17 Compiler Environments"
@@ -104,6 +106,7 @@ jobs:
       # Step 6: Start self-healing iteration pipelines intercepting native CLI stack errors
       - name: "🩹 Trigger Elite Debugger Syntactic Patch Engineering"
         env:
+          PROJECT_WORKSPACE: ${{ PROJECT_WORKSPACE }}
           AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
         run: |
           echo "🩹 Initiating compiler analysis and automated code healing routines..."
