@@ -54,6 +54,19 @@ on:
         type: boolean
         default: false
 
+# permissions for GitHub Actions READ/WRITE
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+# enviroment
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  LANG: 'C.UTF-8'
+  LC_ALL: 'C.UTF-8'
+
 jobs:
   # ==============================================================================
   # JOB 1: STATE RESOLVER, COMPLIANCE GIT ISOLATION, AND GATEKEEPER
@@ -94,9 +107,13 @@ jobs:
       # Block 1.4: Core State Machine execution manipulating temporal parameters and daily isolated branch forks
       - name: "🗄️ Execute Pipeline Parameters Resolution and Git Fork Compliance"
         id: resolver
+        env:
+          INPUT_EXEC_MODE: ${{ github.event.inputs.execution_mode }}
+          INPUT_TARGET_SCOPE: ${{ github.event.inputs.target_scope }}
+          INPUT_VALUE: ${{ github.event.inputs.input_value }}
         run: |
           # Declare target state location paths matching database indices
-          STATE_FILE=".ai/.plan/pipeline_state.json"
+          STATE_FILE=".ai/.agents/.states/pipeline_state.json"
           if [ ! -f "$STATE_FILE" ]; then
             mkdir -p .ai/.plan
             echo '{"current_day": 1, "current_phase": 1}' > "$STATE_FILE"
@@ -106,9 +123,9 @@ jobs:
           CUR_DAY=$(python3 -c "import json; print(json.load(open('$STATE_FILE'))['current_day'])")
           CUR_PHASE=$(python3 -c "import json; print(json.load(open('$STATE_FILE'))['current_phase'])")
           
-          EXEC_MODE="{{ github.event.inputs.execution_mode || 'auto_cron' }}"
-          SCOPE="{{ github.event.inputs.target_scope }}"
-          VAL="{{ github.event.inputs.input_value }}"
+          EXEC_MODE="${INPUT_EXEC_MODE:-auto_cron}"
+          SCOPE="$INPUT_TARGET_SCOPE"
+          VAL="$INPUT_VALUE"
           
           FINAL_DAY=$CUR_DAY
           FINAL_PHASE=$CUR_PHASE
