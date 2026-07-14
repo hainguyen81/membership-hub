@@ -53,6 +53,7 @@ jobs:
         with:
           fetch-depth: 0 # Fetches full history to enable safe local upstream branching operations
           clean: true    # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
+          path: '.' # force checkout code to root context (not ./sources, to next steps working context in ./sources)
 
       # Step 2: Provision a clean Python 3.10 virtual space to handle core LLM prompts
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
