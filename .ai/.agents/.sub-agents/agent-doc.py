@@ -60,8 +60,10 @@ class DocumentationAgent:
 
         while self.active_model_index < len(self.models_pool):
             config = self.models_pool[self.active_model_index]
-            target_model_name = config["model_name"]
-            target_model_endpoint = config["api_endpoint"]
+            # target_model_name = config["model_name"]
+            # target_model_endpoint = config["api_endpoint"]
+            target_model_name = config.get("model_name") if isinstance(config, dict) else None
+            target_model_endpoint = config.get("api_endpoint") if isinstance(config, dict) else None
             
             print("==============================================")
             print("🔍 DEBUG: 'config':")
