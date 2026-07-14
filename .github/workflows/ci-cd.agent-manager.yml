@@ -105,9 +105,10 @@ jobs:
       - name: "⚙️ Config $PROJECT_WORKSPACE enviroment after checking out"
         id: project-workspace
         run: |
-          echo "PROJECT_WORKSPACE=$(pwd)" >> $GITHUB_ENV
-          echo "project_workspace=$(pwd)" >> $GITHUB_OUTPUT
-          echo "⚙️ >> PROJECT_WORKSPACE: ${{ env.PROJECT_WORKSPACE }}"
+          CURRENT_PWD=$(pwd)
+          echo "PROJECT_WORKSPACE=$CURRENT_PWD" >> $GITHUB_ENV
+          echo "project_workspace=$CURRENT_PWD" >> $GITHUB_OUTPUT
+          echo "⚙️ >> PROJECT_WORKSPACE: $CURRENT_PWD"
           
           # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
           echo "🐛 [DEBUG] Auditing active workspace files presence:"
