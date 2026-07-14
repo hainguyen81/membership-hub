@@ -50,9 +50,8 @@ jobs:
       
       # Step 1: Clone the active daily isolated feature branch into the runner execution pool
       - name: "📦 Clone Workspace Branch Assets"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
-          fetch-depth: 0
           clean: true     # force checkout code to root context (not ./sources, to next steps working context in ./sources)
           path: '.'
       
@@ -66,11 +65,15 @@ jobs:
           echo "⚙️ >> PROJECT_WORKSPACE: $CURRENT_PWD"
           
           # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
-          echo "🐛 [DEBUG] Auditing active workspace files presence:"
+          echo "🐛 [DEBUG] Auditing active workspace files presence (../../):"
           ls -la ../../
+          echo "🐛 [DEBUG] Auditing active workspace files presence (../):"
           ls -la ../
+          echo "🐛 [DEBUG] Auditing active workspace files presence (./):"
           ls -la ./
+          echo "🐛 [DEBUG] Auditing active workspace files presence (membership-hub/):"
           if [ -d "membership-hub" ]; then ls -la membership-hub/; fi
+          echo "🐛 [DEBUG] Auditing active workspace files presence (.ai/):"
           if [ -d ".ai" ]; then ls -la .ai/; fi
       
       # Step 2: Provision a clean Python 3.10 virtual space to run local container automation scripts
