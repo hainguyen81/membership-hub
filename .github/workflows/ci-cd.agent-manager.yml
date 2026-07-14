@@ -72,8 +72,8 @@ jobs:
       # Block 1.1: Administrative gate check protecting centralized production ecosystems
       - name: "🛡️ Gatekeeper - Validate Administrative Execution Tokens"
         env:
-          ALLOW_AGENTS: {{ secrets.ALLOW_AGENTS }}
-        if: {{ env.ALLOW_AGENTS != 'true' }}
+          ALLOW_AGENTS: ${{ secrets.ALLOW_AGENTS }}
+        if: ${{ env.ALLOW_AGENTS != 'true' }}
         run: |
           echo "❌ [ADMIN REJECTION] Deployment is administratively DISABLED via GitHub Secrets configuration."
           echo "Terminating workflow execution thread immediately to secure staging cloud clusters."
@@ -165,8 +165,8 @@ jobs:
       (needs.state_resolver_job.outputs.exec_mode == 'standalone_agent' && needs.state_resolver_job.outputs.standalone_target == 'coder')
     uses: ./.github/workflows/ci-cd.agent-coder.yml
     with:
-      phase: {{ needs.state_resolver_job.outputs.run_phase }}
-      day: {{ needs.state_resolver_job.outputs.run_day }}
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
   
   run_tester:
@@ -175,8 +175,8 @@ jobs:
     if: always() && (needs.run_coder.result == 'success' || needs.run_coder.result == 'skipped') && !contains(needs.state_resolver_job.outputs.standalone_target, 'none')
     uses: ./.github/workflows/ci-cd.agent-tester.yml
     with:
-      phase: {{ needs.state_resolver_job.outputs.run_phase }}
-      day: {{ needs.state_resolver_job.outputs.run_day }}
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
   
   run_fixer:
@@ -185,8 +185,8 @@ jobs:
     if: always() && (needs.run_tester.result == 'success' || needs.run_tester.result == 'skipped') && !contains(needs.state_resolver_job.outputs.standalone_target, 'none')
     uses: ./.github/workflows/ci-cd.agent-fixer.yml
     with:
-      phase: {{ needs.state_resolver_job.outputs.run_phase }}
-      day: {{ needs.state_resolver_job.outputs.run_day }}
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
   
   run_doc:
@@ -195,8 +195,8 @@ jobs:
     if: always() && (needs.run_fixer.result == 'success' || needs.run_fixer.result == 'skipped') && !contains(needs.state_resolver_job.outputs.standalone_target, 'none')
     uses: ./.github/workflows/ci-cd.agent-doc.yml
     with:
-      phase: {{ needs.state_resolver_job.outputs.run_phase }}
-      day: {{ needs.state_resolver_job.outputs.run_day }}
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
   
   run_gcp:
@@ -205,8 +205,8 @@ jobs:
     if: always() && (needs.run_doc.result == 'success' || needs.run_doc.result == 'skipped') && needs.state_resolver_job.outputs.release_flag == 'true'
     uses: ./.github/workflows/ci-cd.agent-gcp.yml
     with:
-      phase: {{ needs.state_resolver_job.outputs.run_phase }}
-      day: {{ needs.state_resolver_job.outputs.run_day }}
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
   
   run_dockerhub:
@@ -215,8 +215,8 @@ jobs:
     if: always() && (needs.run_gcp.result == 'success' || needs.run_gcp.result == 'skipped') && needs.state_resolver_job.outputs.release_flag == 'true'
     uses: ./.github/workflows/ci-cd.agent-dockerhub.yml
     with:
-      phase: {{ needs.state_resolver_job.outputs.run_phase }}
-      day: {{ needs.state_resolver_job.outputs.run_day }}
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
   
   run_gke:
@@ -225,8 +225,8 @@ jobs:
     if: always() && (needs.run_dockerhub.result == 'success' || needs.run_dockerhub.result == 'skipped') && needs.state_resolver_job.outputs.release_flag == 'true'
     uses: ./.github/workflows/ci-cd.agent-gke.yml
     with:
-      phase: {{ needs.state_resolver_job.outputs.run_phase }}
-      day: {{ needs.state_resolver_job.outputs.run_day }}
+      phase: ${{ needs.state_resolver_job.outputs.run_phase }}
+      day: ${{ needs.state_resolver_job.outputs.run_day }}
     secrets: inherit
   
   # ==============================================================================
