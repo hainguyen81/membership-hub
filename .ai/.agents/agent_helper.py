@@ -21,7 +21,7 @@ def resolve_absolute_path(relative_target_path):
     repo_root_path = os.environ.get("PROJECT_WORKSPACE", os.environ.get("GITHUB_WORKSPACE", os.getcwd()))
     
     # Clean up the incoming string parameters by removing leading path descriptors
-    cleaned_relative_path = relative_target_path.lstrip("./")
+    cleaned_relative_path = relative_target_path.removeprefix("./")
     
     # Synthesize the non-negotiable absolute hardware computing path destinations
     absolute_hardware_path = os.path.join(repo_root_path, cleaned_relative_path)
