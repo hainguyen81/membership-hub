@@ -96,7 +96,6 @@ jobs:
       - name: "📦 Fetch Core Codebase Repository Assets"
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetches full history to enable safe local upstream branching operations
           clean: true    # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
           path: '.' # force checkout code to root context (not ./sources, to next steps working context in ./sources)
       
@@ -280,7 +279,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: "features/development-day-${{ needs.state_resolver_job.outputs.run_day }}"
-          fetch-depth: 0 # Fetches full history to enable safe local upstream branching operations
           clean: true    # 🚀 FORCE CLEAR CACHE: Automatically run git clean -ffdx during initialization
           path: '.' # force checkout code to root context (not ./sources, to next steps working context in ./sources)
       
