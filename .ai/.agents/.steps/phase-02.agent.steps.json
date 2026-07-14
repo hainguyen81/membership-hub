@@ -7,7 +7,7 @@
   "days": [
     {
       "day": 7,
-      "context_file": "./.ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
+      "context_file": ".ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
       "context_section": "DAY 7",
       "target_component": "./sources/frontend/src/app/[locale]/login/page.tsx",
       "test_component": "./sources/frontend/src/tests/LoginComponent.test.tsx",
@@ -25,7 +25,7 @@
     },
     {
       "day": 8,
-      "context_file": "./.ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
+      "context_file": ".ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
       "context_section": "DAY 8",
       "target_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/service/AuthServiceTest.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/web/AuthResourceTest.java",
@@ -42,7 +42,7 @@
     },
     {
       "day": 9,
-      "context_file": "./.ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
+      "context_file": ".ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
       "context_section": "DAY 9",
       "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/service/QrEngineService.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/service/QrEngineServiceTest.java",
@@ -59,7 +59,7 @@
     },
     {
       "day": 10,
-      "context_file": "./.ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
+      "context_file": ".ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
       "context_section": "DAY 10",
       "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/web/AttendanceResource.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/web/AttendanceResourceTest.java",
@@ -76,7 +76,7 @@
     },
     {
       "day": 11,
-      "context_file": "./.ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
+      "context_file": ".ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
       "context_section": "DAY 11",
       "target_component": "./sources/backend/src/main/java/org/nlh4j/saas/membership/hub/service/impl/CardEvaluationServiceImpl.java",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/service/CardEvaluationServiceTest.java",
@@ -93,7 +93,7 @@
     },
     {
       "day": 12,
-      "context_file": "./.ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
+      "context_file": ".ai/.plan/.context/07-12-SECURE_AUTHENTICATION_N_BUSINESS_LOGIC_ENGINE/context.07-12.md",
       "context_section": "DAY 12",
       "target_component": "./sources/frontend/src/app/[locale]/app/dashboard/page.tsx",
       "test_component": "./sources/frontend/src/tests/StudentDashboardViewport.test.tsx",
