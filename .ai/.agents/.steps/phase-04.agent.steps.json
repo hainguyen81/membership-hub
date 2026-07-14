@@ -1,13 +1,13 @@
 {
   "phase_id": "PHASE_19_24_MULTI_TENANT",
   "phase_name": "MULTI-TENANT UI & DEVOPS PIPELINES (DAYS 19 - 24)",
-  "global_context_file": "./.ai/.context/context.en.md",
+  "global_context_file": ".ai/.context/context.en.md",
   "package_root": "org.nlh4j.saas.membership.hub",
   "source_target_dir": "./sources",
   "days": [
     {
       "day": 19,
-      "context_file": "./.ai/.plan/.context/19-24-MULTI_TENANT_UI_N_DEVOPS_PIPELINES/context.19-24.md",
+      "context_file": ".ai/.plan/.context/19-24-MULTI_TENANT_UI_N_DEVOPS_PIPELINES/context.19-24.md",
       "context_section": "DAY 19",
       "target_component": "./sources/frontend/src/app/[locale]/admin/dashboard/page.tsx",
       "test_component": "./sources/frontend/src/tests/AdminDashboardAnalytics.test.ts",
@@ -26,7 +26,7 @@
     },
     {
       "day": 20,
-      "context_file": "./.ai/.plan/.context/19-24-MULTI_TENANT_UI_N_DEVOPS_PIPELINES/context.19-24.md",
+      "context_file": ".ai/.plan/.context/19-24-MULTI_TENANT_UI_N_DEVOPS_PIPELINES/context.19-24.md",
       "context_section": "DAY 20",
       "target_component": "./sources/frontend/capacitor.config.json",
       "test_component": "./sources/frontend/src/tests/MobileCapacitorExport.test.ts",
@@ -43,7 +43,7 @@
     },
     {
       "day": 21,
-      "context_file": "./.ai/.plan/.context/19-24-MULTI_TENANT_UI_N_DEVOPS_PIPELINES/context.19-24.md",
+      "context_file": ".ai/.plan/.context/19-24-MULTI_TENANT_UI_N_DEVOPS_PIPELINES/context.19-24.md",
       "context_section": "DAY 21",
       "target_component": "./sources/frontend/tests/e2e/attendance-flow.spec.ts",
       "test_component": "./sources/frontend/tests/e2e/admin-retention.spec.ts",
@@ -60,7 +60,7 @@
     },
     {
       "day": 22,
-      "context_file": "./.ai/.plan/.context/19-24-MULTI_TENANT_UI_N_DEVOPS_PIPELINES/context.19-24.md",
+      "context_file": ".ai/.plan/.context/19-24-MULTI_TENANT_UI_N_DEVOPS_PIPELINES/context.19-24.md",
       "context_section": "DAY 22",
       "target_component": "./sources/backend/src/main/docker/Dockerfile.native",
       "test_component": "./sources/backend/src/test/java/org/nlh4j/saas/membership/hub/infrastructure/DockerOrchestrationVerificationTest.java",
@@ -77,7 +77,7 @@
     },
     {
       "day": 23,
-      "context_file": "./.ai/.plan/.context/19-24-MULTI_TENANT_UI_N_DEVOPS_PIPELINES/context.19-24.md",
+      "context_file": ".ai/.plan/.context/19-24-MULTI_TENANT_UI_N_DEVOPS_PIPELINES/context.19-24.md",
       "context_section": "DAY 23",
       "target_component": "./sources/infrastructure/k8s/deployment.yaml",
       "test_component": "./sources/infrastructure/k8s/KubeManifestValidation.test.ts",
@@ -94,7 +94,7 @@
     },
     {
       "day": 24,
-      "context_file": "./.ai/.plan/.context/19-24-MULTI_TENANT_UI_N_DEVOPS_PIPELINES/context.19-24.md",
+      "context_file": ".ai/.plan/.context/19-24-MULTI_TENANT_UI_N_DEVOPS_PIPELINES/context.19-24.md",
       "context_section": "DAY 24",
       "target_component": ".github/workflows/deploy.yml",
       "test_component": ".github/workflows/SecurityStaticScanning.yml",
