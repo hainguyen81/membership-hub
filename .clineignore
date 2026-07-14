@@ -11,6 +11,7 @@
 **/.secrets/**
 secrets/
 **/secrets/**
+sources/.history/
 
 # ==========================================
 # 2. IDE & SYSTEM CONFIGURATIONS

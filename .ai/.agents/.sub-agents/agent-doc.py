@@ -25,8 +25,9 @@ from agent_helper import resolve_absolute_path
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-MODELS_POOL_PATH = resolve_absolute_path(".ai/.agents/.models/models.json")
-STEPS_PLAN_DIR   = resolve_absolute_path(".ai/.agents/.steps")
+MODELS_POOL_PATH            = resolve_absolute_path(".ai/.agents/.models/models.json")
+STEPS_PLAN_DIR              = resolve_absolute_path(".ai/.agents/.steps")
+agent_working_history_file  = resolve_absolute_path("sources/.history/agent-doc.log")
 
 class DocumentationAgent:
     """
@@ -136,6 +137,14 @@ class DocumentationAgent:
                 with open(doc_component, "w", encoding="utf-8") as f:
                     f.write(clean_docs)
                 print(f"[ ✅ DOCS SUCCESS | Model {self.current_model_config['model_name']} | API Endpoint {self.current_model_config['api_endpoint']} | Day {self.day_num} ] Architecture design documentation completed at: {target_day['doc_component']}")
+                
+                # write working history
+                history_content = (
+                    f"Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n"
+                    f"- Architecture design documentation completed at: {target_day['doc_component']}\n"
+                )
+                with open(agent_working_history_file, "a", encoding="utf-8") as file:
+                    file.write(history_content)
                 break
             except Exception as e:
                 print(f"[ 💀 DOCS LLM EXHAUSTED ] Failed execution on model {self.current_model_config['model_name']}: {str(e)}")
