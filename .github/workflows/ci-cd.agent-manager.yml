@@ -120,6 +120,11 @@ jobs:
           INPUT_TARGET_SCOPE: ${{ github.event.inputs.target_scope }}
           INPUT_VALUE: ${{ github.event.inputs.input_value }}
         run: |
+          # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
+          echo "🔍 [DEBUG] Auditing active workspace files presence:"
+          ls -la .
+          if [ -d ".ai" ]; then ls -la .ai/; fi
+          
           # 🚀 CONFIGURATION BOUNDARY: Set your exact desired state file path here
           STATE_FILE=".ai/.agents/.states/pipeline_state.json"
           
@@ -181,11 +186,6 @@ jobs:
             echo "🚀 [GIT BRANCH FORK] Provisioning pristine branch [$BRANCH_NAME] initialized from stable trunk root [features/development]"
             git checkout -f -b "$BRANCH_NAME"
           fi
-          
-          # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
-          echo "🔍 [DEBUG] Auditing active workspace files presence:"
-          ls -la .
-          if [ -d ".ai" ]; then ls -la .ai/; fi
           
           # 🚀 ABSOLUTE WRITE OVERWRITE: Re-write the correct synced JSON payload right inside the active workspace branch
           mkdir -p "$(dirname "$STATE_FILE")"
