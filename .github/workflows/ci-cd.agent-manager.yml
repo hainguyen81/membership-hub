@@ -72,8 +72,8 @@ jobs:
       # Block 1.1: Administrative gate check protecting centralized production ecosystems
       - name: "🛡️ Gatekeeper - Validate Administrative Execution Tokens"
         env:
-          ALLOW_AGENTS: {{ secrets.ALLOW_AGENTS }}
-        if: {{ env.ALLOW_AGENTS != 'true' }}
+          ALLOW_AGENTS: ${{ secrets.ALLOW_AGENTS }}
+        if: ${{ env.ALLOW_AGENTS != 'true' }}
         run: |
           echo "❌ [ADMIN REJECTION] Deployment is administratively DISABLED via GitHub Secrets configuration."
           echo "Terminating workflow execution thread immediately to secure staging cloud clusters."
