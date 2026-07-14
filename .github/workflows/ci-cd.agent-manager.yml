@@ -49,6 +49,7 @@ on:
 jobs:
   # JOB 1: Resolve states, calculate mathematical boundaries, and compute target outputs
   state_resolver_job:
+    name: "🤖 Enterprise SaaS AI Agents Pipeline"
     runs-on: ubuntu-latest
     outputs:
       run_day: ${{ steps.resolver.outputs.RUN_DAY }}
@@ -116,6 +117,7 @@ jobs:
 
   # JOBS 2-8: Dynamic routing definitions to invoke isolated Sub-Agent reusable files
   run_coder:
+    name: "🧑‍💻 Coder Agent Worker"
     needs: state_resolver_job
     if: |
       needs.state_resolver_job.outputs.exec_mode == 'all_scheduled' || 
@@ -127,6 +129,7 @@ jobs:
     secrets: inherit
 
   run_tester:
+    name: "🧪 Tester Agent Worker"
     needs: [state_resolver_job, run_coder]
     if: always() && (needs.run_coder.result == 'success' || needs.run_coder.result == 'skipped') && !contains(needs.state_resolver_job.outputs.standalone_target, 'none')
     uses: ./.github/workflows/ci-cd.agent-tester.yml
@@ -136,6 +139,7 @@ jobs:
     secrets: inherit
 
   run_fixer:
+    name: "🩹 Fixer Agent Worker"
     needs: [state_resolver_job, run_tester]
     if: always() && (needs.run_tester.result == 'success' || needs.run_tester.result == 'skipped') && !contains(needs.state_resolver_job.outputs.standalone_target, 'none')
     uses: ./.github/workflows/ci-cd.agent-fixer.yml
@@ -145,6 +149,7 @@ jobs:
     secrets: inherit
 
   run_doc:
+    name: "📝 Documentation Agent Worker"
     needs: [state_resolver_job, run_fixer]
     if: always() && (needs.run_fixer.result == 'success' || needs.run_fixer.result == 'skipped') && !contains(needs.state_resolver_job.outputs.standalone_target, 'none')
     uses: ./.github/workflows/ci-cd.agent-doc.yml
@@ -154,6 +159,7 @@ jobs:
     secrets: inherit
 
   run_gcp:
+    name: "☁️ GCP GAR Agent Worker"
     needs: [state_resolver_job, run_doc]
     if: always() && (needs.run_doc.result == 'success' || needs.run_doc.result == 'skipped') && needs.state_resolver_job.outputs.release_flag == 'true'
     uses: ./.github/workflows/ci-cd.agent-gcp.yml
@@ -163,6 +169,7 @@ jobs:
     secrets: inherit
 
   run_dockerhub:
+    name: "🐳 DockerHub Agent Worker"
     needs: [state_resolver_job, run_gcp]
     if: always() && (needs.run_gcp.result == 'success' || needs.run_gcp.result == 'skipped') && needs.state_resolver_job.outputs.release_flag == 'true'
     uses: ./.github/workflows/ci-cd.agent-dockerhub.yml
@@ -172,6 +179,7 @@ jobs:
     secrets: inherit
 
   run_gke:
+    name: "☸️ GKE Deployment Agent Worker"
     needs: [state_resolver_job, run_dockerhub]
     if: always() && (needs.run_dockerhub.result == 'success' || needs.run_dockerhub.result == 'skipped') && needs.state_resolver_job.outputs.release_flag == 'true'
     uses: ./.github/workflows/ci-cd.agent-gke.yml
@@ -182,6 +190,7 @@ jobs:
 
   # JOB 9: Automated Timeline Post-Execution Advanced Gate
   advance_schedule_tracker:
+    name: "📅 Automated Timeline Post-Execution Advanced Gate"
     needs: [state_resolver_job, run_gke, run_doc]
     if: always() && needs.state_resolver_job.outputs.exec_mode == 'all_scheduled'
     runs-on: ubuntu-latest
