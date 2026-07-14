@@ -37,6 +37,11 @@ jobs:
     name: "🩹 Execute Self-Healing Compilation Test Loops"
     runs-on: ubuntu-latest
     
+    # Re-config working-directory with present check-out project folder
+    defaults:
+      run:
+        working-directory: ${{ steps.checkout_step.outputs.path }}
+    
     steps:
       # Check whether allow for running workflow
       - name: 🛡️ Gatekeeper - Validate Administrative Access
@@ -57,11 +62,6 @@ jobs:
           fetch-depth: 0
           clean: true     # force checkout code to root context (not ./sources, to next steps working context in ./sources)
           path: '.'
-      
-      # Re-config working-directory with present check-out project folder
-      defaults:
-        run:
-          working-directory: ${{ steps.checkout_step.outputs.path }}
       
       # Step 1.1: Debug project check-out structure
       - name: "🐛 Debug project check-out structure"

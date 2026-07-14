@@ -82,6 +82,11 @@ jobs:
       standalone_target: ${{ github.event.inputs.standalone_target || 'none' }}
       release_flag: ${{ github.event.inputs.release_flag || 'false' }}
     
+    # Re-config working-directory with present check-out project folder
+    defaults:
+      run:
+        working-directory: ${{ steps.checkout_step.outputs.path }}
+    
     steps:
       # Block 1.1: Administrative gate check protecting centralized production ecosystems
       - name: "🛡️ Gatekeeper - Validate Administrative Execution Tokens"
@@ -102,11 +107,6 @@ jobs:
           fetch-depth: 0
           clean: true     # force checkout code to root context (not ./sources, to next steps working context in ./sources)
           path: '.'
-      
-      # Re-config working-directory with present check-out project folder
-      defaults:
-        run:
-          working-directory: ${{ steps.checkout_step.outputs.path }}
       
       # Block 1.2.1: Debug project check-out structure
       - name: "🐛 Debug project check-out structure"
@@ -295,6 +295,11 @@ jobs:
     if: always() && needs.state_resolver_job.outputs.exec_mode == 'all_scheduled'
     runs-on: ubuntu-latest
     
+    # Re-config working-directory with present check-out project folder
+    defaults:
+      run:
+        working-directory: ${{ steps.checkout_step.outputs.path }}
+    
     steps:
       # Administrative gate check protecting centralized production ecosystems
       - name: "🛡️ Gatekeeper - Validate Administrative Execution Tokens"
@@ -315,11 +320,6 @@ jobs:
           fetch-depth: 0
           clean: true     # force checkout code to root context (not ./sources, to next steps working context in ./sources)
           path: '.'
-      
-      # Re-config working-directory with present check-out project folder
-      defaults:
-        run:
-          working-directory: ${{ steps.checkout_step.outputs.path }}
       
       # Block 9.1.1: Debug project check-out structure
       - name: "🐛 Debug project check-out structure"
