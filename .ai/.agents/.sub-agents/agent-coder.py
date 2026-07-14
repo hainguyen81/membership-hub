@@ -67,6 +67,11 @@ class CoderAgent:
             target_model_name = config["model_name"]
             target_model_endpoint = config["api_endpoint"]
             
+            # If endpoint is missing, None, empty "", or just whitespaces "   ", skip it cleanly
+            if not target_model_endpoint or not str(target_model_endpoint).strip():
+                self.active_model_index += 1
+                continue # 🔄 Immediately jumps to the next iteration of the while loop
+            
             # Lookup the API Key inside the GitHub Secret JSON dictionary using the model_name from models.json
             api_key = secrets_dict.get(target_model_endpoint)
             

@@ -62,8 +62,13 @@ class DocumentationAgent:
             config = self.models_pool[self.active_model_index]
             target_model_name = config["model_name"]
             target_model_endpoint = config["api_endpoint"]
-            api_key = secrets_dict.get(target_model_endpoint)
             
+            # If endpoint is missing, None, empty "", or just whitespaces "   ", skip it cleanly
+            if not target_model_endpoint or not str(target_model_endpoint).strip():
+                self.active_model_index += 1
+                continue # 🔄 Immediately jumps to the next iteration of the while loop
+            
+            api_key = secrets_dict.get(target_model_endpoint)
             if api_key:
                 self.current_model_config = config
                 self.client = OpenAI(api_key=api_key, base_url=target_model_endpoint)
