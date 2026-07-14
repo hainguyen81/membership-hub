@@ -149,7 +149,7 @@ jobs:
           
           # Ensure checkout updates tracking hooks mapping features/development as base trunk target
           git fetch origin features/development || true
-          git checkout features/development || git checkout main
+          git checkout features/development || git checkout master
           
           # Initialize independent sub-branch tracking layer cleanly if it doesn't exist natively
           if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME" || git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
@@ -160,6 +160,9 @@ jobs:
             echo "🚀 [GIT BRANCH FORK] Provisioning pristine branch [$BRANCH_NAME] initialized from stable trunk root [features/development]"
             git checkout -b "$BRANCH_NAME"
           fi
+          
+          # 🚀 CRITICAL WRITE OVERWRITE: Force overwrite state directly into place right inside the active branch
+          echo '{"current_day": '$FINAL_DAY', "current_phase": '$FINAL_PHASE'}' > "$STATE_FILE"
           
           # Commit parameters mutations safely into the dedicated target active daily feature workspace branch
           git add "$STATE_FILE"
