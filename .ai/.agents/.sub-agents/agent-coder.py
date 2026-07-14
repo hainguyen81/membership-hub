@@ -53,13 +53,13 @@ class CoderAgent:
         """
         raw_json_secrets = os.environ.get("AI_MODELS_KEYS_JSON")
         if not raw_json_secrets:
-            print("[CRITICAL ERROR] The environment variable 'AI_MODELS_KEYS_JSON' is completely absent.")
+            print("[ 💀 CRITICAL ERROR ] The environment variable 'AI_MODELS_KEYS_JSON' is completely absent.")
             sys.exit(1)
             
         try:
             secrets_dict = json.loads(raw_json_secrets)
         except Exception as e:
-            print(f"[CRITICAL ERROR] Failed to parse AI_MODELS_KEYS_JSON string: {str(e)}")
+            print(f"[ 💀 CRITICAL ERROR ] Failed to parse AI_MODELS_KEYS_JSON string: {str(e)}")
             sys.exit(1)
 
         while self.active_model_index < len(self.models_pool):
@@ -72,12 +72,12 @@ class CoderAgent:
             try:
                 print(json.dumps(config, indent=4, ensure_ascii=False))
             except Exception:
-                print(f"Exception while dump 'config' json: {type(config)} - Config: {config}")
+                print(f"⚠️ Exception while dump 'config' json: {type(config)} - Config: {config}")
             print("==============================================")
             
             # If endpoint is missing, None, empty "", or just whitespaces "   ", skip it cleanly
             if not target_model_name or not target_model_endpoint or not str(target_model_endpoint).strip():
-                print(f"Ignore this config due to invalid 'model_name': {target_model_name} or 'model_endpoint': {target_model_endpoint}")
+                print(f"⚠️ Ignore this config due to invalid 'model_name': {target_model_name} or 'model_endpoint': {target_model_endpoint}")
                 self.active_model_index += 1
                 continue # 🔄 Immediately jumps to the next iteration of the while loop
             
@@ -86,13 +86,13 @@ class CoderAgent:
             if api_key:
                 self.current_model_config = config
                 self.client = OpenAI(api_key=api_key, base_url=target_model_endpoint)
-                print(f"[FAILOVER ENGAGED] Coder Agent successfully authenticated model: {target_model_name} | endpoint: {target_model_endpoint}")
+                print(f"[ 💀 FAILOVER ENGAGED ] Coder Agent successfully authenticated model: {target_model_name} | endpoint: {target_model_endpoint}")
                 return
             else:
-                print(f"[WARNING] API key missing inside GitHub JSON for model: {target_model_name} | endpoint: {target_model_endpoint}. Skipping tier.")
+                print(f"[ ⚠️ WARNING] API key missing inside GitHub JSON for model: {target_model_name} | endpoint: {target_model_endpoint}. Skipping tier.")
                 self.active_model_index += 1
                 
-        print("[CRITICAL SHUTDOWN] Coder Agent exhausted all registered AI models without valid keys.")
+        print("[ 💀 CRITICAL SHUTDOWN ] Coder Agent exhausted all registered AI models without valid keys.")
         sys.exit(1)
 
     def generate_code(self):
@@ -137,10 +137,10 @@ class CoderAgent:
                 os.makedirs(os.path.dirname(target_component), exist_ok=True)
                 with open(target_component, "w", encoding="utf-8") as f:
                     f.write(clean_code)
-                print(f"[CODER SUCCESS] Production source codebase generated at target destination: {target_day['target_component']}")
+                print(f"[ ✅ CODER SUCCESS ] Production source codebase generated at target destination: {target_day['target_component']}")
                 break
             except Exception as e:
-                print(f"[CODER LLM EXHAUSTED] Failed execution on model {self.current_model_config['model_name']}: {str(e)}")
+                print(f"[ 💀 CODER LLM EXHAUSTED ] Failed execution on model {self.current_model_config['model_name']}: {str(e)}")
                 self.active_model_index += 1
                 self.rotate_model()
 

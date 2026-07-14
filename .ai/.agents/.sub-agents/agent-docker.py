@@ -42,12 +42,12 @@ class DockerHubAgent:
     def load_dockerhub_secrets(self):
         raw_secrets = os.environ.get("DOCKERHUB_SECRETS")
         if not raw_secrets:
-            print("[DOCKERHUB-AGENT CRITICAL] The environment variable 'DOCKERHUB_SECRETS' is completely absent.")
+            print("[ 💀 DOCKERHUB-AGENT CRITICAL ] The environment variable 'DOCKERHUB_SECRETS' is completely absent.")
             sys.exit(1)
         try:
             return json.loads(raw_secrets)
         except Exception as e:
-            print(f"[DOCKERHUB-AGENT CRITICAL] Failed to parse DOCKERHUB_SECRETS JSON string: {str(e)}")
+            print(f"[ 💀 DOCKERHUB-AGENT CRITICAL ] Failed to parse DOCKERHUB_SECRETS JSON string: {str(e)}")
             sys.exit(1)
 
     def authenticate_dockerhub(self):
@@ -62,11 +62,11 @@ class DockerHubAgent:
             )
             stdout, stderr = login_process.communicate(input=password)
             if login_process.returncode != 0:
-                print(f"[DOCKERHUB-AGENT ERROR] Authentication verification failed natively: {stderr}")
+                print(f"[ 💀 DOCKERHUB-AGENT ERROR] Authentication verification failed natively: {stderr}")
                 sys.exit(1)
-            print("[DOCKERHUB-AGENT SUCCESS] Docker Hub authentication session activated successfully.")
+            print("[ ✅ DOCKERHUB-AGENT SUCCESS ] Docker Hub authentication session activated successfully.")
         else:
-            print("[DOCKERHUB-AGENT WARNING] Missing data keys parameters inside DOCKERHUB_SECRETS mapping registry.")
+            print("[ ⚠️ DOCKERHUB-AGENT WARNING ] Missing data keys parameters inside DOCKERHUB_SECRETS mapping registry.")
 
     def execute_dockerhub_pipeline(self):
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
@@ -79,7 +79,7 @@ class DockerHubAgent:
         
         # UNIFIED CHECK GATE: If explicitly marked as 'none', skip the registry push pipeline cleanly
         if dockerhub_repo_name == "none":
-            print("[DOCKERHUB-AGENT SKIP] Step is explicitly marked as 'none'. Skipping public container registry push parameters.")
+            print("[ ⚠️ DOCKERHUB-AGENT SKIP ] Step is explicitly marked as 'none'. Skipping public container registry push parameters.")
             return
 
         self.authenticate_dockerhub()
@@ -89,7 +89,7 @@ class DockerHubAgent:
         workspace_path = resolve_absolute_path("sources/backend") if is_backend else resolve_absolute_path("sources/frontend")
         
         if not os.path.exists(dockerfile_path):
-            print(f"[DOCKERHUB-AGENT SKIP] Target container instruction blueprint absent at: {dockerfile_path}")
+            print(f"[ ⚠️ DOCKERHUB-AGENT SKIP ] Target container instruction blueprint absent at: {dockerfile_path}")
             return
 
         # Smart fallback priority lookup pattern matching central JSON parameters
@@ -103,7 +103,7 @@ class DockerHubAgent:
 
         print(f"[DOCKERHUB-AGENT PUSH] Streaming production release tag across remote Docker Hub brokers pipelines...")
         subprocess.run(["docker", "push", dockerhub_target_image], check=True)
-        print(f"[DOCKERHUB-AGENT SUCCESS] Image package {dockerhub_target_image} successfully committed upstream!")
+        print(f"[ ✅ DOCKERHUB-AGENT SUCCESS] Image package {dockerhub_target_image} successfully committed upstream!")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

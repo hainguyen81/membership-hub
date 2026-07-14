@@ -40,12 +40,12 @@ class GKEAgent:
     def load_gke_secrets(self):
         raw_secrets = os.environ.get("GKE_SECRETS")
         if not raw_secrets:
-            print("[GKE-AGENT CRITICAL] The environment variable 'GKE_SECRETS' is completely absent.")
+            print("[ 💀 GKE-AGENT CRITICAL ] The environment variable 'GKE_SECRETS' is completely absent.")
             sys.exit(1)
         try:
             return json.loads(raw_secrets)
         except Exception as e:
-            print(f"[GKE-AGENT CRITICAL] Failed to parse GKE_SECRETS JSON string: {str(e)}")
+            print(f"[ 💀 GKE-AGENT CRITICAL ] Failed to parse GKE_SECRETS JSON string: {str(e)}")
             sys.exit(1)
 
     def configure_gke_credentials(self):
@@ -60,7 +60,7 @@ class GKEAgent:
                 f"--region={region}", f"--project={project_id}"
             ], check=True)
         else:
-            print("[GKE-AGENT WARNING] Missing data keys inside GKE_SECRETS array map framework parameters.")
+            print("[ ⚠️ GKE-AGENT WARNING ] Missing data keys inside GKE_SECRETS array map framework parameters.")
 
     def execute_gke_deployment(self):
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
@@ -73,7 +73,7 @@ class GKEAgent:
         
         # UNIFIED CHECK GATE: If explicitly marked as 'none', skip the GKE deployment parameters cleanly
         if k8s_deployment_name == "none":
-            print("[GKE-AGENT SKIP] Step is explicitly marked as 'none'. Skipping GKE cluster rollout update loops framework entirely.")
+            print("[ ⚠️ GKE-AGENT SKIP ] Step is explicitly marked as 'none'. Skipping GKE cluster rollout update loops framework entirely.")
             return
 
         self.configure_gke_credentials()
@@ -83,7 +83,7 @@ class GKEAgent:
             print(f"[GKE-AGENT] Applying raw enterprise infrastructure update manifests: {target_day['target_component']}")
             target_component = resolve_absolute_path(target_day["target_component"])
             subprocess.run(["kubectl", "apply", "-f", target_component], check=True)
-            print("[GKE-AGENT SUCCESS] Cloud infrastructure manifest rules applied securely on GKE compute pools!")
+            print("[ ✅ GKE-AGENT SUCCESS ] Cloud infrastructure manifest rules applied securely on GKE compute pools!")
             return
 
         # Standard Microservice Application Rollout Logic using your custom prefixed parameters name (e.g. gke-membership-hub-backend)
@@ -104,7 +104,7 @@ class GKEAgent:
         ], check=True)
         
         subprocess.run(["kubectl", "rollout", "status", f"deployment/{k8s_deployment_name}"], check=True)
-        print(f"[GKE-AGENT SUCCESS] Successfully deployed container version {self.image_tag} to GKE pods clusters!")
+        print(f"[ ✅ GKE-AGENT SUCCESS ] Successfully deployed container version {self.image_tag} to GKE pods clusters!")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

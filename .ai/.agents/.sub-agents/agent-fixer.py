@@ -52,13 +52,13 @@ class BugFixerAgent:
     def rotate_model(self):
         raw_json_secrets = os.environ.get("AI_MODELS_KEYS_JSON")
         if not raw_json_secrets:
-            print("[CRITICAL ERROR] The environment variable 'AI_MODELS_KEYS_JSON' is completely absent.")
+            print("[ 💀 CRITICAL ERROR ] The environment variable 'AI_MODELS_KEYS_JSON' is completely absent.")
             sys.exit(1)
             
         try:
             secrets_dict = json.loads(raw_json_secrets)
         except Exception as e:
-            print(f"[CRITICAL ERROR] Failed to parse AI_MODELS_KEYS_JSON string: {str(e)}")
+            print(f"[ 💀 CRITICAL ERROR ] Failed to parse AI_MODELS_KEYS_JSON string: {str(e)}")
             sys.exit(1)
 
         while self.active_model_index < len(self.models_pool):
@@ -71,12 +71,12 @@ class BugFixerAgent:
             try:
                 print(json.dumps(config, indent=4, ensure_ascii=False))
             except Exception:
-                print(f"Exception while dump 'config' json: {type(config)} - Config: {config}")
+                print(f"⚠️ Exception while dump 'config' json: {type(config)} - Config: {config}")
             print("==============================================")
             
             # If endpoint is missing, None, empty "", or just whitespaces "   ", skip it cleanly
             if not target_model_name or not target_model_endpoint or not str(target_model_endpoint).strip():
-                print(f"Ignore this config due to invalid 'model_name': {target_model_name} or 'model_endpoint': {target_model_endpoint}")
+                print(f"⚠️ Ignore this config due to invalid 'model_name': {target_model_name} or 'model_endpoint': {target_model_endpoint}")
                 self.active_model_index += 1
                 continue # 🔄 Immediately jumps to the next iteration of the while loop
             
@@ -84,10 +84,10 @@ class BugFixerAgent:
             if api_key:
                 self.current_model_config = config
                 self.client = OpenAI(api_key=api_key, base_url=target_model_endpoint)
-                print(f"[FAILOVER ENGAGED] Fixer Agent successfully authenticated model: {target_model_name} | endpoint: {target_model_endpoint}")
+                print(f"[ ⚠️ FAILOVER ENGAGED ] Fixer Agent successfully authenticated model: {target_model_name} | endpoint: {target_model_endpoint}")
                 return
             self.active_model_index += 1
-        print("[CRITICAL ERROR] Bug Fixer Agent exhausted all registered recovery models.")
+        print("[ 💀 CRITICAL ERROR ] Bug Fixer Agent exhausted all registered recovery models.")
         sys.exit(1)
 
     def run_compile_check(self, target_path):
@@ -120,10 +120,10 @@ class BugFixerAgent:
             target_component = resolve_absolute_path(target_day["target_component"])
             is_clean, compiler_log = self.run_compile_check(target_component)
             if is_clean:
-                print(f"[FIXER SUCCESS] Target codebase component compiled cleanly on iteration loop: {iteration}!")
+                print(f"[ ✅ FIXER SUCCESS ] Target codebase component compiled cleanly on iteration loop: {iteration}!")
                 return True
                 
-            print(f"[FIXER WARNING] Build check failed on validation loop: {iteration}. Ingesting raw error logs...")
+            print(f"[ ⚠️ FIXER WARNING ] Build check failed on validation loop: {iteration}. Ingesting raw error logs...")
             with open(target_component, "r", encoding="utf-8") as f:
                 current_code = f.read()
                 
@@ -149,11 +149,11 @@ class BugFixerAgent:
                 with open(target_component, "w", encoding="utf-8") as f:
                     f.write(clean_code)
             except Exception as e:
-                print(f"[FIXER RECOVERY] API transaction exception caught. Swapping model: {str(e)}")
+                print(f"[ 💀 FIXER RECOVERY ] API transaction exception caught. Swapping model: {str(e)}")
                 self.active_model_index += 1
                 self.rotate_model()
                 
-        print("[FIXER CRITICAL] Structural compiler repairs failed within maximum iteration bounds.")
+        print("[ 💀 FIXER CRITICAL ] Structural compiler repairs failed within maximum iteration bounds.")
         return False
 
 if __name__ == "__main__":

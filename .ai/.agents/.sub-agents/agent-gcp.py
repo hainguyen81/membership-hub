@@ -42,12 +42,12 @@ class GCPAgent:
     def load_gcp_secrets(self):
         raw_secrets = os.environ.get("GCP_SECRETS")
         if not raw_secrets:
-            print("[GCP-AGENT CRITICAL] The environment variable 'GCP_SECRETS' is completely absent.")
+            print("[ 💀 GCP-AGENT CRITICAL ] The environment variable 'GCP_SECRETS' is completely absent.")
             sys.exit(1)
         try:
             return json.loads(raw_secrets)
         except Exception as e:
-            print(f"[GCP-AGENT CRITICAL] Failed to parse GCP_SECRETS JSON string: {str(e)}")
+            print(f"[ 💀 GCP-AGENT CRITICAL ] Failed to parse GCP_SECRETS JSON string: {str(e)}")
             sys.exit(1)
 
     def authenticate_gcp(self):
@@ -64,7 +64,7 @@ class GCPAgent:
             subprocess.run(["gcloud", "auth", "configure-docker", f"{region}-docker.pkg.dev"], check=True)
             os.remove("gcp-key.json")
         else:
-            print("[GCP-AGENT WARNING] Missing parameters inside GCP_SECRETS. Relying on active local shell auth context.")
+            print("[ ⚠️ GCP-AGENT WARNING ] Missing parameters inside GCP_SECRETS. Relying on active local shell auth context.")
 
     def execute_gcp_pipeline(self):
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
@@ -77,7 +77,7 @@ class GCPAgent:
         
         # UNIFIED CHECK GATE: If explicitly marked as 'none', skip the compilation cleanly
         if gar_repo_name == "none":
-            print("[GCP-AGENT SKIP] Step is explicitly marked as 'none'. Skipping container build pipeline layout configurations smoothly.")
+            print("[ ⚠️ GCP-AGENT SKIP ] Step is explicitly marked as 'none'. Skipping container build pipeline layout configurations smoothly.")
             return
 
         self.authenticate_gcp()
@@ -87,7 +87,7 @@ class GCPAgent:
         workspace_path = resolve_absolute_path("sources/backend") if is_backend else resolve_absolute_path("sources/frontend")
         
         if not os.path.exists(dockerfile_path):
-            print(f"[GCP-AGENT SKIP] Target container instruction blueprint absent at: {dockerfile_path}")
+            print(f"[ ⚠️ GCP-AGENT SKIP ] Target container instruction blueprint absent at: {dockerfile_path}")
             return
 
         project_id = self.secrets.get("GCP_PROJECT_ID")
@@ -101,7 +101,7 @@ class GCPAgent:
 
         print(f"[GCP-AGENT PUSH] Uploading image binary up to Google Artifact Registry...")
         subprocess.run(["docker", "push", registry_image], check=True)
-        print(f"[GCP-AGENT SUCCESS] Image version {self.image_tag} published safely to GAR!")
+        print(f"[ ✅ GCP-AGENT SUCCESS ] Image version {self.image_tag} published safely to GAR!")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
