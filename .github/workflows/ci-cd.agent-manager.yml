@@ -106,6 +106,7 @@ jobs:
         run: |
           # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
           echo "🐛 [DEBUG] Auditing active workspace files presence:"
+          ls -la ../../
           ls -la ../
           ls -la ./
           if [ -d "membership-hub" ]; then ls -la membership-hub/; fi
@@ -310,6 +311,7 @@ jobs:
         run: |
           # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
           echo "🐛 [DEBUG] Auditing active workspace files presence:"
+          ls -la ../../
           ls -la ../
           ls -la ./
           if [ -d "membership-hub" ]; then ls -la membership-hub/; fi
