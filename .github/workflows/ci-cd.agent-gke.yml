@@ -37,11 +37,6 @@ jobs:
     name: "☸️ Trigger Zero-Downtime Rolling Update Operations"
     runs-on: ubuntu-latest
     
-    # Re-config working-directory with present check-out project folder
-    defaults:
-      run:
-        working-directory: ${{ steps.project-workspace.outputs.project_workspace }}
-    
     steps:
       # Check whether allow for running workflow
       - name: 🛡️ Gatekeeper - Validate Administrative Access
@@ -81,13 +76,15 @@ jobs:
       # Step 2: Provision a clean Python 3.10 virtual space to dispatch cluster control orders
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
         uses: actions/setup-python@v5
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         with:
           python-version: '3.10'
 
       # Step 3: Trigger safe rolling upgrades or apply raw infrastructure manifests straight to pods
       - name: "☸️ Trigger Kubernetes Cluster Pod Rollout Infrastructure Engine"
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
-          PROJECT_WORKSPACE: ${{ PROJECT_WORKSPACE }}
+          PROJECT_WORKSPACE: ${{ env.PROJECT_WORKSPACE }}
           GKE_SECRETS: ${{ secrets.GKE_SECRETS }}
         run: |
           echo "☸️ Initiating secure handshakes towards remote GKE cluster pools..."

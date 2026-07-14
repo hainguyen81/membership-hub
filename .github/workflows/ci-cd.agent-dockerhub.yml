@@ -37,11 +37,6 @@ jobs:
     name: "🐳 Build and Push Cross-Platform Multistage Containers"
     runs-on: ubuntu-latest
     
-    # Re-config working-directory with present check-out project folder
-    defaults:
-      run:
-        working-directory: ${{ steps.project-workspace.outputs.project_workspace }}
-    
     steps:
       # Check whether allow for running workflow
       - name: 🛡️ Gatekeeper - Validate Administrative Access
@@ -81,13 +76,15 @@ jobs:
       # Step 2: Provision a clean Python 3.10 virtual space to run local container automation scripts
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
         uses: actions/setup-python@v5
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         with:
           python-version: '3.10'
 
       # Step 3: Connect to Docker Hub APIs and stream dual multi-stage native compiled application layers
       - name: "🐳 Trigger Cross-Platform Native Image Containerization Client"
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
-          PROJECT_WORKSPACE: ${{ PROJECT_WORKSPACE }}
+          PROJECT_WORKSPACE: ${{ env.PROJECT_WORKSPACE }}
           DOCKERHUB_SECRETS: ${{ secrets.DOCKERHUB_SECRETS }}
         run: |
           echo "🐳 Launching Docker Hub container build and registry publication pipes..."

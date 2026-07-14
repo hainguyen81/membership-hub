@@ -37,11 +37,6 @@ jobs:
     name: "☁️ Compile and Publish Cloud Native Images to GAR"
     runs-on: ubuntu-latest
     
-    # Re-config working-directory with present check-out project folder
-    defaults:
-      run:
-        working-directory: ${{ steps.project-workspace.outputs.project_workspace }}
-    
     steps:
       # Check whether allow for running workflow
       - name: 🛡️ Gatekeeper - Validate Administrative Access
@@ -80,14 +75,16 @@ jobs:
       
       # Step 2: Provision a clean Python 3.10 virtual space to handle shell authentication tasks
       - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
       # Step 3: Activate service account mappings and push built binary structures into private GCP repos
       - name: "☁️ Trigger Google Artifact Registry Publication Core Layer"
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
-          PROJECT_WORKSPACE: ${{ PROJECT_WORKSPACE }}
+          PROJECT_WORKSPACE: ${{ env.PROJECT_WORKSPACE }}
           GCP_SECRETS: ${{ secrets.GCP_SECRETS }}
         run: |
           echo "☁️ Connecting to Google Cloud SDK components to route compiled GAR assets..."

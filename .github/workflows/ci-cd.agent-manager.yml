@@ -82,11 +82,6 @@ jobs:
       standalone_target: ${{ github.event.inputs.standalone_target || 'none' }}
       release_flag: ${{ github.event.inputs.release_flag || 'false' }}
     
-    # Re-config working-directory with present check-out project folder
-    defaults:
-      run:
-        working-directory: ${{ steps.project-workspace.outputs.project_workspace }}
-    
     steps:
       # Block 1.1: Administrative gate check protecting centralized production ecosystems
       - name: "🛡️ Gatekeeper - Validate Administrative Execution Tokens"
@@ -125,6 +120,7 @@ jobs:
       
       # Block 1.3: Inject secure global environment parameters and service boundaries
       - name: "🔧 Configure Machine Git Automation Credentials"
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@://github.com"
@@ -132,6 +128,7 @@ jobs:
       # Block 1.4: Core State Machine execution manipulating temporal parameters and daily isolated branch forks
       - name: "🗄️ Execute Pipeline Parameters Resolution and Git Fork Compliance"
         id: resolver
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
           INPUT_EXEC_MODE: ${{ github.event.inputs.execution_mode }}
           INPUT_TARGET_SCOPE: ${{ github.event.inputs.target_scope }}
@@ -297,11 +294,6 @@ jobs:
     if: always() && needs.state_resolver_job.outputs.exec_mode == 'all_scheduled'
     runs-on: ubuntu-latest
     
-    # Re-config working-directory with present check-out project folder
-    defaults:
-      run:
-        working-directory: ${{ steps.project-workspace.outputs.project_workspace }}
-    
     steps:
       # Administrative gate check protecting centralized production ecosystems
       - name: "🛡️ Gatekeeper - Validate Administrative Execution Tokens"
@@ -339,6 +331,7 @@ jobs:
           if [ -d ".ai" ]; then ls -la .ai/; fi
       
       - name: "🔧 Configure Machine Git Automation Credentials"
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@://github.com"
@@ -346,17 +339,20 @@ jobs:
       # Block 9.2: STRICT COMPLIANCE RAIL GATE - Native verification to protect repository code integrity
       - name: "☕ Setup Hard Compilation Gate - Enterprise OpenJDK 17 Environment"
         uses: actions/setup-java@v4
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         with:
           java-version: '17'
           distribution: 'temurin'
       
       - name: "🟢 Setup Hard Compilation Gate - Next.js Frontend Node 20 Runtime"
         uses: actions/setup-node@v4
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         with:
           node-version: '20'
       
       # Block 9.3: Absolute Zero Error check validation run executions before remote commit permissions are unlocked
       - name: "🛡️ Execute Mandatory Strict Compilation Verification Audit Loops"
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         run: |
           echo "⚡ [STRICT AUDIT GATE] Verifying newly generated source code structure assets..."
           
@@ -379,6 +375,7 @@ jobs:
       
       # Block 9.4: Atomically increments schedule indicators inside the localized branch configuration matrix
       - name: "🗄️ Save State Indicators and Commit Generated Workspace Assets Upstream"
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
         run: |
           STATE_FILE=".ai/.plan/pipeline_state.json"
           RUN_DAY={{ needs.state_resolver_job.outputs.run_day }}
