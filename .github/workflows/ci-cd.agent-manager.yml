@@ -123,7 +123,7 @@ jobs:
           # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
           echo "🔍 [DEBUG] Auditing active workspace files presence:"
           ls -la .
-          if [ -d ".ai" ]; then ls -la .ai/; fi
+          if [ -d "membership-hub" ]; then ls -la .ai/; fi
           
           # 🚀 CONFIGURATION BOUNDARY: Set your exact desired state file path here
           STATE_FILE=".ai/.agents/.states/pipeline_state.json"
