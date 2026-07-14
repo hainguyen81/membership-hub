@@ -66,7 +66,7 @@ jobs:
           ls -la ./
           if [ -d "membership-hub" ]; then ls -la membership-hub/; fi
           if [ -d ".ai" ]; then ls -la .ai/; fi
-          echo "GITHUB_WORKSPACE = ${{ GITHUB_WORKSPACE }}"
+          echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
       
       # Step 2: Establish production OpenJDK 17 binaries required to trigger Quarkus compiler tests
       - name: "☕ Mount Enterprise OpenJDK 17 Compiler Environments"

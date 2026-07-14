@@ -111,7 +111,7 @@ jobs:
           ls -la ./
           if [ -d "membership-hub" ]; then ls -la membership-hub/; fi
           if [ -d ".ai" ]; then ls -la .ai/; fi
-          echo "GITHUB_WORKSPACE = ${{ GITHUB_WORKSPACE }}"
+          echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
       
       # Block 1.3: Inject secure global environment parameters and service boundaries
       - name: "🔧 Configure Machine Git Automation Credentials"
