@@ -75,7 +75,7 @@ jobs:
     name: "🗄️ State Resolver & Git Isolation Gatekeeper"
     runs-on: self-hosted            # use tag runner self-hosted
     workspace: shared-works-pool    # 😎 force sub-agents using same workspace with manager to commit/push works
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
     
     outputs:
       run_day: ${{ steps.resolver.outputs.run_day }}
@@ -327,7 +327,7 @@ jobs:
     workspace: shared-works-pool    # 😎 force sub-agents using same workspace with manager to commit/push works
     needs: [state_resolver_job, run_coder, run_tester, run_fixer, run_doc, run_gke]
     if: always() && needs.state_resolver_job.outputs.exec_mode == 'all_scheduled'
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
     
     steps:
       # Administrative gate check protecting centralized production ecosystems
