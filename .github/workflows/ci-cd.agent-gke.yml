@@ -62,7 +62,7 @@ jobs:
         run: |
           echo "PROJECT_WORKSPACE=$(pwd)" >> $GITHUB_ENV
           echo "project_workspace=$(pwd)" >> $GITHUB_OUTPUT
-          echo "PROJECT_WORKSPACE: $PROJECT_WORKSPACE"
+          echo "⚙️ >> PROJECT_WORKSPACE: ${{ env.PROJECT_WORKSPACE }}"
           
           # Debug step: Verify files exist physically in the workspace console log before AI execution path starts
           echo "🐛 [DEBUG] Auditing active workspace files presence:"
