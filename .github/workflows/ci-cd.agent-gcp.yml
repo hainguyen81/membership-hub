@@ -1,20 +1,28 @@
+# ==============================================================================
+# ☁️ GCP GAR SUB-AGENT CONTAINER ARTIFACT PUBLICATION WORKFLOW
+# ==============================================================================
+# Activated via --release flags to build production GraalVM binaries.
+# Tags and streams artifacts safely straight into Google Artifact Registry.
+# ==============================================================================
+
 name: "☁️ GCP GAR Agent Worker"
 
 on:
   workflow_call:
     inputs:
       phase:
+        description: '🗂️ Target Phase indicator passed from master pipeline'
         required: true
         type: string
       day:
+        description: '📆 Target operational execution Day number'
         required: true
         type: string
 
 jobs:
   execute_gcp:
-    name: "☁️ GCP GAR Agent Worker"
+    name: "☁️ Compile and Publish Cloud Native Images to GAR"
     runs-on: ubuntu-latest
-    
     steps:
       # Check whether allow for running workflow
       - name: 🛡️ Gatekeeper - Validate Administrative Access
@@ -26,19 +34,21 @@ jobs:
           echo "Terminating pipeline execution immediately to protect production infrastructure."
           exit 1 # Require Admin Rights
       
-      # Step 1: Pull target compiled files and configurations down to container machines for building docker layouts
-      - name: "📦 Checkout Source Code Repository Artifacts"
+      # Step 1: Clone the active daily isolated feature branch into the runner execution pool
+      - name: "📦 Clone Workspace Branch Assets"
         uses: actions/checkout@v4
 
-      # Step 2: Ensure internal script processing layers have access to dedicated pipeline orchestration tools
-      - name: "🐍 Provision Core Python 3.10 Runtime Environment Architecture"
+      # Step 2: Provision a clean Python 3.10 virtual space to handle shell authentication tasks
+      - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          cache: 'pip'
 
-      # Step 3: Bind structural keys, invoke Google Cloud Platform SDK commands, and push built application packages upstream
-      - name: "☁️ Execute Google Cloud Platform Container Blueprint Distribution Integration Script Task"
+      # Step 3: Activate service account mappings and push built binary structures into private GCP repos
+      - name: "☁️ Trigger Google Artifact Registry Publication Core Layer"
         env:
-          GCP_SECRETS: ${{ secrets.GCP_SECRETS }}
-        run: python3 .ai/.agents/.sub-agents/agent-gcp.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          # Ingest structural GCP JSON keys containing regions, service account details, and target project IDs
+          GCP_SECRETS: }} secrets.GCP_SECRETS {{
+        run: |
+          echo "☁️ Connecting to Google Cloud SDK components to route compiled GAR assets..."
+          python3 .ai/.agents/.sub-agents/agent-gcp.py --phase "}} inputs.phase {{" --day "}} inputs.day {{"
