@@ -1,0 +1,7 @@
+{
+  "1": "Design PostgreSQL Multi-tenancy database schema using Tenant Discriminator. Create tables for tenants, users (internal bcrypt and social auth mapping), student_cards, and attendance_logs.",
+  "2": "Setup Quarkus 3.x project boilerplate with Reactive Panache ORM, Reactive Messaging Kafka, and OIDC security extensions.",
+  "3": "Setup Next.js 14+ App Router template integrated with next-intl for localization, static SEO layout routing, and Capacitor natively wrapped configurations.",
+  "10": "Implement Idempotent Check-In API in Quarkus. Decrypt QR code tokens, prevent multiple logs within the same day, and return gym-style remaining validity days.",
+  "16": "Integrate Zalo Open API client in Quarkus to push simultaneous attendance notifications to both individual student accounts and targeted chat groups."
+}
