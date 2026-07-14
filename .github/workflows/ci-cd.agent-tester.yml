@@ -1,20 +1,28 @@
+# ==============================================================================
+# 🧪 TESTER SUB-AGENT AUTOMATED TEST SUITE GENERATION WORKFLOW
+# ==============================================================================
+# Engineered to read clean business logic assets and synthesize high-fidelity tests.
+# Enforces rigid code coverage standards matching enterprise structural policies.
+# ==============================================================================
+
 name: "🧪 Tester Agent Worker"
 
 on:
   workflow_call:
     inputs:
       phase:
+        description: '🗂️ Target Phase indicator passed from master pipeline'
         required: true
         type: string
       day:
+        description: '📆 Target operational execution Day number'
         required: true
         type: string
 
 jobs:
   execute_tester:
-    name: "🧪 Tester Agent Worker"
+    name: "🧪 Execute QA Quality Gate Creation Task"
     runs-on: ubuntu-latest
-    
     steps:
       # Check whether allow for running workflow
       - name: 🛡️ Gatekeeper - Validate Administrative Access
@@ -26,23 +34,27 @@ jobs:
           echo "Terminating pipeline execution immediately to protect production infrastructure."
           exit 1 # Require Admin Rights
       
-      # Step 1: Clone the active repository state to verify newly written source file structural placements
-      - name: "📦 Checkout Source Code Repository Artifacts"
+      # Step 1: Clone the active daily isolated feature branch into the runner execution pool
+      - name: "📦 Clone Workspace Branch Assets"
         uses: actions/checkout@v4
 
-      # Step 2: Initialize clean Python operations to activate high-fidelity automated test case parsing engines
-      - name: "🐍 Provision Core Python 3.10 Runtime Environment Architecture"
+      # Step 2: Provision a clean Python 3.10 virtual space to handle core LLM prompts
+      - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          cache: 'pip'
 
-      # Step 3: Satisfy external API execution requirements by importing necessary operational SDK modules
-      - name: "🛠️ Install Core Enterprise Pipeline Third-Party Dependency Libraries"
-        run: pip install requests google-generativeai openai anthropic
+      # Step 3: Satisfy upstream communication dependencies by executing pip manager installs
+      - name: "🛠️ Install Enterprise Cloud API Connecting Libraries"
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests google-generativeai openai anthropic
 
-      # Step 4: Process the newly committed business files to build zero-placeholder JUnit or Jest specification layouts
-      - name: "🧪 Execute Lead Automation QA Validation Framework Engineering Script Task"
+      # Step 4: Evaluate written production logic assets to output complete JUnit/Jest testing frameworks
+      - name: "🧪 Trigger Lead QA Test Framework Synthesizer"
         env:
-          AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
-        run: python3 .ai/.agents/.sub-agents/agent-tester.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          # Pass down the encrypted multi-model failover key pool configuration dictionary
+          AI_MODELS_KEYS_JSON: {{ secrets.AI_MODELS_KEYS_JSON }}
+        run: |
+          echo "🧪 Activating quality assurance testing synthesis engine..."
+          python3 .ai/.agents/.sub-agents/agent-tester.py --phase "{{ inputs.phase }}" --day "{{ inputs.day }}"

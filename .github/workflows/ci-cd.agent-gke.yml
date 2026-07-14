@@ -1,20 +1,28 @@
+# ==============================================================================
+# ☸️ GKE CLUSTER WORKLOAD POD ORCHESTRATION ROLLOUT WORKFLOW
+# ==============================================================================
+# Connects directly to production Kubernetes environments securely.
+# Triggers safe, zero-downtime rolling updates over active computing nodes.
+# ==============================================================================
+
 name: "☸️ GKE Deployment Agent Worker"
 
 on:
   workflow_call:
     inputs:
       phase:
+        description: '🗂️ Target Phase indicator passed from master pipeline'
         required: true
         type: string
       day:
+        description: '📆 Target operational execution Day number'
         required: true
         type: string
 
 jobs:
   execute_gke:
-    name: "☸️ GKE Deployment Agent Worker"
+    name: "☸️ Trigger Zero-Downtime Rolling Update Operations"
     runs-on: ubuntu-latest
-    
     steps:
       # Check whether allow for running workflow
       - name: 🛡️ Gatekeeper - Validate Administrative Access
@@ -26,19 +34,21 @@ jobs:
           echo "Terminating pipeline execution immediately to protect production infrastructure."
           exit 1 # Require Admin Rights
       
-      # Step 1: Retrieve configuration charts and active manifest profiles into the operational layer
-      - name: "📦 Checkout Source Code Repository Artifacts"
+      # Step 1: Clone the active daily isolated feature branch into the runner execution pool
+      - name: "📦 Clone Workspace Branch Assets"
         uses: actions/checkout@v4
 
-      # Step 2: Create a secure local sandbox to initialize environment connection filters
-      - name: "🐍 Provision Core Python 3.10 Runtime Environment Architecture"
+      # Step 2: Provision a clean Python 3.10 virtual space to dispatch cluster control orders
+      - name: "🐍 Provision Python 3.10 Sandboxed Runtime"
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          cache: 'pip'
 
-      # Step 3: Fetch active cluster contexts, declare target configurations, and execute zero-downtime microservice rolling updates
-      - name: "☸️ Execute Kubernetes Production Pod Orchestration Rollout Script Task"
+      # Step 3: Trigger safe rolling upgrades or apply raw infrastructure manifests straight to pods
+      - name: "☸️ Trigger Kubernetes Cluster Pod Rollout Infrastructure Engine"
         env:
-          GKE_SECRETS: ${{ secrets.GKE_SECRETS }}
-        run: python3 .ai/.agents/.sub-agents/agent-gke.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          # Ingest cluster authorization identifiers containing connection targets and credentials
+          GKE_SECRETS: }} secrets.GKE_SECRETS {{
+        run: |
+          echo "☸️ Initiating secure handshakes towards remote GKE cluster pools..."
+          python3 .ai/.agents/.sub-agents/agent-gke.py --phase "}} inputs.phase {{" --day "}} inputs.day {{"
