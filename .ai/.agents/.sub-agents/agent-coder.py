@@ -74,7 +74,6 @@ class CoderAgent:
             
             # Lookup the API Key inside the GitHub Secret JSON dictionary using the model_name from models.json
             api_key = secrets_dict.get(target_model_endpoint)
-            
             if api_key:
                 self.current_model_config = config
                 self.client = OpenAI(api_key=api_key, base_url=target_model_endpoint)

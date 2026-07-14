@@ -12,7 +12,7 @@
 	},
 	{
 		"model_name": "qwen/qwen-2.5-coder-32b-instruct:free",
-		"api_endpoint": "https://openrouter.ai/api/v1",
+		"api_endpoint": "https://openrouter.ai/api/v1"
 	},
 	{
 		"model_name": "qwen/qwen-2.5-coder-32b-instruct",
@@ -23,7 +23,7 @@
 	},
 	{
 		"model_name": "deepseek/deepseek-r1:free",
-		"api_endpoint": "https://openrouter.ai/api/v1",
+		"api_endpoint": "https://openrouter.ai/api/v1"
 	},
 	{
 		"model_name": "google/gemma-4-31b-instruct",
@@ -40,7 +40,7 @@
 		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
 	},
 	{
-		"separator": "-------------------------------------------------"
+		"separator": "------------------ OPENROUTER ENDPOINTS BOUNDARY ------------------"
 	},
 	{
 		"model_name": "llama-3.3-70b-versatile",
@@ -65,7 +65,7 @@
 		"best_for": "FREE TIER - Speculative decoding layout optimized for accelerated multi-agent logic validation passes."
 	},
 	{
-		"separator": "-------------------------------------------------"
+		"separator": "------------------ GROQ CONSOLE ENDPOINTS BOUNDARY ------------------"
 	},
 	{
 		"model_name": "Meta-Llama-3.3-70b-Instruct",
@@ -83,7 +83,7 @@
 		"best_for": "FREE DEVELOPER TIER - Ultra-fast tokens token-per-second generation. Best for rapid parsing of rough code drafts."
 	},
 	{
-		"separator": "-------------------------------------------------"
+		"separator": "------------------ SAMBANOVA ENDPOINTS BOUNDARY ------------------"
 	},
 	{
 		"model_name": "gemini-2.5-pro",
@@ -100,7 +100,7 @@
 		"best_for": "FREE TIER - Ultra-fast execution speed. Best for Doc Agent to write system architecture charts."
 	},
 	{
-		"separator": "-------------------------------------------------"
+		"separator": "------------------ GOOGLE AI STUDIO ENDPOINTS BOUNDARY ------------------"
 	},
 	{
 		"model_name": "deepseek-v4-flash",
@@ -117,7 +117,7 @@
 		"best_for": "FREE CREDITS - Deep reasoning logic. Best for non-duplicable QR processing and dynamic partition logic."
 	},
 	{
-		"separator": "-------------------------------------------------"
+		"separator": "------------------ DEEPSEEK PLATFORM ENDPOINTS BOUNDARY ------------------"
 	},
 	{
 		"model_name": "qwen-2.5-coder-32b",
@@ -134,7 +134,7 @@
 		"best_for": "FREE DEVELOPER CREDITS - Robust architectural auditing context layout engine for the Fixer Agent compile gates."
 	},
 	{
-		"separator": "-------------------------------------------------"
+		"separator": "------------------ FIREWORKS AI ENDPOINTS BOUNDARY ------------------"
 	},
 	{
 		"model_name": "codestral-latest",
@@ -144,7 +144,7 @@
 		"best_for": "FREE DEVELOPER ACCOUNT - Premium Java compilation metrics. Best for designing Quarkus non-blocking modules."
 	},
 	{
-		"separator": "-------------------------------------------------"
+		"separator": "------------------ MISTRAL AI ENDPOINTS BOUNDARY ------------------"
 	},
 	{
 		"model_name": "llama3.3-70b",
@@ -154,7 +154,7 @@
 		"best_for": "FREE BETA TIER - Hyper-speed inference execution metrics. Resolves light component tasks in sub-second timelines."
 	},
 	{
-		"separator": "-------------------------------------------------"
+		"separator": "------------------ CEREBRAS CLOUD ENDPOINTS BOUNDARY ------------------"
 	},
 	{
 		"model_name": "meta-llama/llama-3.3-70b-instruct",
