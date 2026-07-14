@@ -7,10 +7,26 @@ import argparse
 from openai import OpenAI
 
 # ==============================================================================
+# 🏢 ENTERPRISE INTER-PACKAGE ROUTING LAYER
+# ==============================================================================
+# Programmatically appends the parent directory (.ai/.agents/) into Python's runtime
+# search path array. This completely unlocks importing 'agent_helper.py'.
+# ==============================================================================
+CURRENT_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__)) # .ai/.agents/.sub-agents/
+PARENT_AGENTS_DIR  = os.path.abspath(os.path.join(CURRENT_SCRIPT_DIR, "../")) # .ai/.agents/
+
+# jump to `agent_helper.py` folder path
+if PARENT_AGENTS_DIR not in sys.path:
+    sys.path.insert(0, PARENT_AGENTS_DIR)
+
+# Now Python can seamlessly see and import the centralized helper utility cleanly!
+from agent_helper import resolve_absolute_path
+
+# ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-MODELS_POOL_PATH = "./.ai/.agents/.models/models.json"
-STEPS_PLAN_DIR   = "./.ai/.agents/.steps"
+MODELS_POOL_PATH = resolve_absolute_path(".ai/.agents/.models/models.json")
+STEPS_PLAN_DIR   = resolve_absolute_path(".ai/.agents/.steps")
 
 class CoderAgent:
     """
@@ -70,11 +86,14 @@ class CoderAgent:
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
         with open(steps_path, "r", encoding="utf-8") as f:
             steps_data = json.load(f)
-        with open(steps_data["global_context_file"], "r", encoding="utf-8") as f:
+        
+        global_context_file = resolve_absolute_path(steps_data["global_context_file"])
+        with open(global_context_file, "r", encoding="utf-8") as f:
             global_context = f.read()
             
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
-        with open(target_day["context_file"], "r", encoding="utf-8") as f:
+        context_file = resolve_absolute_path(target_day["context_file"])
+        with open(context_file, "r", encoding="utf-8") as f:
             phase_content = f.read()
             
         pattern = rf"(## {target_day['context_section']}:.*?)((?=\n## DAY )|\Z)"
@@ -93,8 +112,9 @@ class CoderAgent:
                 code_out = response.choices.message.content
                 clean_code = code_out.replace("```java", "").replace("```sql", "").replace("```json", "").replace("```markdown", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
                 
-                os.makedirs(os.path.dirname(target_day["target_component"]), exist_ok=True)
-                with open(target_day["target_component"], "w", encoding="utf-8") as f:
+                target_component = resolve_absolute_path(target_day["target_component"])
+                os.makedirs(os.path.dirname(target_component), exist_ok=True)
+                with open(target_component, "w", encoding="utf-8") as f:
                     f.write(clean_code)
                 print(f"[CODER SUCCESS] Production source codebase generated at target destination: {target_day['target_component']}")
                 break

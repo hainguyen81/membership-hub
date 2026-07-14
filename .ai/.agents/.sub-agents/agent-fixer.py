@@ -8,12 +8,28 @@ import subprocess
 from openai import OpenAI
 
 # ==============================================================================
+# 🏢 ENTERPRISE INTER-PACKAGE ROUTING LAYER
+# ==============================================================================
+# Programmatically appends the parent directory (.ai/.agents/) into Python's runtime
+# search path array. This completely unlocks importing 'agent_helper.py'.
+# ==============================================================================
+CURRENT_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__)) # .ai/.agents/.sub-agents/
+PARENT_AGENTS_DIR  = os.path.abspath(os.path.join(CURRENT_SCRIPT_DIR, "../")) # .ai/.agents/
+
+# jump to `agent_helper.py` folder path
+if PARENT_AGENTS_DIR not in sys.path:
+    sys.path.insert(0, PARENT_AGENTS_DIR)
+
+# Now Python can seamlessly see and import the centralized helper utility cleanly!
+from agent_helper import resolve_absolute_path
+
+# ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-MODELS_POOL_PATH  = "./.ai/.agents/.models/models.json"
-STEPS_PLAN_DIR    = "./.ai/.agents/.steps"
-BACKEND_WORKSPACE = "./sources/backend"
-FRONTEND_WORKSPACE= "./sources/frontend"
+MODELS_POOL_PATH  = resolve_absolute_path(".ai/.agents/.models/models.json")
+STEPS_PLAN_DIR    = resolve_absolute_path(".ai/.agents/.steps")
+BACKEND_WORKSPACE = resolve_absolute_path("sources/backend")
+FRONTEND_WORKSPACE= resolve_absolute_path("sources/frontend")
 
 class BugFixerAgent:
     """
@@ -71,11 +87,14 @@ class BugFixerAgent:
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
         with open(steps_path, "r", encoding="utf-8") as f:
             steps_data = json.load(f)
-        with open(steps_data["global_context_file"], "r", encoding="utf-8") as f:
+        
+        global_context_file = resolve_absolute_path(steps_data["global_context_file"])
+        with open(global_context_file, "r", encoding="utf-8") as f:
             global_context = f.read()
             
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
-        with open(target_day["context_file"], "r", encoding="utf-8") as f:
+        context_file = resolve_absolute_path(target_day["context_file"])
+        with open(context_file, "r", encoding="utf-8") as f:
             phase_content = f.read()
         pattern = rf"(## {target_day['context_section']}:.*?)((?=\n## DAY )|\Z)"
         day_context = re.search(pattern, phase_content, re.DOTALL | re.IGNORECASE).group(1).strip()
@@ -84,13 +103,14 @@ class BugFixerAgent:
         
         max_iterations = 3
         for iteration in range(1, max_iterations + 1):
-            is_clean, compiler_log = self.run_compile_check(target_day["target_component"])
+            target_component = resolve_absolute_path(target_day["target_component"])
+            is_clean, compiler_log = self.run_compile_check(target_component)
             if is_clean:
                 print(f"[FIXER SUCCESS] Target codebase component compiled cleanly on iteration loop: {iteration}!")
                 return True
                 
             print(f"[FIXER WARNING] Build check failed on validation loop: {iteration}. Ingesting raw error logs...")
-            with open(target_day["target_component"], "r", encoding="utf-8") as f:
+            with open(target_component, "r", encoding="utf-8") as f:
                 current_code = f.read()
                 
             user_prompt = f"Current Faulty Source Code Implementation:\n{current_code}\n\nReal-time Compiler Error Logs Output Traces:\n{compiler_log}"
@@ -104,7 +124,7 @@ class BugFixerAgent:
                 patched_code = response.choices.message.content
                 clean_code = patched_code.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
                 
-                with open(target_day["target_component"], "w", encoding="utf-8") as f:
+                with open(target_component, "w", encoding="utf-8") as f:
                     f.write(clean_code)
             except Exception as e:
                 print(f"[FIXER RECOVERY] API transaction exception caught. Swapping model: {str(e)}")

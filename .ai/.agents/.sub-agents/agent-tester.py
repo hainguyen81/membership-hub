@@ -7,10 +7,26 @@ import argparse
 from openai import OpenAI
 
 # ==============================================================================
+# 🏢 ENTERPRISE INTER-PACKAGE ROUTING LAYER
+# ==============================================================================
+# Programmatically appends the parent directory (.ai/.agents/) into Python's runtime
+# search path array. This completely unlocks importing 'agent_helper.py'.
+# ==============================================================================
+CURRENT_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__)) # .ai/.agents/.sub-agents/
+PARENT_AGENTS_DIR  = os.path.abspath(os.path.join(CURRENT_SCRIPT_DIR, "../")) # .ai/.agents/
+
+# jump to `agent_helper.py` folder path
+if PARENT_AGENTS_DIR not in sys.path:
+    sys.path.insert(0, PARENT_AGENTS_DIR)
+
+# Now Python can seamlessly see and import the centralized helper utility cleanly!
+from agent_helper import resolve_absolute_path
+
+# ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-MODELS_POOL_PATH = "./.ai/.agents/.models/models.json"
-STEPS_PLAN_DIR   = "./.ai/.agents/.steps"
+MODELS_POOL_PATH = resolve_absolute_path(".ai/.agents/.models/models.json")
+STEPS_PLAN_DIR   = resolve_absolute_path(".ai/.agents/.steps")
 
 class TesterAgent:
     """
@@ -61,18 +77,22 @@ class TesterAgent:
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
         with open(steps_path, "r", encoding="utf-8") as f:
             steps_data = json.load(f)
-        with open(steps_data["global_context_file"], "r", encoding="utf-8") as f:
+        
+        global_context_file = resolve_absolute_path(steps_data["global_context_file"])
+        with open(global_context_file, "r", encoding="utf-8") as f:
             global_context = f.read()
             
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
-        if not os.path.exists(target_day["target_component"]):
+        target_component = resolve_absolute_path(target_day["target_component"])
+        if not os.path.exists(target_component):
             print(f"[TESTER ERROR] Base source component file missing at: {target_day['target_component']}.")
             sys.exit(1)
             
-        with open(target_day["target_component"], "r", encoding="utf-8") as f:
+        with open(target_component, "r", encoding="utf-8") as f:
             clean_code = f.read()
-            
-        with open(target_day["context_file"], "r", encoding="utf-8") as f:
+        
+        context_file = resolve_absolute_path(target_day["context_file"])
+        with open(context_file, "r", encoding="utf-8") as f:
             phase_content = f.read()
         pattern = rf"(## {target_day['context_section']}:.*?)((?=\n## DAY )|\Z)"
         day_context = re.search(pattern, phase_content, re.DOTALL | re.IGNORECASE).group(1).strip()
@@ -90,8 +110,9 @@ class TesterAgent:
                 test_out = response.choices.message.content
                 clean_tests = test_out.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
                 
-                os.makedirs(os.path.dirname(target_day["test_component"]), exist_ok=True)
-                with open(target_day["test_component"], "w", encoding="utf-8") as f:
+                test_component = resolve_absolute_path(target_day["test_component"])
+                os.makedirs(os.path.dirname(test_component), exist_ok=True)
+                with open(test_component, "w", encoding="utf-8") as f:
                     f.write(clean_tests)
                 print(f"[TESTER SUCCESS] Quality assurance test framework committed to: {target_day['test_component']}")
                 break
