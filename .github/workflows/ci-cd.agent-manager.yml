@@ -120,7 +120,7 @@ jobs:
     if: |
       needs.state_resolver_job.outputs.exec_mode == 'all_scheduled' || 
       (needs.state_resolver_job.outputs.exec_mode == 'standalone_agent' && needs.state_resolver_job.outputs.standalone_target == 'coder')
-    uses: ./.github/workflows/agent-coder.yml
+    uses: ./.github/workflows/ci-cd.agent-coder.yml
     with:
       phase: ${{ needs.state_resolver_job.outputs.run_phase }}
       day: ${{ needs.state_resolver_job.outputs.run_day }}
@@ -129,7 +129,7 @@ jobs:
   run_tester:
     needs: [state_resolver_job, run_coder]
     if: always() && (needs.run_coder.result == 'success' || needs.run_coder.result == 'skipped') && !contains(needs.state_resolver_job.outputs.standalone_target, 'none')
-    uses: ./.github/workflows/agent-tester.yml
+    uses: ./.github/workflows/ci-cd.agent-tester.yml
     with:
       phase: ${{ needs.state_resolver_job.outputs.run_phase }}
       day: ${{ needs.state_resolver_job.outputs.run_day }}
@@ -138,7 +138,7 @@ jobs:
   run_fixer:
     needs: [state_resolver_job, run_tester]
     if: always() && (needs.run_tester.result == 'success' || needs.run_tester.result == 'skipped') && !contains(needs.state_resolver_job.outputs.standalone_target, 'none')
-    uses: ./.github/workflows/agent-fixer.yml
+    uses: ./.github/workflows/ci-cd.agent-fixer.yml
     with:
       phase: ${{ needs.state_resolver_job.outputs.run_phase }}
       day: ${{ needs.state_resolver_job.outputs.run_day }}
@@ -147,7 +147,7 @@ jobs:
   run_doc:
     needs: [state_resolver_job, run_fixer]
     if: always() && (needs.run_fixer.result == 'success' || needs.run_fixer.result == 'skipped') && !contains(needs.state_resolver_job.outputs.standalone_target, 'none')
-    uses: ./.github/workflows/agent-doc.yml
+    uses: ./.github/workflows/ci-cd.agent-doc.yml
     with:
       phase: ${{ needs.state_resolver_job.outputs.run_phase }}
       day: ${{ needs.state_resolver_job.outputs.run_day }}
@@ -156,7 +156,7 @@ jobs:
   run_gcp:
     needs: [state_resolver_job, run_doc]
     if: always() && (needs.run_doc.result == 'success' || needs.run_doc.result == 'skipped') && needs.state_resolver_job.outputs.release_flag == 'true'
-    uses: ./.github/workflows/agent-gcp.yml
+    uses: ./.github/workflows/ci-cd.agent-gcp.yml
     with:
       phase: ${{ needs.state_resolver_job.outputs.run_phase }}
       day: ${{ needs.state_resolver_job.outputs.run_day }}
@@ -165,7 +165,7 @@ jobs:
   run_dockerhub:
     needs: [state_resolver_job, run_gcp]
     if: always() && (needs.run_gcp.result == 'success' || needs.run_gcp.result == 'skipped') && needs.state_resolver_job.outputs.release_flag == 'true'
-    uses: ./.github/workflows/agent-dockerhub.yml
+    uses: ./.github/workflows/ci-cd.agent-dockerhub.yml
     with:
       phase: ${{ needs.state_resolver_job.outputs.run_phase }}
       day: ${{ needs.state_resolver_job.outputs.run_day }}
@@ -174,7 +174,7 @@ jobs:
   run_gke:
     needs: [state_resolver_job, run_dockerhub]
     if: always() && (needs.run_dockerhub.result == 'success' || needs.run_dockerhub.result == 'skipped') && needs.state_resolver_job.outputs.release_flag == 'true'
-    uses: ./.github/workflows/agent-gke.yml
+    uses: ./.github/workflows/ci-cd.agent-gke.yml
     with:
       phase: ${{ needs.state_resolver_job.outputs.run_phase }}
       day: ${{ needs.state_resolver_job.outputs.run_day }}
