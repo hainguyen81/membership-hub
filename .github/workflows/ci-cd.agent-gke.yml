@@ -19,6 +19,19 @@ on:
         required: true
         type: string
 
+# permissions for GitHub Actions READ/WRITE
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+# enviroment
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  LANG: 'C.UTF-8'
+  LC_ALL: 'C.UTF-8'
+
 jobs:
   execute_gke:
     name: "☸️ Trigger Zero-Downtime Rolling Update Operations"
