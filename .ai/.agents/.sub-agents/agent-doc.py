@@ -89,6 +89,15 @@ class DocumentationAgent:
             self.active_model_index += 1
         print("[ 💀 CRITICAL ERROR ] Documentation Agent exhausted all registered fallback models.")
         sys.exit(1)
+    
+    def write_history(self, doc_component, user_prompt):
+        history_content = (
+            f"# Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n"
+            f"* **Architecture design documentation completed at**: {doc_component}\n"
+            f"* **📝 Prompt / Tasks**:\n-------------------------------------------------\n{user_prompt}\n\n"
+        )
+        with open(agent_working_history_file, "a", encoding="utf-8") as file:
+            file.write(history_content)
 
     def generate_docs(self):
         """Analyzes approved, validated production assets to compile structural architecture markdown documents."""
@@ -144,13 +153,7 @@ class DocumentationAgent:
                 print(f"[ ✅ DOCS SUCCESS | Model {self.current_model_config['model_name']} | API Endpoint {self.current_model_config['api_endpoint']} | Day {self.day_num} ] Architecture design documentation completed at: {target_day['doc_component']}")
                 
                 # write working history
-                history_content = (
-                    f"# Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n"
-                    f"* **Architecture design documentation completed at**: {target_day['doc_component']}\n"
-                    f"* **📝 Prompt**:\n-------------------------------------------------\n{user_prompt}\n\n"
-                )
-                with open(agent_working_history_file, "a", encoding="utf-8") as file:
-                    file.write(history_content)
+                self.write_history(target_day['doc_component'], user_prompt)
                 break
             except Exception as e:
                 print(f"[ 💀 DOCS LLM EXHAUSTED ] Failed execution on model {self.current_model_config['model_name']}: {str(e)}")

@@ -97,6 +97,15 @@ class CoderAgent:
                 
         print("[ 💀 CRITICAL SHUTDOWN ] Coder Agent exhausted all registered AI models without valid keys.")
         sys.exit(1)
+    
+    def write_history(self, target_component, user_prompt):
+        history_content = (
+            f"# Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n"
+            f"* **Production source codebase generated at target destination**: {target_component}\n"
+            f"* **📝 Prompt / Tasks**:\n-------------------------------------------------\n{user_prompt}\n\n"
+        )
+        with open(agent_working_history_file, "a", encoding="utf-8") as file:
+            file.write(history_content)
 
     def generate_code(self):
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
@@ -144,13 +153,7 @@ class CoderAgent:
                 print(f"[ ✅ CODER SUCCESS | Model {self.current_model_config['model_name']} | API Endpoint {self.current_model_config['api_endpoint']} | Day {self.day_num} ] Production source codebase generated at target destination: {target_day['target_component']}")
                 
                 # write working history
-                history_content = (
-                    f"# Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n"
-                    f"* **Production source codebase generated at target destination**: {target_day['target_component']}\n"
-                    f"* **📝 Prompt**:\n-------------------------------------------------\n{user_prompt}\n\n"
-                )
-                with open(agent_working_history_file, "a", encoding="utf-8") as file:
-                    file.write(history_content)
+                self.write_history(target_day['target_component'], user_prompt)
                 break
             except Exception as e:
                 print(f"[ 💀 CODER LLM EXHAUSTED ] Failed execution on model {self.current_model_config['model_name']}: {str(e)}")
