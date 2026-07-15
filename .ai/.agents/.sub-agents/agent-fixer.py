@@ -48,8 +48,6 @@ class BugFixerAgent:
         self.client = None
         self.current_model_config = None
         self.rotate_model()
-        self.project_initialized = true
-        self.project_main_component = None
 
     def load_models_pool(self):
         with open(MODELS_POOL_PATH, "r", encoding="utf-8") as f:
