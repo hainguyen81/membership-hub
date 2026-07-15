@@ -27,7 +27,7 @@ from agent_helper import resolve_absolute_path
 # ==============================================================================
 MODELS_POOL_PATH            = resolve_absolute_path(".ai/.agents/.models/models.json")
 STEPS_PLAN_DIR              = resolve_absolute_path(".ai/.agents/.steps")
-agent_working_history_file  = resolve_absolute_path("sources/.history/agent-coder.md")
+agent_working_history_file  = resolve_absolute_path(".ai/.history/agent-coder.md")
 
 class CoderAgent:
     """

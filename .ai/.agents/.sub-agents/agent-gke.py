@@ -24,8 +24,8 @@ from agent_helper import resolve_absolute_path
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-STEPS_PLAN_DIR = resolve_absolute_path(".ai/.agents/.steps")
-agent_working_history_file  = resolve_absolute_path("sources/.history/agent-gke.md")
+STEPS_PLAN_DIR              = resolve_absolute_path(".ai/.agents/.steps")
+agent_working_history_file  = resolve_absolute_path(".ai/.history/agent-gke.md")
 
 class GKEAgent:
     """

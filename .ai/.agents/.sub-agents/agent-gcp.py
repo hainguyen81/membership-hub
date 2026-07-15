@@ -24,10 +24,10 @@ from agent_helper import resolve_absolute_path
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS & BLUEPRINTS - STRICT PATH ALIGNMENT
 # ==============================================================================
-STEPS_PLAN_DIR     = resolve_absolute_path(".ai/.agents/.steps")
-BACKEND_DOCKERFILE = resolve_absolute_path("sources/backend/src/main/docker/Dockerfile.native")
-FRONTEND_DOCKERFILE= resolve_absolute_path("sources/frontend/Dockerfile")
-agent_working_history_file  = resolve_absolute_path("sources/.history/agent-gcp.md")
+STEPS_PLAN_DIR              = resolve_absolute_path(".ai/.agents/.steps")
+BACKEND_DOCKERFILE          = resolve_absolute_path("sources/backend/src/main/docker/Dockerfile.native")
+FRONTEND_DOCKERFILE         = resolve_absolute_path("sources/frontend/Dockerfile")
+agent_working_history_file  = resolve_absolute_path(".ai/.history/agent-gcp.md")
 
 class GCPAgent:
     """

@@ -26,11 +26,11 @@ from agent_helper import resolve_absolute_path
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-MODELS_POOL_PATH  = resolve_absolute_path(".ai/.agents/.models/models.json")
-STEPS_PLAN_DIR    = resolve_absolute_path(".ai/.agents/.steps")
-BACKEND_WORKSPACE = resolve_absolute_path("sources/backend")
-FRONTEND_WORKSPACE= resolve_absolute_path("sources/frontend")
-agent_working_history_file  = resolve_absolute_path("sources/.history/agent-fixer.md")
+MODELS_POOL_PATH            = resolve_absolute_path(".ai/.agents/.models/models.json")
+STEPS_PLAN_DIR              = resolve_absolute_path(".ai/.agents/.steps")
+BACKEND_WORKSPACE           = resolve_absolute_path("sources/backend")
+FRONTEND_WORKSPACE          = resolve_absolute_path("sources/frontend")
+agent_working_history_file  = resolve_absolute_path(".ai/.history/agent-fixer.md")
 
 class BugFixerAgent:
     """
