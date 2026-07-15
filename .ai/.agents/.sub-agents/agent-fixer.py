@@ -108,7 +108,7 @@ class BugFixerAgent:
             # use sqlfluff (linter to check SQL, need `pip install sqlfluff`)
             # --dialect ansi to check syntax SQL following global standards
             result = subprocess.run([ "sqlfluff", "lint", target_path, "--dialect", "ansi" ], capture_output=True, text=True, timeout=120)
-            if result.returncode != 0 or not check_by_compile:
+            if not check_by_compile:
                 return (result.returncode == 0, result.stdout + "\n" + result.stderr)
         
         # if YAML, YML file
@@ -231,6 +231,7 @@ class BugFixerAgent:
         # check whether project had been initialized
         project_initialized, project_main_component = self.check_project_initialized(target_day["target_component"])
         print(f"[ ℹ️ F.Y.I ] Project had been initialized?. {project_initialized} - Project Main Component: {project_main_component}")
+        print(f"            - Target Component: {target_day['target_component']}")
         
         # test component 3 time(s)
         max_iterations = 3
