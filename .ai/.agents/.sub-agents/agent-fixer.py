@@ -92,19 +92,34 @@ class BugFixerAgent:
             self.active_model_index += 1
         print("[ 💀 CRITICAL ERROR ] Bug Fixer Agent exhausted all registered recovery models.")
         sys.exit(1)
-
+    
     def run_compile_check(self, target_path):
         if "backend" in target_path:
+            pom_path = os.path.join(BACKEND_WORKSPACE, "pom.xml")
+            # if not found pom.xml, it means project empty or be initializing
+            if not os.path.exists(pom_path):
+                return (True, "⚠️ Warning: Not found pom.xml. Maybe project backend is in INITIAL phase.")
+            
+            # build to check error
             result = subprocess.run(["mvn", "clean", "test-compile"], cwd=BACKEND_WORKSPACE, capture_output=True, text=True, timeout=120)
         else:
+            package_path = os.path.join(FRONTEND_WORKSPACE, "package.json")
+            # if not found package.json, it means project empty or be initializing
+            if not os.path.exists(package_path):
+                return (True, "⚠️ Warning: Not found package.json. Maybe project backend is in INITIAL phase.")
+            
+            # build to check error
             result = subprocess.run(["npm", "run", "build"], cwd=FRONTEND_WORKSPACE, capture_output=True, text=True, timeout=120)
+        
+        # return compile result
         return (result.returncode == 0, result.stdout + "\n" + result.stderr)
     
-    def write_history(self, itegration, target_component, component_desc, user_prompt):
+    def write_history(self, itegration, target_component, component_desc, user_prompt, compiler_log):
         # write working history
         history_content = (
             f"# Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n" if itegration == 1 else f"## Interation {itegration}: {component_desc}"
             f"* **{component_desc}**: {target_component}\n" if itegration == 1 else f"* **Target Component**: {target_component}"
+            f"* **Compile Result**:\n{compiler_log}"
             f"* **📝 Prompt / Tasks**:\n-------------------------------------------------\n{user_prompt}\n\n"
         )
         with open(agent_working_history_file, "a", encoding="utf-8") as file:
@@ -141,7 +156,7 @@ class BugFixerAgent:
             is_clean, compiler_log = self.run_compile_check(target_component)
             if is_clean:
                 print(f"[ ✅ FIXER SUCCESS ] Target codebase component compiled cleanly on iteration loop: {iteration}!")
-                self.write_history(iteration, target_day["target_component"], "Target codebase component compiled cleanly on iteration loop {iteration}", sub_tasks)
+                self.write_history(iteration, target_day["target_component"], "Target codebase component compiled cleanly on iteration loop {iteration}", sub_tasks, compiler_log)
                 return True
                 
             print(f"[ ⚠️ FIXER WARNING ] Build check failed on validation loop: {iteration}. Ingesting raw error logs...")
@@ -172,7 +187,7 @@ class BugFixerAgent:
                     f.write(clean_code)
                 
                 # write history if neccessary
-                self.write_history(iteration, target_day["target_component"], "Responsed the fixes for target codebase component on iteration loop {iteration}", user_prompt)
+                self.write_history(iteration, target_day["target_component"], "Responsed the fixes for target codebase component on iteration loop {iteration}", user_prompt, compiler_log)
             except Exception as e:
                 print(f"[ 💀 FIXER RECOVERY ] API transaction exception caught. Swapping model: {str(e)}")
                 self.active_model_index += 1
