@@ -136,7 +136,6 @@ jobs:
       
       # Block 1.4: Core State Machine execution manipulating temporal parameters and daily isolated branch forks
       - name: "🗄️ [ features/development ] Execute Pipeline Parameters Resolution and Git Fork Compliance"
-        id: resolver
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         run: |
           # 🚀 HARD RESET & WIPE LOCAL CACHE: Vaporize ALL untracked, ignored, and phantom cached indexing files instantly
