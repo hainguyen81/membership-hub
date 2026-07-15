@@ -103,6 +103,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install requests google-generativeai openai anthropic
+          # to check sql file
+          pip install sqlfluff
+          # to check YAML, YML
+          pip install PyYAML
+          # to check properties
+          pip install jproperties
 
       # Step 6: Start self-healing iteration pipelines intercepting native CLI stack errors
       - name: "🩹 Trigger Elite Debugger Syntactic Patch Engineering"
