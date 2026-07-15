@@ -98,6 +98,16 @@ class TesterAgent:
         )
         with open(agent_working_history_file, "a", encoding="utf-8") as file:
             file.write(history_content)
+    
+    def write_log(self, target_component, content):
+        agent_working_response_file = resolve_absolute_path(f".ai/.history/agent-tester-ai-day-{self.day_num}.md")
+        log_content = (
+            f"# Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n\n"
+            f"* **{target_component}**\n"
+            f"  - {content}\n\n"
+        )
+        with open(agent_working_response_file, "a", encoding="utf-8") as file:
+            file.write(log_content)
 
     def generate_tests(self):
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
@@ -145,6 +155,9 @@ class TesterAgent:
                     test_out = response.choices[0].text
                 clean_tests = test_out.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
                 
+                # write AI response log
+                self.write_log(target_day["test_component"], test_out)
+                
                 test_component = resolve_absolute_path(target_day["test_component"])
                 os.makedirs(os.path.dirname(test_component), exist_ok=True)
                 with open(test_component, "w", encoding="utf-8") as f:
@@ -156,6 +169,8 @@ class TesterAgent:
                 break
             except Exception as e:
                 print(f"[ 💀 TESTER ERROR ] Exception caught on model {self.current_model_config['model_name']}: {str(e)}")
+                # write AI response log
+                self.write_log(target_day["test_component"], str(e))
                 self.active_model_index += 1
                 self.rotate_model()
 

@@ -98,6 +98,16 @@ class DocumentationAgent:
         )
         with open(agent_working_history_file, "a", encoding="utf-8") as file:
             file.write(history_content)
+    
+    def write_log(self, target_component, content):
+        agent_working_response_file = resolve_absolute_path(f".ai/.history/agent-doc-ai-day-{self.day_num}.md")
+        log_content = (
+            f"# Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n\n"
+            f"* **{target_component}**\n"
+            f"  - {content}\n\n"
+        )
+        with open(agent_working_response_file, "a", encoding="utf-8") as file:
+            file.write(log_content)
 
     def generate_docs(self):
         """Analyzes approved, validated production assets to compile structural architecture markdown documents."""
@@ -146,6 +156,9 @@ class DocumentationAgent:
                     doc_out = response.choices[0].text
                 clean_docs = doc_out.replace("```markdown", "").replace("```", "").strip()
                 
+                # write AI response log
+                self.write_log(target_day["doc_component"], doc_out)
+                
                 doc_component = resolve_absolute_path(target_day["doc_component"])
                 os.makedirs(os.path.dirname(doc_component), exist_ok=True)
                 with open(doc_component, "w", encoding="utf-8") as f:
@@ -157,6 +170,7 @@ class DocumentationAgent:
                 break
             except Exception as e:
                 print(f"[ 💀 DOCS LLM EXHAUSTED ] Failed execution on model {self.current_model_config['model_name']}: {str(e)}")
+                self.write_log(target_day["doc_component"], str(e))
                 self.active_model_index += 1
                 self.rotate_model()
 

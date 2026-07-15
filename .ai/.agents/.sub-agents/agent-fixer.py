@@ -188,6 +188,16 @@ class BugFixerAgent:
         with open(agent_working_history_file, "a", encoding="utf-8") as file:
             file.write(history_content)
     
+    def write_log(self, target_component, content):
+        agent_working_response_file = resolve_absolute_path(f".ai/.history/agent-fixer-ai-day-{self.day_num}.md")
+        log_content = (
+            f"# Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n\n"
+            f"* **{target_component}**\n"
+            f"  - {content}\n\n"
+        )
+        with open(agent_working_response_file, "a", encoding="utf-8") as file:
+            file.write(log_content)
+    
     def check_project_initialized(self, target_component):
         if "backend" in target_component:
             pom_path = os.path.join(BACKEND_WORKSPACE, "pom.xml")
@@ -256,6 +266,9 @@ class BugFixerAgent:
                     patched_code = response.choices[0].text
                 clean_code = patched_code.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
                 
+                # write AI response
+                self.write_log(target_day["target_component"], patched_code)
+                
                 with open(target_component, "w", encoding="utf-8") as f:
                     f.write(clean_code)
                 
@@ -263,6 +276,7 @@ class BugFixerAgent:
                 self.write_history(iteration, target_day["target_component"], "Responsed the fixes for target codebase component on iteration loop {iteration}", user_prompt, compiler_log)
             except Exception as e:
                 print(f"[ 💀 FIXER RECOVERY ] API transaction exception caught. Swapping model: {str(e)}")
+                self.write_log(target_day["target_component"], str(e))
                 self.active_model_index += 1
                 self.rotate_model()
                 
