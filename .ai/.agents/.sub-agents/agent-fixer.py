@@ -40,11 +40,16 @@ class BugFixerAgent:
     def __init__(self, phase_str, day_num):
         self.phase_str = phase_str
         self.day_num = int(day_num)
-        self.models_pool = self.load_models_pool()
-        self.active_model_index = 0
-        self.client = None
-        self.current_model_config = None
-        self.rotate_model()
+    
+    def initialize(self):
+        validated, reason = self.validate_project_initialized()
+        if validated:
+            self.models_pool = self.load_models_pool()
+            self.active_model_index = 0
+            self.client = None
+            self.current_model_config = None
+            self.rotate_model()
+        return (validated, reason)
 
     def load_models_pool(self):
         with open(MODELS_POOL_PATH, "r", encoding="utf-8") as f:
@@ -95,19 +100,9 @@ class BugFixerAgent:
     
     def run_compile_check(self, target_path):
         if "backend" in target_path:
-            pom_path = os.path.join(BACKEND_WORKSPACE, "pom.xml")
-            # if not found pom.xml, it means project empty or be initializing
-            if not os.path.exists(pom_path):
-                return (True, "⚠️ Warning: Not found pom.xml. Maybe project backend is in INITIAL phase.")
-            
             # build to check error
             result = subprocess.run(["mvn", "clean", "test-compile"], cwd=BACKEND_WORKSPACE, capture_output=True, text=True, timeout=120)
         else:
-            package_path = os.path.join(FRONTEND_WORKSPACE, "package.json")
-            # if not found package.json, it means project empty or be initializing
-            if not os.path.exists(package_path):
-                return (True, "⚠️ Warning: Not found package.json. Maybe project backend is in INITIAL phase.")
-            
             # build to check error
             result = subprocess.run(["npm", "run", "build"], cwd=FRONTEND_WORKSPACE, capture_output=True, text=True, timeout=120)
         
@@ -124,6 +119,40 @@ class BugFixerAgent:
         )
         with open(agent_working_history_file, "a", encoding="utf-8") as file:
             file.write(history_content)
+    
+    def check_project_initialized(self, target_component):
+        if "backend" in target_component:
+            pom_path = os.path.join(BACKEND_WORKSPACE, "pom.xml")
+            # if not found pom.xml, it means project empty or be initializing
+            return (os.path.exists(pom_path), pom_path)
+        else:
+            package_path = os.path.join(FRONTEND_WORKSPACE, "package.json")
+            # if not found package.json, it means project empty or be initializing
+            return (os.path.exists(package_path), package_path)
+    
+    def validate_project_initialized(self):
+        steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
+        with open(steps_path, "r", encoding="utf-8") as f:
+            steps_data = json.load(f)
+        
+        # parse test data
+        target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
+        target_component = resolve_absolute_path(target_day["target_component"])
+        
+        # validate whether project has been initialized
+        initialized, main_component = self.check_project_initialized(target_component)
+        if not initialized:
+            print(f"[ ⚠️ FIXER WARN ] Project hasn't been initialized yet. Not found project main component: {main_component}.")
+            self.write_history(1, main_component, "Project Main Component", "Validate project whether has been initialized", "Project hasn't been initialized yet. Not found project main component")
+            return (False, main_component)
+        
+        # validate code whether has been generated
+        if not os.path.exists(target_component):
+            print(f"[ ⚠️ FIXER WARN ] Base source component file missing at: {target_day['target_component']}.")
+            self.write_history(1, target_component, "Target Component", "Validate target component whether has been generated", "Base source component file missing")
+            return (False, target_day["target_component"])
+        
+        return (True, "")
 
     def fix_bugs(self):
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
@@ -135,6 +164,7 @@ class BugFixerAgent:
             global_context = f.read()
             
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
+        target_component = resolve_absolute_path(target_day["target_component"])
         context_file = resolve_absolute_path(target_day["context_file"])
         with open(context_file, "r", encoding="utf-8") as f:
             phase_content = f.read()
@@ -143,12 +173,6 @@ class BugFixerAgent:
         
         system_prompt = f"{global_context}\n\n## TODAY REQUIREMENTS:\n{day_context}\n\nRole: Elite Security Architect & Code Compiler Fixer. Analyze source code along with real raw compiler error logs. Auto-patch code perfectly. Output ONLY clean executable code blocks."
         sub_tasks = "\nFix errors and execute sub-tasks".join([f"- {t['desc']}" for t in target_day["sub_tasks"] if "fixer" in t['agent'] or "Bug Fixer Agent" in t['desc']])
-        
-        target_component = resolve_absolute_path(target_day["target_component"])
-        if not os.path.exists(target_component):
-            print(f"[ ⚠️ FIXER WARN ] Base source component file missing at: {target_day['target_component']}.")
-            self.write_history(1, target_day["target_component"], "Base source component file missing at", sub_tasks)
-            return True
         
         # test component 3 time(s)
         max_iterations = 3
@@ -201,6 +225,12 @@ if __name__ == "__main__":
     parser.add_argument("--phase", required=True)
     parser.add_argument("--day", required=True)
     args = parser.parse_args()
-    success = BugFixerAgent(args.phase, args.day).fix_bugs()
+    agent = BugFixerAgent(args.phase, args.day)
+    # check project whether has been initialized
+    validated, reason = agent.initialize()
+    if not validated:
+        sys.exit(0)
+    # if initialized, then fix bugs
+    success = agent.fix_bugs()
     if not success:
         sys.exit(1)
