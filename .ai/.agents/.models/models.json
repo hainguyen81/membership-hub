@@ -297,14 +297,14 @@
 	{
 		"model_name": "command-r-plus",
 		"provider": "cohere_ai",
-		"api_endpoint": "https://api.cohere.com/v1",
+		"api_endpoint": "https://api.cohere.ai/compatibility/v1",
 		"context_window": "128,000 tokens",
 		"best_for": "Reviewer Agent"
 	},
 	{
 		"model_name": "command-r7b",
 		"provider": "cohere_ai",
-		"api_endpoint": "https://api.cohere.com/v1",
+		"api_endpoint": "https://api.cohere.ai/compatibility/v1",
 		"context_window": "128,000 tokens",
 		"best_for": "Tester Agent"
 	}
