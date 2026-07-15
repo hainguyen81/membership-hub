@@ -43,19 +43,13 @@ class BugFixerAgent:
     def __init__(self, phase_str, day_num):
         self.phase_str = phase_str
         self.day_num = int(day_num)
-        # check project whether has been initialized
-        initialized, main_component = self.check_project_initialized()
-        self.project_initialized = initialized
-        self.project_main_component = main_component
-        # initialize model to check error target component
-        self.initialize()
-    
-    def initialize(self):
         self.models_pool = self.load_models_pool()
         self.active_model_index = 0
         self.client = None
         self.current_model_config = None
         self.rotate_model()
+        self.project_initialized = true
+        self.project_main_component = None
 
     def load_models_pool(self):
         with open(MODELS_POOL_PATH, "r", encoding="utf-8") as f:
@@ -226,11 +220,15 @@ class BugFixerAgent:
         system_prompt = f"{global_context}\n\n## TODAY REQUIREMENTS:\n{day_context}\n\nRole: Elite Security Architect & Code Compiler Fixer. Analyze source code along with real raw compiler error logs. Auto-patch code perfectly. Output ONLY clean executable code blocks."
         sub_tasks = "\nFix errors and execute sub-tasks".join([f"- {t['desc']}" for t in target_day["sub_tasks"] if "fixer" in t['agent'] or "Bug Fixer Agent" in t['desc']])
         
+        # check whether project had been initialized
+        project_initialized, project_main_component = self.check_project_initialized(target_day["target_component"])
+        print(f"[ ℹ️ F.Y.I ] Project had been initialized?. {project_initialized} - Project Main Component: {project_main_component}")
+        
         # test component 3 time(s)
         max_iterations = 3
         for iteration in range(1, max_iterations + 1):
             # only compile project when it had been initialized
-            is_clean, compiler_log = self.run_compile_check(target_component, self.project_initialized)
+            is_clean, compiler_log = self.run_compile_check(target_component, project_initialized)
             if is_clean:
                 print(f"[ ✅ FIXER SUCCESS ] Target codebase component compiled cleanly on iteration loop: {iteration}!")
                 self.write_history(iteration, target_day["target_component"], "Target codebase component compiled cleanly on iteration loop {iteration}", sub_tasks, compiler_log)
