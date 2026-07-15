@@ -192,8 +192,9 @@ class BugFixerAgent:
         agent_working_response_file = resolve_absolute_path(f".ai/.history/agent-fixer-ai-day-{self.day_num}.md")
         log_content = (
             f"# Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n\n"
-            f"* **{target_component}**\n"
-            f"  - {content}\n\n"
+            f"* **{target_component}**\n\n---\n\n"
+            f"{content}\n\n"
+            f"---\n\n"
         )
         with open(agent_working_response_file, "a", encoding="utf-8") as file:
             file.write(log_content)
