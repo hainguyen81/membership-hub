@@ -27,6 +27,7 @@ from agent_helper import resolve_absolute_path
 STEPS_PLAN_DIR     = resolve_absolute_path(".ai/.agents/.steps")
 BACKEND_DOCKERFILE = resolve_absolute_path("sources/backend/src/main/docker/Dockerfile.native")
 FRONTEND_DOCKERFILE= resolve_absolute_path("sources/frontend/Dockerfile")
+agent_working_history_file  = resolve_absolute_path("sources/.history/agent-gcp.md")
 
 class GCPAgent:
     """
@@ -65,6 +66,16 @@ class GCPAgent:
             os.remove("gcp-key.json")
         else:
             print("[ ⚠️ GCP-AGENT WARNING ] Missing parameters inside GCP_SECRETS. Relying on active local shell auth context.")
+    
+    def write_history(self, registry_image, tag):
+        # write working history
+        history_content = (
+            f"# Day {self.day_num}: Image already published safely to GAR\n"
+            f"* **Image Registry**: {registry_image}\n"
+            f"* **Tag**: {tag}\n"
+        )
+        with open(agent_working_history_file, "a", encoding="utf-8") as file:
+            file.write(history_content)
 
     def execute_gcp_pipeline(self):
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
@@ -102,6 +113,9 @@ class GCPAgent:
         print(f"[GCP-AGENT PUSH] Uploading image binary up to Google Artifact Registry...")
         subprocess.run(["docker", "push", registry_image], check=True)
         print(f"[ ✅ GCP-AGENT SUCCESS ] Image version {self.image_tag} published safely to GAR!")
+        
+        # write history
+        self.write_history(registry_image, self.image_tag)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

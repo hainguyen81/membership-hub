@@ -30,6 +30,7 @@ MODELS_POOL_PATH  = resolve_absolute_path(".ai/.agents/.models/models.json")
 STEPS_PLAN_DIR    = resolve_absolute_path(".ai/.agents/.steps")
 BACKEND_WORKSPACE = resolve_absolute_path("sources/backend")
 FRONTEND_WORKSPACE= resolve_absolute_path("sources/frontend")
+agent_working_history_file  = resolve_absolute_path("sources/.history/agent-fixer.md")
 
 class BugFixerAgent:
     """
@@ -98,6 +99,16 @@ class BugFixerAgent:
         else:
             result = subprocess.run(["npm", "run", "build"], cwd=FRONTEND_WORKSPACE, capture_output=True, text=True, timeout=120)
         return (result.returncode == 0, result.stdout + "\n" + result.stderr)
+    
+    def write_history(self, itegration, target_component, component_desc, user_prompt):
+        # write working history
+        history_content = (
+            f"# Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n" if itegration == 1 else f"## Interation {itegration}: {component_desc}"
+            f"* **{component_desc}**: {target_component}\n" if itegration == 1 else f"* **Target Component**: {target_component}"
+            f"* **📝 Prompt / Tasks**:\n-------------------------------------------------\n{user_prompt}\n\n"
+        )
+        with open(agent_working_history_file, "a", encoding="utf-8") as file:
+            file.write(history_content)
 
     def fix_bugs(self):
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
@@ -121,6 +132,7 @@ class BugFixerAgent:
         target_component = resolve_absolute_path(target_day["target_component"])
         if not os.path.exists(target_component):
             print(f"[ ⚠️ FIXER WARN ] Base source component file missing at: {target_day['target_component']}.")
+            self.write_history(1, target_day["target_component"], "Base source component file missing at", sub_tasks)
             return True
         
         # test component 3 time(s)
@@ -129,6 +141,7 @@ class BugFixerAgent:
             is_clean, compiler_log = self.run_compile_check(target_component)
             if is_clean:
                 print(f"[ ✅ FIXER SUCCESS ] Target codebase component compiled cleanly on iteration loop: {iteration}!")
+                self.write_history(iteration, target_day["target_component"], "Target codebase component compiled cleanly on iteration loop {iteration}", sub_tasks)
                 return True
                 
             print(f"[ ⚠️ FIXER WARNING ] Build check failed on validation loop: {iteration}. Ingesting raw error logs...")
@@ -157,6 +170,9 @@ class BugFixerAgent:
                 
                 with open(target_component, "w", encoding="utf-8") as f:
                     f.write(clean_code)
+                
+                # write history if neccessary
+                self.write_history(iteration, target_day["target_component"], "Responsed the fixes for target codebase component on iteration loop {iteration}", user_prompt)
             except Exception as e:
                 print(f"[ 💀 FIXER RECOVERY ] API transaction exception caught. Swapping model: {str(e)}")
                 self.active_model_index += 1

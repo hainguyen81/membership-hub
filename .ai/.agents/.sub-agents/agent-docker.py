@@ -27,6 +27,7 @@ from agent_helper import resolve_absolute_path
 STEPS_PLAN_DIR     = resolve_absolute_path(".ai/.agents/.steps")
 BACKEND_DOCKERFILE = resolve_absolute_path("sources/backend/src/main/docker/Dockerfile.native")
 FRONTEND_DOCKERFILE= resolve_absolute_path(("sources/frontend/Dockerfile")
+agent_working_history_file  = resolve_absolute_path("sources/.history/agent-docker.md")
 
 class DockerHubAgent:
     """
@@ -67,6 +68,15 @@ class DockerHubAgent:
             print("[ ✅ DOCKERHUB-AGENT SUCCESS ] Docker Hub authentication session activated successfully.")
         else:
             print("[ ⚠️ DOCKERHUB-AGENT WARNING ] Missing data keys parameters inside DOCKERHUB_SECRETS mapping registry.")
+    
+    def write_history(self, target_image, desc):
+        # write working history
+        history_content = (
+            f"# Day {self.day_num}: Build DockerHub Image {target_image}\n"
+            f"* **Target Image Tag**: {target_image}\n"
+        )
+        with open(agent_working_history_file, "a", encoding="utf-8") as file:
+            file.write(history_content)
 
     def execute_dockerhub_pipeline(self):
         steps_path = f"{STEPS_PLAN_DIR}/phase-{self.phase_str}.agent.steps.json"
@@ -104,6 +114,9 @@ class DockerHubAgent:
         print(f"[DOCKERHUB-AGENT PUSH] Streaming production release tag across remote Docker Hub brokers pipelines...")
         subprocess.run(["docker", "push", dockerhub_target_image], check=True)
         print(f"[ ✅ DOCKERHUB-AGENT SUCCESS] Image package {dockerhub_target_image} successfully committed upstream!")
+        
+        # write history
+        self.write_history(dockerhub_target_image)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

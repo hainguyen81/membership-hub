@@ -27,7 +27,7 @@ from agent_helper import resolve_absolute_path
 # ==============================================================================
 MODELS_POOL_PATH            = resolve_absolute_path(".ai/.agents/.models/models.json")
 STEPS_PLAN_DIR              = resolve_absolute_path(".ai/.agents/.steps")
-agent_working_history_file  = resolve_absolute_path("sources/.history/agent-coder.log")
+agent_working_history_file  = resolve_absolute_path("sources/.history/agent-coder.md")
 
 class CoderAgent:
     """
@@ -145,8 +145,9 @@ class CoderAgent:
                 
                 # write working history
                 history_content = (
-                    f"Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n"
-                    f"- Production source codebase generated at target destination: {target_day['target_component']}\n"
+                    f"# Day {self.day_num}: model {self.current_model_config['model_name']} - API Endpoint {self.current_model_config['api_endpoint']}\n"
+                    f"* **Production source codebase generated at target destination**: {target_day['target_component']}\n"
+                    f"* **📝 Prompt**:\n-------------------------------------------------\n{user_prompt}\n\n"
                 )
                 with open(agent_working_history_file, "a", encoding="utf-8") as file:
                     file.write(history_content)
