@@ -52,6 +52,7 @@ jobs:
       - name: "📦 Clone Workspace Branch Assets"
         uses: actions/checkout@v7
         with:
+          ref: "features/development-day-${{ inputs.day }}"
           path: '.'
           fetch-depth: 0
           clean: true
