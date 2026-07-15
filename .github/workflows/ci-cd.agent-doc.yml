@@ -5,7 +5,7 @@
 # Updates data definitions, ERDs, and API specs directly into ARCHITECTURE.md.
 # ==============================================================================
 
-name: "📝 Documentation Agent Worker"
+name: "🤖✍️ Documentation Agent Worker"
 
 on:
   workflow_call:
@@ -34,7 +34,7 @@ env:
 
 jobs:
   execute_doc:
-    name: "📝 Execute Architectural Spec Technical Writing"
+    name: "🤖✍️ Execute Architectural Spec Technical Writing"
     runs-on: ubuntu-latest
     
     steps:

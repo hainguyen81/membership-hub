@@ -5,7 +5,7 @@
 # Enforces rigid code coverage standards matching enterprise structural policies.
 # ==============================================================================
 
-name: "🧪 Tester Agent Worker"
+name: "🤖 Tester Agent Worker"
 
 on:
   workflow_call:
@@ -34,7 +34,7 @@ env:
 
 jobs:
   execute_tester:
-    name: "🧪 Execute QA Quality Gate Creation Task"
+    name: "🤖 Execute QA Quality Gate Creation Task"
     runs-on: ubuntu-latest
     
     steps:

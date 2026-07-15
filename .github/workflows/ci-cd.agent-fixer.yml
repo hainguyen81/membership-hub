@@ -5,7 +5,7 @@
 # Triggers automated verification builds, catches error logs, and auto-patches syntax.
 # ==============================================================================
 
-name: "🩹 Fixer Agent Worker"
+name: "🤖🛠️ Fixer Agent Worker"
 
 on:
   workflow_call:
@@ -34,7 +34,7 @@ env:
 
 jobs:
   execute_fixer:
-    name: "🩹 Execute Self-Healing Compilation Test Loops"
+    name: "🤖🛠️ Execute Self-Healing Compilation Test Loops"
     runs-on: ubuntu-latest
     
     steps:

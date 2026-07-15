@@ -5,7 +5,7 @@
 # Inputs parameters are passed down sequentially from the main orchestrator engine.
 # ==============================================================================
 
-name: "🧑‍💻 Coder Agent Worker"
+name: "👩‍💻 Coder Agent Worker"
 
 on:
   workflow_call:
@@ -34,7 +34,7 @@ env:
 
 jobs:
   execute_coder:
-    name: "🧑‍💻 Execute Core Architectural Generation Task"
+    name: "👩‍💻 Execute Core Architectural Generation Task"
     runs-on: ubuntu-latest
     
     steps:
