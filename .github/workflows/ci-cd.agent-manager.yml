@@ -143,8 +143,8 @@ jobs:
           git reset --hard HEAD
           git clean -ffdx
           
-          echo "- Checkout branch: $TARGET_BRANCH"
           BRANCH_NAME="features/development"
+          echo "- Checkout branch: $BRANCH_NAME"
           
           # Initialize independent sub-branch tracking layer cleanly
           if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME" || git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
@@ -152,15 +152,15 @@ jobs:
             # Wipe again right before shifting to the existing target daily development branch
             git checkout -f "$BRANCH_NAME"
             
-            echo "- Merge master to $TARGET_BRANCH"
-            git merge origin/master --no-ff -m "ci: auto-merge master into $TARGET_BRANCH [skip ci]"
+            echo "- Merge master to $BRANCH_NAME"
+            git merge origin/master --no-ff -m "ci: auto-merge master into $BRANCH_NAME [skip ci]"
           else
             echo "🚀 [GIT BRANCH FORK] Provisioning pristine branch [$BRANCH_NAME] initialized from stable trunk root [features/development]"
             git checkout -f -b "$BRANCH_NAME"
           fi
           
-          echo "- Commit/Push changes from master to $TARGET_BRANCH"
-          git push origin $TARGET_BRANCH
+          echo "- Commit/Push changes from master to $BRANCH_NAME"
+          git push origin $BRANCH_NAME
       
       # Block 1.5: Inject secure global environment parameters and service boundaries
       - name: "🔧 [ features/developmet-day-X ] Configure Machine Git Automation Credentials"
