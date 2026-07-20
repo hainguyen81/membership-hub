@@ -257,7 +257,7 @@ jobs:
   # JOBS 2-8: DYNAMIC REUSABLE SUB-AGENT DEPLOYMENT MAPPINGS
   # ==============================================================================
   run_coder:
-    name: "🧑‍💻 Coder Agent Worker"
+    name: "👩‍💻 Coder Agent Worker"
     needs: state_resolver_job
     if: |
       needs.state_resolver_job.outputs.exec_mode == 'all_scheduled' || 
