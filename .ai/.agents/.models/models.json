@@ -307,6 +307,23 @@
 		"api_endpoint": "https://api.cohere.ai/compatibility/v1",
 		"context_window": "128,000 tokens",
 		"best_for": "Tester Agent"
+	},
+	{
+		"separator": "------------------ CLOUDFLARE ENDPOINTS BOUNDARY ------------------"
+	},
+	{
+		"model_name": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+		"provider": "Cloudflare Workers AI",
+		"api_endpoint": "https://api.cloudflare.com/client/v4/accounts/0efe7c0dfd3fc020b99938f5618df8f4/ai/v1",
+		"context_window": "131,000 tokens",
+		"best_for": "Writer Agent"
+	},
+	{
+		"model_name": "@cf/meta/llama-4-scout-17b-16e-instruct",
+		"provider": "Cloudflare Workers AI",
+		"api_endpoint": "https://api.cloudflare.com/client/v4/accounts/0efe7c0dfd3fc020b99938f5618df8f4/ai/v1",
+		"context_window": "131,000 tokens",
+		"best_for": "Writer Agent"
 	}
 ]
 
