@@ -49,4 +49,5 @@ jobs:
           repository: ${{ github.repository }}
           retain_days: 1          # keep 1 day (clean all history)
           keep_minimum_runs: 1    # keep at least one latest run to avoid system error
+          use_daily_retention: true     # Changes the minimum run count from overall to per-day
 
