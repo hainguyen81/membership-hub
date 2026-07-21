@@ -382,37 +382,37 @@
 		"context_window": "131,000 tokens"
 	},
 	{
-		"model_name": "Phi-4",
+		"model_name": "microsoft/Phi-4",
 		"provider": "GitHub Merketplace Models",
 		"api_endpoint": "https://models.github.ai/inference",
 		"context_window": "16,000 tokens"
 	},
 	{
-		"model_name": "Phi-4-mini-instruct",
+		"model_name": "microsoft/Phi-4-mini-instruct",
 		"provider": "GitHub Merketplace Models",
 		"api_endpoint": "https://models.github.ai/inference",
 		"context_window": "128,000 tokens"
 	},
 	{
-		"model_name": "DeepSeek-R1",
+		"model_name": "deepseek/DeepSeek-R1",
 		"provider": "GitHub Merketplace Models",
 		"api_endpoint": "https://models.github.ai/inference",
 		"context_window": "128,000 tokens"
 	},
 	{
-		"model_name": "DeepSeek-V3-0324",
+		"model_name": "deepseek/DeepSeek-V3-0324",
 		"provider": "GitHub Merketplace Models",
 		"api_endpoint": "https://models.github.ai/inference",
 		"context_window": "128,000 tokens"
 	},
 	{
-		"model_name": "Llama-3.3-70B-Instruct",
+		"model_name": "meta/Llama-3.3-70B-Instruct",
 		"provider": "GitHub Merketplace Models",
 		"api_endpoint": "https://models.github.ai/inference",
 		"context_window": "128,000 tokens"
 	},
 	{
-		"model_name": "Meta-Llama-3.1-8B-Instruct",
+		"model_name": "meta/Meta-Llama-3.1-8B-Instruct",
 		"provider": "GitHub Merketplace Models",
 		"api_endpoint": "https://models.github.ai/inference",
 		"context_window": "128,000 tokens"
