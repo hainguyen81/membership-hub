@@ -1,806 +1,632 @@
 [
-	{
-		"separator": "------------------ OPENROUTER ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "meta-llama/llama-3.3-70b-instruct:free",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1"
-	},
-	{
-		"model_name": "meta-llama/llama-3.3-70b-instruct",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "PERMANENT FREE - Clean instruction boundaries. Best for Tester Agent to compose strict JUnit 5 suites."
-	},
-	{
-		"model_name": "qwen/qwen-2.5-coder-32b-instruct:free",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1"
-	},
-	{
-		"model_name": "qwen/qwen-2.5-coder-32b-instruct",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "PERMANENT FREE - Dedicated source code engineering. Best for building enterprise Next.js layout blocks."
-	},
-	{
-		"model_name": "deepseek/deepseek-r1:free",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1"
-	},
-	{
-		"model_name": "google/gemma-4-31b-instruct",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "256,000 tokens",
-		"best_for": "PERMANENT FREE - Resilient backup instance. Activates when primary model providers encounter network timeouts."
-	},
-	{
-		"model_name": "minimax/minimax-m3",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.3-codex",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "cohere/north-mini-code:free",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "qwen/qwen3-coder-next",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "qwen/qwen3-coder",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "qwen/qwen3-coder-30b-a3b-instruct",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.1-codex-mini",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "qwen/qwen3-coder-plus",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "qwen/qwen3-coder-flash",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5-codex",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.2-codex",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.1-codex",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "mistralai/codestral-2508",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.1-codex-max",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "qwen/qwen-2.5-coder-32b-instruct",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openrouter/pareto-code",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-oss-20b:free",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-oss-20b",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-oss-120b",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-4o-mini-2024-07-18",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-4o-mini",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-3.5-turbo",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-4o-2024-11-20",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-4o-2024-08-06",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-4o",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-4o-2024-05-13",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5-nano",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-4.1-nano",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.4-nano",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.1-codex-mini",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5-mini",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-4.1-mini",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "~openai/gpt-mini-latest",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.4-mini",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.6-luna-pro",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.6-luna",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.1-codex-max",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.1",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.1-chat",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.1-codex",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5-codex",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5-chat",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.3-codex",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.2-codex",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.2-chat",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "~openai/gpt-latest",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"model_name": "openai/gpt-5.5",
-		"provider": "OpenRouter AI",
-		"api_endpoint": "https://openrouter.ai/api/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
-	},
-	{
-		"separator": "------------------ GROQ CONSOLE ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "llama-3.3-70b-versatile",
-		"provider": "Groq Console",
-		"api_endpoint": "https://api.groq.com/openai/v1"
-	},
-	{
-		"model_name": "groq/compound",
-		"provider": "Groq Console",
-		"api_endpoint": "https://api.groq.com/openai/v1"
-	},
-	{
-		"model_name": "groq/compound-mini",
-		"provider": "Groq Console",
-		"api_endpoint": "https://api.groq.com/openai/v1",
-		"best_for": "Coder Agent"
-	},
-	{
-		"model_name": "llama-3.1-8b-instant",
-		"provider": "Groq Console",
-		"api_endpoint": "https://api.groq.com/openai/v1",
-		"best_for": "Fixer Agent"
-	},
-	{
-		"model_name": "openai/gpt-oss-120b",
-		"provider": "Groq Console",
-		"api_endpoint": "https://api.groq.com/openai/v1",
-		"best_for": "Writer Agent"
-	},
-	{
-		"model_name": "openai/gpt-oss-20b",
-		"provider": "Groq Console",
-		"api_endpoint": "https://api.groq.com/openai/v1",
-		"best_for": "Tester Agent"
-	},
-	{
-		"model_name": "openai/gpt-oss-safeguard-20b",
-		"provider": "Groq Console",
-		"api_endpoint": "https://api.groq.com/openai/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "FREE TIER - Instantaneous processing speed via LPU hardware. Exceptional for rapid syntax fixes."
-	},
-	{
-		"model_name": "qwen/qwen3.6-27b",
-		"provider": "Groq Console",
-		"api_endpoint": "https://api.groq.com/openai/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "FREE TIER - Speculative decoding layout optimized for accelerated multi-agent logic validation passes."
-	},
-	{
-		"model_name": "meta-llama/llama-prompt-guard-2-22m",
-		"provider": "Groq Console",
-		"api_endpoint": "https://api.groq.com/openai/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "FREE TIER - Speculative decoding layout optimized for accelerated multi-agent logic validation passes."
-	},
-	{
-		"model_name": "meta-llama/llama-prompt-guard-2-86m",
-		"provider": "Groq Console",
-		"api_endpoint": "https://api.groq.com/openai/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "FREE TIER - Speculative decoding layout optimized for accelerated multi-agent logic validation passes."
-	},
-	{
-		"separator": "------------------ SAMBANOVA ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "DeepSeek-V3.1",
-		"provider": "Sambanova AI",
-		"api_endpoint": "https://api.sambanova.ai/v1"
-	},
-	{
-		"model_name": "DeepSeek-V3.2",
-		"provider": "Sambanova AI",
-		"api_endpoint": "https://api.sambanova.ai/v1"
-	},
-	{
-		"model_name": "Meta-Llama-3.3-70B-Instruct",
-		"provider": "Sambanova AI",
-		"api_endpoint": "https://api.sambanova.ai/v1"
-	},
-	{
-		"model_name": "MiniMax-M2.7",
-		"provider": "Sambanova AI",
-		"api_endpoint": "https://api.sambanova.ai/v1"
-	},
-	{
-		"model_name": "gemma-4-31B-it",
-		"provider": "Sambanova AI",
-		"api_endpoint": "https://api.sambanova.ai/v1"
-	},
-	{
-		"model_name": "gpt-oss-120b",
-		"provider": "Sambanova AI",
-		"api_endpoint": "https://api.sambanova.ai/v1"
-	},
-	{
-		"separator": "------------------ GOOGLE AI STUDIO ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "models/gemini-2.5-flash",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"model_name": "models/gemini-2.5-pro",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"model_name": "models/gemini-2.0-flash",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"model_name": "models/gemini-2.0-flash-001",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"model_name": "models/gemini-2.0-flash-lite-001",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"model_name": "models/gemini-2.0-flash-lite",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"model_name": "models/gemma-4-26b-a4b-it",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"model_name": "models/gemma-4-31b-it",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"model_name": "models/gemini-flash-latest",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"model_name": "models/gemini-flash-lite-latest",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"model_name": "models/gemini-pro-latest",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"model_name": "models/gemini-2.5-flash-lite",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"model_name": "models/gemini-3.5-flash",
-		"provider": "Google AI Studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
-	},
-	{
-		"separator": "------------------ DEEPSEEK PLATFORM ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "deepseek-v4-flash",
-		"provider": "deepseek_platform",
-		"api_endpoint": "https://api.deepseek.com/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "FREE CREDITS - Elite coding capabilities. Best for Bug Fixer Agent to handle compiler stack traces."
-	},
-	{
-		"model_name": "deepseek-v4-pro",
-		"provider": "deepseek_platform",
-		"api_endpoint": "https://api.deepseek.com/v1",
-		"context_window": "1,000,000 tokens",
-		"best_for": "FREE CREDITS - Deep reasoning logic. Best for non-duplicable QR processing and dynamic partition logic."
-	},
-	{
-		"separator": "------------------ FIREWORKS AI ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "qwen-2.5-coder-32b",
-		"provider": "fireworks_ai",
-		"api_endpoint": "https://api.fireworks.ai/inference/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "FREE DEVELOPER CREDITS - Extremely structured JSON schema output enforcement. Ideal for pipeline automated configs parsing."
-	},
-	{
-		"model_name": "meta/llama-3.3-70b-instruct",
-		"provider": "fireworks_ai",
-		"api_endpoint": "https://api.fireworks.ai/inference/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "FREE DEVELOPER CREDITS - Robust architectural auditing context layout engine for the Fixer Agent compile gates."
-	},
-	{
-		"separator": "------------------ MISTRAL AI ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "codestral-latest",
-		"provider": "mistral_ai",
-		"api_endpoint": "https://api.mistral.ai/v1",
-		"context_window": "32,000 tokens",
-		"best_for": "FREE DEVELOPER ACCOUNT - Premium Java compilation metrics. Best for designing Quarkus non-blocking modules."
-	},
-	{
-		"model_name": "mistral-large-latest",
-		"provider": "mistral_ai",
-		"api_endpoint": "https://api.mistral.ai/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "Reviewer / Tester Agent"
-	},
-	{
-		"model_name": "mistral-small-latest",
-		"provider": "mistral_ai",
-		"api_endpoint": "https://api.mistral.ai/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "Tester Agent"
-	},
-	{
-		"separator": "------------------ CEREBRAS CLOUD ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "llama3.3-70b",
-		"provider": "cerebras_cloud",
-		"api_endpoint": "https://api.cerebras.ai/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "FREE BETA TIER - Hyper-speed inference execution metrics. Resolves light component tasks in sub-second timelines."
-	},
-	{
-		"separator": "------------------ NVIDIA (LEPTON) CLOUD ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "meta-llama/llama-3.3-70b-instruct",
-		"provider": "nvidia_lepton_ai",
-		"api_endpoint": "https://integrate.api.nvidia.com/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "FREE TIER SANDBOX - Confined deployment script verifier. Cross-checks GCP deployment parameters cleanly before build execution."
-	},
-	{
-		"model_name": "deepseek/deepseek-r1",
-		"provider": "nvidia_lepton_ai",
-		"api_endpoint": "https://integrate.api.nvidia.com/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "Fixer Agent"
-	},
-	{
-		"model_name": "nvidia/nemotron-4-340b-instruct",
-		"provider": "nvidia_lepton_ai",
-		"api_endpoint": "https://integrate.api.nvidia.com/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "Coder / Writer Agent"
-	},
-	{
-		"separator": "------------------ GITHUB CLOUD ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "gpt-4o-mini",
-		"provider": "github_ai",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "128,000 tokens",
-		"best_for": "Coder / Writer Agent"
-	},
-	{
-		"model_name": "phi-4",
-		"provider": "github_ai",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "16,384 tokens",
-		"best_for": "Tester Agent"
-	},
-	{
-		"model_name": "codestral-2501",
-		"provider": "github_ai",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "32,000 tokens",
-		"best_for": "Fixer / Reviewer Agent"
-	},
-	{
-		"separator": "------------------ KILO CLOUD ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "kilo-auto/free",
-		"provider": "kilo_ai",
-		"api_endpoint": "https://api.kilo.ai/api/gateway",
-		"context_window": "128,000 tokens",
-		"best_for": "Coder / Tester Agent"
-	},
-	{
-		"model_name": "minimax/minimax-m2.5:free",
-		"provider": "kilo_ai",
-		"api_endpoint": "https://api.kilo.ai/api/gateway",
-		"context_window": "128,000 tokens",
-		"best_for": "Reviewer Agent"
-	},
-	{
-		"model_name": "stepfun/step-3.5-flash:free",
-		"provider": "kilo_ai",
-		"api_endpoint": "https://api.kilo.ai/api/gateway",
-		"context_window": "256,000 tokens",
-		"best_for": "Reviewer Agent"
-	},
-	{
-		"separator": "------------------ COHERE CLOUD ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "command-r-plus",
-		"provider": "cohere_ai",
-		"api_endpoint": "https://api.cohere.ai/compatibility/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "Reviewer Agent"
-	},
-	{
-		"model_name": "command-r7b",
-		"provider": "cohere_ai",
-		"api_endpoint": "https://api.cohere.ai/compatibility/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "Tester Agent"
-	},
-	{
-		"separator": "------------------ CLOUDFLARE ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
-		"provider": "Cloudflare Workers AI",
-		"api_endpoint": "https://api.cloudflare.com/client/v4/accounts/0efe7c0dfd3fc020b99938f5618df8f4/ai/v1",
-		"context_window": "131,000 tokens",
-		"best_for": "Writer Agent"
-	},
-	{
-		"model_name": "@cf/meta/llama-4-scout-17b-16e-instruct",
-		"provider": "Cloudflare Workers AI",
-		"api_endpoint": "https://api.cloudflare.com/client/v4/accounts/0efe7c0dfd3fc020b99938f5618df8f4/ai/v1",
-		"context_window": "131,000 tokens",
-		"best_for": "Writer Agent"
-	},
-	{
-		"separator": "------------------ AIONLABS ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "aion-labs/aion-2.5",
-		"provider": "Aion Labs",
-		"api_endpoint": "https://api.aionlabs.ai/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "Writer Agent"
-	},
-	{
-		"model_name": "aion-labs/aion-rp-llama-3.1-8b",
-		"provider": "Aion Labs",
-		"api_endpoint": "https://api.aionlabs.ai/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "Writer Agent"
-	},
-	{
-		"separator": "------------------ GITHUB ENDPOINTS BOUNDARY ------------------"
-	},
-	{
-		"model_name": "openai/gpt-4.1",
-		"provider": "GitHub Merketplace Models",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "1,049,000 tokens"
-	},
-	{
-		"model_name": "openai/gpt-4.1-mini",
-		"provider": "GitHub Merketplace Models",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "1,049,000 tokens"
-	},
-	{
-		"model_name": "openai/gpt-4.1-mini",
-		"provider": "GitHub Merketplace Models",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "1,049,000 tokens"
-	},
-	{
-		"model_name": "openai/gpt-4.1-nano",
-		"provider": "GitHub Merketplace Models",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "1,049,000 tokens"
-	},
-	{
-		"model_name": "openai/gpt-4o",
-		"provider": "GitHub Merketplace Models",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "131,000 tokens"
-	},
-	{
-		"model_name": "microsoft/Phi-4",
-		"provider": "GitHub Merketplace Models",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "16,000 tokens"
-	},
-	{
-		"model_name": "microsoft/Phi-4-mini-instruct",
-		"provider": "GitHub Merketplace Models",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "128,000 tokens"
-	},
-	{
-		"model_name": "deepseek/DeepSeek-R1",
-		"provider": "GitHub Merketplace Models",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "128,000 tokens"
-	},
-	{
-		"model_name": "deepseek/DeepSeek-V3-0324",
-		"provider": "GitHub Merketplace Models",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "128,000 tokens"
-	},
-	{
-		"model_name": "meta/Llama-3.3-70B-Instruct",
-		"provider": "GitHub Merketplace Models",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "128,000 tokens"
-	},
-	{
-		"model_name": "meta/Meta-Llama-3.1-8B-Instruct",
-		"provider": "GitHub Merketplace Models",
-		"api_endpoint": "https://models.github.ai/inference",
-		"context_window": "128,000 tokens"
-	}
+    {
+        "separator": "------------------ OPENROUTER ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "meta-llama/llama-3.3-70b-instruct:free",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "meta-llama/llama-3.3-70b-instruct",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "qwen/qwen-2.5-coder-32b-instruct:free",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "qwen/qwen-2.5-coder-32b-instruct",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "deepseek/deepseek-r1:free",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "google/gemma-4-31b-instruct",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "minimax/minimax-m3",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.3-codex",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "cohere/north-mini-code:free",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "qwen/qwen3-coder-next",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "qwen/qwen3-coder",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "qwen/qwen3-coder-30b-a3b-instruct",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.1-codex-mini",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "qwen/qwen3-coder-plus",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "qwen/qwen3-coder-flash",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5-codex",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.2-codex",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.1-codex",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "mistralai/codestral-2508",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.1-codex-max",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "qwen/qwen-2.5-coder-32b-instruct",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openrouter/pareto-code",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-oss-20b:free",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-oss-20b",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-oss-120b",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-4o-mini-2024-07-18",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-4o-mini",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-3.5-turbo",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-4o-2024-11-20",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-4o-2024-08-06",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-4o",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-4o-2024-05-13",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5-nano",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-4.1-nano",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.4-nano",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.1-codex-mini",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5-mini",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-4.1-mini",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "~openai/gpt-mini-latest",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.4-mini",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.6-luna-pro",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.6-luna",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.1-codex-max",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.1",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.1-chat",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.1-codex",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5-codex",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5-chat",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.3-codex",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.2-codex",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.2-chat",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "~openai/gpt-latest",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "openai/gpt-5.5",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "separator": "------------------ GROQ CONSOLE ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "llama-3.3-70b-versatile",
+        "provider": "Groq Console",
+        "api_endpoint": "https://api.groq.com/openai/v1"
+    },
+    {
+        "model_name": "groq/compound",
+        "provider": "Groq Console",
+        "api_endpoint": "https://api.groq.com/openai/v1"
+    },
+    {
+        "model_name": "groq/compound-mini",
+        "provider": "Groq Console",
+        "api_endpoint": "https://api.groq.com/openai/v1"
+    },
+    {
+        "model_name": "llama-3.1-8b-instant",
+        "provider": "Groq Console",
+        "api_endpoint": "https://api.groq.com/openai/v1"
+    },
+    {
+        "model_name": "openai/gpt-oss-120b",
+        "provider": "Groq Console",
+        "api_endpoint": "https://api.groq.com/openai/v1"
+    },
+    {
+        "model_name": "openai/gpt-oss-20b",
+        "provider": "Groq Console",
+        "api_endpoint": "https://api.groq.com/openai/v1"
+    },
+    {
+        "model_name": "openai/gpt-oss-safeguard-20b",
+        "provider": "Groq Console",
+        "api_endpoint": "https://api.groq.com/openai/v1"
+    },
+    {
+        "model_name": "qwen/qwen3.6-27b",
+        "provider": "Groq Console",
+        "api_endpoint": "https://api.groq.com/openai/v1"
+    },
+    {
+        "model_name": "meta-llama/llama-prompt-guard-2-22m",
+        "provider": "Groq Console",
+        "api_endpoint": "https://api.groq.com/openai/v1"
+    },
+    {
+        "model_name": "meta-llama/llama-prompt-guard-2-86m",
+        "provider": "Groq Console",
+        "api_endpoint": "https://api.groq.com/openai/v1"
+    },
+    {
+        "separator": "------------------ SAMBANOVA ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "DeepSeek-V3.1",
+        "provider": "Sambanova AI",
+        "api_endpoint": "https://api.sambanova.ai/v1"
+    },
+    {
+        "model_name": "DeepSeek-V3.2",
+        "provider": "Sambanova AI",
+        "api_endpoint": "https://api.sambanova.ai/v1"
+    },
+    {
+        "model_name": "Meta-Llama-3.3-70B-Instruct",
+        "provider": "Sambanova AI",
+        "api_endpoint": "https://api.sambanova.ai/v1"
+    },
+    {
+        "model_name": "MiniMax-M2.7",
+        "provider": "Sambanova AI",
+        "api_endpoint": "https://api.sambanova.ai/v1"
+    },
+    {
+        "model_name": "gemma-4-31B-it",
+        "provider": "Sambanova AI",
+        "api_endpoint": "https://api.sambanova.ai/v1"
+    },
+    {
+        "model_name": "gpt-oss-120b",
+        "provider": "Sambanova AI",
+        "api_endpoint": "https://api.sambanova.ai/v1"
+    },
+    {
+        "separator": "------------------ GOOGLE AI STUDIO ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "models/gemini-2.5-flash",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "model_name": "models/gemini-2.5-pro",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "model_name": "models/gemini-2.0-flash",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "model_name": "models/gemini-2.0-flash-001",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "model_name": "models/gemini-2.0-flash-lite-001",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "model_name": "models/gemini-2.0-flash-lite",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "model_name": "models/gemma-4-26b-a4b-it",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "model_name": "models/gemma-4-31b-it",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "model_name": "models/gemini-flash-latest",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "model_name": "models/gemini-flash-lite-latest",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "model_name": "models/gemini-pro-latest",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "model_name": "models/gemini-2.5-flash-lite",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "model_name": "models/gemini-3.5-flash",
+        "provider": "Google AI Studio",
+        "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+    },
+    {
+        "separator": "------------------ DEEPSEEK PLATFORM ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "deepseek-v4-flash",
+        "provider": "deepseek_platform",
+        "api_endpoint": "https://api.deepseek.com/v1"
+    },
+    {
+        "model_name": "deepseek-v4-pro",
+        "provider": "deepseek_platform",
+        "api_endpoint": "https://api.deepseek.com/v1"
+    },
+    {
+        "separator": "------------------ FIREWORKS AI ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "qwen-2.5-coder-32b",
+        "provider": "fireworks_ai",
+        "api_endpoint": "https://api.fireworks.ai/inference/v1"
+    },
+    {
+        "model_name": "meta/llama-3.3-70b-instruct",
+        "provider": "fireworks_ai",
+        "api_endpoint": "https://api.fireworks.ai/inference/v1"
+    },
+    {
+        "separator": "------------------ MISTRAL AI ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "codestral-latest",
+        "provider": "mistral_ai",
+        "api_endpoint": "https://api.mistral.ai/v1"
+    },
+    {
+        "model_name": "mistral-large-latest",
+        "provider": "mistral_ai",
+        "api_endpoint": "https://api.mistral.ai/v1"
+    },
+    {
+        "model_name": "mistral-small-latest",
+        "provider": "mistral_ai",
+        "api_endpoint": "https://api.mistral.ai/v1"
+    },
+    {
+        "separator": "------------------ CEREBRAS CLOUD ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "llama3.3-70b",
+        "provider": "cerebras_cloud",
+        "api_endpoint": "https://api.cerebras.ai/v1"
+    },
+    {
+        "separator": "------------------ NVIDIA (LEPTON) CLOUD ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "meta-llama/llama-3.3-70b-instruct",
+        "provider": "nvidia_lepton_ai",
+        "api_endpoint": "https://integrate.api.nvidia.com/v1"
+    },
+    {
+        "model_name": "deepseek/deepseek-r1",
+        "provider": "nvidia_lepton_ai",
+        "api_endpoint": "https://integrate.api.nvidia.com/v1"
+    },
+    {
+        "model_name": "nvidia/nemotron-4-340b-instruct",
+        "provider": "nvidia_lepton_ai",
+        "api_endpoint": "https://integrate.api.nvidia.com/v1"
+    },
+    {
+        "separator": "------------------ GITHUB CLOUD ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "gpt-4o-mini",
+        "provider": "github_ai",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "model_name": "phi-4",
+        "provider": "github_ai",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "model_name": "codestral-2501",
+        "provider": "github_ai",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "separator": "------------------ KILO CLOUD ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "kilo-auto/free",
+        "provider": "kilo_ai",
+        "api_endpoint": "https://api.kilo.ai/api/gateway"
+    },
+    {
+        "model_name": "minimax/minimax-m2.5:free",
+        "provider": "kilo_ai",
+        "api_endpoint": "https://api.kilo.ai/api/gateway"
+    },
+    {
+        "model_name": "stepfun/step-3.5-flash:free",
+        "provider": "kilo_ai",
+        "api_endpoint": "https://api.kilo.ai/api/gateway"
+    },
+    {
+        "separator": "------------------ COHERE CLOUD ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "command-r-plus",
+        "provider": "cohere_ai",
+        "api_endpoint": "https://api.cohere.ai/compatibility/v1"
+    },
+    {
+        "model_name": "command-r7b",
+        "provider": "cohere_ai",
+        "api_endpoint": "https://api.cohere.ai/compatibility/v1"
+    },
+    {
+        "separator": "------------------ CLOUDFLARE ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "provider": "Cloudflare Workers AI",
+        "api_endpoint": "https://api.cloudflare.com/client/v4/accounts/0efe7c0dfd3fc020b99938f5618df8f4/ai/v1"
+    },
+    {
+        "model_name": "@cf/meta/llama-4-scout-17b-16e-instruct",
+        "provider": "Cloudflare Workers AI",
+        "api_endpoint": "https://api.cloudflare.com/client/v4/accounts/0efe7c0dfd3fc020b99938f5618df8f4/ai/v1"
+    },
+    {
+        "separator": "------------------ AIONLABS ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "aion-labs/aion-2.5",
+        "provider": "Aion Labs",
+        "api_endpoint": "https://api.aionlabs.ai/v1"
+    },
+    {
+        "model_name": "aion-labs/aion-rp-llama-3.1-8b",
+        "provider": "Aion Labs",
+        "api_endpoint": "https://api.aionlabs.ai/v1"
+    },
+    {
+        "separator": "------------------ GITHUB ENDPOINTS BOUNDARY ------------------"
+    },
+    {
+        "model_name": "openai/gpt-4.1",
+        "provider": "GitHub Merketplace Models",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "model_name": "openai/gpt-4.1-mini",
+        "provider": "GitHub Merketplace Models",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "model_name": "openai/gpt-4.1-mini",
+        "provider": "GitHub Merketplace Models",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "model_name": "openai/gpt-4.1-nano",
+        "provider": "GitHub Merketplace Models",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "model_name": "openai/gpt-4o",
+        "provider": "GitHub Merketplace Models",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "model_name": "microsoft/Phi-4",
+        "provider": "GitHub Merketplace Models",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "model_name": "microsoft/Phi-4-mini-instruct",
+        "provider": "GitHub Merketplace Models",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "model_name": "deepseek/DeepSeek-R1",
+        "provider": "GitHub Merketplace Models",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "model_name": "deepseek/DeepSeek-V3-0324",
+        "provider": "GitHub Merketplace Models",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "model_name": "meta/Llama-3.3-70B-Instruct",
+        "provider": "GitHub Merketplace Models",
+        "api_endpoint": "https://models.github.ai/inference"
+    },
+    {
+        "model_name": "meta/Meta-Llama-3.1-8B-Instruct",
+        "provider": "GitHub Merketplace Models",
+        "api_endpoint": "https://models.github.ai/inference"
+    }
 ]
-
-
-
