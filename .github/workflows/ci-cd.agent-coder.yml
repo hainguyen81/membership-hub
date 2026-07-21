@@ -94,7 +94,7 @@ jobs:
           pip install requests google-generativeai openai anthropic
 
       # Step 4: Invoke the localized standalone architect engine to output pristine binaries
-      - name: "🧑‍💻 Trigger Principal Architect LLM Generation Loop"
+      - name: "👩‍💻 Trigger Principal Architect LLM Generation Loop"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
           PROJECT_WORKSPACE: ${{ env.PROJECT_WORKSPACE }}
