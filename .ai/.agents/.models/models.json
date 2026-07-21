@@ -4,40 +4,372 @@
 	},
 	{
 		"model_name": "meta-llama/llama-3.3-70b-instruct:free",
+		"provider": "OpenRouter AI",
 		"api_endpoint": "https://openrouter.ai/api/v1"
 	},
 	{
 		"model_name": "meta-llama/llama-3.3-70b-instruct",
-		"provider": "openrouter_free",
+		"provider": "OpenRouter AI",
 		"api_endpoint": "https://openrouter.ai/api/v1",
 		"context_window": "128,000 tokens",
 		"best_for": "PERMANENT FREE - Clean instruction boundaries. Best for Tester Agent to compose strict JUnit 5 suites."
 	},
 	{
 		"model_name": "qwen/qwen-2.5-coder-32b-instruct:free",
+		"provider": "OpenRouter AI",
 		"api_endpoint": "https://openrouter.ai/api/v1"
 	},
 	{
 		"model_name": "qwen/qwen-2.5-coder-32b-instruct",
-		"provider": "openrouter_free",
+		"provider": "OpenRouter AI",
 		"api_endpoint": "https://openrouter.ai/api/v1",
 		"context_window": "128,000 tokens",
 		"best_for": "PERMANENT FREE - Dedicated source code engineering. Best for building enterprise Next.js layout blocks."
 	},
 	{
 		"model_name": "deepseek/deepseek-r1:free",
+		"provider": "OpenRouter AI",
 		"api_endpoint": "https://openrouter.ai/api/v1"
 	},
 	{
 		"model_name": "google/gemma-4-31b-instruct",
-		"provider": "openrouter_free",
+		"provider": "OpenRouter AI",
 		"api_endpoint": "https://openrouter.ai/api/v1",
 		"context_window": "256,000 tokens",
 		"best_for": "PERMANENT FREE - Resilient backup instance. Activates when primary model providers encounter network timeouts."
 	},
 	{
 		"model_name": "minimax/minimax-m3",
-		"provider": "openrouter_free",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.3-codex",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "cohere/north-mini-code:free",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "qwen/qwen3-coder-next",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "qwen/qwen3-coder",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "qwen/qwen3-coder-30b-a3b-instruct",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.1-codex-mini",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "qwen/qwen3-coder-plus",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "qwen/qwen3-coder-flash",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5-codex",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.2-codex",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.1-codex",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "mistralai/codestral-2508",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.1-codex-max",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "qwen/qwen-2.5-coder-32b-instruct",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openrouter/pareto-code",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-oss-20b:free",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-oss-20b",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-oss-120b",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-4o-mini-2024-07-18",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-4o-mini",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-3.5-turbo",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-4o-2024-11-20",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-4o-2024-08-06",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-4o",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-4o-2024-05-13",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5-nano",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-4.1-nano",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.4-nano",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.1-codex-mini",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5-mini",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-4.1-mini",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "~openai/gpt-mini-latest",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.4-mini",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.6-luna-pro",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.6-luna",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.1-codex-max",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.1",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.1-chat",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.1-codex",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5-codex",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5-chat",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.3-codex",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.2-codex",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.2-chat",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "~openai/gpt-latest",
+		"provider": "OpenRouter AI",
+		"api_endpoint": "https://openrouter.ai/api/v1",
+		"context_window": "1,000,000 tokens",
+		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
+	},
+	{
+		"model_name": "openai/gpt-5.5",
+		"provider": "OpenRouter AI",
 		"api_endpoint": "https://openrouter.ai/api/v1",
 		"context_window": "1,000,000 tokens",
 		"best_for": "PERMANENT FREE - Extensive long-context tracking. Best for validation of GCP and GKE delivery configs."
@@ -47,42 +379,62 @@
 	},
 	{
 		"model_name": "llama-3.3-70b-versatile",
+		"provider": "Groq Console",
 		"api_endpoint": "https://api.groq.com/openai/v1"
 	},
 	{
-		"model_name": "llama-3.3-70b-specdec",
+		"model_name": "groq/compound",
+		"provider": "Groq Console",
 		"api_endpoint": "https://api.groq.com/openai/v1"
 	},
 	{
-		"model_name": "qwen/qwen-2.5-coder-32b-instruct:free",
+		"model_name": "groq/compound-mini",
+		"provider": "Groq Console",
 		"api_endpoint": "https://api.groq.com/openai/v1",
 		"best_for": "Coder Agent"
 	},
 	{
-		"model_name": "deepseek/deepseek-r1:free",
+		"model_name": "llama-3.1-8b-instant",
+		"provider": "Groq Console",
 		"api_endpoint": "https://api.groq.com/openai/v1",
 		"best_for": "Fixer Agent"
 	},
 	{
-		"model_name": "deepseek/deepseek-chat:free",
+		"model_name": "openai/gpt-oss-120b",
+		"provider": "Groq Console",
 		"api_endpoint": "https://api.groq.com/openai/v1",
 		"best_for": "Writer Agent"
 	},
 	{
-		"model_name": "meta-llama/llama-3.3-70b-instruct:free",
+		"model_name": "openai/gpt-oss-20b",
+		"provider": "Groq Console",
 		"api_endpoint": "https://api.groq.com/openai/v1",
 		"best_for": "Tester Agent"
 	},
 	{
-		"model_name": "qwen-2.5-coder-32b-instruct",
-		"provider": "groq_console",
+		"model_name": "openai/gpt-oss-safeguard-20b",
+		"provider": "Groq Console",
 		"api_endpoint": "https://api.groq.com/openai/v1",
 		"context_window": "128,000 tokens",
 		"best_for": "FREE TIER - Instantaneous processing speed via LPU hardware. Exceptional for rapid syntax fixes."
 	},
 	{
-		"model_name": "meta-llama/llama-3.3-70b-specdec",
-		"provider": "groq_console",
+		"model_name": "qwen/qwen3.6-27b",
+		"provider": "Groq Console",
+		"api_endpoint": "https://api.groq.com/openai/v1",
+		"context_window": "128,000 tokens",
+		"best_for": "FREE TIER - Speculative decoding layout optimized for accelerated multi-agent logic validation passes."
+	},
+	{
+		"model_name": "meta-llama/llama-prompt-guard-2-22m",
+		"provider": "Groq Console",
+		"api_endpoint": "https://api.groq.com/openai/v1",
+		"context_window": "128,000 tokens",
+		"best_for": "FREE TIER - Speculative decoding layout optimized for accelerated multi-agent logic validation passes."
+	},
+	{
+		"model_name": "meta-llama/llama-prompt-guard-2-86m",
+		"provider": "Groq Console",
 		"api_endpoint": "https://api.groq.com/openai/v1",
 		"context_window": "128,000 tokens",
 		"best_for": "FREE TIER - Speculative decoding layout optimized for accelerated multi-agent logic validation passes."
@@ -335,14 +687,14 @@
 		"separator": "------------------ AIONLABS ENDPOINTS BOUNDARY ------------------"
 	},
 	{
-		"model_name": "aion-2.5",
+		"model_name": "aion-labs/aion-2.5",
 		"provider": "Aion Labs",
 		"api_endpoint": "https://api.aionlabs.ai/v1",
 		"context_window": "128,000 tokens",
 		"best_for": "Writer Agent"
 	},
 	{
-		"model_name": "aion-rp-llama-3.1-8b",
+		"model_name": "aion-labs/aion-rp-llama-3.1-8b",
 		"provider": "Aion Labs",
 		"api_endpoint": "https://api.aionlabs.ai/v1",
 		"context_window": "128,000 tokens",
