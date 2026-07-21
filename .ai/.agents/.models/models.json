@@ -443,71 +443,102 @@
 		"separator": "------------------ SAMBANOVA ENDPOINTS BOUNDARY ------------------"
 	},
 	{
-		"model_name": "llama-3.3-70b-versatile",
-		"api_endpoint": "https://api.sambanova.ai/v1",
-		"best_for": "Tester / Writer Agent",
-		"context_window": "128,000 tokens"
-	},
-	{
-		"model_name": "qwen-2.5-coder-32b",
-		"api_endpoint": "https://api.sambanova.ai/v1",
-		"best_for": "Coder Agent",
-		"context_window": "32,000 tokens"
-	},
-	{
-		"model_name": "deepseek-r1-distill-llama-70b",
-		"api_endpoint": "https://api.sambanova.ai/v1",
-		"best_for": "Fixer / Reviewer Agent",
-		"context_window": "128,000 tokens"
-	},
-	{
-		"model_name": "Meta-Llama-3.3-70b-Instruct",
+		"model_name": "DeepSeek-V3.1",
+		"provider": "Sambanova AI",
 		"api_endpoint": "https://api.sambanova.ai/v1"
 	},
 	{
-		"model_name": "qwen-2.5-coder-32b-instruct",
+		"model_name": "DeepSeek-V3.2",
+		"provider": "Sambanova AI",
 		"api_endpoint": "https://api.sambanova.ai/v1"
 	},
 	{
-		"model_name": "deepseek-r1",
+		"model_name": "Meta-Llama-3.3-70B-Instruct",
+		"provider": "Sambanova AI",
 		"api_endpoint": "https://api.sambanova.ai/v1"
 	},
 	{
-		"model_name": "qwen-2.5-coder-32b-instruct",
-		"provider": "sambanova_cloud",
-		"api_endpoint": "https://api.sambanova.ai/v1",
-		"context_window": "128,000 tokens",
-		"best_for": "FREE DEVELOPER TIER - Ultra-fast tokens token-per-second generation. Best for rapid parsing of rough code drafts."
+		"model_name": "MiniMax-M2.7",
+		"provider": "Sambanova AI",
+		"api_endpoint": "https://api.sambanova.ai/v1"
+	},
+	{
+		"model_name": "gemma-4-31B-it",
+		"provider": "Sambanova AI",
+		"api_endpoint": "https://api.sambanova.ai/v1"
+	},
+	{
+		"model_name": "gpt-oss-120b",
+		"provider": "Sambanova AI",
+		"api_endpoint": "https://api.sambanova.ai/v1"
 	},
 	{
 		"separator": "------------------ GOOGLE AI STUDIO ENDPOINTS BOUNDARY ------------------"
 	},
 	{
-		"model_name": "gemini-2.5-pro",
-		"provider": "google_ai_studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
-		"context_window": "2,000,000 tokens",
-		"best_for": "FREE TIER - Massive context ingestion. Best for Coder Agent to parse deep multi-tenant code rules."
+		"model_name": "models/gemini-2.5-flash",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
 	},
 	{
-		"model_name": "gemini-2.5-flash",
-		"provider": "google_ai_studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
-		"context_window": "1,000,000 tokens",
-		"best_for": "FREE TIER - Ultra-fast execution speed. Best for Doc Agent to write system architecture charts."
+		"model_name": "models/gemini-2.5-pro",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
 	},
 	{
-		"model_name": "gemini-2.0-flash-exp",
-		"provider": "google_ai_studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
-		"context_window": "1,000,000 tokens",
-		"best_for": "FREE TIER - Ultra-fast execution speed. Best for Doc Agent to write system architecture charts."
+		"model_name": "models/gemini-2.0-flash",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
 	},
 	{
-		"model_name": "gemini-3.5-flash",
-		"provider": "google_ai_studio",
-		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
-		"context_window": "1,000,000 tokens"
+		"model_name": "models/gemini-2.0-flash-001",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+	},
+	{
+		"model_name": "models/gemini-2.0-flash-lite-001",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+	},
+	{
+		"model_name": "models/gemini-2.0-flash-lite",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+	},
+	{
+		"model_name": "models/gemma-4-26b-a4b-it",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+	},
+	{
+		"model_name": "models/gemma-4-31b-it",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+	},
+	{
+		"model_name": "models/gemini-flash-latest",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+	},
+	{
+		"model_name": "models/gemini-flash-lite-latest",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+	},
+	{
+		"model_name": "models/gemini-pro-latest",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+	},
+	{
+		"model_name": "models/gemini-2.5-flash-lite",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
+	},
+	{
+		"model_name": "models/gemini-3.5-flash",
+		"provider": "Google AI Studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai"
 	},
 	{
 		"separator": "------------------ DEEPSEEK PLATFORM ENDPOINTS BOUNDARY ------------------"
