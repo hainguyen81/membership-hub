@@ -152,6 +152,12 @@
 		"best_for": "FREE TIER - Ultra-fast execution speed. Best for Doc Agent to write system architecture charts."
 	},
 	{
+		"model_name": "gemini-3.5-flash",
+		"provider": "google_ai_studio",
+		"api_endpoint": "https://generativelanguage.googleapis.com/v1beta/openai",
+		"context_window": "1,000,000 tokens"
+	},
+	{
 		"separator": "------------------ DEEPSEEK PLATFORM ENDPOINTS BOUNDARY ------------------"
 	},
 	{
@@ -341,6 +347,75 @@
 		"api_endpoint": "https://api.aionlabs.ai/v1",
 		"context_window": "128,000 tokens",
 		"best_for": "Writer Agent"
+	},
+	{
+		"separator": "------------------ GITHUB ENDPOINTS BOUNDARY ------------------"
+	},
+	{
+		"model_name": "openai/gpt-4.1",
+		"provider": "GitHub Merketplace Models",
+		"api_endpoint": "https://models.github.ai/inference",
+		"context_window": "1,049,000 tokens"
+	},
+	{
+		"model_name": "openai/gpt-4.1-mini",
+		"provider": "GitHub Merketplace Models",
+		"api_endpoint": "https://models.github.ai/inference",
+		"context_window": "1,049,000 tokens"
+	},
+	{
+		"model_name": "openai/gpt-4.1-mini",
+		"provider": "GitHub Merketplace Models",
+		"api_endpoint": "https://models.github.ai/inference",
+		"context_window": "1,049,000 tokens"
+	},
+	{
+		"model_name": "openai/gpt-4.1-nano",
+		"provider": "GitHub Merketplace Models",
+		"api_endpoint": "https://models.github.ai/inference",
+		"context_window": "1,049,000 tokens"
+	},
+	{
+		"model_name": "openai/gpt-4o",
+		"provider": "GitHub Merketplace Models",
+		"api_endpoint": "https://models.github.ai/inference",
+		"context_window": "131,000 tokens"
+	},
+	{
+		"model_name": "Phi-4",
+		"provider": "GitHub Merketplace Models",
+		"api_endpoint": "https://models.github.ai/inference",
+		"context_window": "16,000 tokens"
+	},
+	{
+		"model_name": "Phi-4-mini-instruct",
+		"provider": "GitHub Merketplace Models",
+		"api_endpoint": "https://models.github.ai/inference",
+		"context_window": "128,000 tokens"
+	},
+	{
+		"model_name": "DeepSeek-R1",
+		"provider": "GitHub Merketplace Models",
+		"api_endpoint": "https://models.github.ai/inference",
+		"context_window": "128,000 tokens"
+	},
+	{
+		"model_name": "DeepSeek-V3-0324",
+		"provider": "GitHub Merketplace Models",
+		"api_endpoint": "https://models.github.ai/inference",
+		"context_window": "128,000 tokens"
+	},
+	{
+		"model_name": "Llama-3.3-70B-Instruct",
+		"provider": "GitHub Merketplace Models",
+		"api_endpoint": "https://models.github.ai/inference",
+		"context_window": "128,000 tokens"
+	},
+	{
+		"model_name": "Meta-Llama-3.1-8B-Instruct",
+		"provider": "GitHub Merketplace Models",
+		"api_endpoint": "https://models.github.ai/inference",
+		"context_window": "128,000 tokens"
 	}
 ]
 
