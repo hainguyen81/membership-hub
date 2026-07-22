@@ -1,0 +1,148 @@
+{
+    "phase_id": 4,
+    "phase_name": "Phase 4",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
+            "context_section": "DAY 1",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Provision and configure the testing environment, including creation of test directories (src/test/java, __tests__) and installation of required frameworks (JUnit, Jest).",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Write unit test cases for backend components using JUnit.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Execute all backend unit tests and record results.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST4",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Fix bugs identified by unit test failures.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST5",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Re‑run unit tests to verify bug fixes.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST6",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Develop integration test suites for interconnected components.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST7",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Run integration tests and capture any failures.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST8",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Resolve integration test failures.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST9",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Validate integration fixes by re‑executing integration tests.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST10",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Create UI test scripts using Jest for frontend components.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST11",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Run UI tests and log any UI bugs or regressions.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST12",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Patch UI issues discovered during UI testing.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST13",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Re‑run UI tests to confirm UI bug resolutions.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST14",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Perform security testing with OWASP ZAP against all API endpoints.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST15",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Address security vulnerabilities reported by OWASP ZAP.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST16",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Retest secured endpoints to ensure vulnerabilities are mitigated.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST17",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Execute performance load tests to evaluate scalability and efficiency.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST18",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Optimize code paths identified as performance bottlenecks.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST19",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Re‑run performance tests to verify improvements.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST20",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Conduct comprehensive code reviews of test code and bug‑fix commits.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST21",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Deploy the latest build to the staging environment for final validation.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST22",
+                    "agent": "Manager",
+                    "desc": "Manager Agent: Generate a consolidated test report summarizing all test results, bug fixes, and remaining issues.",
+                    "components": []
+                }
+            ]
+        }
+    ]
+}

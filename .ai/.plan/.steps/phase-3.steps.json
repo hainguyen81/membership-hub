@@ -1,0 +1,164 @@
+{
+    "phase_id": 3,
+    "phase_name": "Phase 3",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
+            "context_section": "DAY 1",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Initialize Next.js project structure for web and mobile frontends, creating base directories and configuration files.",
+                    "components": [
+                        "frontend/web/pages/_app.js",
+                        "frontend/web/pages/index.js",
+                        "frontend/web/styles/globals.css",
+                        "frontend/mobile/screens/HomeScreen.jsx",
+                        "frontend/mobile/styles/AppStyle.js",
+                        "frontend/package.json"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Develop authentication UI components and integrate them with the /api/auth backend endpoint for both web and mobile.",
+                    "components": [
+                        "frontend/web/components/AuthForm.jsx",
+                        "frontend/web/pages/login.jsx",
+                        "frontend/mobile/screens/AuthScreen.jsx",
+                        "frontend/mobile/components/AuthInput.jsx"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Create course‑management UI (listing, enrollment, creation) and wire it to the /api/courses endpoint.",
+                    "components": [
+                        "frontend/web/components/CourseList.jsx",
+                        "frontend/web/pages/courses.jsx",
+                        "frontend/mobile/screens/CourseScreen.jsx",
+                        "frontend/mobile/components/CourseCard.jsx"
+                    ]
+                },
+                {
+                    "id": "D1_ST4",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Implement attendance‑tracking interface and connect it with the /api/attendance endpoint.",
+                    "components": [
+                        "frontend/web/components/AttendanceTracker.jsx",
+                        "frontend/web/pages/attendance.jsx",
+                        "frontend/mobile/screens/AttendanceScreen.jsx",
+                        "frontend/mobile/components/AttendanceItem.jsx"
+                    ]
+                },
+                {
+                    "id": "D1_ST5",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Build notification UI components and integrate them with the /api/notifications endpoint.",
+                    "components": [
+                        "frontend/web/components/NotificationPanel.jsx",
+                        "frontend/web/pages/notifications.jsx",
+                        "frontend/mobile/screens/NotificationScreen.jsx",
+                        "frontend/mobile/components/NotificationItem.jsx"
+                    ]
+                },
+                {
+                    "id": "D1_ST6",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Add multi‑language (i18n) support configuration for both web and mobile frontends.",
+                    "components": [
+                        "frontend/web/i18n.js",
+                        "frontend/web/locales/en.json",
+                        "frontend/web/locales/es.json",
+                        "frontend/mobile/i18n.js",
+                        "frontend/mobile/locales/en.json",
+                        "frontend/mobile/locales/es.json"
+                    ]
+                },
+                {
+                    "id": "D1_ST7",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Write and run unit tests for all newly created UI components.",
+                    "components": [
+                        "frontend/web/__tests__/AuthForm.test.js",
+                        "frontend/web/__tests__/CourseList.test.js",
+                        "frontend/web/__tests__/AttendanceTracker.test.js",
+                        "frontend/web/__tests__/NotificationPanel.test.js",
+                        "frontend/mobile/__tests__/AuthScreen.test.js",
+                        "frontend/mobile/__tests__/CourseScreen.test.js",
+                        "frontend/mobile/__tests__/AttendanceScreen.test.js",
+                        "frontend/mobile/__tests__/NotificationScreen.test.js"
+                    ]
+                },
+                {
+                    "id": "D1_ST8",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Create integration tests that verify correct communication with backend API endpoints (/api/auth, /api/courses, /api/attendance, /api/notifications).",
+                    "components": [
+                        "frontend/web/__tests__/apiIntegration.test.js",
+                        "frontend/mobile/__tests__/apiIntegration.test.js"
+                    ]
+                },
+                {
+                    "id": "D1_ST9",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Execute end‑to‑end UI tests (e.g., Cypress) covering authentication flow, course enrollment, attendance marking, and notification receipt.",
+                    "components": [
+                        "cypress/integration/authFlow.spec.js",
+                        "cypress/integration/courseEnrollment.spec.js",
+                        "cypress/integration/attendanceFlow.spec.js",
+                        "cypress/integration/notificationFlow.spec.js"
+                    ]
+                },
+                {
+                    "id": "D1_ST10",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Perform code review of all web frontend code ensuring style compliance, performance, and proper integration.",
+                    "components": [
+                        "frontend/web/components/",
+                        "frontend/web/pages/",
+                        "frontend/web/styles/"
+                    ]
+                },
+                {
+                    "id": "D1_ST11",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Perform code review of all mobile frontend code ensuring style compliance, performance, and proper integration.",
+                    "components": [
+                        "frontend/mobile/components/",
+                        "frontend/mobile/screens/",
+                        "frontend/mobile/styles/"
+                    ]
+                },
+                {
+                    "id": "D1_ST12",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Set up development environment: install dependencies, configure .env variables, and ensure build scripts are functional.",
+                    "components": [
+                        "frontend/package.json",
+                        ".env"
+                    ]
+                },
+                {
+                    "id": "D1_ST13",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Create CI/CD pipeline configuration for automated testing and deployment of the frontend to the production environment.",
+                    "components": [
+                        ".github/workflows/frontend.yml"
+                    ]
+                },
+                {
+                    "id": "D1_ST14",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Deploy the built frontend applications to the production platform (e.g., Vercel) and verify successful launch.",
+                    "components": []
+                }
+            ]
+        }
+    ]
+}

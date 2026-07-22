@@ -1,0 +1,95 @@
+{
+    "phase_id": 1,
+    "phase_name": "Phase 1",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "DAY 1",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Manager",
+                    "desc": "Manager Agent: Coordinate Phase 1 kickoff, confirm scope and objectives with stakeholders.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Review Global Context and Raw Requirements documents for technical feasibility.",
+                    "components": [
+                        "docs/global_context.md",
+                        "docs/raw_requirements.md"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Review requirements and draft a testing‑strategy outline.",
+                    "components": [
+                        "docs/testing_strategy.md"
+                    ]
+                },
+                {
+                    "id": "D1_ST4",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Assist in drafting the high‑level project plan (timeline, milestones, resource allocation).",
+                    "components": [
+                        "plans/high_level_project_plan.md"
+                    ]
+                },
+                {
+                    "id": "D1_ST5",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Create the project directory structure with folders for documentation, source code, tests, and assets.",
+                    "components": [
+                        "docs/",
+                        "src/",
+                        "tests/",
+                        "assets/"
+                    ]
+                },
+                {
+                    "id": "D1_ST6",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Create placeholder files for documentation and code base within the new directory structure.",
+                    "components": [
+                        "docs/README.md",
+                        "src/main.py"
+                    ]
+                },
+                {
+                    "id": "D1_ST7",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review the high‑level project plan for alignment with objectives and requirements.",
+                    "components": [
+                        "plans/high_level_project_plan.md"
+                    ]
+                },
+                {
+                    "id": "D1_ST8",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review the directory structure and placeholder files for completeness and correctness.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST9",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Select and document the technical stack (tools, frameworks, libraries) to be used in the project.",
+                    "components": [
+                        "docs/technical_stack.md"
+                    ]
+                },
+                {
+                    "id": "D1_ST10",
+                    "agent": "Manager",
+                    "desc": "Manager Agent: Obtain stakeholder approvals for the project plan, directory structure, and technical stack.",
+                    "components": []
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,136 @@
+{
+    "phase_id": 5,
+    "phase_name": "Phase 5",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
+            "context_section": "DAY 1",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Create GCP project, configure IAM, networking, and service accounts",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Provision Kubernetes cluster on GCP using gcloud commands",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Develop automated deployment script gcp/deployment.py to orchestrate GCP resources",
+                    "components": [
+                        "gcp/deployment.py"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
+            "context_section": "DAY 2",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Update docker-compose.yml with production image tags and resource limits",
+                    "components": [
+                        "docker-compose.yml"
+                    ]
+                },
+                {
+                    "id": "D2_ST2",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Add security configurations (encryption settings, environment secrets) to config/prod.env and deployment script",
+                    "components": [
+                        "config/prod.env",
+                        "gcp/deployment.py"
+                    ]
+                },
+                {
+                    "id": "D2_ST3",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Apply GCP firewall rules and IAM policies for secure access",
+                    "components": []
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
+            "context_section": "DAY 3",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Deploy Kubernetes manifests (deployment.yaml, service.yaml) to the cluster",
+                    "components": [
+                        "kubernetes/deployment.yaml",
+                        "kubernetes/service.yaml"
+                    ]
+                },
+                {
+                    "id": "D3_ST2",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Configure GCP load balancer and enable Horizontal Pod Autoscaling",
+                    "components": []
+                },
+                {
+                    "id": "D3_ST3",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Set up Stackdriver monitoring, logging, and alerting for the application",
+                    "components": []
+                }
+            ]
+        },
+        {
+            "day": 4,
+            "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
+            "context_section": "DAY 4",
+            "sub_tasks": [
+                {
+                    "id": "D4_ST1",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Execute functional tests against production endpoints",
+                    "components": []
+                },
+                {
+                    "id": "D4_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Perform load testing to validate autoscaling behavior",
+                    "components": []
+                },
+                {
+                    "id": "D4_ST3",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Run security scans and verify firewall and encryption settings",
+                    "components": []
+                },
+                {
+                    "id": "D4_ST4",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review deployment scripts, Docker configuration, and Kubernetes manifests for compliance",
+                    "components": [
+                        "gcp/deployment.py",
+                        "docker-compose.yml",
+                        "kubernetes/deployment.yaml",
+                        "kubernetes/service.yaml"
+                    ]
+                },
+                {
+                    "id": "D4_ST5",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Update project documentation to reflect production deployment steps and endpoints",
+                    "components": []
+                }
+            ]
+        }
+    ]
+}

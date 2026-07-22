@@ -6,6 +6,7 @@
 # ==============================================================================
 
 import os
+import json
 
 def resolve_absolute_path(relative_target_path):
     """
@@ -28,3 +29,20 @@ def resolve_absolute_path(relative_target_path):
     
     # full path from root workspace
     return absolute_hardware_path
+
+def json_raw_content(raw_content):
+    """Securely serialize input telemetry payloads into structural double-quoted strings."""
+    # If the payload is already a memory object list or dictionary
+    if isinstance(raw_content, (dict, list)):
+        return json.dumps(raw_content, indent=4, ensure_ascii=False)
+    
+    if isinstance(raw_content, str):
+        cleaned_str = raw_content.strip()
+        # If it is a stringified JSON layout, decode and encode with indentation rules
+        if (cleaned_str.startswith("{") or cleaned_str.startswith("[")) and '"' in cleaned_str:
+            try:
+                return json.dumps(json.loads(cleaned_str), indent=4, ensure_ascii=False)
+            except Exception:
+                pass
+    
+    return str(raw_content)

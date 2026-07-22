@@ -1,0 +1,126 @@
+{
+    "phase_id": 2,
+    "phase_name": "Phase 2",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "DAY 1",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Design the PostgreSQL database schema to support authentication, courses, attendance, and notifications.",
+                    "components": [
+                        "src/main/resources/schema.sql"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Implement RESTful endpoint for user authentication (/api/auth).",
+                    "components": [
+                        "src/main/java/com/membershiphub/auth/AuthResource.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Implement RESTful endpoint for course management (/api/courses).",
+                    "components": [
+                        "src/main/java/com/membershiphub/course/CourseResource.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST4",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Implement RESTful endpoint for attendance tracking (/api/attendance).",
+                    "components": [
+                        "src/main/java/com/membershiphub/attendance/AttendanceResource.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST5",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Implement RESTful endpoint for notification system (/api/notifications).",
+                    "components": [
+                        "src/main/java/com/membershiphub/notification/NotificationResource.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST6",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Integrate Kafka producers and consumers for event‑driven notifications and attendance updates.",
+                    "components": [
+                        "src/main/java/com/membershiphub/kafka/KafkaProducer.java",
+                        "src/main/java/com/membershiphub/kafka/KafkaConsumer.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST7",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Create unit tests for the authentication API.",
+                    "components": [
+                        "src/test/java/com/membershiphub/auth/AuthResourceTest.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST8",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Create unit tests for the course management API.",
+                    "components": [
+                        "src/test/java/com/membershiphub/course/CourseResourceTest.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST9",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Create unit tests for the attendance tracking API.",
+                    "components": [
+                        "src/test/java/com/membershiphub/attendance/AttendanceResourceTest.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST10",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Create unit tests for the notification system API.",
+                    "components": [
+                        "src/test/java/com/membershiphub/notification/NotificationResourceTest.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST11",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Create integration tests covering end‑to‑end API flows and Kafka event handling.",
+                    "components": [
+                        "src/test/java/com/membershiphub/integration/IntegrationTest.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST12",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Perform code review for all newly added source files and ensure compliance with coding standards.",
+                    "components": []
+                },
+                {
+                    "id": "D1_ST13",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Set up development environment, configure Kafka broker, and add required properties.",
+                    "components": [
+                        "docker-compose.yml",
+                        "src/main/resources/application.properties"
+                    ]
+                },
+                {
+                    "id": "D1_ST14",
+                    "agent": "DevOps",
+                    "desc": "DevOps Agent: Package and deploy the backend application to the staging environment.",
+                    "components": []
+                }
+            ]
+        }
+    ]
+}
