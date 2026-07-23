@@ -120,8 +120,11 @@ jobs:
           # model API keys
           AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
         run: |
-          echo "⚙️ Executing package loader | 🚀 Launching autonomous coder agent execution context for Day ${{ inputs.day }}..."
-          python3 .libs/project_agents_package_loader.py _ai._agents._sub_agents.agent_coder --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          echo "⚙️ Executing package loader..."
+          python3 .libs/project_agents_package_loader.py
+          
+          echo "⚙🚀 Launching autonomous coder agent execution context for Day ${{ inputs.day }}..."
+          python3 -m _ai._agents._sub_agents.agent_coder --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"
