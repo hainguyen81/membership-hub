@@ -18,7 +18,7 @@ def resolve_absolute_path(relative_target_path):
     current_directory_path = os.getcwd()
     github_workspace = os.environ.get("GITHUB_WORKSPACE", '')
     project_workspace = os.environ.get("PROJECT_WORKSPACE", '')
-    print(f"CURRENT WORKING DIR: { current_directory_path } | GITHUB_WORKSPACE: { github_workspace } | PROJECT_WORKSPACE: { project_workspace }")
+    # print(f"CURRENT WORKING DIR: { current_directory_path } | GITHUB_WORKSPACE: { github_workspace } | PROJECT_WORKSPACE: { project_workspace }")
     repo_root_path = os.environ.get("PROJECT_WORKSPACE", os.environ.get("GITHUB_WORKSPACE", os.getcwd()))
     
     # Clean up the incoming string parameters by removing leading path descriptors
