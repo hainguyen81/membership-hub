@@ -48,7 +48,7 @@ def read_file_raw(file_path):
         return (None, None)
     
     # read file
-    with open(global_context_file, "r", encoding="utf-8") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         return (file_path, f.read())
 
 def write_log_history(history_file, day, model_name, api_endpoint, target_component, prompt, data, append=False):
