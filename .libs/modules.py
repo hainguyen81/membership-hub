@@ -3,6 +3,7 @@ import os
 import importlib
 import importlib.util
 from pathlib import Path
+from importlib.machinery import ModuleSpec
 
 def load_folder_as_package(folder_path):
     """
