@@ -296,7 +296,7 @@ class AbstractAgent(ABC):
                     for component in components:
                         componentParts = component.split(";")
                         source_component = componentParts[0] if len(componentParts) > 0 else "INTEGRATION_SCOPE"
-                        target_component = componentParts[1] if len(componentParts) > 1 else ""
+                        target_component = componentParts[0] if 0 < len(componentParts) < 2 else componentParts[1] if len(componentParts) > 1 else ""
                         latest_target_component = target_component
                         
                         # check if invalid target component
