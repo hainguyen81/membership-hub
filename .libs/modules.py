@@ -1,100 +1,83 @@
-import sys
 import os
+import sys
 import importlib
 import importlib.util
 from pathlib import Path
+from importlib.abc import MetaPathFinder, Loader
 from importlib.machinery import ModuleSpec
 
-def load_folder_as_package(folder_path):
-    """
-    Auto load folder (incuding subfolder) to Python package in sys.modules.
-    Package (alias) is folder name, if it contains '.', will be transformed to '_'.
-    """
-    folder_path = Path(folder_path).resolve()
-    if not folder_path.is_dir():
-        raise FileNotFoundError(f"Not found folder path: {folder_path}")
-
-    # 1. convert folder name to make it as package name (alias)
-    raw_folder_name = folder_path.name
-    package_alias = raw_folder_name.replace('.', '_')
+class FolderPackageFinder(MetaPathFinder):
+    def __init__(self, folder_path):
+        self.folder_path = Path(folder_path).resolve()
+        if not self.folder_path.is_dir():
+            raise FileNotFoundError(f"Not found folder path: {self.folder_path}")
+        
+        # 1. Define root Package Alias
+        self.root_alias = self.folder_path.name.replace('.', '_')
+        print(f"📦 Custom Finder registered for folder '{self.folder_path.name}' as alias '{self.root_alias}'")
     
-    print(f"📦 Loading '{raw_folder_name}' with package alias '{package_alias}'...")
+    def alias() -> str:
+        return self.root_alias
+    
+    # find spec
+    def find_spec(self, fullname, path, target=None):
+        # Support python -m including trap extension .__main__
+        is_main = False
+        search_name = fullname
+        if fullname.endswith(".__main__"):
+            is_main = True
+            search_name = fullname[:-9] # split ".__main__" to calculate relative path
 
-    # 2. Include parent folder to sys.path for Python
-    parent_dir = str(folder_path.parent)
-    if parent_dir not in sys.path:
-        sys.path.insert(0, parent_dir)
+        # if module doesn;t start with root alias; then ignoring
+        if not search_name.startswith(self.root_alias):
+            print(f"⛔ (1) Package/Module {search_name} not matching with registered root package: {self.root_alias}")
+            return None
 
-    # 3. craete virtual package or use real package if it contains __init__.py
-    init_file = folder_path / "__init__.py"
-    if init_file.exists():
-        spec = importlib.util.spec_from_file_location(package_alias, str(init_file))
-    else:
-        # Thay thế hàm lỗi bằng ModuleSpec chuẩn của Python 3.10
-        spec = ModuleSpec(package_alias, None, is_package=True)
-        spec.submodule_search_locations = [str(folder_path)]
-
-    root_package = importlib.util.module_from_spec(spec)
-    sys.modules[package_alias] = root_package
-    spec.loader.exec_module(root_package)
-    print(f"✅ Successfully loaded and verified root package: {root_package.__name__}")
-
-    # 4. scan all file .py and subfolder
-    for root, dirs, files in os.walk(folder_path):
-        current_dir_path = Path(root)
+        # 2. split module name by '.' (ex: 'my_pkg.sub1.module1' -> ['my_pkg', 'sub1', 'module1'])
+        parts = search_name.split('.')
         
-        # calculate subfolder path with root folder
-        rel_parts = current_dir_path.relative_to(folder_path).parts
+        # mapping from alias to real folder structure
+        # (**Note:** because alias already replaced '.' to '_', so we must scan folder to find matching)
+        current_phys_path = self.folder_path
         
-        # create sub-package (ex: 'my_pkg.sub1.sub2')
-        # and replace '.' in subfolder name if neccessary
-        cleaned_parts = [p.replace('.', '_') for p in rel_parts]
-        current_package_parts = [package_alias] + cleaned_parts
-        current_package_name = ".".join(current_package_parts)
+        # loop to find
+        for part in parts[1:]:
+            # check folder/file after replacing '.' to '_' that matched with 'part'
+            found = False
+            if current_phys_path.is_dir():
+                for item in current_phys_path.iterdir():
+                    cleaned_item_name = item.stem.replace('.', '_') if item.is_file() else item.name.replace('.', '_')
+                    if cleaned_item_name == part:
+                        current_phys_path = item
+                        found = True
+                        break
+            if not found:
+                print(f"⛔ (2) Package/Module {part} is not found from registered root package: {self.root_alias}")
+                return None # not found any physical matching file/folder
 
-        # register subfolder as sub-packages
-        if root != str(folder_path):
-            sub_init = current_dir_path / "__init__.py"
-            if sub_init.exists():
-                sub_spec = importlib.util.spec_from_file_location(current_package_name, str(sub_init))
+        # 3. if found, return matching spec
+        if current_phys_path.is_dir():
+            # process package (folder)
+            init_file = current_phys_path / "__init__.py"
+            if init_file.exists():
+                spec = importlib.util.spec_from_file_location(fullname, str(init_file))
             else:
-                sub_spec = ModuleSpec(current_package_name, None, is_package=True)
-                sub_spec.submodule_search_locations = [root]
-            
-            sub_package = importlib.util.module_from_spec(sub_spec)
-            sys.modules[current_package_name] = sub_package
-            sub_spec.loader.exec_module(sub_package)
-            print(f"✅ Successfully loaded and verified sub package: {sub_package.__name__}")
-            
-            # include sub-package to parent package to call under format pkg.sub_pkg
-            parent_package_name = ".".join(current_package_parts[:-1])
-            setattr(sys.modules[parent_package_name], current_package_parts[-1], sub_package)
-
-        # 5. load all file .py in subfolder as module
-        for file in files:
-            if file.endswith('.py') and file != '__init__.py':
-                module_name_raw = Path(file).stem
-                # replace '.' in file name if neccessary (ex: api.v1.py -> api_v1)
-                module_name = module_name_raw.replace('.', '_')
-                
-                full_module_name = f"{current_package_name}.{module_name}"
-                file_path = current_dir_path / file
-
-                # Load module from file
-                mod_spec = importlib.util.spec_from_file_location(full_module_name, str(file_path))
-                module = importlib.util.module_from_spec(mod_spec)
-                sys.modules[full_module_name] = module
-                mod_spec.loader.exec_module(module)
-                print(f"✅ Successfully loaded and verified module: {module.__name__}")
-
-                # include module to parent package to call
-                setattr(sys.modules[current_package_name], module_name, module)
-
-    return root_package
+                spec = ModuleSpec(fullname, None, is_package=True)
+                spec.submodule_search_locations = [str(current_phys_path)]
+            print(f"✅ Found package {fullname} from resgitered root package: {self.root_alias}")
+            return spec
+        
+        # if found module file
+        elif current_phys_path.is_file() and current_phys_path.suffix == '.py':
+            # process Module (File .py)
+            print(f"✅ Found module {fullname} from resgitered root package: {self.root_alias}")
+            return importlib.util.spec_from_file_location(fullname, str(current_phys_path))
+        
+        print(f"⛔ (3) Package/Module {part} is not found from registered root package: {self.root_alias}")
+        return None
 
 # load current folder as python package
-if __name__ == "__main__":
-    present_package = load_folder_as_package(os.path.dirname(os.path.abspath(__file__)))
-    if present_package:
-        importlib.import_module(present_package.__name__)
-        print(f"===> ✅ Successfully loaded and verified package: {present_package.__name__}")
+current_folder = os.path.dirname(os.path.abspath(__file__))
+folderPackageFinder = FolderPackageFinder(current_folder);
+sys.meta_path.insert(0, folderPackageFinder)
+print(f"✅ Registered {current_folder} to sys.meta_path for finding with alias: {folderPackageFinder.alias()}")
