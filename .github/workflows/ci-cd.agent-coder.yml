@@ -107,6 +107,9 @@ jobs:
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"
         # conditions in run script
         shell: bash
+        env:
+          # specify agent path to load modules
+          PYTHONPATH: ${{ github.workspace }}/.ai:${{ github.workspace }}/.ai/.agents:${{ github.workspace }}/.ai/.agents/.sub_agents
         run: |
           echo "🧩 Executing immediate isolated branch push for Coder Agent..."
           
