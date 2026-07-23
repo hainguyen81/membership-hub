@@ -57,7 +57,8 @@ def load_folder_as_package(folder_path):
             if sub_init.exists():
                 sub_spec = importlib.util.spec_from_file_location(current_package_name, str(sub_init))
             else:
-                sub_spec = importlib.util.spec_from_namespace_package(current_package_name, [root])
+                sub_spec = ModuleSpec(current_package_name, None, is_package=True)
+                sub_spec.submodule_search_locations = [root]
             
             sub_package = importlib.util.module_from_spec(sub_spec)
             sys.modules[current_package_name] = sub_package
