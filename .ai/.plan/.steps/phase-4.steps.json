@@ -12,135 +12,161 @@
             "sub_tasks": [
                 {
                     "id": "D1_ST1",
-                    "agent": "DevOps",
-                    "desc": "DevOps Agent: Provision and configure the testing environment, including creation of test directories (src/test/java, __tests__) and installation of required frameworks (JUnit, Jest).",
-                    "components": []
+                    "agent": "coder",
+                    "desc": "coder Agent: No description provided",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/PaymentService.java"
+                    ]
                 },
                 {
                     "id": "D1_ST2",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Write unit test cases for backend components using JUnit.",
-                    "components": []
+                    "agent": "coder",
+                    "desc": "coder Agent: No description provided",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/controller/PaymentController.java"
+                    ]
                 },
                 {
                     "id": "D1_ST3",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Execute all backend unit tests and record results.",
-                    "components": []
+                    "agent": "doc",
+                    "desc": "doc Agent: No description provided",
+                    "components": [
+                        "./sources/backend/docs/payment-api.md"
+                    ]
                 },
                 {
                     "id": "D1_ST4",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Fix bugs identified by unit test failures.",
-                    "components": []
+                    "agent": "docker",
+                    "desc": "docker Agent: No description provided",
+                    "components": [
+                        "./sources/backend/Dockerfile"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
+            "context_section": "DAY 2",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "coder",
+                    "desc": "coder Agent: No description provided",
+                    "components": [
+                        "./sources/frontend/src/components/PaymentForm.tsx",
+                        "./sources/frontend/src/pages/payments.tsx"
+                    ]
                 },
                 {
-                    "id": "D1_ST5",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Re‑run unit tests to verify bug fixes.",
-                    "components": []
+                    "id": "D2_ST2",
+                    "agent": "tester",
+                    "desc": "tester Agent: No description provided",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/PaymentService.java;./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/service/PaymentServiceTest.java"
+                    ]
                 },
                 {
-                    "id": "D1_ST6",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Develop integration test suites for interconnected components.",
-                    "components": []
+                    "id": "D2_ST3",
+                    "agent": "reviewer",
+                    "desc": "reviewer Agent: No description provided",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/PaymentService.java"
+                    ]
                 },
                 {
-                    "id": "D1_ST7",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Run integration tests and capture any failures.",
-                    "components": []
+                    "id": "D2_ST4",
+                    "agent": "GCP",
+                    "desc": "GCP Agent: No description provided",
+                    "components": [
+                        "./sources/backend/gcp/payment-service.yaml"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
+            "context_section": "DAY 3",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "tester",
+                    "desc": "tester Agent: No description provided",
+                    "components": [
+                        "INTEGRATION_SCOPE;./sources/frontend/tests/payment.e2e.spec.ts"
+                    ]
                 },
                 {
-                    "id": "D1_ST8",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Resolve integration test failures.",
-                    "components": []
+                    "id": "D3_ST2",
+                    "agent": "docker",
+                    "desc": "docker Agent: No description provided",
+                    "components": [
+                        "./sources/backend/docker-compose.yml"
+                    ]
                 },
                 {
-                    "id": "D1_ST9",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Validate integration fixes by re‑executing integration tests.",
-                    "components": []
+                    "id": "D3_ST3",
+                    "agent": "GKE",
+                    "desc": "GKE Agent: No description provided",
+                    "components": [
+                        "./sources/backend/k8s/payment-deployment.yaml"
+                    ]
                 },
                 {
-                    "id": "D1_ST10",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Create UI test scripts using Jest for frontend components.",
-                    "components": []
+                    "id": "D3_ST4",
+                    "agent": "doc",
+                    "desc": "doc Agent: No description provided",
+                    "components": [
+                        "./sources/backend/docs/integration-guide.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 4,
+            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
+            "context_section": "DAY 4",
+            "sub_tasks": [
+                {
+                    "id": "D4_ST1",
+                    "agent": "reviewer",
+                    "desc": "reviewer Agent: No description provided",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/controller/PaymentController.java"
+                    ]
                 },
                 {
-                    "id": "D1_ST11",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Run UI tests and log any UI bugs or regressions.",
-                    "components": []
+                    "id": "D4_ST2",
+                    "agent": "docker",
+                    "desc": "docker Agent: No description provided",
+                    "components": [
+                        "./sources/backend/Dockerfile"
+                    ]
                 },
                 {
-                    "id": "D1_ST12",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Patch UI issues discovered during UI testing.",
-                    "components": []
+                    "id": "D4_ST3",
+                    "agent": "GCP",
+                    "desc": "GCP Agent: No description provided",
+                    "components": [
+                        "./sources/backend/gcp/deploy-payment.sh"
+                    ]
                 },
                 {
-                    "id": "D1_ST13",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Re‑run UI tests to confirm UI bug resolutions.",
-                    "components": []
+                    "id": "D4_ST4",
+                    "agent": "GKE",
+                    "desc": "GKE Agent: No description provided",
+                    "components": [
+                        "./sources/backend/k8s/deploy.sh"
+                    ]
                 },
                 {
-                    "id": "D1_ST14",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Perform security testing with OWASP ZAP against all API endpoints.",
-                    "components": []
-                },
-                {
-                    "id": "D1_ST15",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Address security vulnerabilities reported by OWASP ZAP.",
-                    "components": []
-                },
-                {
-                    "id": "D1_ST16",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Retest secured endpoints to ensure vulnerabilities are mitigated.",
-                    "components": []
-                },
-                {
-                    "id": "D1_ST17",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Execute performance load tests to evaluate scalability and efficiency.",
-                    "components": []
-                },
-                {
-                    "id": "D1_ST18",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Optimize code paths identified as performance bottlenecks.",
-                    "components": []
-                },
-                {
-                    "id": "D1_ST19",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Re‑run performance tests to verify improvements.",
-                    "components": []
-                },
-                {
-                    "id": "D1_ST20",
-                    "agent": "Reviewer",
-                    "desc": "Reviewer Agent: Conduct comprehensive code reviews of test code and bug‑fix commits.",
-                    "components": []
-                },
-                {
-                    "id": "D1_ST21",
-                    "agent": "DevOps",
-                    "desc": "DevOps Agent: Deploy the latest build to the staging environment for final validation.",
-                    "components": []
-                },
-                {
-                    "id": "D1_ST22",
-                    "agent": "Manager",
-                    "desc": "Manager Agent: Generate a consolidated test report summarizing all test results, bug fixes, and remaining issues.",
-                    "components": []
+                    "id": "D4_ST5",
+                    "agent": "doc",
+                    "desc": "doc Agent: No description provided",
+                    "components": [
+                        "./sources/backend/docs/payment-api-final.md"
+                    ]
                 }
             ]
         }

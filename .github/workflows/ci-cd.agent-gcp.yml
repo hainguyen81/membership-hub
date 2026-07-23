@@ -92,7 +92,7 @@ jobs:
           GCP_SECRETS: ${{ secrets.GCP_SECRETS }}
         run: |
           echo "☁️ Connecting to Google Cloud SDK components to route compiled GAR assets..."
-          python3 .ai/.agents/.sub-agents/agent-gcp.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          python3 .ai/.agents/.sub_agents/agent_gcp.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"

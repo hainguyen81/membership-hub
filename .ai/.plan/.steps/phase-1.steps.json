@@ -12,82 +12,90 @@
             "sub_tasks": [
                 {
                     "id": "D1_ST1",
-                    "agent": "Manager",
-                    "desc": "Manager Agent: Coordinate Phase 1 kickoff, confirm scope and objectives with stakeholders.",
-                    "components": []
+                    "agent": "coder",
+                    "desc": "coder Agent: Initialize Quarkus project and configure Maven. Define Maven coordinates groupId=org.nlh4j.saas.membershiphub, artifactId=membershiphub-backend, version=1.0.0‑SNAPSHOT. Include Quarkus core dependencies: quarkus-resteasy, quarkus-hibernate-orm, quarkus-jdbc-postgresql, quarkus-kafka-client, quarkus-smallrye-openapi, quarkus-jwt, quarkus-arc. Set Quarkus platform version 3.10.0 (Java 17 compatible). Add OWASP Dependency Check plugin and enforce vulnerability scanning in CI. Annotate with @QuarkusMain for custom CLI entry. Enable multi‑tenant via TenantIdentifierResolver; inject tenant_id into all repository calls. Apply Hibernate Validator for request validation; enforce parameterized queries to prevent SQL injection. Configure Kafka client with SASL/SSL security properties. Include quarkus.hibernate-orm.multitenant=PER_TENANT in application.properties. Define datasource URL, username, password with connection‑pool settings. Set hibernate.ddl-auto=create (dev) and enable SQL logging. Configure Kafka bootstrap servers and security properties. Add quarkus.hibernate-orm.multitenant=PER_TENANT.",
+                    "components": [
+                        "./sources/backend/pom.xml",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/MembershipHubApplication.java",
+                        "./sources/backend/src/main/resources/application.properties"
+                    ]
                 },
                 {
                     "id": "D1_ST2",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Review Global Context and Raw Requirements documents for technical feasibility.",
+                    "agent": "coder",
+                    "desc": "coder Agent: Create base package structure and common utilities. TenantContext – thread‑local holder for tenant_id. DatabaseConfig – @Configuration bean defining DataSource and EntityManagerFactory with tenant‑aware SchemaFilter. EncryptionService – AES‑256 implementation for PII fields; injected wherever sensitive data is persisted. InputSanitizer – neutralizes malicious input before persistence (OWASP A03). ResponseWrapper – standardizes API responses and includes tenant_id header.",
                     "components": [
-                        "docs/global_context.md",
-                        "docs/raw_requirements.md"
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/config/TenantContext.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/config/DatabaseConfig.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/config/EncryptionService.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/util/InputSanitizer.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/util/ResponseWrapper.java"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "DAY 2",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "coder",
+                    "desc": "coder Agent: Design and generate Postgres schema entities. @Entity with table centers; fields id, name, address, taxId, contactPhone, createdAt, updatedAt, tenantId. Apply @TenantFilter for multi‑tenant isolation; include isDeleted flag for soft delete. Encrypt taxId using EncryptionService; validate name length with @Size. Entity for authentication; fields id, email, passwordHash, role (enum), centerId, tenantId. Store passwords as BCrypt hashes (OWASP A02). Add @TenantFilter and audit timestamps. Entity with id, title, description, startDate, endDate, teacherId, centerId, tenantId. Validate date ranges; enforce unique constraint on (centerId, title) to prevent overlap. Entity linking studentId and courseId; fields id, enrollmentDate, status. All CRUD operations must use parameterized queries. Entity for QR check‑in; fields id, studentId, courseId, attendanceDate, qrTokenHash. Store SHA‑256 hash of QR token to prevent replay attacks; include tenantId. Entity for notifications; fields id, recipientId, message, sentAt, channel (ZALO, MOBILE_PUSH), tenantId. Implement GDPR‑compliant retention policy; provide delete job.",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/domain/Center.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/domain/User.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/domain/Course.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/domain/Enrollment.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/domain/Attendance.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/domain/Notification.java"
                     ]
                 },
                 {
-                    "id": "D1_ST3",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Review requirements and draft a testing‑strategy outline.",
+                    "id": "D2_ST2",
+                    "agent": "coder",
+                    "desc": "coder Agent: Create JPA repositories and services. Extends JpaRepository<Center, Long>. Custom query List<Center> findByTenantId(String tenantId) with @Query using named parameters. All queries use parameter binding to avoid injection. Service layer with CRUD methods; inject CenterRepository. Business rule: only System Admin can manage centers across tenants. Log all create/update/delete actions for audit (OWASP A09). Extends JpaRepository<Enrollment, Long>. Add method Enrollment findByStudentIdAndCourseId(String tenantId, Long studentId, Long courseId) with tenant filter.",
                     "components": [
-                        "docs/testing_strategy.md"
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/repository/CenterRepository.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/CenterService.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/repository/EnrollmentRepository.java"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "DAY 3",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "docker",
+                    "desc": "docker Agent: Build Docker image for Quarkus backend. Base image quay.io/quarkus/quarkus-micro:3.10.0-java17. Copy pom.xml and source, run mvn package -DskipTests. Set JVM options (-Xmx256m) and expose port 8080. Add health‑check endpoint /q/health for liveness/probe. Use environment variables for datasource and Kafka; secrets will be mounted via Kubernetes Secrets (OWASP A12). Services: backend (uses Dockerfile), postgres (postgres:15), kafka (confluentinc/cp-kafka). Link networks, mount volumes for data persistence. Set environment variables TENANT_ID, DB_URL, KAFKA_BOOTSTRAP_SERVERS with TLS/SSL settings.",
+                    "components": [
+                        "./sources/backend/src/main/docker/Dockerfile",
+                        "./sources/backend/docker/docker-compose.yml"
                     ]
                 },
                 {
-                    "id": "D1_ST4",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Assist in drafting the high‑level project plan (timeline, milestones, resource allocation).",
+                    "id": "D3_ST2",
+                    "agent": "GCP",
+                    "desc": "GCP Agent: Prepare GCP Cloud Build and K8s manifests. Define build steps: source, build (docker build -t gcr.io/<project>/membershiphub-backend .), push. Include container-analysis step for vulnerability scanning. Trigger on push to main. apiVersion: apps/v1, kind: Deployment with image gcr.io/<project>/membershiphub-backend. Resource limits (cpu: 500m, memory: 512Mi). Use ConfigMap for application.properties; Secret for DB credentials and Kafka SASL credentials. Pod anti‑affinity for high availability. Readiness/liveness probes on /q/health. Enforce PodSecurityPolicy to restrict privileged containers (OWASP A05). apiVersion: v1, kind: Service exposing backend on port 80 (NodePort). Selector matching the deployment. Annotations for GKE load balancer.",
                     "components": [
-                        "plans/high_level_project_plan.md"
+                        "./sources/backend/gcp/cloudbuild.yaml",
+                        "./sources/backend/gcp/k8s/deployment.yaml",
+                        "./sources/backend/gcp/k8s/service.yaml"
                     ]
                 },
                 {
-                    "id": "D1_ST5",
-                    "agent": "DevOps",
-                    "desc": "DevOps Agent: Create the project directory structure with folders for documentation, source code, tests, and assets.",
+                    "id": "D3_ST3",
+                    "agent": "doc",
+                    "desc": "doc Agent: Generate technical documentation. High‑level diagram: Multi‑tenant Quarkus backend ↔ PostgreSQL ↔ Kafka ↔ Docker ↔ GCP/GKE. OWASP compliance matrix mapping controls (A01‑A09) to implemented features (encryption, parameterized queries, input validation, logging, etc.). Include data‑flow description and security boundaries. Capture OpenAPI spec generated by Quarkus SmallRye OpenAPI. Define security schemes: bearerAuth (JWT), firebaseAuth, googleAuth, facebookAuth. Document tenant-id header required for all operations. Include request/response schemas for all resources.",
                     "components": [
-                        "docs/",
-                        "src/",
-                        "tests/",
-                        "assets/"
+                        "./sources/backend/doc/architecture.md",
+                        "./sources/backend/doc/api-spec.json"
                     ]
-                },
-                {
-                    "id": "D1_ST6",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Create placeholder files for documentation and code base within the new directory structure.",
-                    "components": [
-                        "docs/README.md",
-                        "src/main.py"
-                    ]
-                },
-                {
-                    "id": "D1_ST7",
-                    "agent": "Reviewer",
-                    "desc": "Reviewer Agent: Review the high‑level project plan for alignment with objectives and requirements.",
-                    "components": [
-                        "plans/high_level_project_plan.md"
-                    ]
-                },
-                {
-                    "id": "D1_ST8",
-                    "agent": "Reviewer",
-                    "desc": "Reviewer Agent: Review the directory structure and placeholder files for completeness and correctness.",
-                    "components": []
-                },
-                {
-                    "id": "D1_ST9",
-                    "agent": "DevOps",
-                    "desc": "DevOps Agent: Select and document the technical stack (tools, frameworks, libraries) to be used in the project.",
-                    "components": [
-                        "docs/technical_stack.md"
-                    ]
-                },
-                {
-                    "id": "D1_ST10",
-                    "agent": "Manager",
-                    "desc": "Manager Agent: Obtain stakeholder approvals for the project plan, directory structure, and technical stack.",
-                    "components": []
                 }
             ]
         }

@@ -25,9 +25,8 @@ SYSTEM_PROMPT_FILE          = agent_helper.resolve_absolute_path(".ai/.agents/.s
 USER_PROMPT_FILE            = agent_helper.resolve_absolute_path(".ai/.agents/.sub_agents/agent_doc.prompt.user.md")
 
 class DocumentationAgent(AbstractAgent):
-    def __init__(self, project_name, phase_str, day_num):
+    def __init__(self, phase_str, day_num):
         super().__init__(
-            project_name=project_name,
             agent_id="Doc",
             phase_str=phase_str,
             day_num=day_num
@@ -52,10 +51,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase", required=True)
     parser.add_argument("--day", required=True)
-    parser.add_argument("--project-name", required=True)
     args = parser.parse_args()
     DocumentationAgent(
-        project_name=args.project_name,
         phase_str=args.phase,
         day_num=args.day
     ).execute()

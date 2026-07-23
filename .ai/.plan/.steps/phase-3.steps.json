@@ -12,151 +12,90 @@
             "sub_tasks": [
                 {
                     "id": "D1_ST1",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Initialize Next.js project structure for web and mobile frontends, creating base directories and configuration files.",
+                    "agent": "coder",
+                    "desc": "coder Agent: Initialize Next.js Project & i18n Configuration: Configure basePath, trailingSlash, and output directory for production builds. Integrate i18n with locales (en, vi) and defaultLocale detection from user preference, browser, or device. Enable OWASP-compliant CSP headers via headers() to mitigate XSS. Implement react-i18next with namespace-based resource loading. Add locale detection middleware that reads Accept-Language header and user-stored preference. Sanitize locale values to prevent injection attacks.",
                     "components": [
-                        "frontend/web/pages/_app.js",
-                        "frontend/web/pages/index.js",
-                        "frontend/web/styles/globals.css",
-                        "frontend/mobile/screens/HomeScreen.jsx",
-                        "frontend/mobile/styles/AppStyle.js",
-                        "frontend/package.json"
+                        "./sources/frontend/next.config.js",
+                        "./sources/frontend/src/lib/i18n.ts"
                     ]
                 },
                 {
                     "id": "D1_ST2",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Develop authentication UI components and integrate them with the /api/auth backend endpoint for both web and mobile.",
+                    "agent": "coder",
+                    "desc": "coder Agent: Create Frontend State Management Layer: Set up Redux Toolkit with root reducer combining feature slices. Persist auth tokens and user roles using redux-persist with secure storage (AsyncStorage for mobile, localStorage for web). Enforce token expiration and refresh logic following OWASP A07:2021 – Identification and Authentication Failures.",
                     "components": [
-                        "frontend/web/components/AuthForm.jsx",
-                        "frontend/web/pages/login.jsx",
-                        "frontend/mobile/screens/AuthScreen.jsx",
-                        "frontend/mobile/components/AuthInput.jsx"
+                        "./sources/frontend/src/store/index.ts"
                     ]
                 },
                 {
                     "id": "D1_ST3",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Create course‑management UI (listing, enrollment, creation) and wire it to the /api/courses endpoint.",
+                    "agent": "doc",
+                    "desc": "doc Agent: Generate Frontend Architecture Documentation: Document project structure, routing, i18n setup, state management, API client patterns. Include OWASP security controls applied at the frontend layer. Provide component interaction diagrams and data flow sketches.",
                     "components": [
-                        "frontend/web/components/CourseList.jsx",
-                        "frontend/web/pages/courses.jsx",
-                        "frontend/mobile/screens/CourseScreen.jsx",
-                        "frontend/mobile/components/CourseCard.jsx"
+                        "./sources/frontend/docs/FRONTEND_ARCHITECTURE.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
+            "context_section": "DAY 2",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "coder",
+                    "desc": "coder Agent: Implement Admin Center Management Screen: Build CRUD UI for centers (list, add, edit, delete) with form validation. Integrate CSRF token in form submissions; sanitize all user inputs. Apply role-based access control (only System Admin can access).",
+                    "components": [
+                        "./sources/frontend/src/pages/admin/centers.tsx"
                     ]
                 },
                 {
-                    "id": "D1_ST4",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Implement attendance‑tracking interface and connect it with the /api/attendance endpoint.",
+                    "id": "D2_ST2",
+                    "agent": "tester",
+                    "desc": "tester Agent: Write Unit Tests for Center Management Component: Test rendering of center list, form fields, and validation logic. Verify OWASP input sanitization via mocked API responses. Ensure component re-renders correctly on store updates.",
                     "components": [
-                        "frontend/web/components/AttendanceTracker.jsx",
-                        "frontend/web/pages/attendance.jsx",
-                        "frontend/mobile/screens/AttendanceScreen.jsx",
-                        "frontend/mobile/components/AttendanceItem.jsx"
+                        "./sources/frontend/src/pages/admin/centers.tsx;./sources/frontend/tests/pages/admin/centers.test.tsx"
                     ]
                 },
                 {
-                    "id": "D1_ST5",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Build notification UI components and integrate them with the /api/notifications endpoint.",
+                    "id": "D2_ST3",
+                    "agent": "coder",
+                    "desc": "coder Agent: Implement Manager Dashboard with Course & Student Assignment: UI for selecting existing courses and assigning students. Use secure API client with JWT token interception. Enforce minimum password complexity for auto-generated Teacher accounts (OWASP A02:2021 – Cryptographic Failures).",
                     "components": [
-                        "frontend/web/components/NotificationPanel.jsx",
-                        "frontend/web/pages/notifications.jsx",
-                        "frontend/mobile/screens/NotificationScreen.jsx",
-                        "frontend/mobile/components/NotificationItem.jsx"
+                        "./sources/frontend/src/components/manager/CourseAssignment.tsx"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
+            "context_section": "DAY 3",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "coder",
+                    "desc": "coder Agent: Build Mobile Student Dashboard with QR Scanner & Token Expiry: Implement QR code scanning using react-native-camera or equivalent. On scan, call attendance API and display remaining token days. Store token expiry locally using secure storage (RNSecureStorage) and enforce expiration warnings. Integrate push notifications via Firebase Cloud Messaging (FCM) with token refresh handling.",
+                    "components": [
+                        "./sources/frontend/mobile/src/screens/StudentDashboard.tsx"
                     ]
                 },
                 {
-                    "id": "D1_ST6",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Add multi‑language (i18n) support configuration for both web and mobile frontends.",
+                    "id": "D3_ST2",
+                    "agent": "tester",
+                    "desc": "tester Agent: Write Mobile Integration/E2E Tests: Simulate QR scan flow, attendance submission, and token expiry display. Validate push notification receipt and UI update. Ensure tests run on both iOS and Android emulators.",
                     "components": [
-                        "frontend/web/i18n.js",
-                        "frontend/web/locales/en.json",
-                        "frontend/web/locales/es.json",
-                        "frontend/mobile/i18n.js",
-                        "frontend/mobile/locales/en.json",
-                        "frontend/mobile/locales/es.json"
+                        "INTEGRATION_SCOPE;./sources/frontend/tests/mobile/StudentDashboard.e2e.ts"
                     ]
                 },
                 {
-                    "id": "D1_ST7",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Write and run unit tests for all newly created UI components.",
+                    "id": "D3_ST3",
+                    "agent": "reviewer",
+                    "desc": "reviewer Agent: Perform Static Code Analysis & Security Review: Run ESLint, Prettier, and Snyk checks for vulnerabilities. Verify implementation of OWASP A03:2021 – Injection (SQL/GraphQL) mitigations in login payload. Confirm secure password handling (bcrypt hashing on client-side token storage).",
                     "components": [
-                        "frontend/web/__tests__/AuthForm.test.js",
-                        "frontend/web/__tests__/CourseList.test.js",
-                        "frontend/web/__tests__/AttendanceTracker.test.js",
-                        "frontend/web/__tests__/NotificationPanel.test.js",
-                        "frontend/mobile/__tests__/AuthScreen.test.js",
-                        "frontend/mobile/__tests__/CourseScreen.test.js",
-                        "frontend/mobile/__tests__/AttendanceScreen.test.js",
-                        "frontend/mobile/__tests__/NotificationScreen.test.js"
+                        "./sources/frontend/src/components/auth/Login.tsx"
                     ]
-                },
-                {
-                    "id": "D1_ST8",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Create integration tests that verify correct communication with backend API endpoints (/api/auth, /api/courses, /api/attendance, /api/notifications).",
-                    "components": [
-                        "frontend/web/__tests__/apiIntegration.test.js",
-                        "frontend/mobile/__tests__/apiIntegration.test.js"
-                    ]
-                },
-                {
-                    "id": "D1_ST9",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Execute end‑to‑end UI tests (e.g., Cypress) covering authentication flow, course enrollment, attendance marking, and notification receipt.",
-                    "components": [
-                        "cypress/integration/authFlow.spec.js",
-                        "cypress/integration/courseEnrollment.spec.js",
-                        "cypress/integration/attendanceFlow.spec.js",
-                        "cypress/integration/notificationFlow.spec.js"
-                    ]
-                },
-                {
-                    "id": "D1_ST10",
-                    "agent": "Reviewer",
-                    "desc": "Reviewer Agent: Perform code review of all web frontend code ensuring style compliance, performance, and proper integration.",
-                    "components": [
-                        "frontend/web/components/",
-                        "frontend/web/pages/",
-                        "frontend/web/styles/"
-                    ]
-                },
-                {
-                    "id": "D1_ST11",
-                    "agent": "Reviewer",
-                    "desc": "Reviewer Agent: Perform code review of all mobile frontend code ensuring style compliance, performance, and proper integration.",
-                    "components": [
-                        "frontend/mobile/components/",
-                        "frontend/mobile/screens/",
-                        "frontend/mobile/styles/"
-                    ]
-                },
-                {
-                    "id": "D1_ST12",
-                    "agent": "DevOps",
-                    "desc": "DevOps Agent: Set up development environment: install dependencies, configure .env variables, and ensure build scripts are functional.",
-                    "components": [
-                        "frontend/package.json",
-                        ".env"
-                    ]
-                },
-                {
-                    "id": "D1_ST13",
-                    "agent": "DevOps",
-                    "desc": "DevOps Agent: Create CI/CD pipeline configuration for automated testing and deployment of the frontend to the production environment.",
-                    "components": [
-                        ".github/workflows/frontend.yml"
-                    ]
-                },
-                {
-                    "id": "D1_ST14",
-                    "agent": "DevOps",
-                    "desc": "DevOps Agent: Deploy the built frontend applications to the production platform (e.g., Vercel) and verify successful launch.",
-                    "components": []
                 }
             ]
         }

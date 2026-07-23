@@ -92,7 +92,7 @@ jobs:
           GKE_SECRETS: ${{ secrets.GKE_SECRETS }}
         run: |
           echo "☸️ Initiating secure handshakes towards remote GKE cluster pools..."
-          python3 .ai/.agents/.sub-agents/agent-gke.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          python3 .ai/.agents/.sub_agents/agent_gke.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"

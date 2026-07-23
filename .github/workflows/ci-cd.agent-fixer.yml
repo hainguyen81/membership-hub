@@ -118,7 +118,7 @@ jobs:
           AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
         run: |
           echo "🩹 Initiating compiler analysis and automated code healing routines..."
-          python3 .ai/.agents/.sub-agents/agent-fixer.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          python3 .ai/.agents/.sub_agents/agent_reviewer.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"

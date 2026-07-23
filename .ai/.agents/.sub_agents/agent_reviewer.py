@@ -34,9 +34,8 @@ BACKEND_WORKSPACE           = resolve_absolute_path("sources/backend")
 FRONTEND_WORKSPACE          = resolve_absolute_path("sources/frontend")
 
 class BugFixerAgent(AbstractAgent):
-    def __init__(self, project_name, phase_str, day_num):
+    def __init__(self, phase_str, day_num):
         super().__init__(
-            project_name=project_name,
             agent_id="Reviewer",
             phase_str=phase_str,
             day_num=day_num
@@ -148,10 +147,10 @@ class BugFixerAgent(AbstractAgent):
             # if not found package.json, it means project empty or be initializing
             return (os.path.exists(package_path), package_path)
     
-    def execute_task(self, global_context, day_context, source_component, target_component, sub_tasks):
+    def execute_task(self, project_name, global_context, day_context, source_component, target_component, sub_tasks):
         # check whether project had been initialized
         project_initialized, project_main_component = self.check_project_initialized(target_component)
-        print(f"[ ℹ️ {self.agent_id} Agent | F.Y.I ] Project had been initialized?. {project_initialized} - Project Main Component: {project_main_component}")
+        print(f"[ ℹ️ {self.agent_id} Agent | F.Y.I ] Project {project_name} had been initialized?. {project_initialized} - Project Main Component: {project_main_component}")
         print(f"            - Target Component: {target_component}")
         
         # build system prompt
@@ -209,7 +208,6 @@ if __name__ == "__main__":
     parser.add_argument("--day", required=True)
     args = parser.parse_args()
     BugFixerAgent(
-        project_name=args.project_name,
         phase_str=args.phase,
         day_num=args.day
     ).execute()

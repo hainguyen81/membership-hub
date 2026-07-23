@@ -18,9 +18,8 @@ agent_helper = sys.modules["agent_helper"]
 from agent_gcp import GcpAgent
 
 class GkeAgent(GcpAgent):
-    def __init__(self, project_name, phase_str, day_num):
+    def __init__(self, phase_str, day_num):
         super().__init__(
-            project_name=project_name,
             agent_id="Docker",
             phase_str=phase_str,
             day_num=day_num
@@ -65,7 +64,7 @@ class GkeAgent(GcpAgent):
         # as super
         super().pre_execute()
     
-    def execute_task(self, global_context, day_context, source_component, target_component, sub_tasks):
+    def execute_task(self, project_name, global_context, day_context, source_component, target_component, sub_tasks):
         # Standard Microservice Application Rollout Logic using your custom prefixed parameters name (e.g. gke-membership-hub-backend)
         is_backend = "backend" in target_component
         app_domain = f"{self.project_name}-backend" if is_backend else "{self.project_name}-frontend"
@@ -94,10 +93,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase", required=True)
     parser.add_argument("--day", required=True)
-    parser.add_argument("--project-name", required=True)
     args = parser.parse_args()
     GkeAgent(
-        project_name=args.project_name,
         phase_str=args.phase,
         day_num=args.day
     ).execute()

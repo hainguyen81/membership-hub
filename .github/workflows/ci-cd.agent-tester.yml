@@ -99,7 +99,7 @@ jobs:
           AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
         run: |
           echo "🧪 Activating quality assurance testing synthesis engine..."
-          python3 .ai/.agents/.sub-agents/agent-tester.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          python3 .ai/.agents/.sub_agents/agent_tester.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"
