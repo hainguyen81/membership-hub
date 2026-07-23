@@ -215,7 +215,21 @@ class AbstractAgent(ABC):
     @abstractmethod
     def pre_execute(self):
         pass
-        
+    
+    def collect_agent_tasks(self, target_day):
+        tasks = []
+        for task in target_day['sub_tasks'] if target_day['sub_tasks'] else []:
+            if (task["agent"] and self.agent_id.lower() == task["agent"].lower()) or (task["desc"] and task["desc"].startswith(self.agent_id)):
+                tasks.append(task)
+        return tasks
+    
+    def collect_agent_components(self, tasks):
+        components = []
+        for task in tasks if isinstance(tasks, list) else []:
+            for component in task["components"] if isinstance(task["components"], list) else []:
+                components.append(component)
+        return components
+    
     def execute(self):
         # read JSON steps
         phase_step_file = f"phase-{self.phase_str}.steps.json"
@@ -231,10 +245,8 @@ class AbstractAgent(ABC):
         
         # check agent from JSON steps
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
-        # tracing
-        print(f"[ 💀 {self.agent_id} Agent | INFO ] Target Day {str(target_day)}...")
-        is_matched_agent = target_day and (self.agent_id.lower() == target_day["agent"].lower() or target_day["desc"].startswith(self.agent_id))
-        if not is_matched_agent:
+        agent_tasks = self.collect_agent_tasks(target_day)
+        if not agent_tasks or len(agent_tasks) <= 0:
             print(f"[ 💀 {self.agent_id} Agent | CRITICAL WARN ] Step Day { self.day_num }, File { phase_step_file } has no any task!")
             sys.exit(0)
         
@@ -245,9 +257,8 @@ class AbstractAgent(ABC):
         self.pre_execute()
         
         # check whether exists any components for this agent
-        components = target_day["components"] if target_day else []
-        components = components if components else []
-        if len(components) <= 0:
+        components = self.collect_agent_components(agent_tasks)
+        if not components or len(components) <= 0:
             print(f"[ 💀 {self.agent_id} Agent | CRITICAL WARN ] Step Day { self.day_num }, File { phase_step_file } has no any components!")
             sys.exit(0)
         
@@ -266,8 +277,7 @@ class AbstractAgent(ABC):
         # prepare prompt context
         pattern = rf"(## {target_day['context_section']}:.*?)((?=\n## DAY )|\Z)"
         day_context = re.search(pattern, phase_context, re.DOTALL | re.IGNORECASE).group(1).strip()
-        sub_tasks_in_day = [t for t in target_day["sub_tasks"] if self.agent_id == t['agent'] or t['desc'].startswith(self.agent_id)]
-        sub_tasks = "\n".join([f"- {t['desc']}" for t in sub_tasks_in_day])
+        sub_tasks = "\n".join([f"- {t['desc']}" for t in agent_tasks])
         
         # do agent
         log_history_file = self.agent_log_file()
@@ -276,7 +286,7 @@ class AbstractAgent(ABC):
         while True:
             try:
                 # iterate every task in day
-                for sub_task in sub_tasks_in_day:
+                for sub_task in agent_tasks:
                     components = sub_task['components']
                     if not components or len(components) <= 0:
                         print(f"[ 💀 {self.agent_id} Agent | CRITICAL WARN ] Step Day { self.day_num }, File { phase_step_file } has no any task components!")
