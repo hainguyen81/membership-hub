@@ -23,7 +23,7 @@ from _ai._agents import agent_helper
 from _ai._agents._sub_agents.helper import render_prompt
 
 # super agent
-from agent_super import AbstractAgent
+from _ai._agents._sub_agents.agent_super import AbstractAgent
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE

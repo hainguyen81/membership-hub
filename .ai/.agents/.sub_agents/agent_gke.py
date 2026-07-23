@@ -15,7 +15,7 @@ import subprocess
 from _ai._agents import agent_helper
 
 # super agent
-from agent_gcp import GcpAgent
+from _ai._agents._sub_agents.agent_gcp import GcpAgent
 
 class GkeAgent(GcpAgent):
     def __init__(self, phase_str, day_num):

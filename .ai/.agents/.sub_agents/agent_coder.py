@@ -16,7 +16,7 @@ from openai import OpenAI
 from _ai._agents import agent_helper
 
 # super agent
-from agent_super import AbstractAgent
+from _ai._agents._sub_agents.agent_super import AbstractAgent
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
