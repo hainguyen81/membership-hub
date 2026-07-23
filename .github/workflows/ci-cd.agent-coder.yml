@@ -106,8 +106,8 @@ jobs:
           # to check properties
           pip install jproperties
 
-      # Step 4: Register agents package / module
-      - name: "📝 Register LLM Agent Packages / Modules Structure"
+      # Step 4: Invoke the localized standalone architect engine to output pristine binaries
+      - name: "👩‍💻 Trigger Principal Architect LLM Generation Loop"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
           # specify root path to load modules
@@ -116,23 +116,12 @@ jobs:
           
           # specify agents folder path to load by `.libs/project_agents_package_loader.py`
           AGENTS_PACKAGE_PATH: ${{ env.PROJECT_WORKSPACE }}/.ai
-        run: |
-          echo "⚙️ Register LLM Agent Packages / Modules Structure..."
-          python3 .libs/project_agents_package_loader.py
-
-      # Step 4.1: Invoke the localized standalone architect engine to output pristine binaries
-      - name: "👩‍💻 Trigger Principal Architect LLM Generation Loop"
-        working-directory: ${{ env.PROJECT_WORKSPACE }}
-        env:
-          # specify root path to load modules
-          PROJECT_WORKSPACE: ${{ env.PROJECT_WORKSPACE }}
-          PYTHONPATH: ${{ env.PROJECT_WORKSPACE }}
           
           # model API keys
           AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
         run: |
           echo "⚙🚀 Launching autonomous coder agent execution context for Day ${{ inputs.day }}..."
-          python3 -m _ai._agents._sub_agents.agent_coder --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          python3 .libs/agent_launcher.py _ai._agents._sub_agents.agent_coder --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"

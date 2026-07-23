@@ -1,5 +1,6 @@
 import os
 import sys
+import runpy
 from pathlib import Path
 
 from modules import FolderPackageFinder
@@ -25,3 +26,12 @@ if phys_project_workspace_path.is_dir():
 
 else:
     print(f"⛔ Not define enviroment 'AGENTS_PACKAGE_PATH' to register package/module finder")
+
+# Check whether need to launch module
+if len(sys.argv) > 1:
+    # parse module name to run
+    target_module = sys.argv[1]
+    # cut 'launcher.py' name and keep all arguments of module to run
+    sys.argv = sys.argv[1:]
+    # run module with arguments from command-line (excluded launcher) in same process
+    runpy.run_module(target_module, run_name='__main__')
