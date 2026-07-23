@@ -13,7 +13,7 @@ from openai import OpenAI
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
 # request agent_helper from `site-packages/load_modules.pth`
-agent_helper = sys.modules["agent_helper"]
+import agent_helper
 
 # super agent
 from agent_super import AbstractAgent

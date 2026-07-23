@@ -14,7 +14,7 @@ from abc import ABC, abstractmethod
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
 # request agent_helper from `site-packages/load_modules.pth`
-agent_helper = sys.modules["agent_helper"]
+import agent_helper
 
 # Now Python can seamlessly see and import the centralized helper utility cleanly!
 from helper import write_log_history, write_file, read_json_file, read_file_raw, render_prompt, parseOpenAIResponseData
