@@ -98,11 +98,8 @@ jobs:
           # GCP secrets
           GCP_SECRETS: ${{ secrets.GCP_SECRETS }}
         run: |
-          # Run loader first to load all agents, after that executing agent as module
-          echo "⚙️ Executing package loader..." \
-            && python3 -c .libs/project_agents_package_loader.py \
-            && echo "☁️ Connecting to Google Cloud SDK components to route compiled GAR assets..." \
-            && python3 -m _ai._agents._sub_agents.agent_gcp --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          echo "⚙️ Executing package loader | ☁️ Connecting to Google Cloud SDK components to route compiled GAR assets..."
+          python3 .libs/project_agents_package_loader.py _ai._agents._sub_agents.agent_gcp --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"

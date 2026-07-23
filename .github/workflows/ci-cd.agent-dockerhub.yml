@@ -98,11 +98,8 @@ jobs:
           # docker secrets
           DOCKERHUB_SECRETS: ${{ secrets.DOCKERHUB_SECRETS }}
         run: |
-          # Run loader first to load all agents, after that executing agent as module
-          echo "⚙️ Executing package loader..." \
-            && python3 -c .libs/project_agents_package_loader.py \
-            && echo "🐳 Launching Docker Hub container build and registry publication pipes..." \
-            && python3 -m _ai._agents._sub_agents.agent_docker --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          echo "⚙️ Executing package loader | 🐳 Launching Docker Hub container build and registry publication pipes..."
+          python3 .libs/project_agents_package_loader.py _ai._agents._sub_agents.agent_docker --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"
