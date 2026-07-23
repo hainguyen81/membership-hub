@@ -34,4 +34,5 @@ if len(sys.argv) > 1:
     # cut 'launcher.py' name and keep all arguments of module to run
     sys.argv = sys.argv[1:]
     # run module with arguments from command-line (excluded launcher) in same process
+    print(f"⚙🚀 Launching module {target_module} with arguments: { sys.argv }...")
     runpy.run_module(target_module, run_name='__main__')
