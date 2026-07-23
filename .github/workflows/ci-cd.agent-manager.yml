@@ -249,7 +249,7 @@ jobs:
           git push origin HEAD:"refs/heads/$BRANCH_NAME" --force || true
           
           # Export string conversions matching internal sub-agent path expectations
-          FORMATTED_PHASE=$(printf "%02d" $FINAL_PHASE)
+          FORMATTED_PHASE=$(printf "%d" $FINAL_PHASE)
           echo "run_day=$FINAL_DAY" >> $GITHUB_OUTPUT
           echo "run_phase=$FORMATTED_PHASE" >> $GITHUB_OUTPUT
   
