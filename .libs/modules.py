@@ -91,4 +91,6 @@ def load_folder_as_package(folder_path):
 
 # load current folder as python package
 if __name__ == "__main__":
-    importlib.import_module(load_folder_as_package(os.path.dirname(os.path.abspath(__file__))))
+    present_package = load_folder_as_package(os.path.dirname(os.path.abspath(__file__)))
+    if present_package:
+        importlib.import_module(present_package.__name__)
