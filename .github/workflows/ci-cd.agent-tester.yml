@@ -88,8 +88,23 @@ jobs:
       - name: "🛠️ Install Enterprise Cloud API Connecting Libraries"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         run: |
+          echo "⚡ Upgrading deployment packet management frameworks..."
           python -m pip install --upgrade pip
+          
+          echo "📦 Securing vendor connection pipelines for generative network systems..."
           pip install requests google-generativeai openai anthropic
+          
+          # mapping JSON
+          pip install jinja2
+          
+          # to check sql file
+          pip install sqlfluff
+          
+          # to check YAML, YML
+          pip install PyYAML
+          
+          # to check properties
+          pip install jproperties
 
       # Step 4: Evaluate written production logic assets to output complete JUnit/Jest testing frameworks
       - name: "🧪 Trigger Lead QA Test Framework Synthesizer"

@@ -90,8 +90,21 @@ jobs:
         run: |
           echo "⚡ Upgrading deployment packet management frameworks..."
           python -m pip install --upgrade pip
+          
           echo "📦 Securing vendor connection pipelines for generative network systems..."
           pip install requests google-generativeai openai anthropic
+          
+          # mapping JSON
+          pip install jinja2
+          
+          # to check sql file
+          pip install sqlfluff
+          
+          # to check YAML, YML
+          pip install PyYAML
+          
+          # to check properties
+          pip install jproperties
 
       # Step 4: Invoke the localized standalone architect engine to output pristine binaries
       - name: "👩‍💻 Trigger Principal Architect LLM Generation Loop"
