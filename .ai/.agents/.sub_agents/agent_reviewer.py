@@ -30,8 +30,8 @@ from _ai._agents._sub_agents.agent_super import AbstractAgent
 # ==============================================================================
 SYSTEM_PROMPT_FILE          = agent_helper.resolve_absolute_path(".ai/.agents/.sub_agents/agent_reviewer.prompt.system.md")
 USER_PROMPT_FILE            = agent_helper.resolve_absolute_path(".ai/.agents/.sub_agents/agent_reviewer.prompt.user.md")
-BACKEND_WORKSPACE           = resolve_absolute_path("sources/backend")
-FRONTEND_WORKSPACE          = resolve_absolute_path("sources/frontend")
+BACKEND_WORKSPACE           = agent_helper.resolve_absolute_path("sources/backend")
+FRONTEND_WORKSPACE          = agent_helper.resolve_absolute_path("sources/frontend")
 
 class BugFixerAgent(AbstractAgent):
     def __init__(self, phase_str, day_num):
