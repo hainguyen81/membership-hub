@@ -29,8 +29,9 @@ def load_folder_as_package(folder_path):
     if init_file.exists():
         spec = importlib.util.spec_from_file_location(package_alias, str(init_file))
     else:
-        # if folder has no __init__.py, create package namespace
-        spec = importlib.util.spec_from_namespace_package(package_alias, [str(folder_path)])
+        # Thay thế hàm lỗi bằng ModuleSpec chuẩn của Python 3.10
+        spec = ModuleSpec(package_alias, None, is_package=True)
+        spec.submodule_search_locations = [str(folder_path)]
 
     root_package = importlib.util.module_from_spec(spec)
     sys.modules[package_alias] = root_package
