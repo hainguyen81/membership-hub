@@ -67,7 +67,7 @@ class EnterpriseMultiAgentManager:
         
         print(f"[ {self.agent_id} Agent | GIT ] All pipeline validation thresholds passed. Committing structural assets...")
         # add components to push GIT
-        for component in pushed_components
+        for component in pushed_components:
             pushed_component = agent_helper.resolve_absolute_path(component)
             subprocess.run(["git", "add", pushed_component], capture_output=True)
         # commit GIT
