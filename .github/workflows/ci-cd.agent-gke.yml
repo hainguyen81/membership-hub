@@ -120,8 +120,8 @@ jobs:
           # GKE secrets
           GKE_SECRETS: ${{ secrets.GKE_SECRETS }}
         run: |
-          echo "⚙️ Executing package loader | ☸️ Initiating secure handshakes towards remote GKE cluster pools..."
-          python3 .libs/project_agents_package_loader.py _ai._agents._sub_agents.agent_gke --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          echo "☸️ Initiating secure handshakes towards remote GKE cluster pools..."
+          python3 .libs/agent_launcher.py _ai._agents._sub_agents.agent_gke --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"

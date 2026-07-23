@@ -133,8 +133,8 @@ jobs:
           # model API keys
           AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
         run: |
-          echo "⚙️ Executing package loader | 🩹 Initiating compiler analysis and automated code healing routines..."
-          python3 .libs/project_agents_package_loader.py _ai._agents._sub_agents.agent_reviewer --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          echo "🩹 Initiating compiler analysis and automated code healing routines..."
+          python3 .libs/agent_launcher.py _ai._agents._sub_agents.agent_reviewer --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"

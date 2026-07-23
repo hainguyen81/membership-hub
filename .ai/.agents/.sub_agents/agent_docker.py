@@ -112,6 +112,7 @@ if __name__ == "__main__":
     parser.add_argument("--phase", required=True)
     parser.add_argument("--day", required=True)
     args = parser.parse_args()
+    print(f"🐳 Launching Docker Hub container build and registry publication pipes for Phase { args.phase } Day { args.day }...")
     DockerHubAgent(
         phase_str=args.phase,
         day_num=args.day

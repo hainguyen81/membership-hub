@@ -140,6 +140,7 @@ if __name__ == "__main__":
     parser.add_argument("--release", action="store_true", help="Trigger manual production rollout deployment to all cloud registries")
     args = parser.parse_args()
     
+    print(f"🏢 Enterprise SaaS AI Manager Agent: Phase { args.phase } Day { args.day } Release { args.release }...")
     EnterpriseMultiAgentManager(
         phase_id=args.phase,
         day_num=args.day,
