@@ -3,10 +3,12 @@ from pathlib import Path
 
 from modules import load_folder_as_package
 
+# load all agents folder by enviroment 'AGENTS_PACKAGE_PATH' as python package
 def load_project_agents_package():
     AGENTS_PACKAGE_PATH = os.environ.get('AGENTS_PACKAGE_PATH')
     agents_folder = Path(AGENTS_PACKAGE_PATH).resolve()
     if agents_folder.is_dir():
+        # load enviroment agents package
         agents_package = load_folder_as_package(str(agents_folder))
     
     else:

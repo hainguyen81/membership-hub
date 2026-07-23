@@ -84,3 +84,6 @@ def load_folder_as_package(folder_path):
                 setattr(sys.modules[current_package_name], module_name, module)
 
     return root_package
+
+# load current folder as python package
+load_folder_as_package(os.path.dirname(os.path.abspath(__file__)))
