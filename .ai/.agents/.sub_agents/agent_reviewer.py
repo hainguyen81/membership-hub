@@ -20,7 +20,7 @@ from openai import OpenAI
 from _ai._agents import agent_helper
 
 # Now Python can seamlessly see and import the centralized helper utility cleanly!
-from helper import render_prompt
+from _ai._agents._sub_agents.helper import render_prompt
 
 # super agent
 from agent_super import AbstractAgent

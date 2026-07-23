@@ -17,7 +17,7 @@ from abc import ABC, abstractmethod
 from _ai._agents import agent_helper
 
 # Now Python can seamlessly see and import the centralized helper utility cleanly!
-from helper import write_log_history, write_file, read_json_file, read_file_raw, render_prompt, parseOpenAIResponseData
+from _ai._agents._sub_agents.helper import write_log_history, write_file, read_json_file, read_file_raw, render_prompt, parseOpenAIResponseData
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
