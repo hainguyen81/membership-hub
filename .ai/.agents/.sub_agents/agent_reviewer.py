@@ -17,7 +17,8 @@ from openai import OpenAI
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
 # request agent_helper from `site-packages/load_modules.pth`
-import agent_helper
+import importlib
+agent_helper = importlib.import_module(".ai.agents.agent_helper")
 
 # Now Python can seamlessly see and import the centralized helper utility cleanly!
 from helper import render_prompt

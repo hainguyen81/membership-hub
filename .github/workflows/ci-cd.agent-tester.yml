@@ -106,8 +106,8 @@ jobs:
         # conditions in run script
         shell: bash
         env:
-          # specify agent path to load modules
-          PYTHONPATH: ${{ github.workspace }}/.ai:${{ github.workspace }}/.ai/.agents:${{ github.workspace }}/.ai/.agents/.sub_agents
+          # specify path to load modules
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           echo "🧩 Executing immediate isolated branch push for Coder Agent..."
           

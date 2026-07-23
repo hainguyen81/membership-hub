@@ -12,7 +12,8 @@ import subprocess
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
 # request agent_helper from `site-packages/load_modules.pth`
-import agent_helper
+import importlib
+agent_helper = importlib.import_module(".ai.agents.agent_helper")
 
 # super agent
 from agent_gcp import GcpAgent
