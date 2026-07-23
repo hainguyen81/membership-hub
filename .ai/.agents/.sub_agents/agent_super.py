@@ -231,7 +231,9 @@ class AbstractAgent(ABC):
         
         # check agent from JSON steps
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
-        is_matched_agent = target_day and (self.agent_id == target_day["agent"] or target_day["desc"].startswith(self.agent_id))
+        # tracing
+        print(f"[ 💀 {self.agent_id} Agent | INFO ] Target Day {str(target_day)}...")
+        is_matched_agent = target_day and (self.agent_id == target_day.get["agent"] or target_day["desc"].startswith(self.agent_id))
         if not is_matched_agent:
             print(f"[ 💀 {self.agent_id} Agent | CRITICAL WARN ] Step Day { self.day_num }, File { phase_step_file } has no any task!")
             sys.exit(0)
