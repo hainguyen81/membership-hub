@@ -13,9 +13,8 @@ from abc import ABC, abstractmethod
 # Programmatically appends the parent directory (.ai/.agents/) into Python's runtime
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
-# request agent_helper from `site-packages/load_modules.pth`
-import importlib
-agent_helper = importlib.import_module(".ai.agents.agent_helper")
+# request agent_helper from `.libs/project_agents_package_loader.py`
+from _ai._agents import agent_helper
 
 # Now Python can seamlessly see and import the centralized helper utility cleanly!
 from helper import write_log_history, write_file, read_json_file, read_file_raw, render_prompt, parseOpenAIResponseData

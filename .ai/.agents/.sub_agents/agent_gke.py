@@ -11,9 +11,8 @@ import subprocess
 # Programmatically appends the parent directory (.ai/.agents/) into Python's runtime
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
-# request agent_helper from `site-packages/load_modules.pth`
-import importlib
-agent_helper = importlib.import_module(".ai.agents.agent_helper")
+# request agent_helper from `.libs/project_agents_package_loader.py`
+from _ai._agents import agent_helper
 
 # super agent
 from agent_gcp import GcpAgent
