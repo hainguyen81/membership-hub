@@ -124,7 +124,7 @@ jobs:
           python3 .libs/project_agents_package_loader.py
           
           echo "⚙🚀 Launching autonomous coder agent execution context for Day ${{ inputs.day }}..."
-          python3 .ai/.agents/.sub_agents/agent_coder.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          python3 -m _ai._agents._sub_agents.agent_coder --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"

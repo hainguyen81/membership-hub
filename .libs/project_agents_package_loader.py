@@ -21,3 +21,4 @@ if __name__ == "__main__":
     agents_package = load_project_agents_package()
     if agents_package:
         importlib.import_module(agents_package.__name__)
+        print(f"===> ✅ Successfully loaded and verified package: {agents_package.__name__}")

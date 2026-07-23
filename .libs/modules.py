@@ -37,6 +37,7 @@ def load_folder_as_package(folder_path):
     root_package = importlib.util.module_from_spec(spec)
     sys.modules[package_alias] = root_package
     spec.loader.exec_module(root_package)
+    print(f"✅ Successfully loaded and verified root package: {root_package.__name__}")
 
     # 4. scan all file .py and subfolder
     for root, dirs, files in os.walk(folder_path):
@@ -63,6 +64,7 @@ def load_folder_as_package(folder_path):
             sub_package = importlib.util.module_from_spec(sub_spec)
             sys.modules[current_package_name] = sub_package
             sub_spec.loader.exec_module(sub_package)
+            print(f"✅ Successfully loaded and verified sub package: {sub_package.__name__}")
             
             # include sub-package to parent package to call under format pkg.sub_pkg
             parent_package_name = ".".join(current_package_parts[:-1])
@@ -83,6 +85,7 @@ def load_folder_as_package(folder_path):
                 module = importlib.util.module_from_spec(mod_spec)
                 sys.modules[full_module_name] = module
                 mod_spec.loader.exec_module(module)
+                print(f"✅ Successfully loaded and verified module: {module.__name__}")
 
                 # include module to parent package to call
                 setattr(sys.modules[current_package_name], module_name, module)
@@ -94,3 +97,4 @@ if __name__ == "__main__":
     present_package = load_folder_as_package(os.path.dirname(os.path.abspath(__file__)))
     if present_package:
         importlib.import_module(present_package.__name__)
+        print(f"===> ✅ Successfully loaded and verified package: {present_package.__name__}")
