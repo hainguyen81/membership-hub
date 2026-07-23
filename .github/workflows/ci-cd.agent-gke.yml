@@ -88,19 +88,26 @@ jobs:
       - name: "☸️ Trigger Kubernetes Cluster Pod Rollout Infrastructure Engine"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
+          # specify root path to load modules
           PROJECT_WORKSPACE: ${{ env.PROJECT_WORKSPACE }}
+          PYTHONPATH: ${{ env.PROJECT_WORKSPACE }}
+          
+          # specify agents folder path to load by `.libs/project_agents_package_loader.py`
+          AGENTS_PACKAGE_PATH: ${{ env.PROJECT_WORKSPACE }}/.ai/.agents
+          
+          # GKE secrets
           GKE_SECRETS: ${{ secrets.GKE_SECRETS }}
         run: |
-          echo "☸️ Initiating secure handshakes towards remote GKE cluster pools..."
-          python3 .ai/.agents/.sub_agents/agent_gke.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          # Run loader first to load all agents, after that executing agent as module
+          echo "⚙️ Executing package loader..." \
+            && python3 -c .libs/project_agents_package_loader.py \
+            && echo "☸️ Initiating secure handshakes towards remote GKE cluster pools..." \
+            && python3 -m _ai._agents._sub_agents.agent_gke --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"
         # conditions in run script
         shell: bash
-        env:
-          # specify path to load modules
-          PYTHONPATH: ${{ github.workspace }}
         run: |
           echo "🧩 Executing immediate isolated branch push for Coder Agent..."
           

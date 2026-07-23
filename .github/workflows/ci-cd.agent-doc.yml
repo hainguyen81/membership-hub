@@ -95,19 +95,26 @@ jobs:
       - name: "📝 Trigger Senior Tech Writer Documentation Pipeline"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
+          # specify root path to load modules
           PROJECT_WORKSPACE: ${{ env.PROJECT_WORKSPACE }}
+          PYTHONPATH: ${{ env.PROJECT_WORKSPACE }}
+          
+          # specify agents folder path to load by `.libs/project_agents_package_loader.py`
+          AGENTS_PACKAGE_PATH: ${{ env.PROJECT_WORKSPACE }}/.ai/.agents
+          
+          # model API keys
           AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
         run: |
-          echo "📝 Activating technical documentation parsing and synchronization..."
-          python3 .ai/.agents/.sub_agents/agent_doc.py --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          # Run loader first to load all agents, after that executing agent as module
+          echo "⚙️ Executing package loader..." \
+            && python3 -c .libs/project_agents_package_loader.py \
+            && echo "📝 Activating technical documentation parsing and synchronization..." \
+            && python3 -m _ai._agents._sub_agents.agent_doc --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"
         # conditions in run script
         shell: bash
-        env:
-          # specify path to load modules
-          PYTHONPATH: ${{ github.workspace }}
         run: |
           echo "🧩 Executing immediate isolated branch push for Coder Agent..."
           
