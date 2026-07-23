@@ -93,7 +93,7 @@ jobs:
           PYTHONPATH: ${{ env.PROJECT_WORKSPACE }}
           
           # specify agents folder path to load by `.libs/project_agents_package_loader.py`
-          AGENTS_PACKAGE_PATH: ${{ env.PROJECT_WORKSPACE }}/.ai/.agents
+          AGENTS_PACKAGE_PATH: ${{ env.PROJECT_WORKSPACE }}/.ai
           
           # docker secrets
           DOCKERHUB_SECRETS: ${{ secrets.DOCKERHUB_SECRETS }}

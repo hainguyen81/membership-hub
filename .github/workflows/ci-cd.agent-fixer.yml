@@ -119,7 +119,7 @@ jobs:
           PYTHONPATH: ${{ env.PROJECT_WORKSPACE }}
           
           # specify agents folder path to load by `.libs/project_agents_package_loader.py`
-          AGENTS_PACKAGE_PATH: ${{ env.PROJECT_WORKSPACE }}/.ai/.agents
+          AGENTS_PACKAGE_PATH: ${{ env.PROJECT_WORKSPACE }}/.ai
           
           # model API keys
           AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
