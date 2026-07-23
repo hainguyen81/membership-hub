@@ -16,7 +16,7 @@ class FolderPackageFinder(MetaPathFinder):
         self.root_alias = self.folder_path.name.replace('.', '_')
         print(f"📦 Custom Finder registered for folder '{self.folder_path.name}' as alias '{self.root_alias}'")
     
-    def alias() -> str:
+    def alias(self) -> str:
         return self.root_alias
     
     # find spec
