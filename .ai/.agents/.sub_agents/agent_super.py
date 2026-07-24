@@ -145,6 +145,7 @@ class AbstractAgent(ABC):
             "project_name": project_name,
             "source_component": source_component,
             "source_payload": source_payload,
+            "target_component": target_component,
             "sub_tasks": sub_tasks.strip(),
             **kwargs
         }
