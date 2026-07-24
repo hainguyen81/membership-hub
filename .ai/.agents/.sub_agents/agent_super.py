@@ -131,7 +131,7 @@ class AbstractAgent(ABC):
             "project_name": project_name,
             "global_context": global_context,
             "day_context": day_context,
-            "target_component": target_component
+            "target_component": target_component,
             **kwargs
         }
     
