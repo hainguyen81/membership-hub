@@ -50,7 +50,7 @@ class AbstractAgent(ABC):
             sys.exit(1)
     
     def get_kwargs(self, key: str):
-        return kwargs_by_key(self.kwargs, key)
+        return kwargs_by_key(ke=key, **self.kwargs)
     
     def agent_models_secrets_key(self) -> str:
         return "AI_MODELS_KEYS_JSON"

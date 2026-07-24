@@ -289,5 +289,5 @@ def count_files_by_pattern(dir, file_filter_pattern) -> int:
     file_pattern = file_filter_pattern.strip() if file_filter_pattern.strip() else "*"
     return sum(1 for item in folder_path.glob(file_pattern) if item.is_file())
 
-def kwargs_by_key(self, key: str, **kwargs):
+def kwargs_by_key(key: str, **kwargs):
     return (kwargs or {}).get(key) if key else None
