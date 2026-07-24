@@ -76,6 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     
     outputs:
+      phase_ended: ${{ steps.resolver.outputs.phase_ended }}
       run_day: ${{ steps.resolver.outputs.run_day }}
       run_phase: ${{ steps.resolver.outputs.run_phase }}
       exec_mode: ${{ inputs.execution_mode == '🕒🔄📅 Auto Schedule' && 'auto_cron' || 'manual' }}

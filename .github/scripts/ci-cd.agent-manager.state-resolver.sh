@@ -29,6 +29,7 @@ fi
 # 📤 export calculated running day/phase to GITHUB_OUTPUT for later sub-agents steps
 echo "run_day=$RESOLVED_DAY" >> "$GITHUB_OUTPUT"
 echo "run_phase=$RESOLVED_PHASE" >> "$GITHUB_OUTPUT"
+echo "phase_ended=$PHASE_ENDED" >> "$GITHUB_OUTPUT"
 
 # 🌐 define branch for sub-agents working
 BRANCH_NAME="features/development-phase-$RESOLVED_PHASE-day-$RESOLVED_DAY"
