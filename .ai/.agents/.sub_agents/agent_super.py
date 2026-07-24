@@ -81,7 +81,7 @@ class AbstractAgent(ABC):
             print(f"[ 💀 {self.agent_id} Agent | WARN ] Not found any models secrets to rotate!")
             return False
 
-        while self.active_model_index < len(self.models_pool):
+        while 0 <= self.active_model_index < len(self.models_pool):
             config = self.models_pool[self.active_model_index]
             # target_model_name = config["model_name"]
             # target_model_endpoint = config["api_endpoint"]
@@ -109,7 +109,7 @@ class AbstractAgent(ABC):
                 print(f"[ 💀 {self.agent_id} Agent | FAILOVER ENGAGED ] Successfully authenticated model: {target_model_name} | endpoint: {target_model_endpoint}")
                 return True
             self.active_model_index += 1
-        print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Exhausted all registered fallback models.")
+        print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Exhausted all registered fallback models: model_interation {self.active_model_index} models number {len(self.models_pool)}")
         return False
     
     @abstractmethod
