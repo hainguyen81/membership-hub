@@ -6,8 +6,42 @@
 # ==============================================================================
 
 import os
+import sys
+import json
+import logging
+import re
 import json
 import traceback
+from pathlib import Path
+
+# to load prompt template
+from jinja2 import Template as JinjaTemplate
+
+# ==============================================================================
+# 🏢 ENTERPRISE INTER-PACKAGE ROUTING LAYER
+# ==============================================================================
+# Programmatically appends the parent directory (.ai/.agents/) into Python's runtime
+# search path array. This completely unlocks importing 'agent_helper.py'.
+# ==============================================================================
+CURRENT_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__)) # .ai/.agents/.sub-agents/
+PARENT_AGENTS_DIR  = os.path.abspath(os.path.join(CURRENT_SCRIPT_DIR, "../")) # .ai/.agents/
+
+# jump to `agent_helper.py` folder path
+if PARENT_AGENTS_DIR not in sys.path:
+    sys.path.insert(0, PARENT_AGENTS_DIR)
+
+# ==============================================================================
+# GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
+# ==============================================================================
+BLUEPRINT_WORKING_HISTORY_FILE = "sources/output/architecture-blueprint.md"
+
+# logging configuration
+# logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s]: %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
 
 def resolve_absolute_path(relative_target_path):
     """
@@ -51,3 +85,209 @@ def json_raw_content(raw_content):
 def exception_stacktrace(e) -> str:
     stacktrace = traceback.format_exception(type(e), e, e.__traceback__) if isinstance(e, BaseException) or isinstance(e, Exception) else None
     return None if not e else f"{str(e)}: {stacktrace}" if stacktrace else str(e)
+
+def write_file(file, data, dir=None, append=False):
+    checked_dir = dir if dir else os.path.dirname(file)
+    checked_file = os.path.basename(file) if not dir else file
+    opts = "a" if append else "w"
+    os.makedirs(checked_dir, exist_ok=True)
+    out_path = os.path.join(checked_dir, checked_file)
+    with open(out_path, opts, encoding="utf-8") as f:
+        f.write(str(data))
+    return out_path # full path of file
+
+def write_json_file(file, json_data, dir=None, append=False):
+    checked_dir = dir if dir else os.path.dirname(file)
+    checked_file = os.path.basename(file) if not dir else file
+    opts = "a" if append else "w"
+    os.makedirs(checked_dir, exist_ok=True)
+    out_path = os.path.join(checked_dir, checked_file)
+    with open(out_path, opts, encoding="utf-8") as f:
+        json.dump(json_data, f, ensure_ascii=False, indent=4)
+    return out_path # full path of file
+
+def read_json_file(file_path):
+    if not os.path.exists(file_path):
+        return (None, None)
+    
+    # read json file
+    with open(file_path, "r", encoding="utf-8") as f:
+        return (file_path, json.load(f))
+
+def read_file_raw(file_path):
+    if not os.path.exists(file_path):
+        return (None, None)
+    
+    # read file
+    with open(file_path, "r", encoding="utf-8") as f:
+        return (file_path, f.read())
+
+def write_blueprint_log(phase_idx, instruction, prompt, raw_content, is_step, model_name=None, out_dir=None):
+    pattern = r"\{.*\}|\[.*\]"
+    raw_content = json_raw_content(raw_content)
+    is_json = bool(re.search(pattern, raw_content, re.DOTALL))
+    model_name_safe = f"AI Model: {model_name} - " if model_name and len(model_name) > 0 else ""
+    if phase_idx <= 0:
+        header_title = f"# {model_name_safe}Global Prompt:\n\n{prompt}\n\n"
+    elif not is_step:
+        header_title = f"# {model_name_safe}Phase {phase_idx} - Prompt:\n\n{prompt}\n\n"
+    else:
+        header_title = f"# {model_name_safe}Phase {phase_idx} STEPS - Prompt:\n\n{prompt}\n\n"
+    instruction_block = f"# System Instruction\n\n{instruction}\n\n"
+    if is_json:
+        response_block = f"# Raw Response / Exception:\n\n```json\n{raw_content}\n```\n\n"
+    else:
+        response_block = f"# Raw Response / Exception:\n\n```text\n{raw_content}\n```\n\n"
+    log_content = header_title + instruction_block + response_block
+    log_file = resolve_absolute_path(BLUEPRINT_WORKING_HISTORY_FILE)
+    if out_dir and len(out_dir) > 0:
+        log_file = os.path.join(out_dir, "architecture-blueprint.md")
+    write_file(os.path.dirname(log_file), os.path.basename(log_file), log_content, append=True)
+
+def delete_log(out_dir=None):
+    log_file = resolve_absolute_path(BLUEPRINT_WORKING_HISTORY_FILE)
+    if out_dir and len(out_dir) > 0:
+        log_file = os.path.join(out_dir, "architecture-blueprint.md")
+    if os.path.exists(log_file):
+        os.remove(log_file)
+
+def render_prompt(prompt_template_path: str, context: dict) -> str:
+    if not os.path.exists(prompt_template_path):
+        return None
+    
+    # read prompt template
+    with open(prompt_template_path, "r", encoding="utf-8") as f:
+        template_content = f.read()
+    
+    # use jinja2 Template
+    tmpl = JinjaTemplate(template_content)
+    
+    # substitute will throw error if missing variables, safely for production
+    return tmpl.render(**context).strip()
+
+def validateOpenAIResponse(response):
+    if not response or not hasattr(response, 'choices') or not response.choices:
+        raise RuntimeError(f"[API Upstream Error 404]: No Response Found")
+    
+    # 1. Check response choices
+    choices_data = response.choices
+    if not isinstance(choices_data, list) or len(choices_data) <= 0:
+        raise RuntimeError(f"[API Upstream Error 404]: Response Choices is empty/None")
+    
+    # parse first choice
+    first_choice = choices_data[0]
+        
+    # 2. Check finish_reason or error response
+    if first_choice.finish_reason == 'error' or hasattr(response, 'error') or (hasattr(first_choice, 'error') and choice.error):
+        # parse error
+        err_detail = getattr(response, 'error', None) or getattr(first_choice, 'error', {})
+        err_msg = err_detail.get('message', 'Unknown upstream aggregator timeout')
+        err_code = err_detail.get('code', 500)
+        raise RuntimeError(f"[API Upstream Error {err_code}]: {err_msg}")
+        
+    # 3. check content whether is None (although finish_reason is `stop`)
+    if not hasattr(first_choice, 'message') or not first_choice.message or first_choice.message.content is None:
+        raise ValueError(f"[API Upstream Error 404]: AI response content is empty/None.")
+    
+    # Guard against malformed message blocks or unexpected payload closures
+    return first_choice
+
+def parseOpenAIResponseData(response):
+    """
+    Safely parses text responses from OpenAI completion models.
+    Protects the runtime from attribute errors if content fields are blank or null.
+    """
+    first_choice = validateOpenAIResponse(response)
+    
+    # Guard against malformed message blocks or unexpected payload closures
+    message_obj = first_choice.message
+    if hasattr(message_obj, 'content') and message_obj.content:
+        return message_obj.content.strip()
+    
+    # Safe fallback if choice format changes or breaks unexpectedly
+    return str(first_choice).strip()
+
+def splitOpenAIResponseJsonData(raw_data):
+    clean_json_str = raw_data.strip()
+    
+    # 💡 Use find() to split json block
+    lower_raw = clean_json_str.lower()
+    start_tag = "```json"
+    end_tag = "```"
+    
+    if start_tag in lower_raw:
+        start_idx = lower_raw.find(start_tag) + len(start_tag)
+        end_idx = lower_raw.find(end_tag, start_idx)
+        if end_idx != -1:
+            clean_json_str = clean_json_str[start_idx:end_idx].strip()
+    
+    elif "```" in lower_raw:
+        start_idx = lower_raw.find("```") + 3
+        end_idx = lower_raw.find("```", start_idx)
+        if end_idx != -1:
+            clean_json_str = clean_json_str[start_idx:end_idx].strip()
+    
+    return clean_json_str
+
+def parseOpenAIResponseJsonData(response):
+    """
+    Extracts and deserializes raw response texts into fully validated Python dict layouts.
+    Leverages non-greedy structural indexing to filter out conversational agent summaries.
+    """
+    # Ingest text payload through the hardened safety parser above
+    raw_data = parseOpenAIResponseData(response)
+    
+    if not raw_data:
+        return (None, None)
+        
+    # Pattern 1: Targeted scan for standard markdown language JSON codeblocks
+    json_match = re.search(r"```json\s*([\s\S]*?)\s*```", raw_data, re.DOTALL)
+    if json_match:
+        try:
+            clean_json_str = json_match.group(1).strip()
+            return (raw_data, json.loads(clean_json_str))
+        except Exception:
+            pass # Continue evaluating alternative pattern structures if parsing breaks
+            
+    # Pattern 2: Generic codeblock fallback without language tags
+    json_match = re.search(r"```\s*([\s\S]*?)\s*```", raw_data, re.DOTALL)
+    if json_match:
+        try:
+            clean_json_str = json_match.group(1).strip()
+            return (raw_data, json.loads(clean_json_str))
+        except Exception:
+            pass
+
+    # Pattern 3: Hardened bracket boundary locator leveraging non-greedy isolation
+    # Fixes the broken greedy regex logic to ensure text outside the curly braces is safely ignored
+    try:
+        return (raw_data, json.loads(splitOpenAIResponseJsonData(raw_data)))
+    except Exception as e:
+        json_match = re.search(r"(\{[\s\S]*\})", raw_data, re.DOTALL)
+        if json_match:
+            try:
+                clean_json_str = json_match.group(1).strip()
+                return (raw_data, json.loads(clean_json_str))
+            except Exception:
+                pass
+        
+        else:
+            pass
+            
+    # Final Fallback Layer: Treat the whole string as literal plain text payload
+    try:
+        return (raw_data, json.loads(raw_data.strip()))
+    except Exception as final_error:
+        print(f"⚠️  [PARSER WARNING] Local string-to-json mapping failed: {final_error}")
+        return (raw_data, None)
+
+def count_files_by_pattern(dir, file_filter_pattern) -> int:
+    folder_path = Path(dir).resolve()
+    if not folder_path.is_dir():
+        return 0
+    
+    file_pattern = file_filter_pattern.strip() if file_filter_pattern.strip() else "*"
+    return sum(1 for item in folder_path.glob(file_pattern) if item.is_file())
+
+def kwargs_by_key(self, key: str, **kwargs):
+    return (kwargs or {}).get(key) if key else None

@@ -15,41 +15,22 @@ import subprocess
 from _ai._agents import agent_helper
 
 # super agent
-from _ai._agents._sub_agents.agent_super import AbstractAgent
+from _ai._agents._sub_agents.agent_super import AbstractSubAgent
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
+AGENT_ID                    = "GCP"
 BACKEND_DOCKERFILE          = agent_helper.resolve_absolute_path("sources/backend/src/main/docker/Dockerfile.native")
 FRONTEND_DOCKERFILE         = agent_helper.resolve_absolute_path("sources/frontend/Dockerfile")
 
-class GcpAgent(AbstractAgent):
+class GcpAgent(AbstractSubAgent):
     def __init__(self, phase_str, day_num):
         super().__init__(
-            agent_id="Docker",
+            agent_id=AGENT_ID,
             phase_str=phase_str,
             day_num=day_num
         )
-    
-    def initialize(self):
-        self.image_tag = f"day-{self.day_num}"
-        self.gcp_repo = self.gcp_cloud_repo()
-        self.gcp_project = self.gcp_cloud_project()
-        self.gcp_region = self.gcp_cloud_region()
-        self.gcp_image = self.gcp_cloud_image()
-        self.gcp_sa_key = self.gcp_cloud_sa_key()
-    
-    def agent_secrets_key(self) -> str:
-        return "GCP_SECRETS"
-    
-    def agent_log_file(self) -> str:
-        return agent_helper.resolve_absolute_path(f".ai/.history/agent-gcp-day-{self.day_num}.md")
-    
-    def system_prompt_template(self) -> str:
-        return None
-    
-    def user_prompt_template(self) -> str:
-        return None
 
     def authenticate_gcp(self):
         print(f"[ {self.agent_id} Agent ] Authenticating context with Google Cloud Platform SDK...")
@@ -78,7 +59,38 @@ class GcpAgent(AbstractAgent):
     def gcp_cloud_image(self) -> str:
         return f"{self.gcp_region}-docker.pkg.dev/{self.gcp_project}/{self.gcp_repo}:{self.image_tag}"
     
-    def pre_execute(self):
+    # @override
+    def initialize(self):
+        super().initialize()
+        self.image_tag = f"day-{self.day_num}"
+        self.gcp_repo = self.gcp_cloud_repo()
+        self.gcp_project = self.gcp_cloud_project()
+        self.gcp_region = self.gcp_cloud_region()
+        self.gcp_image = self.gcp_cloud_image()
+        self.gcp_sa_key = self.gcp_cloud_sa_key()
+        
+    # @override
+    def initialize_models(self):
+        pass
+    
+    # @override
+    def agent_secrets_key(self) -> str:
+        return "GCP_SECRETS"
+    
+    # @override
+    def agent_log_file(self) -> str:
+        return agent_helper.resolve_absolute_path(f".ai/.history/agent-gcp-day-{self.day_num}.md")
+    
+    # @override
+    def system_prompt_template(self) -> str:
+        return None
+    
+    # @override
+    def user_prompt_template(self) -> str:
+        return None
+    
+    # @ override
+    def pre_execute(self, **kwargs):
         # validate repository
         if not self.gcp_repo or len(self.gcp_repo.strip()) <= 0:
             print(f"[ ⚠️ {self.agent_id} Agent | SKIP ] Not found 'GCP_REPO' enviroment to publish image for deploying.")
@@ -86,8 +98,21 @@ class GcpAgent(AbstractAgent):
         
         # log-in repository
         self.authenticate_gcp()
-    
-    def execute_task(self, project_name, global_context, day_context, source_component, target_component, sub_tasks):
+        
+        # return kwargs
+        return super().pre_execute(**kwargs)
+
+    # @ override
+    def __do_task_component__(self, **kwargs):
+        # extract arguments
+        project_name = agent_helper.kwargs_by_key(key="project_name", **kwargs)
+        global_context = agent_helper.kwargs_by_key(key="global_context", **kwargs)
+        day_context = agent_helper.kwargs_by_key(key="day_context", **kwargs)
+        source_component = agent_helper.kwargs_by_key(key="source_component", **kwargs)
+        target_component = agent_helper.kwargs_by_key(key="target_component", **kwargs)
+        sub_tasks = agent_helper.kwargs_by_key(key="sub_tasks", **kwargs)
+        
+        # check task for backend or frontend
         is_backend = "backend" in target_component
         dockerfile_path = BACKEND_DOCKERFILE if is_backend else FRONTEND_DOCKERFILE
         workspace_path = resolve_absolute_path("sources/backend") if is_backend else resolve_absolute_path("sources/frontend")
@@ -105,7 +130,14 @@ class GcpAgent(AbstractAgent):
         print(f"[ ✅ {self.agent_id} Agent | SUCCESS ] Image version {self.image_tag} published safely to GAR!")
         
         # result
-        return (True, None, None, f"Image version {self.image_tag} published safely to GAR!")
+        return {
+            **kwargs,
+            "system_prompt": None,
+            "user_prompt": None,
+            "latest_system_prompt": None,
+            "latest_user_prompt": None,
+            "raw_response": f"Image version {self.image_tag} published safely to GAR!"
+        }
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

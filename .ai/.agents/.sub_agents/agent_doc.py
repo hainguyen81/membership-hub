@@ -16,36 +16,38 @@ from openai import OpenAI
 from _ai._agents import agent_helper
 
 # super agent
-from _ai._agents._sub_agents.agent_super import AbstractAgent
+from _ai._agents._sub_agents.agent_super import AbstractSubAgent
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
+AGENT_ID                    = "Doc"
 SYSTEM_PROMPT_FILE          = agent_helper.resolve_absolute_path(".ai/.agents/.sub_agents/agent_doc.prompt.system.md")
 USER_PROMPT_FILE            = agent_helper.resolve_absolute_path(".ai/.agents/.sub_agents/agent_doc.prompt.user.md")
 
-class DocumentationAgent(AbstractAgent):
+class DocumentationAgent(AbstractSubAgent):
     def __init__(self, phase_str, day_num):
         super().__init__(
-            agent_id="Doc",
+            agent_id=AGENT_ID,
             phase_str=phase_str,
             day_num=day_num
         )
     
+    # @override
     def agent_secrets_key(self) -> str:
         pass
     
+    # @override
     def agent_log_file(self) -> str:
         return agent_helper.resolve_absolute_path(f".ai/.history/agent-doc-day-{self.day_num}.md")
     
+    # @override
     def system_prompt_template(self) -> str:
         return SYSTEM_PROMPT_FILE
     
+    # @override
     def user_prompt_template(self) -> str:
         return USER_PROMPT_FILE
-    
-    def pre_execute(self):
-        pass
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -15,30 +15,22 @@ import subprocess
 from _ai._agents import agent_helper
 
 # super agent
-from _ai._agents._sub_agents.agent_super import AbstractAgent
+from _ai._agents._sub_agents.agent_super import AbstractSubAgent
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
+AGENT_ID                    = "Docker"
 BACKEND_DOCKERFILE          = agent_helper.resolve_absolute_path("sources/backend/src/main/docker/Dockerfile.native")
 FRONTEND_DOCKERFILE         = agent_helper.resolve_absolute_path("sources/frontend/Dockerfile")
 
-class DockerHubAgent(AbstractAgent):
+class DockerHubAgent(AbstractSubAgent):
     def __init__(self, phase_str, day_num):
         super().__init__(
-            agent_id="Docker",
+            agent_id=AGENT_ID,
             phase_str=phase_str,
             day_num=day_num
         )
-    
-    def initialize(self):
-        self.image_tag = f"day-{self.day_num}"
-        self.docker_repo = self.docker_hub_repo()
-        self.docker_namespace = self.docker_hub_namespace()
-        self.docker_image = self.docker_hub_image()
-    
-    def agent_secrets_key(self) -> str:
-        return "DOCKERHUB_SECRETS"
 
     def authenticate_dockerhub(self):
         print(f"[ {self.agent_id} Agent ] Attaching secure registry authorization handshakes...")
@@ -58,15 +50,6 @@ class DockerHubAgent(AbstractAgent):
         else:
             print(f"[ ⚠️ {self.agent_id} Agent | WARNING ] Missing data keys parameters inside DOCKERHUB_SECRETS mapping registry.")
     
-    def agent_log_file(self) -> str:
-        return agent_helper.resolve_absolute_path(f".ai/.history/agent-docker-day-{self.day_num}.md")
-    
-    def system_prompt_template(self) -> str:
-        return None
-    
-    def user_prompt_template(self) -> str:
-        return None
-    
     def docker_hub_repo(self) -> str:
         return self.agent_secrets("DOCKERHUB_REPO")
     
@@ -76,7 +59,36 @@ class DockerHubAgent(AbstractAgent):
     def docker_hub_image(self) -> str:
         return f"{self.docker_namespace}/{self.docker_repo}:{self.image_tag}"
     
-    def pre_execute(self):
+    # @override
+    def initialize(self):
+        super().initialize()
+        self.image_tag = f"day-{self.day_num}"
+        self.docker_repo = self.docker_hub_repo()
+        self.docker_namespace = self.docker_hub_namespace()
+        self.docker_image = self.docker_hub_image()
+        
+    # @override
+    def initialize_models(self):
+        pass
+    
+    # @override
+    def agent_secrets_key(self) -> str:
+        return "DOCKERHUB_SECRETS"
+    
+    # @override
+    def agent_log_file(self) -> str:
+        return agent_helper.resolve_absolute_path(f".ai/.history/agent-docker-day-{self.day_num}.md")
+    
+    # @override
+    def system_prompt_template(self) -> str:
+        return None
+    
+    # @override
+    def user_prompt_template(self) -> str:
+        return None
+    
+    # @ override
+    def pre_execute(self, **kwargs):
         # validate repository
         if not self.docker_repo or len(self.docker_repo.strip()) <= 0:
             print(f"[ ⚠️ {self.agent_id} Agent | SKIP ] Not found 'DOCKERHUB_REPO' enviroment to publish docker images.")
@@ -84,8 +96,21 @@ class DockerHubAgent(AbstractAgent):
         
         # log-in repository
         self.authenticate_dockerhub()
+        
+        # return kwargs
+        return super().pre_execute(**kwargs)
 
-    def execute_task(self, project_name, global_context, day_context, source_component, target_component, sub_tasks):
+    # @ override
+    def __do_task_component__(self, **kwargs):
+        # extract arguments
+        project_name = agent_helper.kwargs_by_key(key="project_name", **kwargs)
+        global_context = agent_helper.kwargs_by_key(key="global_context", **kwargs)
+        day_context = agent_helper.kwargs_by_key(key="day_context", **kwargs)
+        source_component = agent_helper.kwargs_by_key(key="source_component", **kwargs)
+        target_component = agent_helper.kwargs_by_key(key="target_component", **kwargs)
+        sub_tasks = agent_helper.kwargs_by_key(key="sub_tasks", **kwargs)
+        
+        # check task for backend or frontend
         is_backend = "backend" in target_component
         dockerfile_path = BACKEND_DOCKERFILE if is_backend else FRONTEND_DOCKERFILE
         workspace_path = agent_helper.resolve_absolute_path("sources/backend") if is_backend else agent_helper.resolve_absolute_path("sources/frontend")
@@ -105,7 +130,14 @@ class DockerHubAgent(AbstractAgent):
         print(f"[ ✅ {self.agent_id} Agent | SUCCESS] Image package {self.docker_image} successfully committed upstream!")
         
         # result
-        return (True, None, None, f"Image package {self.docker_image} successfully committed upstream!")
+        return {
+            **kwargs,
+            "system_prompt": None,
+            "user_prompt": None,
+            "latest_system_prompt": None,
+            "latest_user_prompt": None,
+            "raw_response": f"Image package {self.docker_image} successfully committed upstream!"
+        }
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
