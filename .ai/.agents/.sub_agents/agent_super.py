@@ -64,7 +64,7 @@ class AbstractAgent(ABC):
         try:
             return json.loads(raw_secrets)
         except Exception as e:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ] Failed to parse environment '{self.secrets_key}' JSON string: {str(e)}")
+            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ] Failed to parse environment '{self.secrets_key}' JSON string: {agent_helper.exceptionStackTrace(e)}")
             sys.exit(1)
     
     def load_models_pool(self):
@@ -80,7 +80,7 @@ class AbstractAgent(ABC):
         try:
             secrets_dict = json.loads(raw_json_secrets)
         except Exception as e:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Failed to parse AI_MODELS_KEYS_JSON string: {str(e)}")
+            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Failed to parse AI_MODELS_KEYS_JSON string: {agent_helper.exceptionStackTrace(e)}")
             return False
 
         while self.active_model_index < len(self.models_pool):
@@ -206,7 +206,7 @@ class AbstractAgent(ABC):
             )
             success = True
         except Exception as e:
-            print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.current_model_config['model_name']}: {str(e)}")
+            print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.current_model_config['model_name']}: {agent_helper.exceptionStackTrace(e)}")
             latest_response = str(e) if not latest_response else latest_response
         
         # result
@@ -330,13 +330,13 @@ class AbstractAgent(ABC):
                 # done tasks
                 return True
             except Exception as e:
-                print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.current_model_config['model_name']}: {str(e)}")
+                print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.current_model_config['model_name']}: {agent_helper.exceptionStackTrace(e)}")
                 # write log
                 self.write_log(
                     log_file=log_history_file,
                     target_component=latest_target_component,
                     user_prompt=latest_user_prompt,
-                    data=str(e)
+                    data=agent_helper.exceptionStackTrace(e)
                 )
                 self.active_model_index += 1
                 if not self.rotate_model():
