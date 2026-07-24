@@ -114,11 +114,15 @@ def main():
             final_day = 1
 
     # Export calculated values to temporary enviroment file for GitHub Actions
-    with open(".agent_resolved_state", "w") as env_f:
-        env_f.write(f"RESOLVED_DAY={final_day}\n")
-        env_f.write(f"RESOLVED_PHASE={final_phase}\n")
-        env_f.write(f"SHOULD_SAVE_STATE={'true' if should_save_state else 'false'}\n")
-        env_f.write(f"PROJECT_ENDED={'true' if project_ended else 'false'}\n")
+    with open(".agent_resolved_state", "w", encoding="utf-8") as f:
+        f.write(f"RESOLVED_DAY={final_day}\n")
+        f.write(f"RESOLVED_PHASE={final_phase}\n")
+        f.write(f"SHOULD_SAVE_STATE={'true' if should_save_state else 'false'}\n")
+        f.write(f"PROJECT_ENDED={'true' if project_ended else 'false'}\n")
+    
+    # tracing
+    with open(".agent_resolved_state", "r", encoding="utf-8") as f:
+        print(f.read())
 
 if __name__ == "__main__":
     main()
