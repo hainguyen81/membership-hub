@@ -30,7 +30,7 @@ MODELS_POOL_PATH            = resolve_absolute_path("sources/agents/models/model
 class AbstractAgent(ABC):
     def __init__(self, agent_id, **kwargs):
         self.agent_id = agent_id if agent_id else "Super"
-        self.kwargs = kwargs
+        self.kwargs = kwargs or {}
         self.secrets_key = self.agent_secrets_key()
         self.secrets = self.load_secrets(self.secrets_key)
         self.initialize()
@@ -256,17 +256,18 @@ class AbstractAgent(ABC):
     
     def execute(self, **kwargs):
         # pre-execute
-        kwargs = self.pre_execute(**kwargs)
+        safe_kwargs = kwargs or {}
+        safe_kwargs = self.pre_execute(**safe_kwargs)
         
         # execute
         while True:
             try:
                 # internal execution
-                kwargs = self.__do_execute__(**kwargs)
+                safe_kwargs = self.__do_execute__(**safe_kwargs)
                 # done tasks
                 return True
             except Exception as e:
-                self.__handle_execute_exception__(e, **kwargs)
+                self.__handle_execute_exception__(e, **safe_kwargs)
                 # rotate next model
                 if not self.__rotate_next_model__():
                     return False
