@@ -32,15 +32,20 @@ class AbstractAgent(ABC):
         self.phase_str = phase_str
         self.day_num = int(day_num)
         self.secrets_key = self.agent_secrets_key()
-        self.secrets = self.load_secrets()
+        self.secrets = self.load_secrets(self.secrets_key)
         self.initialize()
     
     def initialize(self):
+        self.models_secrets_key = self.agent_models_secrets_key()
+        self.models_secrets = self.load_secrets(self.models_secrets_key)
         self.models_pool = self.load_models_pool()
         self.active_model_index = 0
         self.client = None
         self.current_model_config = None
         self.rotate_model()
+    
+    def agent_models_secrets_key(self) -> str:
+        return "AI_MODELS_KEYS_JSON"
     
     @abstractmethod
     def agent_secrets_key(self) -> str:
@@ -49,22 +54,22 @@ class AbstractAgent(ABC):
     def agent_secrets(self, key, defVal=None):
         return self.secrets.get(key, defVal) if self.secrets and key and len(key) > 0 else defVal
     
-    def load_secrets(self):
-        if not self.secrets_key or len(self.secrets_key) <= 0:
-            print(f"[ 💀 {self.agent_id} Agent | WARN ] Not found secrets key to load secrets!")
+    def load_secrets(self, secrets_key):
+        if not secrets_key or len(secrets_key) <= 0:
+            print(f"[ 💀 {self.agent_id} Agent | WARN ] Invalid secrets key to load secrets!")
             return None
         
         # load secrets from environment
-        raw_secrets = os.environ.get(self.secrets_key)
+        raw_secrets = os.environ.get(secrets_key)
         if not raw_secrets:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ] The environment variable '{self.secrets_key}' is completely absent.")
+            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ] The environment variable '{secrets_key}' is completely absent.")
             sys.exit(1)
         
         # parse secrets to JSON
         try:
             return json.loads(raw_secrets)
         except Exception as e:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ] Failed to parse environment '{self.secrets_key}' JSON string: {agent_helper.exception_stacktrace(e)}")
+            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ] Failed to parse environment '{secrets_key}' JSON string: {agent_helper.exception_stacktrace(e)}")
             sys.exit(1)
     
     def load_models_pool(self):
@@ -72,15 +77,8 @@ class AbstractAgent(ABC):
             return json.load(f)
     
     def rotate_model(self):
-        raw_json_secrets = os.environ.get("AI_MODELS_KEYS_JSON")
-        if not raw_json_secrets:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] The environment variable 'AI_MODELS_KEYS_JSON' is completely absent.")
-            return False
-        
-        try:
-            secrets_dict = json.loads(raw_json_secrets)
-        except Exception as e:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Failed to parse AI_MODELS_KEYS_JSON string: {agent_helper.exception_stacktrace(e)}")
+        if not self.models_secrets or len(self.models_secrets) <= 0:
+            print(f"[ 💀 {self.agent_id} Agent | WARN ] Not found any models secrets to rotate!")
             return False
 
         while self.active_model_index < len(self.models_pool):
@@ -104,7 +102,7 @@ class AbstractAgent(ABC):
                 self.active_model_index += 1
                 continue # 🔄 Immediately jumps to the next iteration of the while loop
             
-            api_key = secrets_dict.get(target_model_endpoint)
+            api_key = self.models_secrets.get(target_model_endpoint)
             if api_key:
                 self.current_model_config = config
                 self.client = OpenAI(api_key=api_key, base_url=target_model_endpoint)
