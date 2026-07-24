@@ -51,10 +51,11 @@ def read_file_raw(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         return (file_path, f.read())
 
-def write_log_history(history_file, day, model_name, api_endpoint, target_component, prompt, data, append=False):
+def write_log_history(history_file, day, model_name, api_endpoint, source_component, target_component, prompt, data, append=False):
     log_history_content = (
         f"# Day { day }: model { model_name } - API Endpoint { api_endpoint }\n"
-        f"* **Production source codebase generated at target destination**: {target_component}\n"
+        f"* **Production source codebase at SOURCE destination**: {source_component}\n"
+        f"* **Production source codebase generated at TARGET destination**: {target_component}\n"
         f"* **📝 Prompt / Tasks / Data**:\n{prompt}\n"
         f"* **📝 Response**:\n{data}\n\n"
     )

@@ -160,12 +160,13 @@ class AbstractAgent(ABC):
         clean_response = raw_response.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
         return (raw_response, clean_response)
     
-    def write_log(self, log_file, target_component, user_prompt, data):
+    def write_log(self, log_file, source_component, target_component, user_prompt, data):
         return write_log_history(
             history_file=log_file,
             day=self.day_num,
             model_name=self.current_model_config["model_name"],
             api_endpoint=self.current_model_config["api_endpoint"],
+            source_component=source_component,
             target_component=target_component,
             prompt=user_prompt,
             data=data
@@ -280,6 +281,7 @@ class AbstractAgent(ABC):
         
         # do agent
         log_history_file = self.agent_log_file()
+        latest_source_component = None
         latest_target_component = None
         latest_user_prompt = None
         while True:
@@ -296,6 +298,7 @@ class AbstractAgent(ABC):
                         componentParts = component.split(";")
                         source_component = componentParts[0] if len(componentParts) > 1 else "INTEGRATION_SCOPE"
                         target_component = componentParts[0] if 0 < len(componentParts) < 2 else componentParts[1] if len(componentParts) > 1 else ""
+                        latest_source_component = source_component
                         latest_target_component = target_component
                         
                         # check if invalid target component
@@ -321,9 +324,11 @@ class AbstractAgent(ABC):
                         # write AI response log
                         self.write_log(
                             log_file=log_history_file,
+                            source_component=source_component,
                             target_component=target_component,
                             user_prompt=user_prompt,
-                            data=raw_response
+                            data=raw_response,
+                            append=True
                         )
                 
                 # done tasks
@@ -333,9 +338,11 @@ class AbstractAgent(ABC):
                 # write log
                 self.write_log(
                     log_file=log_history_file,
+                    source_component=latest_source_component,
                     target_component=latest_target_component,
                     user_prompt=latest_user_prompt,
-                    data=agent_helper.exception_stacktrace(e)
+                    data=agent_helper.exception_stacktrace(e),
+                    append=True
                 )
                 self.active_model_index += 1
                 if not self.rotate_model():
