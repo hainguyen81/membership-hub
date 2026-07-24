@@ -408,3 +408,38 @@ jobs:
               git push origin HEAD:"refs/heads/$BRANCH_NAME"
               echo "✨ [SUCCESS] Dynamic matrix pointers synchronized upstream!"
           fi
+      
+      # Block 9.5: 🔀🚀 Create Automated Pull Request to Main Development Trunk
+      - name: "🔀🚀 Create Automated Pull Request to Main Development Trunk"
+        working-directory: ${{ env.PROJECT_WORKSPACE }}
+        env:
+          GH_TOKEN: ${{ secrets.PAT_SECRETS_MANAGER }}
+          SOURCE_BRANCH: 'features/development-phase-${{ needs.state_resolver_job.outputs.run_phase }}-day-${{ needs.state_resolver_job.outputs.run_day }}'
+          TARGET_BRANCH: 'features/development'
+        run: |
+          echo "📣 Checking for existing Pull Requests from [ $SOURCE_BRANCH ] to [ $TARGET_BRANCH ]..."
+          
+          # 🔍 check whether existing PR
+          PR_EXISTS=$(gh pr list --head "$SOURCE_BRANCH" --base "$TARGET_BRANCH" --json number --jq '.[0].number')
+          
+          if [ ! -z "$PR_EXISTS" ]; then
+            echo "🌿 [ ALREADY EXISTS ] An active Pull Request (#$PR_EXISTS) already exists for this branch. Skipping creation."
+          
+          else
+            echo "🚀 [PR CREATION] Launching automated Pull Request generation protocols..."
+            
+            # 🔀 Thực thi lệnh tạo PR tự động
+            gh pr create \
+              --head "$SOURCE_BRANCH" \
+              --base "$TARGET_BRANCH" \
+              --title "chore(pipeline): merge integration for Phase ${{ steps.resolver.outputs.run_phase }} Day ${{ steps.resolver.outputs.run_day }} [AI Loop]" \
+              --body "### 🤖 Automated Development Cycle Pull Request
+              * **Origin Phase**: ${{ needs.state_resolver_job.outputs.run_phase }}
+              * **Origin Day**: ${{ needs.state_resolver_job.outputs.run_day }}
+              * **Target Core Trunk**: $TARGET_BRANCH
+              
+              This PR was automatically provisioned by the AI pipeline workspace loop to synchronize daily code increments back into the stable mainline trunk." \
+              --reviewer "${{ github.repository_owner }}"
+              
+            echo "✅✨ [SUCCESS] Pull Request successfully staged upstream!"
+          fi
