@@ -27,6 +27,7 @@ def main():
     final_phase = 1
     final_day = 1
     should_save_state = False
+    phase_ended = False
     project_ended = False
 
     # -------------------------------------------------------------
@@ -60,6 +61,7 @@ def main():
         else:
             final_phase = curr_phase + 1
             final_day = 1
+        phase_ended = final_phase <= total_phases and final_day == phase_meta["days"]
         
         # exceed phase number, it means project already finished
         if final_phase > total_phases:
@@ -118,6 +120,7 @@ def main():
         f.write(f"RESOLVED_DAY={final_day}\n")
         f.write(f"RESOLVED_PHASE={final_phase}\n")
         f.write(f"SHOULD_SAVE_STATE={'true' if should_save_state else 'false'}\n")
+        f.write(f"PHASE_ENDED={'true' if phase_ended else 'false'}\n")
         f.write(f"PROJECT_ENDED={'true' if project_ended else 'false'}\n")
     
     # tracing
