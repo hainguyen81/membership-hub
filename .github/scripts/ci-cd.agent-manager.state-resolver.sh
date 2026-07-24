@@ -53,16 +53,17 @@ else
   git checkout -f -b "$BRANCH_NAME"
 fi
 
-# 🚀 ABSOLUTE WRITE OVERWRITE: Re-write the correct synced JSON payload right inside the active workspace branch
-if [ "$SHOULD_SAVE_STATE" = "true" ]; then
-  echo "💾 [STATE SAVE] Serializing current matrix back to file tracking storage..."
-  mkdir -p "$(dirname "$STATE_FILE")"
-  echo "{\"current_day\": $RESOLVED_DAY, \"current_phase\": $RESOLVED_PHASE}" > "$STATE_FILE"
-  
-  git add "$STATE_FILE"
-  git commit -m "chore(pipeline): record cron incremental state to Phase $RESOLVED_PHASE Day $RESOLVED_DAY [AI Loop]" || true
-  git push origin HEAD:"refs/heads/$BRANCH_NAME" --force || true
-  echo "✨ [SUCCESS] Dynamic matrix pointers synchronized upstream!"
-else
-  echo "⚠️ [MANUAL MODE] Skipping state serialization rules. $STATE_FILE remains unmodified."
-fi
+# Save state later, when sub-agents run success fully
+# # 🚀 ABSOLUTE WRITE OVERWRITE: Re-write the correct synced JSON payload right inside the active workspace branch
+# if [ "$SHOULD_SAVE_STATE" = "true" ]; then
+#   echo "💾 [STATE SAVE] Serializing current matrix back to file tracking storage..."
+#   mkdir -p "$(dirname "$STATE_FILE")"
+#   echo "{\"current_day\": $RESOLVED_DAY, \"current_phase\": $RESOLVED_PHASE}" > "$STATE_FILE"
+#   
+#   git add "$STATE_FILE"
+#   git commit -m "chore(pipeline): record cron incremental state to Phase $RESOLVED_PHASE Day $RESOLVED_DAY [AI Loop]" || true
+#   git push origin HEAD:"refs/heads/$BRANCH_NAME" --force || true
+#   echo "✨ [SUCCESS] Dynamic matrix pointers synchronized upstream!"
+# else
+#   echo "⚠️ [MANUAL MODE] Skipping state serialization rules. $STATE_FILE remains unmodified."
+# fi
