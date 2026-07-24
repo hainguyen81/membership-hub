@@ -160,7 +160,7 @@ class AbstractAgent(ABC):
         clean_response = raw_response.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
         return (raw_response, clean_response)
     
-    def write_log(self, log_file, source_component, target_component, user_prompt, data):
+    def write_log(self, log_file, source_component, target_component, user_prompt, data, append=False):
         return write_log_history(
             history_file=log_file,
             day=self.day_num,
@@ -169,7 +169,8 @@ class AbstractAgent(ABC):
             source_component=source_component,
             target_component=target_component,
             prompt=user_prompt,
-            data=data
+            data=data,
+            append=append
         )
     
     def process_chat(self, target_component, response_data):
