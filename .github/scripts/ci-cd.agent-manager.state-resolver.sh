@@ -12,7 +12,7 @@ mkdir -p "$(dirname "$STATE_FILE")"
 mkdir -p "$(dirname "$PLAN_FILE")"
 
 # 🐍 call python script to calculate running day/phase
-python3 .github/scripts/resolve_logic.py
+python3 .github/scripts/ci-cd.agent-manager.state-resolver.py
 
 # adapt calculated running day/phase to GitHub Actions Enviroment
 source .agent_resolved_state && rm -f .agent_resolved_state
