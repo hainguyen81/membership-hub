@@ -207,7 +207,7 @@ class AbstractAgent(ABC):
             success = True
         except Exception as e:
             print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.current_model_config['model_name']}: {agent_helper.exception_stacktrace(e)}")
-            latest_response = str(e) if not latest_response else latest_response
+            latest_response = agent_helper.exception_stacktrace(e) if not latest_response else latest_response
         
         # result
         return (success, system_prompt, user_prompt, latest_response)
