@@ -52,6 +52,9 @@ else
   echo "🚀 [GIT FORK] Provisioning pristine branch [$BRANCH_NAME] initialized from stable trunk root"
   git checkout -f -b "$BRANCH_NAME"
 fi
+ 
+# push changes to development phase/day branch before sub-agents running
+git push origin HEAD:"refs/heads/$BRANCH_NAME" || true
 
 # Save state later, when sub-agents run success fully
 # # 🚀 ABSOLUTE WRITE OVERWRITE: Re-write the correct synced JSON payload right inside the active workspace branch
