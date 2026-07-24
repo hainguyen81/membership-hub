@@ -171,14 +171,7 @@ jobs:
           echo "- Commit/Push changes from master to $BRANCH_NAME"
           git push origin $BRANCH_NAME
       
-      # Block 1.5: Inject secure global environment parameters and service boundaries
-      - name: "🔧 [ features/developmet-day-X ] Configure Machine Git Automation Credentials"
-        working-directory: ${{ env.PROJECT_WORKSPACE }}
-        run: |
-          # Pull all commits from sub-agents
-          git pull origin "features/development-day-${RUN_DAY}" --rebase || true
-      
-      # Block 1.6: Core State Machine execution manipulating temporal parameters and daily isolated branch forks
+      # Block 1.5: Core State Machine execution manipulating temporal parameters and daily isolated branch forks
       - name: "🗄️ [ features/developmet-day-X ] Execute Pipeline Parameters Resolution and Git Fork Compliance"
         id: resolver
         working-directory: ${{ env.PROJECT_WORKSPACE }}
@@ -390,9 +383,7 @@ jobs:
           STATE_FILE=".ai/.plan/pipeline_state.json"
           BRANCH_NAME="features/development"
           
-          git config --local user.email "github-actions[bot]@://github.com"
-          git config --local user.name "github-actions[bot]"
-          
+          #  update state
           echo "💾 [STATE SAVE] Serializing current matrix back to file tracking storage..."
           mkdir -p "$(dirname "$STATE_FILE")"
           echo "{\"current_day\": $RESOLVED_DAY, \"current_phase\": $RESOLVED_PHASE}" > "$STATE_FILE"

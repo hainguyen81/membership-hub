@@ -11,11 +11,11 @@ on:
   workflow_call:
     inputs:
       phase:
-        description: '🗂️ Target Phase indicator passed from master pipeline'
+        description: '🌗 Target Phase indicator passed from master pipeline'
         required: true
         type: string
       day:
-        description: '📅 Target operational execution Day number'
+        description: '🗓️ Target operational execution Day number'
         required: true
         type: string
 
@@ -52,7 +52,7 @@ jobs:
       - name: "📦 Clone Workspace Branch Assets"
         uses: actions/checkout@v7
         with:
-          ref: "features/development-day-${{ inputs.day }}"
+          ref: "features/development-phase-${{ inputs.phase }}-day-${{ inputs.day }}"
           path: '.'
           fetch-depth: 0
           clean: true
@@ -127,6 +127,8 @@ jobs:
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"
         # conditions in run script
         shell: bash
+        env:
+          BRANCH_NAME: 'features/development-phase-${{ inputs.phase }}-day-${{ inputs.day }}'
         run: |
           echo "🧩 Executing immediate isolated branch push for Coder Agent..."
           
@@ -138,7 +140,6 @@ jobs:
           git add -A
           
           # Commit/Push to branch
-          BRANCH_NAME="features/development-day-${{ inputs.day }}"
           git commit -m "feat(coder-standalone): dynamic architecture layer compiled for Day ${{ inputs.day }} [AI Test]" || true
           git push origin HEAD:"refs/heads/$BRANCH_NAME" --force
           echo "✅ Standalone assets successfully pushed upstream to origin/$BRANCH_NAME"

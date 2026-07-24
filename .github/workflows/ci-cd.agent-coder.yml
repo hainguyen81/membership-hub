@@ -11,11 +11,11 @@ on:
   workflow_call:
     inputs:
       phase:
-        description: '🗂️ Target Phase indicator passed from master pipeline'
+        description: '🌗 Target Phase indicator passed from master pipeline'
         required: true
         type: string
       day:
-        description: '季度 Target operational execution Day number'
+        description: '🗓️ Target operational execution Day number'
         required: true
         type: string
 
@@ -52,7 +52,7 @@ jobs:
       - name: "📦 Fetch Core Codebase Repository Assets"
         uses: actions/checkout@v7
         with:
-          ref: "features/development-day-${{ inputs.day }}"
+          ref: "features/development-phase-${{ inputs.phase }}-day-${{ inputs.day }}"
           path: '.'
           fetch-depth: 0
           clean: true
@@ -127,6 +127,8 @@ jobs:
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"
         # conditions in run script
         shell: bash
+        env:
+          BRANCH_NAME: 'features/development-phase-${{ inputs.phase }}-day-${{ inputs.day }}'
         run: |
           echo "🧩 Executing immediate isolated branch push for Coder Agent..."
           
@@ -137,8 +139,19 @@ jobs:
           # add all agent works
           git add -A
           
-          # Commit/Push to branch
-          BRANCH_NAME="features/development-day-${{ inputs.day }}"
-          git commit -m "feat(coder-standalone): dynamic architecture layer compiled for Day ${{ inputs.day }} [AI Test]" || true
-          git push origin HEAD:"refs/heads/$BRANCH_NAME" --force
-          echo "✅ Standalone assets successfully pushed upstream to origin/$BRANCH_NAME"
+          # Only commit if there are explicit architectural diff changes detected
+          if git diff --cached --quiet; then
+              echo "⚠️ Operational Notice: No data state changes detected. Skipping repository commit."
+          else
+              echo "📝 Committing system state changes..."
+              git commit -m "feat(standalone): [ AI Coder Agent ] dynamic architecture layer compiled for Phase ${{ inputs.phase }} Day ${{ inputs.day }}" || true
+              
+              # ✅ ENTERPRISE HOTFIX: Explicitly pull and rebase the remote branch directly into the working tree
+              echo "🔄 Fetching latest upstream tree and executing explicit contextual rebase..."
+              git fetch origin ${{ github.ref_name }}
+              git rebase origin/${{ github.ref_name }}
+              
+              echo "📤 Pushing secure data changes upstream to repository branch..."
+              git push origin HEAD:"refs/heads/$BRANCH_NAME"
+              echo "✅ Standalone assets successfully pushed upstream to origin/$BRANCH_NAME"
+          fi
