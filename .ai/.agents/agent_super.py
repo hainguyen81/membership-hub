@@ -257,13 +257,13 @@ class AbstractAgent(ABC):
     def execute(self, **kwargs):
         # pre-execute
         safe_kwargs = kwargs or {}
-        safe_kwargs = self.pre_execute(**safe_kwargs)
+        safe_kwargs = self.pre_execute(**safe_kwargs) or {}
         
         # execute
         while True:
             try:
                 # internal execution
-                safe_kwargs = self.__do_execute__(**safe_kwargs)
+                safe_kwargs = self.__do_execute__(**safe_kwargs) or {}
                 # done tasks
                 return True
             except Exception as e:
