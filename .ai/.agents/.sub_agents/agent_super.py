@@ -153,11 +153,7 @@ class AbstractAgent(ABC):
         response = self.client.chat.completions.create(
             model=self.current_model_config["model_name"],
             messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
-            temperature=0.1,
-            # 0 to turn off retries
-            max_retries=3, 
-            # timeout in seconds (300 seconds ~ 5 minutes)
-            timeout=300.0
+            temperature=0.1
         )
         raw_response = parseOpenAIResponseData(response)
         clean_response = raw_response.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip()
