@@ -48,6 +48,6 @@ def json_raw_content(raw_content):
     
     return str(raw_content)
 
-def exceptionStackTrace(e) -> str:
+def exception_stacktrace(e) -> str:
     stacktrace = traceback.format_exception(type(e), e, e.__traceback__) if isinstance(e, BaseException) or isinstance(e, Exception) else None
     return None if not e else f"{str(e)}: {stacktrace}" if stacktrace else str(e)

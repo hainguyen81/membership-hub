@@ -80,7 +80,7 @@ class BugFixerAgent(AbstractAgent):
                 if not check_by_compile:
                     return (True, "YAML: Cú pháp hoàn toàn hợp lệ.")
             except yaml.YAMLError as e:
-                return (False, f"YAML Syntax Error:\n{agent_helper.exceptionStackTrace(e)}")
+                return (False, f"YAML Syntax Error:\n{agent_helper.exception_stacktrace(e)}")
         
         # if XML file
         elif file_extension == '.xml' and file_name != 'pom.xml':
@@ -90,7 +90,7 @@ class BugFixerAgent(AbstractAgent):
                 if not check_by_compile:
                     return (True, "XML: XML Syntax correct.")
             except ET.ParseError as e:
-                return (False, f"XML Syntax Error: {agent_helper.exceptionStackTrace(e)}")
+                return (False, f"XML Syntax Error: {agent_helper.exception_stacktrace(e)}")
         
         # if properties file
         elif file_extension == '.properties' or file_extension == '.env':
@@ -102,7 +102,7 @@ class BugFixerAgent(AbstractAgent):
                 if not check_by_compile:
                     return (True, "Properties: Syntax correct.")
             except Exception as e:
-                return (False, f"Properties Syntax Error: {agent_helper.exceptionStackTrace(e)}")
+                return (False, f"Properties Syntax Error: {agent_helper.exception_stacktrace(e)}")
         
         # if file JSON
         elif file_extension == '.json':
@@ -114,7 +114,7 @@ class BugFixerAgent(AbstractAgent):
                 if not check_by_compile:
                     return (True, "JSON Validated Successfully")
             except Exception as e:
-                return (False, f"JSON Syntax Error: {agent_helper.exceptionStackTrace(e)}")
+                return (False, f"JSON Syntax Error: {agent_helper.exception_stacktrace(e)}")
         
         # check by build project
         pom_path = os.path.join(BACKEND_WORKSPACE, "pom.xml")
@@ -191,7 +191,7 @@ class BugFixerAgent(AbstractAgent):
                 )
                 success = True
             except Exception as e:
-                print(f"[ 💀 {self.agent_id} Agent | RECOVERY ] API transaction exception caught. Swapping model: {agent_helper.exceptionStackTrace(e)}")
+                print(f"[ 💀 {self.agent_id} Agent | RECOVERY ] API transaction exception caught. Swapping model: {agent_helper.exception_stacktrace(e)}")
                 latest_response = str(e) if not latest_response else latest_response
                 self.active_model_index += 1
                 if not self.rotate_model():
