@@ -3,18 +3,22 @@ import json
 import os
 import sys
 
-from _ai._agents import agent_helper
+from _0d_ai._0d_agents.agent_0u_helper import (
+    resolve_absolute_path,
+    read_json_file,
+    write_file
+)
 
 def main():
-    plan_path = agent_helper.resolve_absolute_path(os.environ.get("PLAN_FILE", ".ai/.plan/plan.spec.json"))
-    state_path = agent_helper.resolve_absolute_path(os.environ.get("STATE_FILE", ".ai/.agents/.states/pipeline_state.json"))
+    plan_path = resolve_absolute_path(os.environ.get("PLAN_FILE", ".ai/.plan/plan.spec.json"))
+    state_path = resolve_absolute_path(os.environ.get("STATE_FILE", ".ai/.agents/.states/pipeline_state.json"))
     
     if not os.path.exists(plan_path):
         print(f"❌ [ ERROR ] Plan specification file not found at: {plan_path}")
         sys.exit(1)
     
     # read plan json file
-    plan = agent_helper.read_json_file(plan_path)
+    plan = read_json_file(plan_path)
     
     # parse plan information
     phases_config = plan.get("phases", [])
@@ -129,8 +133,8 @@ def main():
     print(f"🆕 [ FINAL STATE ] Phase Meta: {agents_state}")
 
     # Export calculated values to temporary enviroment file for GitHub Actions
-    state_file = agent_helper.resolve_absolute_path(".agent_resolved_state")
-    agent_helper.write_file(file=state_file, data="\n".join(agents_state))
+    state_file = resolve_absolute_path(".agent_resolved_state")
+    write_file(file=state_file, data="\n".join(agents_state))
 
 if __name__ == "__main__":
     main()

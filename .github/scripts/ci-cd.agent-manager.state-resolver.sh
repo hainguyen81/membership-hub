@@ -11,8 +11,12 @@ git clean -ffdx
 mkdir -p "$(dirname "$STATE_FILE")"
 mkdir -p "$(dirname "$PLAN_FILE")"
 
+# -------------------------------------------------
+# !!!IMPORTANT!!! Execute via launcher for registering workflows scripts python as module
+# -------------------------------------------------
 # 🐍 call python script to calculate running day/phase
-python3 .github/scripts/ci-cd.agent-manager.state-resolver.py
+# .github/scripts/ci-cd.agent-manager.state-resolver.py
+python3 .libs/agent_launcher.py _0d_github.scripts.ci_0h_cd_0d_agent_0h_manager_0d_state_0h_resolver
 
 # adapt calculated running day/phase to GitHub Actions Enviroment
 source .agent_resolved_state && rm -f .agent_resolved_state

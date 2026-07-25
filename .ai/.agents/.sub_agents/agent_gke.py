@@ -12,10 +12,14 @@ import subprocess
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
-from _ai._agents import agent_helper
+from _0d_ai._0d_agents.agent_0u_helper import (
+    resolve_absolute_path,
+    exception_stacktrace,
+    kwargs_by_key
+)
 
 # super agent
-from _ai._agents._sub_agents.agent_gcp import GcpAgent
+from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_gcp import GcpAgent
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
@@ -61,7 +65,7 @@ class GkeAgent(GcpAgent):
     
     # @override
     def agent_log_file(self) -> str:
-        return agent_helper.resolve_absolute_path(f".ai/.history/agent-gke-day-{self.day_num}.md")
+        return resolve_absolute_path(f".ai/.history/agent-gke-day-{self.day_num}.md")
     
     # @ override
     def pre_execute(self, **kwargs):
@@ -76,12 +80,12 @@ class GkeAgent(GcpAgent):
     # @ override
     def __do_task_component__(self, **kwargs):
         # extract arguments
-        project_name = agent_helper.kwargs_by_key(key="project_name", **kwargs)
-        global_context = agent_helper.kwargs_by_key(key="global_context", **kwargs)
-        day_context = agent_helper.kwargs_by_key(key="day_context", **kwargs)
-        source_component = agent_helper.kwargs_by_key(key="source_component", **kwargs)
-        target_component = agent_helper.kwargs_by_key(key="target_component", **kwargs)
-        sub_tasks = agent_helper.kwargs_by_key(key="sub_tasks", **kwargs)
+        project_name = kwargs_by_key(key="project_name", **kwargs)
+        global_context = kwargs_by_key(key="global_context", **kwargs)
+        day_context = kwargs_by_key(key="day_context", **kwargs)
+        source_component = kwargs_by_key(key="source_component", **kwargs)
+        target_component = kwargs_by_key(key="target_component", **kwargs)
+        sub_tasks = kwargs_by_key(key="sub_tasks", **kwargs)
         
         # Standard Microservice Application Rollout Logic using your custom prefixed parameters name (e.g. gke-membership-hub-backend)
         is_backend = "backend" in target_component
@@ -90,7 +94,7 @@ class GkeAgent(GcpAgent):
         # Check if the target day represents a dedicated infrastructure day targeting raw K8s deployment manifests (like Day 23)
         if "infrastructure/k8s" in target_component:
             print(f"[ {self.agent_id} Agent ] Applying raw enterprise infrastructure update manifests: {target_component}")
-            target_component = agent_helper.resolve_absolute_path(target_component)
+            target_component = resolve_absolute_path(target_component)
             subprocess.run(["kubectl", "apply", "-f", target_component], check=True)
             print(f"[ ✅ {self.agent_id} Agent | SUCCESS ] Cloud infrastructure manifest rules applied securely on GKE compute pools!")
             

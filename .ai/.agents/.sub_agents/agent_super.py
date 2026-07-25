@@ -15,17 +15,23 @@ from abc import ABC, abstractmethod
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
-from _ai._agents import agent_helper
-from _ai._agents.agent_super import AbstractAgent
+from _0d_ai._0d_agents.agent_0u_helper import (
+    resolve_absolute_path,
+    read_file_raw,
+    write_file,
+    exception_stacktrace,
+    kwargs_by_key
+)
+from _0d_ai._0d_agents.agent_0u_super import AbstractAgent
 
 # Now Python can seamlessly see and import the centralized helper utility cleanly!
-from _ai._agents._sub_agents.helper import write_sub_agent_history
+from _0d_ai._0d_agents._0d_sub_0u_agents.helper import write_sub_agent_history
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-MODELS_POOL_PATH            = agent_helper.resolve_absolute_path(".ai/.agents/.models/models.json")
-STEPS_PLAN_DIR              = agent_helper.resolve_absolute_path(".ai/.plan/.steps")
+MODELS_POOL_PATH            = resolve_absolute_path(".ai/.agents/.models/models.json")
+STEPS_PLAN_DIR              = resolve_absolute_path(".ai/.plan/.steps")
 
 class AbstractSubAgent(AbstractAgent):
     def __init__(self, agent_id, phase_str, day_num, **kwargs):
@@ -65,7 +71,7 @@ class AbstractSubAgent(AbstractAgent):
         source_component = self.get_kwargs_by_key(key="source_component", **kwargs)
         if os.path.exists(source_component):
             lang_code = "typescript" if source_component.endswith(('.ts', '.tsx', '.js')) else "java"
-            _, source_payload = agent_helper.read_file_raw(source_component.strip())
+            _, source_payload = read_file_raw(source_component.strip())
             source_payload = f"```{lang_code}\n{source_payload.strip()}\n```"
         else:
             source_component = "INTEGRATION_SCOPE"
@@ -84,7 +90,7 @@ class AbstractSubAgent(AbstractAgent):
     # @ override
     def process_chat(self, response_data, **kwargs):
         target_component = self.get_kwargs_by_key(key="target_component", **kwargs)
-        agent_helper.write_file(
+        write_file(
             file=target_component,
             data=response_data
         )
@@ -121,13 +127,13 @@ class AbstractSubAgent(AbstractAgent):
             sys.exit(0)
         
         # read global context md
-        global_context_file, global_context = read_file_raw(agent_helper.resolve_absolute_path(steps_data["global_context_file"]))
+        global_context_file, global_context = read_file_raw(resolve_absolute_path(steps_data["global_context_file"]))
         if not global_context:
             print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Not found GLOBAL project context markdown { global_context_file }")
             sys.exit(1)
         
         # request phase context
-        phase_context_file, phase_context = read_file_raw(agent_helper.resolve_absolute_path(target_day["context_file"]))
+        phase_context_file, phase_context = read_file_raw(resolve_absolute_path(target_day["context_file"]))
         if not phase_context:
             print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Not found PHASE context markdown { phase_context_file }")
             sys.exit(1)
@@ -152,26 +158,26 @@ class AbstractSubAgent(AbstractAgent):
     # @override
     def __handle_execute_exception__(self, e, **kwargs):
         model_name = self.current_model_config['model_name'] if self.current_model_config else None
-        print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {model_name}: {agent_helper.exception_stacktrace(e)}")
+        print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {model_name}: {exception_stacktrace(e)}")
         # write log
         self.write_history_log(
             log_file=self.agent_log_file(),
-            source_component=agent_helper.kwargs_by_key(key="latest_source_component", **kwargs),
-            target_component=agent_helper.kwargs_by_key(key="latest_target_component", **kwargs),
-            user_prompt=agent_helper.kwargs_by_key(key="latest_user_prompt", **kwargs),
-            data=agent_helper.exception_stacktrace(e),
+            source_component=kwargs_by_key(key="latest_source_component", **kwargs),
+            target_component=kwargs_by_key(key="latest_target_component", **kwargs),
+            user_prompt=kwargs_by_key(key="latest_user_prompt", **kwargs),
+            data=exception_stacktrace(e),
             append=True
         )
     
     def __do_task_component__(self, **kwargs):
         # execute task
         success, system_prompt, user_prompt, raw_response = self.__execute__(
-            project_name=agent_helper.kwargs_by_key(key="project_name", **kwargs),
-            global_context=agent_helper.kwargs_by_key(key="global_context", **kwargs),
-            day_context=agent_helper.kwargs_by_key(key="day_context", **kwargs),
-            source_component=agent_helper.kwargs_by_key(key="source_component", **kwargs),
-            target_component=agent_helper.kwargs_by_key(key="target_component", **kwargs),
-            sub_tasks=agent_helper.kwargs_by_key(key="sub_tasks", **kwargs)
+            project_name=kwargs_by_key(key="project_name", **kwargs),
+            global_context=kwargs_by_key(key="global_context", **kwargs),
+            day_context=kwargs_by_key(key="day_context", **kwargs),
+            source_component=kwargs_by_key(key="source_component", **kwargs),
+            target_component=kwargs_by_key(key="target_component", **kwargs),
+            sub_tasks=kwargs_by_key(key="sub_tasks", **kwargs)
         )
         
         # for tracing
@@ -192,8 +198,8 @@ class AbstractSubAgent(AbstractAgent):
     # @ override
     def __do_execute__(self, **kwargs):
         # extract arguments
-        phase_step_file = agent_helper.kwargs_by_key(key="phase_step_file", **kwargs)
-        agent_tasks = agent_helper.kwargs_by_key(key="agent_tasks", **kwargs)
+        phase_step_file = kwargs_by_key(key="phase_step_file", **kwargs)
+        agent_tasks = kwargs_by_key(key="agent_tasks", **kwargs)
         
         # iterate every task in day
         for sub_task in agent_tasks:
@@ -226,10 +232,10 @@ class AbstractSubAgent(AbstractAgent):
                 # write AI response log
                 self.write_history_log(
                     log_file=log_history_file,
-                    source_component=agent_helper.kwargs_by_key(key="source_component", **kwargs),
-                    target_component=agent_helper.kwargs_by_key(key="target_component", **kwargs),
-                    user_prompt=agent_helper.kwargs_by_key(key="user_prompt", **kwargs),
-                    data=agent_helper.kwargs_by_key(key="raw_response", **kwargs),
+                    source_component=kwargs_by_key(key="source_component", **kwargs),
+                    target_component=kwargs_by_key(key="target_component", **kwargs),
+                    user_prompt=kwargs_by_key(key="user_prompt", **kwargs),
+                    data=kwargs_by_key(key="raw_response", **kwargs),
                     append=True
                 )
             

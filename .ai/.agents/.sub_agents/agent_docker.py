@@ -12,17 +12,21 @@ import subprocess
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
-from _ai._agents import agent_helper
+from _0d_ai._0d_agents.agent_0u_helper import (
+    resolve_absolute_path,
+    exception_stacktrace,
+    kwargs_by_key
+)
 
 # super agent
-from _ai._agents._sub_agents.agent_super import AbstractSubAgent
+from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
 AGENT_ID                    = "Docker"
-BACKEND_DOCKERFILE          = agent_helper.resolve_absolute_path("sources/backend/src/main/docker/Dockerfile.native")
-FRONTEND_DOCKERFILE         = agent_helper.resolve_absolute_path("sources/frontend/Dockerfile")
+BACKEND_DOCKERFILE          = resolve_absolute_path("sources/backend/src/main/docker/Dockerfile.native")
+FRONTEND_DOCKERFILE         = resolve_absolute_path("sources/frontend/Dockerfile")
 
 class DockerHubAgent(AbstractSubAgent):
     def __init__(self, phase_str, day_num):
@@ -77,7 +81,7 @@ class DockerHubAgent(AbstractSubAgent):
     
     # @override
     def agent_log_file(self) -> str:
-        return agent_helper.resolve_absolute_path(f".ai/.history/agent-docker-day-{self.day_num}.md")
+        return resolve_absolute_path(f".ai/.history/agent-docker-day-{self.day_num}.md")
     
     # @override
     def system_prompt_template(self) -> str:
@@ -103,17 +107,17 @@ class DockerHubAgent(AbstractSubAgent):
     # @ override
     def __do_task_component__(self, **kwargs):
         # extract arguments
-        project_name = agent_helper.kwargs_by_key(key="project_name", **kwargs)
-        global_context = agent_helper.kwargs_by_key(key="global_context", **kwargs)
-        day_context = agent_helper.kwargs_by_key(key="day_context", **kwargs)
-        source_component = agent_helper.kwargs_by_key(key="source_component", **kwargs)
-        target_component = agent_helper.kwargs_by_key(key="target_component", **kwargs)
-        sub_tasks = agent_helper.kwargs_by_key(key="sub_tasks", **kwargs)
+        project_name = kwargs_by_key(key="project_name", **kwargs)
+        global_context = kwargs_by_key(key="global_context", **kwargs)
+        day_context = kwargs_by_key(key="day_context", **kwargs)
+        source_component = kwargs_by_key(key="source_component", **kwargs)
+        target_component = kwargs_by_key(key="target_component", **kwargs)
+        sub_tasks = kwargs_by_key(key="sub_tasks", **kwargs)
         
         # check task for backend or frontend
         is_backend = "backend" in target_component
         dockerfile_path = BACKEND_DOCKERFILE if is_backend else FRONTEND_DOCKERFILE
-        workspace_path = agent_helper.resolve_absolute_path("sources/backend") if is_backend else agent_helper.resolve_absolute_path("sources/frontend")
+        workspace_path = resolve_absolute_path("sources/backend") if is_backend else resolve_absolute_path("sources/frontend")
         
         # check whether exists docker file
         if not os.path.exists(dockerfile_path):

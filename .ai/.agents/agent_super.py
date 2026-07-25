@@ -12,7 +12,7 @@ from openai import OpenAI
 from abc import ABC, abstractmethod
 
 # agent helper
-from _ai._agents.agent_helper import (
+from _0d_ai._0d_agents.agent_0u_helper import (
     resolve_absolute_path,
     write_file,
     read_json_file,

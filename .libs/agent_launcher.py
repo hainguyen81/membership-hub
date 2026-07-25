@@ -4,6 +4,7 @@ import runpy
 from pathlib import Path
 
 from modules import FolderPackageFinder
+from workflows import registerGitHubWorkflows
 
 # load current folder as python package
 agents_package_path = os.environ.get('AGENTS_PACKAGE_PATH')
@@ -26,6 +27,9 @@ if phys_project_workspace_path.is_dir():
 
 else:
     print(f"⛔ Not define enviroment 'AGENTS_PACKAGE_PATH' to register package/module finder")
+
+# load GitHub workflow scripts folder as python package
+registerGitHubWorkflows()
 
 # Check whether need to launch module
 if len(sys.argv) > 1:

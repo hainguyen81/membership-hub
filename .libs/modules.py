@@ -6,6 +6,87 @@ from pathlib import Path
 from importlib.abc import MetaPathFinder, Loader
 from importlib.machinery import ModuleSpec
 
+import re
+
+# -------------------------------------------------
+# MAPPING SPECIAL CHARACTERS TABLE for PYTHON PACKAGE / MODULE NAME
+# -------------------------------------------------
+# Original                                  Encoded                     Algorithm                   Original Package/Module     Encoded Package/Module
+# -------------------------------------------------
+#   Space ( )                               _0s_                        Replace                     idea gen                    idea_0s_gen
+#   Hiphen (-)                              _0h_                        Replace                     my-agent                    my_0h_agent
+#   Dot (.)                                 _0d_                        Replace                     agent.v1                    agent_0d_v1
+#   Underscore (_)                          _0u_                        Replace                     sys_log                     sys_0u_log
+#   Starting with number (0-9)              Insert _0n_ more at first   Add prefix                  2026_tool                   _0n_2026_tool
+#   Special Characters (!, @, #,...)        _x + Hex + _                _x + hex(ord(c)) + _        ai@tool                     ai_x40_tool
+#                                                                                                                               (40 is hex of @)
+#   Emoji / Vietnamese (💡, á,...)           _u + Unicode + _            _u + hex(ord(c)) + _        💡_agent                     _u1f4a1__0u_agent
+# -------------------------------------------------
+class ModuleNameMapper:
+    @staticmethod
+    def encode(text: str) -> str:
+        """real name to map"""
+        if not text:
+            return ""
+        
+        result = []
+        # convert every special character
+        for char in text:
+            if char == ' ':
+                result.append('_0s_')
+            elif char == '-':
+                result.append('_0h_')
+            elif char == '.':
+                result.append('_0d_')
+            # elif char == '_':
+            #    result.append('_0u_')
+            elif char.isalnum() and ord(char) < 128:
+                # keep original character
+                result.append(char)
+            else:
+                # special character, emoji, vietnamese -> to Hex
+                code = ord(char)
+                if code < 256:
+                    result.append(f'_x{code:02x}_')
+                else:
+                    result.append(f'_u{code:04x}_')
+                    
+        encoded_str = "".join(result)
+        
+        # if starting with number character
+        if encoded_str and encoded_str[0].isdigit():
+            encoded_str = "_0n_" + encoded_str
+            
+        return encoded_str
+
+    @staticmethod
+    def decode(encoded_text: str) -> str:
+        """Revert to real name"""
+        if not encoded_text:
+            return ""
+            
+        # 1. for first number character
+        if encoded_text.startswith("_0n_"):
+            encoded_text = encoded_text[4:]
+            
+        # 2. special characters under Hex (_xHH_ hoặc _uHHHH_)
+        def replace_hex(match):
+            val = match.group(1) or match.group(2)
+            return chr(int(val, 16))
+            
+        # regex to scan hex
+        pattern_hex = r'_u([0-9a-fA-F]{4})_|_x([0-9a-fA-F]{2})_'
+        decoded_text = re.sub(pattern_hex, replace_hex, encoded_text)
+        
+        # 3. decode remain special characters
+        decoded_text = decoded_text.replace('_0s_', ' ')
+        decoded_text = decoded_text.replace('_0h_', '-')
+        decoded_text = decoded_text.replace('_0d_', '.')
+        decoded_text = decoded_text.replace('_0u_', '_')
+        
+        # real name
+        return decoded_text
+
 class FolderPackageFinder(MetaPathFinder):
     def __init__(self, folder_path):
         self.folder_path = Path(folder_path).resolve()
@@ -13,7 +94,7 @@ class FolderPackageFinder(MetaPathFinder):
             raise FileNotFoundError(f"Not found folder path: {self.folder_path}")
         
         # 1. Define root Package Alias
-        self.root_alias = self.folder_path.name.replace('.', '_')
+        self.root_alias = ModuleNameMapper.encode(self.folder_path.name)
         print(f"📦 Custom Finder registered for folder '{self.folder_path.name}' as alias '{self.root_alias}'")
     
     def alias(self) -> str:
@@ -37,7 +118,7 @@ class FolderPackageFinder(MetaPathFinder):
         parts = search_name.split('.')
         
         # mapping from alias to real folder structure
-        # (**Note:** because alias already replaced '.' to '_', so we must scan folder to find matching)
+        # (**Note:** because alias already encoded special characters, so we must scan folder to find matching)
         current_phys_path = self.folder_path
         
         # loop to find
@@ -46,7 +127,7 @@ class FolderPackageFinder(MetaPathFinder):
             found = False
             if current_phys_path.is_dir():
                 for item in current_phys_path.iterdir():
-                    cleaned_item_name = item.stem.replace('.', '_') if item.is_file() else item.name.replace('.', '_')
+                    cleaned_item_name = ModuleNameMapper.encode(item.stem) if item.is_file() else ModuleNameMapper.encode(item.name)
                     if cleaned_item_name == part:
                         current_phys_path = item
                         found = True

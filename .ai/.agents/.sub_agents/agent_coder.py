@@ -13,17 +13,21 @@ from openai import OpenAI
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
-from _ai._agents import agent_helper
+from _0d_ai._0d_agents.agent_0u_helper import (
+    resolve_absolute_path,
+    exception_stacktrace,
+    kwargs_by_key
+)
 
 # super agent
-from _ai._agents._sub_agents.agent_super import AbstractSubAgent
+from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
 AGENT_ID                    = "Coder"
-SYSTEM_PROMPT_FILE          = agent_helper.resolve_absolute_path(".ai/.agents/.sub_agents/agent_coder.prompt.system.md")
-USER_PROMPT_FILE            = agent_helper.resolve_absolute_path(".ai/.agents/.sub_agents/agent_coder.prompt.user.md")
+SYSTEM_PROMPT_FILE          = resolve_absolute_path(".ai/.agents/.sub_agents/agent_coder.prompt.system.md")
+USER_PROMPT_FILE            = resolve_absolute_path(".ai/.agents/.sub_agents/agent_coder.prompt.user.md")
 
 class CoderAgent(AbstractSubAgent):
     def __init__(self, phase_str, day_num):
@@ -39,7 +43,7 @@ class CoderAgent(AbstractSubAgent):
 
     # @override
     def agent_log_file(self) -> str:
-        return agent_helper.resolve_absolute_path(f".ai/.history/agent-coder-day-{self.day_num}.md")
+        return resolve_absolute_path(f".ai/.history/agent-coder-day-{self.day_num}.md")
     
     # @override
     def system_prompt_template(self) -> str:

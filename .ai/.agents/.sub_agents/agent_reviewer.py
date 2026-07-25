@@ -17,22 +17,26 @@ from openai import OpenAI
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
-from _ai._agents import agent_helper
+from _0d_ai._0d_agents.agent_0u_helper import (
+    resolve_absolute_path,
+    exception_stacktrace,
+    kwargs_by_key
+)
 
 # Now Python can seamlessly see and import the centralized helper utility cleanly!
-from _ai._agents._sub_agents.helper import render_prompt
+from _0d_ai._0d_agents._0d_sub_0u_agents.helper import render_prompt
 
 # super agent
-from _ai._agents._sub_agents.agent_super import AbstractSubAgent
+from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
 AGENT_ID                    = "Reviewer"
-SYSTEM_PROMPT_FILE          = agent_helper.resolve_absolute_path(".ai/.agents/.sub_agents/agent_reviewer.prompt.system.md")
-USER_PROMPT_FILE            = agent_helper.resolve_absolute_path(".ai/.agents/.sub_agents/agent_reviewer.prompt.user.md")
-BACKEND_WORKSPACE           = agent_helper.resolve_absolute_path("sources/backend")
-FRONTEND_WORKSPACE          = agent_helper.resolve_absolute_path("sources/frontend")
+SYSTEM_PROMPT_FILE          = resolve_absolute_path(".ai/.agents/.sub_agents/agent_reviewer.prompt.system.md")
+USER_PROMPT_FILE            = resolve_absolute_path(".ai/.agents/.sub_agents/agent_reviewer.prompt.user.md")
+BACKEND_WORKSPACE           = resolve_absolute_path("sources/backend")
+FRONTEND_WORKSPACE          = resolve_absolute_path("sources/frontend")
 
 class BugFixerAgent(AbstractAgent):
     def __init__(self, phase_str, day_num):
@@ -66,7 +70,7 @@ class BugFixerAgent(AbstractAgent):
                 if not check_by_compile:
                     return (True, "YAML: Cú pháp hoàn toàn hợp lệ.")
             except yaml.YAMLError as e:
-                return (False, f"YAML Syntax Error:\n{agent_helper.exception_stacktrace(e)}")
+                return (False, f"YAML Syntax Error:\n{exception_stacktrace(e)}")
         
         # if XML file
         elif file_extension == '.xml' and file_name != 'pom.xml':
@@ -76,7 +80,7 @@ class BugFixerAgent(AbstractAgent):
                 if not check_by_compile:
                     return (True, "XML: XML Syntax correct.")
             except ET.ParseError as e:
-                return (False, f"XML Syntax Error: {agent_helper.exception_stacktrace(e)}")
+                return (False, f"XML Syntax Error: {exception_stacktrace(e)}")
         
         # if properties file
         elif file_extension == '.properties' or file_extension == '.env':
@@ -88,7 +92,7 @@ class BugFixerAgent(AbstractAgent):
                 if not check_by_compile:
                     return (True, "Properties: Syntax correct.")
             except Exception as e:
-                return (False, f"Properties Syntax Error: {agent_helper.exception_stacktrace(e)}")
+                return (False, f"Properties Syntax Error: {exception_stacktrace(e)}")
         
         # if file JSON
         elif file_extension == '.json':
@@ -100,7 +104,7 @@ class BugFixerAgent(AbstractAgent):
                 if not check_by_compile:
                     return (True, "JSON Validated Successfully")
             except Exception as e:
-                return (False, f"JSON Syntax Error: {agent_helper.exception_stacktrace(e)}")
+                return (False, f"JSON Syntax Error: {exception_stacktrace(e)}")
         
         # check by build project
         pom_path = os.path.join(BACKEND_WORKSPACE, "pom.xml")
@@ -139,7 +143,7 @@ class BugFixerAgent(AbstractAgent):
 
     # @override
     def agent_log_file(self) -> str:
-        return agent_helper.resolve_absolute_path(f".ai/.history/agent-reviewer-day-{self.day_num}.md")
+        return resolve_absolute_path(f".ai/.history/agent-reviewer-day-{self.day_num}.md")
     
     # @override
     def system_prompt_template(self) -> str:
@@ -152,8 +156,8 @@ class BugFixerAgent(AbstractAgent):
     # @ override
     def __do_task_component__(self, **kwargs):
         # parse parameters
-        project_name = agent_helper.kwargs_by_key(key="project_name", **kwargs)
-        target_component = agent_helper.kwargs_by_key(key="target_component", **kwargs)
+        project_name = kwargs_by_key(key="project_name", **kwargs)
+        target_component = kwargs_by_key(key="target_component", **kwargs)
         
         # check whether project had been initialized
         project_initialized, project_main_component = self.check_project_initialized(target_component)
@@ -171,9 +175,9 @@ class BugFixerAgent(AbstractAgent):
     #def execute_task(self, project_name, global_context, day_context, source_component, target_component, sub_tasks):
     def __execute__(self, **kwargs):
         # parse arguments
-        project_initialized = agent_helper.kwargs_by_key(key="project_initialized", **kwargs)
-        source_component = agent_helper.kwargs_by_key(key="source_component", **kwargs)
-        target_component = agent_helper.kwargs_by_key(key="target_component", **kwargs)
+        project_initialized = kwargs_by_key(key="project_initialized", **kwargs)
+        source_component = kwargs_by_key(key="source_component", **kwargs)
+        target_component = kwargs_by_key(key="target_component", **kwargs)
         
         # build system prompt
         system_prompt = self.build_system_prompt(**kwargs)
@@ -209,7 +213,7 @@ class BugFixerAgent(AbstractAgent):
                 latest_response = kwargs_by_key(key="latest_response", **kwargs)
                 success = True
             except Exception as e:
-                print(f"[ 💀 {self.agent_id} Agent | RECOVERY ] API transaction exception caught. Swapping model: {agent_helper.exception_stacktrace(e)}")
+                print(f"[ 💀 {self.agent_id} Agent | RECOVERY ] API transaction exception caught. Swapping model: {exception_stacktrace(e)}")
                 latest_response = str(e) if not latest_response else latest_response
                 # rotate next model
                 if not self.__rotate_next_model__():

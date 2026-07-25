@@ -121,7 +121,8 @@ jobs:
           AI_MODELS_KEYS_JSON: ${{ secrets.AI_MODELS_KEYS_JSON }}
         run: |
           echo "⚙🚀 Launching autonomous coder agent execution context for Day ${{ inputs.day }}..."
-          python3 .libs/agent_launcher.py _ai._agents._sub_agents.agent_coder --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
+          # `_0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_coder` --> `.ai/.agents/.sub_agents/agent_coder.py`
+          python3 .libs/agent_launcher.py _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_coder --phase "${{ inputs.phase }}" --day "${{ inputs.day }}"
       
       # if running stanalone
       - name: "🚀 Standalone Push - Secure Isolated Code Assets"
