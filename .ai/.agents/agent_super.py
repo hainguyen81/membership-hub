@@ -156,6 +156,9 @@ class AbstractAgent(ABC):
     def agent_temperature(self):
         return 0.1
     
+    def clean_response(self, raw_response, **kwargs):
+        return raw_response
+    
     def chat(self, system_prompt, user_prompt, **kwargs):
         response = self.client.chat.completions.create(
             model=self.current_model_config["model_name"],
@@ -168,9 +171,6 @@ class AbstractAgent(ABC):
         )
         raw_response = parseOpenAIResponseData(response)
         return (raw_response, self.clean_response(raw_response, **kwargs))
-    
-    def clean_response(self, raw_response, **kwargs):
-        return raw_response
     
     @abstractmethod
     def process_chat(self, response_data, **kwargs):
