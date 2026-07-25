@@ -159,7 +159,7 @@ class FolderPackageFinder(MetaPathFinder):
 
 
 # register list of packages
-register_packages(packages):
+def register_packages(packages):
     if not packages or not instance(packages, list):
         return
     
