@@ -186,7 +186,7 @@ class AbstractAgent(ABC):
         latest_response = raw_response
         
         # process AI response
-        self.process_chat(clean_response, **kwargs)
+        self.process_chat(clean_response, { **kwargs, "raw_response": raw_response })
         print(f"[ ✅ {self.agent_id} Agent - SUCCESS | Model {self.current_model_config['model_name']} | API Endpoint {self.current_model_config['api_endpoint']} ] Process successfully!")
         
         # return new values kwargs
