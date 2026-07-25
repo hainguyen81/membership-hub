@@ -157,8 +157,22 @@ class FolderPackageFinder(MetaPathFinder):
         print(f"⛔ (3) Package/Module {part} is not found from registered root package: {self.root_alias}")
         return None
 
+
+# register list of packages
+register_packages(packages):
+    if not packages or not instance(packages, list):
+        return
+    
+    for package in packages:
+        package_path = Path(package).resolve() if package else None
+        if package_path and package_path.is_dir():
+            packageFinder = FolderPackageFinder(str(package_path));
+            sys.meta_path.insert(0, packageFinder)
+            print(f"✅ Registered {package_path} to sys.meta_path for finding with alias: {packageFinder.alias()}")
+        
+        else:
+            print(f"⛔ Not found package folder path {package} to register package/module finder")
+
 # load current folder as python package
 current_folder = os.path.dirname(os.path.abspath(__file__))
-folderPackageFinder = FolderPackageFinder(current_folder);
-sys.meta_path.insert(0, folderPackageFinder)
-print(f"✅ Registered {current_folder} to sys.meta_path for finding with alias: {folderPackageFinder.alias()}")
+register_packages([ current_folder ])
