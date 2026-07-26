@@ -206,7 +206,6 @@ class AbstractAgent(ABC):
                 response = self.__communicate_ai__(**kwargs)
                 success = True   # success
             except Exception as e:
-                self.__handle_execute_exception__(e, **kwargs)
                 # rotate next model
                 if not self.__rotate_next_model__():
                     raise # re-throw exception to super
