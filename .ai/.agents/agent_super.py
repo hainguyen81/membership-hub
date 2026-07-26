@@ -49,8 +49,11 @@ class AbstractAgent(ABC):
             print(f"[ 💀 {self.agent_id} Agent | CRITICAL ] Not found any available AI models to execute!")
             sys.exit(1)
     
+    def get_kwargs_by_key(self, key: str, **kwargs):
+        return kwargs_by_key(ke=key, **kwargs)
+    
     def get_kwargs(self, key: str):
-        return kwargs_by_key(ke=key, **self.kwargs)
+        return self.get_kwargs_by_key(ke=key, **self.kwargs)
     
     def agent_models_secrets_key(self) -> str:
         return "AI_MODELS_KEYS_JSON"
