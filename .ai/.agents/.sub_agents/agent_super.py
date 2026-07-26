@@ -88,7 +88,7 @@ class AbstractSubAgent(AbstractAgent):
         return raw_response.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip() if raw_response else None
     
     # @ override
-    def process_chat(self, response_data, **kwargs):
+    def process_communication(self, response_data, **kwargs):
         target_component = self.get_kwargs_by_key(key="target_component", **kwargs)
         write_file(
             file=target_component,

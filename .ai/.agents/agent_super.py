@@ -170,7 +170,7 @@ class AbstractAgent(ABC):
     def clean_response(self, raw_response, **kwargs):
         return raw_response
     
-    def __chat__(self, **kwargs):
+    def __communicate_ai__(self, **kwargs):
         return self.client.chat.completions.create(
             model=self.config_model_name(),
             messages=[{
@@ -184,13 +184,13 @@ class AbstractAgent(ABC):
     def __parse_ai_response__(self, response):
         return parseOpenAIResponseData(response)
     
-    def chat(self, **kwargs):
+    def communicate(self, **kwargs):
         response = None
         
         # only rotate on communitating with AI
         while True:
             try:
-                response = self.__chat__(**kwargs)
+                response = self.__communicate_ai__(**kwargs)
             except Exception as e:
                 self.__handle_execute_exception__(e, **kwargs)
                 # rotate next model
@@ -202,7 +202,7 @@ class AbstractAgent(ABC):
         return (raw_response, self.clean_response(raw_response, **kwargs))
     
     @abstractmethod
-    def process_chat(self, response_data, **kwargs):
+    def process_communication(self, response_data, **kwargs):
         pass
     
     @abstractmethod
@@ -211,12 +211,12 @@ class AbstractAgent(ABC):
     
     def __ai_execute__(self, **kwargs):
         # ask AI
-        raw_response, clean_response = self.chat(**kwargs)
+        raw_response, clean_response = self.communicate(**kwargs)
         latest_response = raw_response
         
         # process AI response
         kwargs = { **kwargs, "raw_response": raw_response }
-        self.process_chat(clean_response, **kwargs)
+        self.process_communication(clean_response, **kwargs)
         print(f"[ ✅ {self.agent_id} Agent - SUCCESS | Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} ] Process successfully!")
         
         # return new values kwargs
