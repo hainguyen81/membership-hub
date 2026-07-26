@@ -109,7 +109,7 @@ class FolderPackageFinder(MetaPathFinder):
         cleaned_item_name = ModuleNameMapper.encode(item.stem) if item.is_file() and item.suffix == '.py' else ModuleNameMapper.encode(item.name) if item.is_dir() else None
         return (cleaned_item_name == part, cleaned_item_name, item)
     
-    def package_module_spec(fullname, pkg_module_path):
+    def package_module_spec(self, fullname, pkg_module_path):
         if pkg_module_path and pkg_module_path.is_dir():
             # process package (folder)
             init_file = pkg_module_path / "__init__.py"
