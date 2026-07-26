@@ -8,7 +8,9 @@ import sys
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
-from _ai._agents import agent_helper
+from _0d_ai._0d_agents.agent_0u_helper import (
+    write_file
+)
 
 def write_sub_agent_history(history_file, day, model_name, api_endpoint, source_component, target_component, prompt, data, append=False):
     log_history_content = (
@@ -18,7 +20,7 @@ def write_sub_agent_history(history_file, day, model_name, api_endpoint, source_
         f"* **📝 Prompt / Tasks / Data**:\n{prompt}\n"
         f"* **📝 Response**:\n{data}\n\n"
     )
-    return agent_helper.write_file(
+    return write_file(
         file=history_file,
         data=log_history_content,
         append=append
