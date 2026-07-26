@@ -118,14 +118,14 @@ class FolderPackageFinder(MetaPathFinder):
             else:
                 spec = ModuleSpec(fullname, None, is_package=True)
                 spec.submodule_search_locations = [str(pkg_module_path)]
-            print(f"✅ Found package {fullname} from resgitered root package: {self.root_alias}")
+            # print(f"✅ Found package {fullname} from resgitered root package: {self.root_alias}")
             self.mapping_caches[fullname] = spec
             return self.mapping_caches.get(fullname)
         
         # if found module file
         elif pkg_module_path and pkg_module_path.is_file() and pkg_module_path.suffix == '.py':
             # process Module (File .py)
-            print(f"✅ Found module {fullname} from resgitered root package: {self.root_alias}")
+            # print(f"✅ Found module {fullname} from resgitered root package: {self.root_alias}")
             self.mapping_caches[fullname] = importlib.util.spec_from_file_location(fullname, str(pkg_module_path))
             return self.mapping_caches.get(fullname)
         
@@ -171,7 +171,7 @@ class FolderPackageFinder(MetaPathFinder):
                 # loop folder via sub-folders/files recursively
                 for item in current_phys_path.rglob("*"):
                     found, cleaned_item_name, found_path = self.is_matched(item=item, part=part)
-                    print(f"- ✅ Package {item.name} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {found}")
+                    # print(f"- ✅ Package {item.name} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {found}")
                     if found:
                         current_phys_path = found_path
                         break
@@ -179,13 +179,13 @@ class FolderPackageFinder(MetaPathFinder):
             # CASE 2: current path is file -> 'part' is Class/Function in file
             elif current_phys_path.is_file() and current_phys_path.suffix == '.py':
                 found, cleaned_item_name, found_path = self.is_matched(item=current_phys_path, part=part)
-                print(f"- ✅ Module {found_path.stem} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {found}")
+                # print(f"- ✅ Module {found_path.stem} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {found}")
                 if found:
                     break
             
             # if 
             if not found:
-                print(f"⛔ (2) Package/Module {part} is not found from registered root package: {self.root_alias}")
+                # print(f"⛔ (2) Package/Module {part} is not found from registered root package: {self.root_alias}")
                 return None # not found any physical matching file/folder
         
         # 3. if found, return matching spec
