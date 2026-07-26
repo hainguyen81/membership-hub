@@ -114,9 +114,13 @@ class AbstractAgent(ABC):
             if api_key:
                 self.current_model_config = config
                 self.current_model_config["api_key"]=api_key
-                self.client = self.__create_ai_client__()
-                print(f"[ 💀 {self.agent_id} Agent | FAILOVER ENGAGED ] Successfully authenticated model: {target_model_name} | endpoint: {target_model_endpoint}")
-                return True
+                try:
+                    self.client = self.__create_ai_client__()
+                    print(f"[ 💀 {self.agent_id} Agent | FAILOVER ENGAGED ] Successfully authenticated model: {target_model_name} | endpoint: {target_model_endpoint}")
+                    return True
+                except Exception as e:
+                    # just ignoring exception while creating AI client, jump to next model
+                    print(f"[ ✅ {self.agent_id} Agent - ERROR | Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} ] SKip this tier, due to exception while creating AI Client: {exception_stacktrace(e)}.")
             self.active_model_index += 1
         print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Exhausted all registered fallback models: model_interation {self.active_model_index} models number {len(self.models_pool)}")
         return False
