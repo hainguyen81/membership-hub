@@ -148,8 +148,13 @@ jobs:
               git commit -m "feat(coder-standalone): dynamic architecture layer compiled for Day ${{ inputs.day }} [AI Test]" || true
               
               # ✅ ENTERPRISE HOTFIX: Pull new changes and rebase to avoid conflicts fast-forward
-              echo "🔄 Pulling latest upstream tree and executing explicit contextual rebase..."
-              git pull --rebase -X theirs origin ${{ github.ref_name }}
+              echo "🔄 Checking if remote branch $BRANCH_NAME exists..."
+              if git show-ref --verify --quiet refs/remotes/origin/$BRANCH_NAME; then
+                  echo "🔄 Pulling latest upstream tree from $BRANCH_NAME and executing explicit contextual rebase..."
+                  git pull --rebase -X theirs origin $BRANCH_NAME
+              else
+                  echo "ℹ️ Remote branch $BRANCH_NAME does not exist yet. Skipping rebase."
+              fi
               
               echo "📤 Pushing secure data changes upstream to repository branch..."
               git push origin HEAD:"refs/heads/$BRANCH_NAME"
