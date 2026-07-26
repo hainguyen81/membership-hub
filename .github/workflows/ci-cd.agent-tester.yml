@@ -140,7 +140,18 @@ jobs:
           # add all agent works
           git add -A
           
-          # Commit/Push to branch
-          git commit -m "feat(coder-standalone): dynamic architecture layer compiled for Day ${{ inputs.day }} [AI Test]" || true
-          git push origin HEAD:"refs/heads/$BRANCH_NAME" --force
-          echo "✅ Standalone assets successfully pushed upstream to origin/$BRANCH_NAME"
+          # Only commit if there are explicit architectural diff changes detected
+          if git diff --cached --quiet; then
+              echo "⚠️ Operational Notice: No data state changes detected. Skipping repository commit."
+          else
+              echo "📝 Committing system state changes..."
+              git commit -m "feat(coder-standalone): dynamic architecture layer compiled for Day ${{ inputs.day }} [AI Test]" || true
+              
+              # ✅ ENTERPRISE HOTFIX: Pull new changes and rebase to avoid conflicts fast-forward
+              echo "🔄 Pulling latest upstream tree and executing explicit contextual rebase..."
+              git pull --rebase -X theirs origin ${{ github.ref_name }}
+              
+              echo "📤 Pushing secure data changes upstream to repository branch..."
+              git push origin HEAD:"refs/heads/$BRANCH_NAME"
+              echo "✅ Standalone assets successfully pushed upstream to origin/$BRANCH_NAME"
+          fi
