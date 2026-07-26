@@ -38,8 +38,8 @@ class ModuleNameMapper:
                 result.append('_0h_')
             elif char == '.':
                 result.append('_0d_')
-            # elif char == '_':
-            #    result.append('_0u_')
+            elif char == '_':
+                result.append('_0u_')
             elif char.isalnum() and ord(char) < 128:
                 # keep original character
                 result.append(char)
@@ -87,6 +87,8 @@ class ModuleNameMapper:
         # real name
         return decoded_text
 
+# -------------------------------------------------
+
 class FolderPackageFinder(MetaPathFinder):
     def __init__(self, folder_path):
         self.folder_path = Path(folder_path).resolve()
@@ -95,6 +97,7 @@ class FolderPackageFinder(MetaPathFinder):
         
         # 1. Define root Package Alias
         self.root_alias = ModuleNameMapper.encode(self.folder_path.name)
+        self.mapping_caches = {}
         print(f"📦 Custom Finder registered for folder '{self.folder_path.name}' as alias '{self.root_alias}'")
     
     def alias(self) -> str:
@@ -106,8 +109,38 @@ class FolderPackageFinder(MetaPathFinder):
         cleaned_item_name = ModuleNameMapper.encode(item.stem) if item.is_file() and item.suffix == '.py' else ModuleNameMapper.encode(item.name) if item.is_dir() else None
         return (cleaned_item_name == part, cleaned_item_name, item)
     
+    def package_module_spec(fullname, pkg_module_path):
+        if pkg_module_path and pkg_module_path.is_dir():
+            # process package (folder)
+            init_file = pkg_module_path / "__init__.py"
+            if init_file.exists():
+                spec = importlib.util.spec_from_file_location(fullname, str(init_file))
+            else:
+                spec = ModuleSpec(fullname, None, is_package=True)
+                spec.submodule_search_locations = [str(pkg_module_path)]
+            print(f"✅ Found package {fullname} from resgitered root package: {self.root_alias}")
+            self.mapping_caches[fullname] = spec
+            return self.mapping_caches.get(fullname)
+        
+        # if found module file
+        elif pkg_module_path and pkg_module_path.is_file() and pkg_module_path.suffix == '.py':
+            # process Module (File .py)
+            print(f"✅ Found module {fullname} from resgitered root package: {self.root_alias}")
+            self.mapping_caches[fullname] = importlib.util.spec_from_file_location(fullname, str(pkg_module_path))
+            return self.mapping_caches.get(fullname)
+        
+        return None
+    
     # find spec
     def find_spec(self, fullname, path, target=None):
+        # inavlid searching
+        if not fullname:
+            return None
+        
+        # from caches
+        elif fullname in self.mapping_caches:
+            return self.mapping_caches.get(fullname)
+        
         # Support python -m including trap extension .__main__
         is_main = False
         search_name = fullname
@@ -156,26 +189,12 @@ class FolderPackageFinder(MetaPathFinder):
                 return None # not found any physical matching file/folder
         
         # 3. if found, return matching spec
-        if current_phys_path.is_dir():
-            # process package (folder)
-            init_file = current_phys_path / "__init__.py"
-            if init_file.exists():
-                spec = importlib.util.spec_from_file_location(fullname, str(init_file))
-            else:
-                spec = ModuleSpec(fullname, None, is_package=True)
-                spec.submodule_search_locations = [str(current_phys_path)]
-            print(f"✅ Found package {fullname} from resgitered root package: {self.root_alias}")
-            return spec
-        
-        # if found module file
-        elif current_phys_path.is_file() and current_phys_path.suffix == '.py':
-            # process Module (File .py)
-            print(f"✅ Found module {fullname} from resgitered root package: {self.root_alias}")
-            return importlib.util.spec_from_file_location(fullname, str(current_phys_path))
-        
-        print(f"⛔ (3) Package/Module {part} is not found from registered root package: {self.root_alias}")
-        return None
+        spec = self.package_module_spec(fullname, current_phys_path)
+        if not spec:
+            print(f"⛔ (3) Package/Module {part} is not found from registered root package: {self.root_alias}")
+        return spec
 
+# -------------------------------------------------
 
 # register list of packages
 def register_packages(packages):
@@ -191,6 +210,8 @@ def register_packages(packages):
         
         else:
             print(f"⛔ Not found package folder path {package} to register package/module finder")
+
+# -------------------------------------------------
 
 # load current folder as python package
 current_folder = os.path.dirname(os.path.abspath(__file__))
