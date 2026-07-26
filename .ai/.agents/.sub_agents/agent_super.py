@@ -43,8 +43,8 @@ class AbstractSubAgent(AbstractAgent):
         return write_sub_agent_history(
             history_file=log_file,
             day=self.day_num,
-            model_name=self.current_model_config["model_name"],
-            api_endpoint=self.current_model_config["api_endpoint"],
+            model_name=self.config_model_name(),
+            api_endpoint=self.config_api_endpoint(),
             source_component=source_component,
             target_component=target_component,
             prompt=user_prompt,
@@ -94,7 +94,7 @@ class AbstractSubAgent(AbstractAgent):
             file=target_component,
             data=response_data
         )
-        print(f"[ ✅ {self.agent_id} Agent - SUCCESS | Model {self.current_model_config['model_name']} | API Endpoint {self.current_model_config['api_endpoint']} | Day {self.day_num} ] Saved to: { target_component }")
+        print(f"[ ✅ {self.agent_id} Agent - SUCCESS | Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} | Day {self.day_num} ] Saved to: { target_component }")
     
     # @ override
     def pre_execute(self, **kwargs):
@@ -157,7 +157,7 @@ class AbstractSubAgent(AbstractAgent):
     
     # @override
     def __handle_execute_exception__(self, e, **kwargs):
-        model_name = self.current_model_config['model_name'] if self.current_model_config else None
+        model_name = self.config_model_name() if self.current_model_config else None
         print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {model_name}: {exception_stacktrace(e)}")
         # write log
         self.write_history_log(

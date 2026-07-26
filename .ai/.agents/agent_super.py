@@ -120,6 +120,17 @@ class AbstractAgent(ABC):
         print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Exhausted all registered fallback models: model_interation {self.active_model_index} models number {len(self.models_pool)}")
         return False
     
+    def config_model(self):
+        return self.current_model_config
+    
+    def config_model_name(self):
+        config = self.config_model()
+        return config.get("model_name") if config else None
+    
+    def config_api_endpoint(self):
+        config = self.config_model()
+        return config.get("api_endpoint") if config else None
+    
     @abstractmethod
     def agent_log_file(self) -> str:
         pass
@@ -161,7 +172,7 @@ class AbstractAgent(ABC):
     
     def chat(self, system_prompt, user_prompt, **kwargs):
         response = self.client.chat.completions.create(
-            model=self.current_model_config["model_name"],
+            model=self.config_model_name(),
             messages=[{
                 "role": "system", "content": kwargs_by_key(key="system_prompt", **kwargs)
             }, {
@@ -185,10 +196,13 @@ class AbstractAgent(ABC):
         raw_response, clean_response = self.chat(**kwargs)
         latest_response = raw_response
         
-        # process AI response
-        kwargs = { **kwargs, "raw_response": raw_response }
-        self.process_chat(clean_response, **kwargs)
-        print(f"[ ✅ {self.agent_id} Agent - SUCCESS | Model {self.current_model_config['model_name']} | API Endpoint {self.current_model_config['api_endpoint']} ] Process successfully!")
+        # process AI response. try catch here to avoid rotate model if it occurs exception, due to AI was successful
+        try:
+            kwargs = { **kwargs, "raw_response": raw_response }
+            self.process_chat(clean_response, **kwargs)
+            print(f"[ ✅ {self.agent_id} Agent - SUCCESS | Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} ] Process successfully!")
+        except Exception as e:
+            print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on PROCESSING {self.config_model_name()} response: {exception_stacktrace(e)}")
         
         # return new values kwargs
         return {
@@ -222,15 +236,14 @@ class AbstractAgent(ABC):
             latest_response = kwargs_by_key(key="latest_response", **kwargs)
             success = True
         except Exception as e:
-            print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.current_model_config['model_name']}: {exception_stacktrace(e)}")
+            print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.config_model_name()}: {exception_stacktrace(e)}")
             latest_response = exception_stacktrace(e) if not latest_response else latest_response
         
         # result
         return (success, system_prompt, user_prompt, latest_response)
     
     def __handle_execute_exception__(self, e, **kwargs):
-        model_name = self.current_model_config['model_name'] if self.current_model_config else None
-        print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {model_name}: {exception_stacktrace(e)}")
+        print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.config_model_name()}: {exception_stacktrace(e)}")
         # write log
         self.write_log(
             data=exception_stacktrace(e),
