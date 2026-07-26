@@ -159,7 +159,7 @@ class FolderPackageFinder(MetaPathFinder):
         # mapping from alias to real folder structure
         # (**Note:** because alias already encoded special characters, so we must scan folder to find matching)
         current_phys_path = self.folder_path
-        print(f"✅ Search from root {current_phys_path} | Alias: {self.root_alias} | Packages: {search_name}")
+        # print(f"✅ Search from root {current_phys_path} | Alias: {self.root_alias} | Package / Module: {search_name}")
         
         # loop to find
         for part in parts[1:]:
