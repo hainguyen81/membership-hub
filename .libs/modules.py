@@ -120,22 +120,39 @@ class FolderPackageFinder(MetaPathFinder):
         # mapping from alias to real folder structure
         # (**Note:** because alias already encoded special characters, so we must scan folder to find matching)
         current_phys_path = self.folder_path
+        print(f"✅ Search from root {current_phys_path} | Alias: {self.root_alias} | Packages: {search_name}")
         
         # loop to find
         for part in parts[1:]:
             # check folder/file after replacing '.' to '_' that matched with 'part'
             found = False
+            
+            # CASE 1: current path is folder -> scan sub-folder/sub-file
             if current_phys_path.is_dir():
                 for item in current_phys_path.iterdir():
                     cleaned_item_name = ModuleNameMapper.encode(item.stem) if item.is_file() else ModuleNameMapper.encode(item.name)
-                    if cleaned_item_name == part:
+                    is_matched = cleaned_item_name == part
+                    # print(f"- ✅ Package {item.name} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {is_matched}")
+                    if is_matched:
                         current_phys_path = item
                         found = True
                         break
+                        
+            # CASE 2: current path is file -> 'part' is Class/Function in file
+            elif current_phys_path.is_file() and current_phys_path.suffix == '.py':
+                cleaned_item_name = ModuleNameMapper.encode(current_phys_path.name) if item.is_file() else ModuleNameMapper.encode(current_phys_path.name)
+                is_matched = cleaned_item_name == part
+                # print(f"- ✅ Module {current_phys_path.name} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {is_matched}")
+                if is_matched:
+                    current_phys_path = item
+                    found = True
+                    break
+            
+            # if 
             if not found:
                 print(f"⛔ (2) Package/Module {part} is not found from registered root package: {self.root_alias}")
                 return None # not found any physical matching file/folder
-
+        
         # 3. if found, return matching spec
         if current_phys_path.is_dir():
             # process package (folder)
@@ -160,7 +177,7 @@ class FolderPackageFinder(MetaPathFinder):
 
 # register list of packages
 def register_packages(packages):
-    if not packages or not isinstance(packages, list):
+    if not packages or not instance(packages, list):
         return
     
     for package in packages:
