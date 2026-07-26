@@ -113,15 +113,23 @@ class AbstractAgent(ABC):
             api_key = self.models_secrets.get(target_model_endpoint)
             if api_key:
                 self.current_model_config = config
-                self.client = OpenAI(api_key=api_key, base_url=target_model_endpoint)
+                self.current_model_config["api_key"]=api_key
+                self.client = self.__create_ai_client__()
                 print(f"[ 💀 {self.agent_id} Agent | FAILOVER ENGAGED ] Successfully authenticated model: {target_model_name} | endpoint: {target_model_endpoint}")
                 return True
             self.active_model_index += 1
         print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Exhausted all registered fallback models: model_interation {self.active_model_index} models number {len(self.models_pool)}")
         return False
     
+    def __create_ai_client__(self):
+        return OpenAI(api_key=self.__config_api_key__(), base_url=self.config_api_endpoint())
+    
     def config_model(self):
         return self.current_model_config
+    
+    def __config_api_key__(self):
+        config = self.config_model()
+        return config.get("api_key") if config else None
     
     def config_model_name(self):
         config = self.config_model()
