@@ -206,6 +206,7 @@ class AbstractAgent(ABC):
                 response = self.__communicate_ai__(**kwargs)
                 success = True   # success
             except Exception as e:
+                print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.config_model_name()}: {str(e)}")
                 # rotate next model
                 if not self.__rotate_next_model__():
                     raise # re-throw exception to super
