@@ -35,7 +35,7 @@ USER_PROMPT_FILE            = resolve_absolute_path(".ai/.agents/.sub_agents/age
 BACKEND_WORKSPACE           = resolve_absolute_path("sources/backend")
 FRONTEND_WORKSPACE          = resolve_absolute_path("sources/frontend")
 
-class BugFixerAgent(AbstractAgent):
+class BugFixerAgent(AbstractSubAgent):
     def __init__(self, phase_str, day_num):
         super().__init__(
             agent_id=AGENT_ID,
