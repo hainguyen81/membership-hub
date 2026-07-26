@@ -18,7 +18,7 @@ def main():
         sys.exit(1)
     
     # read plan json file
-    plan = read_json_file(plan_path)
+    _, plan = read_json_file(plan_path)
     
     # parse plan information
     phases_config = plan.get("phases", [])
