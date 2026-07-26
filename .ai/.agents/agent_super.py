@@ -25,7 +25,7 @@ from _0d_ai._0d_agents.agent_0u_helper import (
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-MODELS_POOL_PATH            = resolve_absolute_path("sources/agents/models/models.json")
+MODELS_POOL_PATH            = resolve_absolute_path(".ai/.agents/.models/models.json")
 
 class AbstractAgent(ABC):
     def __init__(self, agent_id, **kwargs):
