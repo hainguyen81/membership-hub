@@ -23,9 +23,6 @@ from _0d_ai._0d_agents.agent_0u_helper import (
     kwargs_by_key
 )
 
-# Now Python can seamlessly see and import the centralized helper utility cleanly!
-from _0d_ai._0d_agents._0d_sub_0u_agents.helper import render_prompt
-
 # super agent
 from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 
