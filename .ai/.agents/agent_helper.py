@@ -151,19 +151,21 @@ def delete_log(out_dir=None):
     if os.path.exists(log_file):
         os.remove(log_file)
 
-def render_prompt(prompt_template_path: str, context: dict) -> str:
-    if not os.path.exists(prompt_template_path):
+def render_prompt(template: str, context: dict) -> str:
+    if not os.path.exists(template):
         return None
     
     # read prompt template
-    with open(prompt_template_path, "r", encoding="utf-8") as f:
-        template_content = f.read()
+    _, template_content = read_file_raw(template)
     
     # use jinja2 Template
-    tmpl = JinjaTemplate(template_content)
+    tmpl = JinjaTemplate(template)
     
     # substitute will throw error if missing variables, safely for production
     return tmpl.render(**context).strip()
+
+def render_kwargs_prompt(template: str, **kwargs) -> str:
+    return render_prompt(template=template, context={ **kwargs })
 
 def validateOpenAIResponse(response):
     if not response or not hasattr(response, 'choices') or not response.choices:
