@@ -181,6 +181,9 @@ class AbstractAgent(ABC):
             temperature=self.agent_temperature()
         )
     
+    def __parse_ai_response__(self, response):
+        return parseOpenAIResponseData(response)
+    
     def chat(self, **kwargs):
         response = None
         
@@ -195,7 +198,7 @@ class AbstractAgent(ABC):
                     raise # re-throw exception to super
         
         # parse AI response
-        raw_response = parseOpenAIResponseData(response)
+        raw_response = self.__parse_ai_response__(response) if response else None
         return (raw_response, self.clean_response(raw_response, **kwargs))
     
     @abstractmethod
