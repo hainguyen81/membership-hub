@@ -24,7 +24,7 @@ source .agent_resolved_state && rm -f .agent_resolved_state
 # check enviroment
 if [ -z "$RESOLVED_DAY" -o -z "$RESOLVED_PHASE" ]; then
 	echo "❌ [ ERROR ] Could not resolve the running day/phase: RUN_DAY: {$RESOLVED_DAY} | RUN_PHASE: {$RESOLVED_PHASE}"
-	sys.exit(1)
+	exit 1
 fi
 
 # 🏁 if project already finished, remove schedule
