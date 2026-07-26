@@ -18,6 +18,7 @@ from abc import ABC, abstractmethod
 from _0d_ai._0d_agents.agent_0u_helper import (
     resolve_absolute_path,
     read_file_raw,
+    read_json_file,
     write_file,
     exception_stacktrace,
     kwargs_by_key
