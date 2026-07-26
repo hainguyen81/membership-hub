@@ -144,12 +144,15 @@ def write_blueprint_log(phase_idx, instruction, prompt, raw_content, is_step, mo
         log_file = os.path.join(out_dir, "architecture-blueprint.md")
     write_file(os.path.dirname(log_file), os.path.basename(log_file), log_content, append=True)
 
+def delete_file(file):
+    if os.path.exists(file):
+        os.remove(file)
+
 def delete_log(out_dir=None):
     log_file = resolve_absolute_path(BLUEPRINT_WORKING_HISTORY_FILE)
     if out_dir and len(out_dir) > 0:
         log_file = os.path.join(out_dir, "architecture-blueprint.md")
-    if os.path.exists(log_file):
-        os.remove(log_file)
+    delete_file(file=log_file)
 
 def render_prompt(template: str, context: dict) -> str:
     if not os.path.exists(template):
