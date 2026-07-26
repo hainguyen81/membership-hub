@@ -39,9 +39,9 @@ class AbstractSubAgent(AbstractAgent):
         self.phase_str = phase_str
         self.day_num = int(day_num)
     
-    def write_history_log(self, log_file, source_component, target_component, user_prompt, data, append=False):
+    def write_history_log(self, source_component, target_component, user_prompt, data, append=False):
         return write_sub_agent_history(
-            history_file=log_file,
+            history_file=self.agent_log_file(),
             day=self.day_num,
             model_name=self.config_model_name(),
             api_endpoint=self.config_api_endpoint(),
@@ -161,7 +161,6 @@ class AbstractSubAgent(AbstractAgent):
         print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {model_name}: {exception_stacktrace(e)}")
         # write log
         self.write_history_log(
-            log_file=self.agent_log_file(),
             source_component=kwargs_by_key(key="latest_source_component", **kwargs),
             target_component=kwargs_by_key(key="latest_target_component", **kwargs),
             user_prompt=kwargs_by_key(key="latest_user_prompt", **kwargs),
@@ -231,7 +230,6 @@ class AbstractSubAgent(AbstractAgent):
                 
                 # write AI response log
                 self.write_history_log(
-                    log_file=log_history_file,
                     source_component=kwargs_by_key(key="source_component", **kwargs),
                     target_component=kwargs_by_key(key="target_component", **kwargs),
                     user_prompt=kwargs_by_key(key="user_prompt", **kwargs),
