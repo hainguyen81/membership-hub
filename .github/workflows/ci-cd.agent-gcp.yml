@@ -147,10 +147,9 @@ jobs:
               echo "📝 Committing system state changes..."
               git commit -m "feat(standalone): [ AI GCP Agent ] dynamic architecture layer compiled for Phase ${{ inputs.phase }} Day ${{ inputs.day }}" || true
               
-              # ✅ ENTERPRISE HOTFIX: Explicitly pull and rebase the remote branch directly into the working tree
-              echo "🔄 Fetching latest upstream tree and executing explicit contextual rebase..."
-              git fetch origin ${{ github.ref_name }}
-              git rebase origin/${{ github.ref_name }}
+              # ✅ ENTERPRISE HOTFIX: Pull new changes and rebase to avoid conflicts fast-forward
+              echo "🔄 Pulling latest upstream tree and executing explicit contextual rebase..."
+              git pull --rebase -X theirs origin ${{ github.ref_name }}
               
               echo "📤 Pushing secure data changes upstream to repository branch..."
               git push origin HEAD:"refs/heads/$BRANCH_NAME"
