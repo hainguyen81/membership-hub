@@ -100,6 +100,12 @@ class FolderPackageFinder(MetaPathFinder):
     def alias(self) -> str:
         return self.root_alias
     
+    def is_matched(self, item, part):
+        # - stem: base file name without extension
+        # - name: folder name
+        cleaned_item_name = ModuleNameMapper.encode(item.stem) if item.is_file() and item.suffix == '.py' else ModuleNameMapper.encode(item.name) if item.is_dir() else None
+        return (cleaned_item_name == part, cleaned_item_name, item)
+    
     # find spec
     def find_spec(self, fullname, path, target=None):
         # Support python -m including trap extension .__main__
@@ -129,23 +135,19 @@ class FolderPackageFinder(MetaPathFinder):
             
             # CASE 1: current path is folder -> scan sub-folder/sub-file
             if current_phys_path.is_dir():
-                for item in current_phys_path.iterdir():
-                    cleaned_item_name = ModuleNameMapper.encode(item.stem) if item.is_file() else ModuleNameMapper.encode(item.name)
-                    is_matched = cleaned_item_name == part
-                    # print(f"- ✅ Package {item.name} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {is_matched}")
-                    if is_matched:
-                        current_phys_path = item
-                        found = True
+                # loop folder via sub-folders/files recursively
+                for item in current_phys_path.rgblog("*"):
+                    found, cleaned_item_name, found_path = self.is_matched(item=item, part=part)
+                    print(f"- ✅ Package {item.name} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {found}")
+                    if found:
+                        current_phys_path = found_path
                         break
                         
             # CASE 2: current path is file -> 'part' is Class/Function in file
             elif current_phys_path.is_file() and current_phys_path.suffix == '.py':
-                cleaned_item_name = ModuleNameMapper.encode(current_phys_path.name) if item.is_file() else ModuleNameMapper.encode(current_phys_path.name)
-                is_matched = cleaned_item_name == part
-                # print(f"- ✅ Module {current_phys_path.name} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {is_matched}")
-                if is_matched:
-                    current_phys_path = item
-                    found = True
+                found, cleaned_item_name, found_path = self.is_matched(item=current_phys_path, part=part)
+                print(f"- ✅ Module {found_path.stem} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {found}")
+                if found:
                     break
             
             # if 
