@@ -177,6 +177,7 @@ jobs:
         id: resolver
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
+          PROJECT_WORKSPACE: ${{ env.PROJECT_WORKSPACE }}
           INPUT_EXEC_MODE: ${{ inputs.execution_mode == '🕒🔄📅 Auto Schedule' && 'auto_cron' || 'manual' }}
           INPUT_TARGET_SCOPE: ${{ inputs.target_scope == '🗓️ By Day' && 'by_day' || 'by_phase' }}
           INPUT_VALUE: ${{ inputs.input_value }}
