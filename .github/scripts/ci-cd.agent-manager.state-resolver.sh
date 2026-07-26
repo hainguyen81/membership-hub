@@ -22,7 +22,7 @@ python3 .libs/agent_launcher.py _0d_github.scripts.ci_0h_cd_0d_agent_0h_manager_
 source .agent_resolved_state && rm -f .agent_resolved_state
 
 # check enviroment
-if [[ -z "$RESOLVED_DAY" or -z "$RESOLVED_PHASE" ]]; then
+if [ -z "$RESOLVED_DAY" -o -z "$RESOLVED_PHASE" ]; then
 	echo "❌ [ ERROR ] Could not resolve the running day/phase: RUN_DAY: {$RESOLVED_DAY} | RUN_PHASE: {$RESOLVED_PHASE}"
 	sys.exit(1)
 fi
