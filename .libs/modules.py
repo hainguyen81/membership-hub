@@ -136,7 +136,7 @@ class FolderPackageFinder(MetaPathFinder):
             # CASE 1: current path is folder -> scan sub-folder/sub-file
             if current_phys_path.is_dir():
                 # loop folder via sub-folders/files recursively
-                for item in current_phys_path.rgblog("*"):
+                for item in current_phys_path.rglob("*"):
                     found, cleaned_item_name, found_path = self.is_matched(item=item, part=part)
                     print(f"- ✅ Package {item.name} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {found}")
                     if found:
