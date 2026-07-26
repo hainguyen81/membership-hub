@@ -30,7 +30,6 @@ from _0d_ai._0d_agents._0d_sub_0u_agents.helper import write_sub_agent_history
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-MODELS_POOL_PATH            = resolve_absolute_path(".ai/.agents/.models/models.json")
 STEPS_PLAN_DIR              = resolve_absolute_path(".ai/.plan/.steps")
 
 class AbstractSubAgent(AbstractAgent):

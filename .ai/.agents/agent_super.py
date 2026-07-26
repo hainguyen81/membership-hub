@@ -25,7 +25,7 @@ from _0d_ai._0d_agents.agent_0u_helper import (
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-MODELS_POOL_PATH            = resolve_absolute_path("sources/agents/models/models.json")
+MODELS_POOL_PATH            = resolve_absolute_path(".ai/.agents/.models/models.json")
 
 class AbstractAgent(ABC):
     def __init__(self, agent_id, **kwargs):
@@ -88,8 +88,9 @@ class AbstractAgent(ABC):
         if not self.models_secrets or len(self.models_secrets) <= 0:
             print(f"[ 💀 {self.agent_id} Agent | WARN ] Not found any models secrets to rotate!")
             return False
-
-        while 0 <= self.active_model_index < len(self.models_pool):
+        
+        models_pool_len = len(self.models_pool) if isinstance(self.models_pool, list) else 0
+        while 0 <= self.active_model_index < models_pool_len:
             config = self.models_pool[self.active_model_index]
             # target_model_name = config["model_name"]
             # target_model_endpoint = config["api_endpoint"]
