@@ -162,7 +162,7 @@ def render_prompt(template: str, context: dict) -> str:
     _, template_content = read_file_raw(template)
     
     # use jinja2 Template
-    tmpl = JinjaTemplate(template)
+    tmpl = JinjaTemplate(template_content)
     
     # substitute will throw error if missing variables, safely for production
     return tmpl.render(**context).strip()
