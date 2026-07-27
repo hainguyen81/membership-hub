@@ -212,7 +212,7 @@ jobs:
     secrets: inherit
   
   run_tester:
-    name: "🧪 Tester Agent Worker"
+    name: "👩‍🐞 Tester Agent Worker"
     needs: [state_resolver_job, run_coder]
     if: |
       (needs.state_resolver_job.result == 'success') &&
@@ -225,7 +225,7 @@ jobs:
     secrets: inherit
   
   run_fixer:
-    name: "🩹 Fixer Agent Worker"
+    name: "👩‍🔧 Fixer Agent Worker"
     needs: [state_resolver_job, run_tester]
     if: |
       (needs.state_resolver_job.result == 'success') &&
@@ -322,7 +322,7 @@ jobs:
       - name: "📦 Synchronize Active Daily Target Workspace Branch"
         uses: actions/checkout@v7
         with:
-          ref: "features/development-day-${{ needs.state_resolver_job.outputs.run_day }}"
+          ref: "features/development"
           path: '.'
           fetch-depth: 0
           clean: true
@@ -394,9 +394,9 @@ jobs:
         env:
           RUN_DAY: ${{ needs.state_resolver_job.outputs.run_day }}
           RUN_PHASE: ${{ needs.state_resolver_job.outputs.run_phase }}
+          BRANCH_NAME: "features/development"
         run: |
           STATE_FILE=".ai/.plan/pipeline_state.json"
-          BRANCH_NAME="features/development"
           
           #  update state
           echo "💾 [STATE SAVE] Serializing current matrix back to file tracking storage..."
