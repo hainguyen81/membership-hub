@@ -308,9 +308,7 @@ class AbstractAgent(ABC):
         # execute
         try:
             # internal execution
-            safe_kwargs = self.__do_execute__(**safe_kwargs) or {}
-            # done tasks
-            return True
+            return self.__do_execute__(**safe_kwargs) or {}
         except Exception as e:
             self.__handle_execute_exception__(e, **safe_kwargs)
             sys.exit(1)
