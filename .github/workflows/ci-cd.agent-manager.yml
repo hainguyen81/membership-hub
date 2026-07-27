@@ -400,7 +400,7 @@ jobs:
           TOTAL_PHASES: ${{ needs.state_resolver_job.outputs.total_phases }}
           BRANCH_NAME: "features/development"
         run: |
-          STATE_FILE=".ai/.plan/pipeline_state.json"
+          STATE_FILE=".ai/.agents/.states/pipeline_state.json"
           
           #  update state
           echo "💾 [STATE SAVE] Serializing current matrix back to file tracking storage..."
