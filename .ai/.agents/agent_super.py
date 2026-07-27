@@ -217,10 +217,14 @@ class AbstractAgent(ABC):
         
         # parse AI response
         raw_response = self.__parse_ai_response__(response) if response else None
-        return (raw_response, self.clean_response(raw_response, **kwargs))
+        return {
+            **kwargs,
+            "raw_response": raw_response,
+            "clean_response": self.clean_response(raw_response, **kwargs)
+        }
     
     @abstractmethod
-    def process_communication(self, response_data, **kwargs):
+    def process_communication(self, **kwargs):
         pass
     
     @abstractmethod
@@ -229,27 +233,19 @@ class AbstractAgent(ABC):
     
     def __ai_execute__(self, **kwargs):
         # ask AI
-        raw_response, clean_response = self.communicate(**kwargs)
-        latest_response = raw_response
+        kwargs = self.communicate(**kwargs) or {}
         
         # process AI response
-        kwargs = { **kwargs, "raw_response": raw_response }
-        self.process_communication(clean_response, **kwargs)
+        kwargs = self.process_communication(**kwargs) or {}
         print(f"[ ✅ {self.agent_id} Agent - SUCCESS | Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} ] Process successfully!")
         
         # return new values kwargs
-        return {
-            **kwargs,
-            "clean_response": clean_response,
-            "raw_response": raw_response,
-            "latest_response": latest_response
-        }
+        return { **kwargs }
     
     def __execute__(self, **kwargs):
         # agent do job
         system_prompt = None
         user_prompt = None
-        latest_response = None
         success = False
         try:
             # build system prompt
@@ -265,21 +261,24 @@ class AbstractAgent(ABC):
             }
             
             # ask AI execution
-            kwargs = self.__ai_execute__(**kwargs)
-            latest_response = kwargs_by_key(key="latest_response", **kwargs)
+            kwargs = self.__ai_execute__(**kwargs) or {}
             success = True
         except Exception as e:
             print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.config_model_name()}: {exception_stacktrace(e)}")
-            latest_response = exception_stacktrace(e) if not latest_response else latest_response
         
         # result
-        return (success, system_prompt, user_prompt, latest_response)
+        return {
+            **kwargs,
+            "success": success
+        }
     
     def __handle_execute_exception__(self, e, **kwargs):
         print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.config_model_name()}: {exception_stacktrace(e)}")
         # write log
+        last_response = kwargs_by_key(key="raw_response", **kwargs)
+        last_response = last_response if last_response else "No Response"
         self.write_log(
-            data=exception_stacktrace(e),
+            data=f"# Lastest Response:\n{last_response}\n\n# Exception: {exception_stacktrace(e)}\n\n",
             append=True
         )
     
@@ -289,17 +288,12 @@ class AbstractAgent(ABC):
     
     def __do_execute__(self, **kwargs):
         # internal execution
-        success, system_prompt, user_prompt, raw_response = self.__execute__(**kwargs)
-        if not success:
+        kwargs = self.__execute__(**kwargs) or {}
+        if not kwargs or not kwargs.get("success"):
             raise RuntimeError(raw_response) # response is exception stack-trace from `__execute__`
         
         # done tasks
-        return {
-            **kwargs,
-            "system_prompt": system_prompt,
-            "user_prompt": user_prompt,
-            "raw_response": raw_response
-        }
+        return { **kwargs }
     
     def execute(self, **kwargs):
         # pre-execute

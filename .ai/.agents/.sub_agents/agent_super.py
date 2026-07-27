@@ -88,7 +88,8 @@ class AbstractSubAgent(AbstractAgent):
         return raw_response.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip() if raw_response else None
     
     # @ override
-    def process_communication(self, response_data, **kwargs):
+    def process_communication(self, **kwargs):
+        response_data = self.get_kwargs_by_key(key="clean_response", **kwargs)
         target_component = self.get_kwargs_by_key(key="target_component", **kwargs)
         write_file(
             file=target_component,
@@ -96,6 +97,7 @@ class AbstractSubAgent(AbstractAgent):
         )
         print(f"[ ✅ {self.agent_id} Agent - SUCCESS | Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} | Day {self.day_num} ] Saved to: { target_component }")
         print(f"==> Saved: {str(response_data)}")
+        return { **kwargs }
     
     # @ override
     def pre_execute(self, **kwargs):
@@ -160,9 +162,9 @@ class AbstractSubAgent(AbstractAgent):
         print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {model_name}: {exception_stacktrace(e)}")
         # write log
         self.write_history_log(
-            source_component=kwargs_by_key(key="latest_source_component", **kwargs),
-            target_component=kwargs_by_key(key="latest_target_component", **kwargs),
-            user_prompt=kwargs_by_key(key="latest_user_prompt", **kwargs),
+            source_component=kwargs_by_key(key="source_component", **kwargs),
+            target_component=kwargs_by_key(key="target_component", **kwargs),
+            user_prompt=kwargs_by_key(key="user_prompt", **kwargs),
             data=exception_stacktrace(e),
             append=True
         )
@@ -178,7 +180,7 @@ class AbstractSubAgent(AbstractAgent):
         user_prompt = kwargs_by_key(key="user_prompt", **kwargs)
         print(f"[ ✅ {self.agent_id} Agent - INFO ] ⬆️ Tasks: { str(sub_tasks) }")
         print(f"[ ✅ {self.agent_id} Agent - INFO ] ➡️➡️➡️ System Prompt: { system_prompt }")
-        print(f"[ ✅ {self.agent_id} Agent - INFO ] ➡️➡️➡️ User Prompt: { system_prompt }")
+        print(f"[ ✅ {self.agent_id} Agent - INFO ] ➡️➡️➡️ User Prompt: { user_prompt }")
         
         # result
         return result
@@ -212,9 +214,7 @@ class AbstractSubAgent(AbstractAgent):
                 task_kwargs = {
                     **task_kwargs,
                     "source_component": source_component,
-                    "target_component": target_component,
-                    "latest_source_component": source_component,
-                    "latest_target_component": target_component
+                    "target_component": target_component
                 }
                 
                 # check if invalid target component
