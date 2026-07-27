@@ -251,10 +251,8 @@ class AbstractAgent(ABC):
         try:
             # build system prompt
             system_prompt = self.build_system_prompt(**kwargs)
-            print(f"[ ✅ {self.agent_id} Agent - INFO ] ➡️ Built System Prompt: { system_prompt }")
             # build user prompt
             user_prompt = self.build_user_prompt(**kwargs)
-            print(f"[ ✅ {self.agent_id} Agent - INFO ] ➡️ Built User Prompt: { user_prompt }")
             
             # build new values kwargs
             kwargs = {

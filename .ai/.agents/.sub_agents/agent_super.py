@@ -172,7 +172,7 @@ class AbstractSubAgent(AbstractAgent):
     # @ override
     def __execute__(self, **kwargs):
         # execute AI
-        result = super().__execute__(**kwargs) or {}
+        kwargs = super().__execute__(**kwargs) or {}
         
         # tracing
         sub_tasks = kwargs_by_key(key="sub_tasks", **kwargs)
@@ -183,7 +183,7 @@ class AbstractSubAgent(AbstractAgent):
         print(f"[ ✅ {self.agent_id} Agent - INFO ] ➡️➡️➡️ User Prompt: { user_prompt }")
         
         # result
-        return result
+        return kwargs
     
     # @ override
     def __do_execute__(self, **kwargs):
