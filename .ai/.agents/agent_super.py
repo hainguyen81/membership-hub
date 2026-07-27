@@ -281,11 +281,7 @@ class AbstractAgent(ABC):
         print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.config_model_name()}: {exception_stacktrace(e)}")
         # write log
         self.write_log(
-            data=(
-                "-------------------------------------------------\n\n"
-                exception_stacktrace(e)
-                "\n\n"
-            ),
+            data=f"# Exception:\n\n{exception_stacktrace(e)}\n\n---\n\n",
             append=True
         )
     
