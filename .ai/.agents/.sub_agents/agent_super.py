@@ -200,7 +200,9 @@ class AbstractSubAgent(AbstractAgent):
             
             # parse task description
             sub_tasks = [ sub_task.get("desc") ]
+            print("=================================================")
             print(f"[ 💀 {self.agent_id} Agent | INFO ] Do Task: {str(sub_tasks)}")
+            print("=================================================")
             task_kwargs = {
                 **kwargs,
                 "sub_tasks": sub_tasks
@@ -208,6 +210,8 @@ class AbstractSubAgent(AbstractAgent):
             
             # iterate every target component
             for component in components:
+                print(f"➡️ Target Component: {component}")
+                print("-------------------------------------------------")
                 componentParts = component.split(";")
                 source_component = componentParts[0] if len(componentParts) > 1 else "INTEGRATION_SCOPE"
                 target_component = componentParts[0] if 0 < len(componentParts) < 2 else componentParts[1] if len(componentParts) > 1 else ""
