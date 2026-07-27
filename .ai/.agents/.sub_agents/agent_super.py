@@ -170,22 +170,6 @@ class AbstractSubAgent(AbstractAgent):
         )
     
     # @ override
-    def __execute__(self, **kwargs):
-        # execute AI
-        kwargs = super().__execute__(**kwargs) or {}
-        
-        # tracing
-        sub_tasks = kwargs_by_key(key="sub_tasks", **kwargs)
-        system_prompt = kwargs_by_key(key="system_prompt", **kwargs)
-        user_prompt = kwargs_by_key(key="user_prompt", **kwargs)
-        print(f"[ ✅ {self.agent_id} Agent - INFO ] ⬆️ Tasks: { str(sub_tasks) }")
-        print(f"[ ✅ {self.agent_id} Agent - INFO ] ➡️➡️➡️ System Prompt: { system_prompt }")
-        print(f"[ ✅ {self.agent_id} Agent - INFO ] ➡️➡️➡️ User Prompt: { user_prompt }")
-        
-        # result
-        return kwargs
-    
-    # @ override
     def __do_execute__(self, **kwargs):
         # extract arguments
         phase_step_file = kwargs_by_key(key="phase_step_file", **kwargs)
