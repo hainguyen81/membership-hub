@@ -96,7 +96,6 @@ class AbstractSubAgent(AbstractAgent):
             data=response_data
         )
         print(f"[ ✅ {self.agent_id} Agent - SUCCESS | Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} | Day {self.day_num} ] Saved to: { target_component }")
-        print(f"==> Saved: {str(response_data)}")
         return { **kwargs }
     
     # @ override
