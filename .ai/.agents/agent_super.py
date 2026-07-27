@@ -17,7 +17,7 @@ from _0d_ai._0d_agents.agent_0u_helper import (
     write_file,
     read_json_file,
     render_prompt,
-    parseOpenAIResponseData,
+    parseAIResponseData,
     exception_stacktrace,
     kwargs_by_key
 )
@@ -198,7 +198,7 @@ class AbstractAgent(ABC):
         )
     
     def __parse_ai_response__(self, response):
-        return parseOpenAIResponseData(response)
+        return parseAIResponseData(response)
     
     def communicate(self, **kwargs):
         response = None
