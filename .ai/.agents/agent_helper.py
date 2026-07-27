@@ -170,7 +170,7 @@ def render_prompt(template: str, context: dict) -> str:
 def render_kwargs_prompt(template: str, **kwargs) -> str:
     return render_prompt(template=template, context={ **kwargs })
 
-def validateOpenAIResponse(response):
+def validateAIResponse(response):
     if not response or not hasattr(response, 'choices') or not response.choices:
         raise RuntimeError(f"[API Upstream Error 404]: No Response Found")
     
@@ -197,12 +197,12 @@ def validateOpenAIResponse(response):
     # Guard against malformed message blocks or unexpected payload closures
     return first_choice
 
-def parseOpenAIResponseData(response):
+def parseAIResponseData(response):
     """
     Safely parses text responses from OpenAI completion models.
     Protects the runtime from attribute errors if content fields are blank or null.
     """
-    first_choice = validateOpenAIResponse(response)
+    first_choice = validateAIResponse(response)
     
     # Guard against malformed message blocks or unexpected payload closures
     message_obj = first_choice.message
@@ -234,13 +234,13 @@ def splitOpenAIResponseJsonData(raw_data):
     
     return clean_json_str
 
-def parseOpenAIResponseJsonData(response):
+def parseAIResponseJsonData(response):
     """
     Extracts and deserializes raw response texts into fully validated Python dict layouts.
     Leverages non-greedy structural indexing to filter out conversational agent summaries.
     """
     # Ingest text payload through the hardened safety parser above
-    raw_data = parseOpenAIResponseData(response)
+    raw_data = parseAIResponseData(response)
     
     if not raw_data:
         return (None, None)

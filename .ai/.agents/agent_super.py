@@ -17,7 +17,7 @@ from _0d_ai._0d_agents.agent_0u_helper import (
     write_file,
     read_json_file,
     render_prompt,
-    parseOpenAIResponseData,
+    parseAIResponseData,
     exception_stacktrace,
     kwargs_by_key
 )
@@ -198,7 +198,7 @@ class AbstractAgent(ABC):
         )
     
     def __parse_ai_response__(self, response):
-        return parseOpenAIResponseData(response)
+        return parseAIResponseData(response)
     
     def communicate(self, **kwargs):
         response = None
@@ -217,10 +217,11 @@ class AbstractAgent(ABC):
         
         # parse AI response
         raw_response = self.__parse_ai_response__(response=response) if response else None
+        clean_response = self.clean_response(raw_response=raw_response, **kwargs) if raw_response else None
         return {
             **kwargs,
             "raw_response": raw_response,
-            "clean_response": self.clean_response(raw_response=raw_response, **kwargs)
+            "clean_response": clean_response
         }
     
     @abstractmethod
@@ -250,8 +251,10 @@ class AbstractAgent(ABC):
         try:
             # build system prompt
             system_prompt = self.build_system_prompt(**kwargs)
+            print(f"[ ✅ {self.agent_id} Agent - INFO ] ➡️ Built System Prompt: { system_prompt }")
             # build user prompt
             user_prompt = self.build_user_prompt(**kwargs)
+            print(f"[ ✅ {self.agent_id} Agent - INFO ] ➡️ Built User Prompt: { user_prompt }")
             
             # build new values kwargs
             kwargs = {
@@ -265,6 +268,8 @@ class AbstractAgent(ABC):
             success = True
         except Exception as e:
             print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.config_model_name()}: {exception_stacktrace(e)}")
+            if not "exception" in kwargs:
+                kwargs = { **kwargs, "exception": exception_stacktrace(e) }
         
         # result
         return {
@@ -275,10 +280,12 @@ class AbstractAgent(ABC):
     def __handle_execute_exception__(self, e, **kwargs):
         print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.config_model_name()}: {exception_stacktrace(e)}")
         # write log
-        last_response = kwargs_by_key(key="raw_response", **kwargs)
-        last_response = last_response if last_response else "No Response"
         self.write_log(
-            data=f"# Lastest Response:\n{last_response}\n\n# Exception: {exception_stacktrace(e)}\n\n",
+            data=(
+                "-------------------------------------------------\n\n"
+                exception_stacktrace(e)
+                "\n\n"
+            ),
             append=True
         )
     
@@ -290,8 +297,8 @@ class AbstractAgent(ABC):
         # internal execution
         kwargs = self.__execute__(**kwargs) or {}
         if not kwargs or not kwargs.get("success"):
-            raw_response = kwargs_by_key(key="raw_response", **kwargs)
-            raise RuntimeError(raw_response) # response is exception stack-trace from `__execute__`
+            exception = kwargs_by_key(key="exception", **kwargs) or "!!!Unknown Exception!!!"
+            raise RuntimeError(exception) # response is exception stack-trace from `__execute__`
         
         # done tasks
         return { **kwargs }
