@@ -167,31 +167,21 @@ class AbstractSubAgent(AbstractAgent):
             append=True
         )
     
-    def __do_task_component__(self, **kwargs):
-        # execute task
-        success, system_prompt, user_prompt, raw_response = self.__execute__(
-            project_name=kwargs_by_key(key="project_name", **kwargs),
-            global_context=kwargs_by_key(key="global_context", **kwargs),
-            day_context=kwargs_by_key(key="day_context", **kwargs),
-            source_component=kwargs_by_key(key="source_component", **kwargs),
-            target_component=kwargs_by_key(key="target_component", **kwargs),
-            sub_tasks=kwargs_by_key(key="task_description", **kwargs)
-        )
+    # @ override
+    def __execute__(self, **kwargs):
+        # execute AI
+        result = super().__execute__(**kwargs)
         
-        # for tracing
-        kwargs = {
-            **kwargs,
-            "system_prompt": system_prompt,
-            "user_prompt": user_prompt,
-            "latest_system_prompt": system_prompt,
-            "latest_user_prompt": user_prompt,
-            "raw_response": raw_response
-        }
-        if not success:
-            raise RuntimeError(raw_response)
+        # tracing
+        sub_tasks = kwargs_by_key(key="sub_tasks", **kwargs)
+        system_prompt = kwargs_by_key(key="system_prompt", **kwargs)
+        user_prompt = kwargs_by_key(key="user_prompt", **kwargs)
+        print(f"[ ✅ {self.agent_id} Agent - INFO ] ⬆️ Tasks: { str(sub_tasks) }")
+        print(f"[ ✅ {self.agent_id} Agent - INFO ] ➡️➡️➡️ System Prompt: { system_prompt }")
+        print(f"[ ✅ {self.agent_id} Agent - INFO ] ➡️➡️➡️ User Prompt: { system_prompt }")
         
-        # return new kwargs
-        return { **kwargs }
+        # result
+        return result
     
     # @ override
     def __do_execute__(self, **kwargs):
@@ -207,11 +197,11 @@ class AbstractSubAgent(AbstractAgent):
                 continue
             
             # parse task description
-            sub_task_desc = sub_task.get("desc")
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL WARN ] Do Task: {sub_task_desc}")
+            sub_tasks = [ sub_task.get("desc") ]
+            print(f"[ 💀 {self.agent_id} Agent | INFO ] Do Task: {str(sub_tasks)}")
             task_kwargs = {
                 **kwargs,
-                "task_description": sub_task_desc
+                "sub_tasks": sub_tasks
             }
             
             # iterate every target component
@@ -233,7 +223,7 @@ class AbstractSubAgent(AbstractAgent):
                     continue
                 
                 # do task component
-                task_kwargs = self.__do_task_component__(**task_kwargs)
+                task_kwargs = super().__do_execute__(**task_kwargs)
                 
                 # write AI response log
                 self.write_history_log(
