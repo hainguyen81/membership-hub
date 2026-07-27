@@ -217,9 +217,12 @@ class AbstractAgent(ABC):
         
         # parse AI response
         raw_response = self.__parse_ai_response__(response=response) if response else None
+        # remove old raw_response if existing
+        old_raw_response = kwargs.pop("raw_response", None)
         clean_response = self.clean_response(raw_response=raw_response, **kwargs) if raw_response else None
         return {
             **kwargs,
+            # adapt new raw response
             "raw_response": raw_response,
             "clean_response": clean_response
         }
