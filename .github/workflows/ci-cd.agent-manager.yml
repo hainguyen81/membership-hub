@@ -297,10 +297,14 @@ jobs:
   # ==============================================================================
   advance_schedule_tracker:
     name: "📅 Post-Execution Upstream Integration Gate"
-    needs: [state_resolver_job, run_coder, run_tester, run_fixer, run_doc, run_gke]
+    needs: [state_resolver_job, run_coder, run_tester, run_fixer, run_doc]
     if: |
       (needs.state_resolver_job.result == 'success') &&
-      needs.state_resolver_job.outputs.exec_mode == 'auto_cron'
+      (needs.state_resolver_job.outputs.exec_mode == 'auto_cron') &&
+      (needs.run_coder.result == 'success' || needs.run_coder.result == 'skipped') &&
+      (needs.run_tester.result == 'success' || needs.run_tester.result == 'skipped') &&
+      (needs.run_fixer.result == 'success' || needs.run_fixer.result == 'skipped') &&
+      (needs.run_doc.result == 'success' || needs.run_doc.result == 'skipped')
     runs-on: ubuntu-latest
     
     steps:
