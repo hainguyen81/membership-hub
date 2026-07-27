@@ -79,6 +79,8 @@ jobs:
       phase_ended: ${{ steps.resolver.outputs.phase_ended }}
       run_day: ${{ steps.resolver.outputs.run_day }}
       run_phase: ${{ steps.resolver.outputs.run_phase }}
+      total_phases: ${{ steps.resolver.outputs.total_phases }}
+      total_days: ${{ steps.resolver.outputs.total_days }}
       exec_mode: ${{ inputs.execution_mode == '🕒🔄📅 Auto Schedule' && 'auto_cron' || 'manual' }}
       agent_target: >-
         ${{ 
@@ -394,6 +396,8 @@ jobs:
         env:
           RUN_DAY: ${{ needs.state_resolver_job.outputs.run_day }}
           RUN_PHASE: ${{ needs.state_resolver_job.outputs.run_phase }}
+          TOTAL_DAYS: ${{ needs.state_resolver_job.outputs.total_days }}
+          TOTAL_PHASES: ${{ needs.state_resolver_job.outputs.total_phases }}
           BRANCH_NAME: "features/development"
         run: |
           STATE_FILE=".ai/.plan/pipeline_state.json"
@@ -401,7 +405,7 @@ jobs:
           #  update state
           echo "💾 [STATE SAVE] Serializing current matrix back to file tracking storage..."
           mkdir -p "$(dirname "$STATE_FILE")"
-          echo "{\"current_day\": $RESOLVED_DAY, \"current_phase\": $RESOLVED_PHASE}" > "$STATE_FILE"
+          echo "{\"current_day\": $RUN_DAY, \"total_days\": $TOTAL_DAYS, \"current_phase\": $RUN_PHASE, \"total_phases\": $TOTAL_PHASES}" > "$STATE_FILE"
           
           # merge state file
           git add "$STATE_FILE"

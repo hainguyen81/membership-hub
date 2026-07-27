@@ -23,6 +23,7 @@ def main():
     # parse plan information
     phases_config = plan.get("phases", [])
     total_phases = plan.get("num_phases", len(phases_config))
+    total_days_allowed = plan.get("total_days", sum(p["days"] for p in phases_config))
     phases_str = json.dumps(phases_config, indent=4, ensure_ascii=False)
     print(f"🕒 [ READ ] Total Phases: {total_phases}. Phases: {phases_str}")
     
@@ -90,7 +91,6 @@ def main():
         # run by day
         if scope == "by_day":
             # check whether exceed total_days of phases
-            total_days_allowed = plan.get("total_days", sum(p["days"] for p in phases_config))
             if val > total_days_allowed or val <= 0:
                 print(f"❌ [ ERROR ] Targeted absolute day ({val}) exceeds project maximum ({total_days_allowed})!")
                 sys.exit(1)
@@ -128,7 +128,9 @@ def main():
         f"RESOLVED_PHASE={final_phase}",
         f"SHOULD_SAVE_STATE={'true' if should_save_state else 'false'}",
         f"PHASE_ENDED={'true' if phase_ended else 'false'}",
-        f"PROJECT_ENDED={'true' if project_ended else 'false'}"
+        f"PROJECT_ENDED={'true' if project_ended else 'false'}",
+        f"TOTAL_PHASES={total_phases}",
+        f"TOTAL_DAYS={total_days_allowed}"
     ]
     print(f"🆕 [ FINAL STATE ] Phase Meta: {agents_state}")
 
