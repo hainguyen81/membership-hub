@@ -1,0 +1,213 @@
+// sources/backend/pom.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.nlh4j.saas.membershiphub</groupId>
+    <artifactId>membershiphub-backend</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Membership Hub Backend</name>
+    <description>Membership Hub Backend</description>
+
+    <properties>
+        <quarkus.platform.version>3.10.0</quarkus.platform.version>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-kafka-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jwt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+            <version>6.5.2</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.quarkus</groupId>
+                        <artifactId>quarkus-maven-plugin</artifactId>
+                        <version>${quarkus.platform.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <native>
+                                        <buildArgs>
+                                            <arg>--enable-verbose-stacktrace</arg>
+                                        </buildArgs>
+                                    </native>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>
+
+
+
+// sources/backend/src/main/java/org/nlh4j/saas/membershiphub/MembershipHubApplication.java
+
+package org.nlh4j.saas.membershiphub;
+
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.QuarkusApplication;
+import io.quarkus.runtime.annotations.QuarkusMain;
+
+@QuarkusMain
+public class MembershipHubApplication implements QuarkusApplication {
+
+    @Override
+    public int run(String... args) {
+        Quarkus.run(args);
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        Quarkus.run(args);
+    }
+}
+
+
+
+// sources/backend/src/main/java/org/nlh4j/saas/membershiphub/config/TenantContext.java
+
+package org.nlh4j.saas.membershiphub.config;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
+
+@ApplicationScoped
+public class TenantContext {
+
+    private String tenantId;
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
+}
+
+
+
+// sources/backend/src/main/java/org/nlh4j/saas/membershiphub/config/DatabaseConfig.java
+
+package org.nlh4j.saas.membershiphub.config;
+
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import io.quarkus.hibernate.orm.panache.common.runtime.RuntimeContext;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntime;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContext;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilder;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilderFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactory;
+import io.quarkus.hibernate.orm.runtime.HibernateOrmRuntimeContextFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryFactoryBuilder
