@@ -142,7 +142,6 @@ class AbstractSubAgent(AbstractAgent):
         # prepare prompt context
         pattern = rf"(## {target_day['context_section']}:.*?)((?=\n## DAY )|\Z)"
         day_context = re.search(pattern, phase_context, re.DOTALL | re.IGNORECASE).group(1).strip()
-        sub_tasks = "\n".join([f"- {t['desc']}" for t in agent_tasks])
         
         # return merged new values
         return {
@@ -152,8 +151,7 @@ class AbstractSubAgent(AbstractAgent):
             "agent_tasks": agent_tasks,
             "global_context": global_context,
             "phase_context": phase_context,
-            "day_context": day_context,
-            "sub_tasks": sub_tasks.strip()
+            "day_context": day_context
         }
     
     # @override
@@ -177,7 +175,7 @@ class AbstractSubAgent(AbstractAgent):
             day_context=kwargs_by_key(key="day_context", **kwargs),
             source_component=kwargs_by_key(key="source_component", **kwargs),
             target_component=kwargs_by_key(key="target_component", **kwargs),
-            sub_tasks=kwargs_by_key(key="sub_tasks", **kwargs)
+            sub_tasks=kwargs_by_key(key="task_description", **kwargs)
         )
         
         # for tracing
@@ -208,13 +206,21 @@ class AbstractSubAgent(AbstractAgent):
                 print(f"[ 💀 {self.agent_id} Agent | CRITICAL WARN ] Step Day { self.day_num }, File { phase_step_file } has no any task components!")
                 continue
             
+            # parse task description
+            sub_task_desc = sub_task.get("desc")
+            print(f"[ 💀 {self.agent_id} Agent | CRITICAL WARN ] Do Task: {sub_task_desc}")
+            task_kwargs = {
+                **kwargs,
+                "task_description": sub_task_desc
+            }
+            
             # iterate every target component
             for component in components:
                 componentParts = component.split(";")
                 source_component = componentParts[0] if len(componentParts) > 1 else "INTEGRATION_SCOPE"
                 target_component = componentParts[0] if 0 < len(componentParts) < 2 else componentParts[1] if len(componentParts) > 1 else ""
-                kwargs = {
-                    **kwargs,
+                task_kwargs = {
+                    **task_kwargs,
                     "source_component": source_component,
                     "target_component": target_component,
                     "latest_source_component": source_component,
@@ -227,14 +233,14 @@ class AbstractSubAgent(AbstractAgent):
                     continue
                 
                 # do task component
-                kwargs = self.__do_task_component__(**kwargs)
+                task_kwargs = self.__do_task_component__(**task_kwargs)
                 
                 # write AI response log
                 self.write_history_log(
-                    source_component=kwargs_by_key(key="source_component", **kwargs),
-                    target_component=kwargs_by_key(key="target_component", **kwargs),
-                    user_prompt=kwargs_by_key(key="user_prompt", **kwargs),
-                    data=kwargs_by_key(key="raw_response", **kwargs),
+                    source_component=kwargs_by_key(key="source_component", **task_kwargs),
+                    target_component=kwargs_by_key(key="target_component", **task_kwargs),
+                    user_prompt=kwargs_by_key(key="user_prompt", **task_kwargs),
+                    data=kwargs_by_key(key="raw_response", **task_kwargs),
                     append=True
                 )
             
