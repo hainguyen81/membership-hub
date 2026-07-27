@@ -181,17 +181,24 @@ def validateAIResponse(response):
     
     # parse first choice
     first_choice = choices_data[0]
+    has_choice_error = hasattr(first_choice, 'error') and getattr(first_choice, 'error', None)
+    has_choice_error = has_choice_error or getattr(first_choice, 'finish_reason', None) == 'error'
+    has_choice_error = has_choice_error or hasattr(response, 'error')
         
     # 2. Check finish_reason or error response
-    if first_choice.finish_reason == 'error' or hasattr(response, 'error') or (hasattr(first_choice, 'error') and choice.error):
+    if has_choice_error:
         # parse error
-        err_detail = getattr(response, 'error', None) or getattr(first_choice, 'error', {})
-        err_msg = err_detail.get('message', 'Unknown upstream aggregator timeout')
-        err_code = err_detail.get('code', 500)
+        err_detail = getattr(response, 'error', None) or getattr(first_choice, 'error', {}) or getattr(response, 'error', None) or { 'code': 500, 'message': 'Unknown upstream error' }
+        if isinstance(err_detail, dict):
+            err_msg = err_detail.get('message', 'Unknown upstream error')
+            err_code = err_detail.get('code', 500)
+        else:
+            err_msg = getattr(err_detail, 'message', 'Unknown upstream error')
+            err_code = getattr(err_detail, 'code', 500)
         raise RuntimeError(f"[API Upstream Error {err_code}]: {err_msg}")
         
     # 3. check content whether is None (although finish_reason is `stop`)
-    if not hasattr(first_choice, 'message') or not first_choice.message or first_choice.message.content is None:
+    if not hasattr(first_choice, 'message') or not first_choice.message or getattr(first_choice.message, 'content', None) is None:
         raise ValueError(f"[API Upstream Error 404]: AI response content is empty/None.")
     
     # Guard against malformed message blocks or unexpected payload closures
