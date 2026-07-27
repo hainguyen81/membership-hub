@@ -1,12 +1,12 @@
 # ==============================================================================
-# 🏢 ENTERPRISE SAAS MULTI-AGENT DEVELOPMENT LIFECYCLE ORCHESTRATOR
+# 🏢 ENTERPRISE MULTI-AGENT DEVELOPMENT LIFECYCLE ORCHESTRATOR
 # ==============================================================================
 # Fully compliant with strict multi-tenant isolation, cross-channel notification architecture,
 # dynamic gym-style subscription tracking constraints, and automated token-saving micro-steps.
 # Directs parallel standalone executions or sequential cron schedules seamlessly.
 # ==============================================================================
 
-name: "🏢 Enterprise SaaS AI Agents Pipeline"
+name: "🏢 Enterprise Project AI Agents Pipeline"
 
 on:
   schedule:
