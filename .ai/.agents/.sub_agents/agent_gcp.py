@@ -107,7 +107,7 @@ class GcpAgent(AbstractSubAgent):
         return super().pre_execute(**kwargs)
 
     # @ override
-    def __do_task_component__(self, **kwargs):
+    def __execute__(self, **kwargs):
         # extract arguments
         project_name = kwargs_by_key(key="project_name", **kwargs)
         global_context = kwargs_by_key(key="global_context", **kwargs)
@@ -138,8 +138,6 @@ class GcpAgent(AbstractSubAgent):
             **kwargs,
             "system_prompt": None,
             "user_prompt": None,
-            "latest_system_prompt": None,
-            "latest_user_prompt": None,
             "raw_response": f"Image version {self.image_tag} published safely to GAR!"
         }
 
