@@ -216,11 +216,11 @@ class AbstractAgent(ABC):
                     raise # re-throw exception to super
         
         # parse AI response
-        raw_response = self.__parse_ai_response__(response) if response else None
+        raw_response = self.__parse_ai_response__(response=response) if response else None
         return {
             **kwargs,
             "raw_response": raw_response,
-            "clean_response": self.clean_response(raw_response, **kwargs)
+            "clean_response": self.clean_response(raw_response=raw_response, **kwargs)
         }
     
     @abstractmethod
@@ -290,6 +290,7 @@ class AbstractAgent(ABC):
         # internal execution
         kwargs = self.__execute__(**kwargs) or {}
         if not kwargs or not kwargs.get("success"):
+            raw_response = kwargs_by_key(key="raw_response", **kwargs)
             raise RuntimeError(raw_response) # response is exception stack-trace from `__execute__`
         
         # done tasks

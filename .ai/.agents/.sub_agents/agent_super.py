@@ -172,7 +172,7 @@ class AbstractSubAgent(AbstractAgent):
     # @ override
     def __execute__(self, **kwargs):
         # execute AI
-        result = super().__execute__(**kwargs)
+        result = super().__execute__(**kwargs) or {}
         
         # tracing
         sub_tasks = kwargs_by_key(key="sub_tasks", **kwargs)
@@ -223,7 +223,7 @@ class AbstractSubAgent(AbstractAgent):
                     continue
                 
                 # do task component
-                task_kwargs = super().__do_execute__(**task_kwargs)
+                task_kwargs = super().__do_execute__(**task_kwargs) or {}
                 
                 # write AI response log
                 self.write_history_log(
