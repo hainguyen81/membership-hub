@@ -42,6 +42,7 @@ echo "run_phase=$RESOLVED_PHASE" >> "$GITHUB_OUTPUT"
 echo "total_days=$TOTAL_DAYS" >> "$GITHUB_OUTPUT"
 echo "total_phases=$TOTAL_PHASES" >> "$GITHUB_OUTPUT"
 echo "phase_ended=$PHASE_ENDED" >> "$GITHUB_OUTPUT"
+echo "exec_mode=$EXEC_MODE" >> "$GITHUB_OUTPUT"
 
 # 🌐 define branch for sub-agents working
 BRANCH_NAME="features/development-phase-$RESOLVED_PHASE-day-$RESOLVED_DAY"

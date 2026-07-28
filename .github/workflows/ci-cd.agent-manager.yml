@@ -81,7 +81,7 @@ jobs:
       run_phase: ${{ steps.resolver.outputs.run_phase }}
       total_phases: ${{ steps.resolver.outputs.total_phases }}
       total_days: ${{ steps.resolver.outputs.total_days }}
-      exec_mode: ${{ inputs.execution_mode == '🕒🔄📅 Auto Schedule' && 'auto_cron' || 'manual' }}
+      exec_mode: ${{ steps.resolver.outputs.exec_mode == 'auto_cron' && 'auto_cron' || 'manual' }}
       agent_target: >-
         ${{ 
           inputs.agent_target == '🤖💻 Coder' && 'coder' ||
@@ -394,6 +394,7 @@ jobs:
       - name: "🗄️ Save State Indicators and Commit Generated Workspace Assets Upstream"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
+          EXEC_MODE: ${{ needs.state_resolver_job.outputs.exec_mode }}
           RUN_DAY: ${{ needs.state_resolver_job.outputs.run_day }}
           RUN_PHASE: ${{ needs.state_resolver_job.outputs.run_phase }}
           TOTAL_DAYS: ${{ needs.state_resolver_job.outputs.total_days }}
@@ -405,7 +406,7 @@ jobs:
           #  update state
           echo "💾 [STATE SAVE] Serializing current matrix back to file tracking storage..."
           mkdir -p "$(dirname "$STATE_FILE")"
-          echo "{\"current_day\": $RUN_DAY, \"total_days\": $TOTAL_DAYS, \"current_phase\": $RUN_PHASE, \"total_phases\": $TOTAL_PHASES}" > "$STATE_FILE"
+          echo "{\"exec_mode\": \"$EXEC_MODE\", \"current_day\": $RUN_DAY, \"total_days\": $TOTAL_DAYS, \"current_phase\": $RUN_PHASE, \"total_phases\": $TOTAL_PHASES}" > "$STATE_FILE"
           
           # merge state file
           git add "$STATE_FILE"

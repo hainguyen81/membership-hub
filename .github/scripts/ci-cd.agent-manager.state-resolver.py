@@ -17,6 +17,9 @@ def main():
         print(f"❌ [ ERROR ] Plan specification file not found at: {plan_path}")
         sys.exit(1)
     
+    # read state
+    _, state = read_json_file(state_path)
+    
     # read plan json file
     _, plan = read_json_file(plan_path)
     
@@ -28,7 +31,7 @@ def main():
     print(f"🕒 [ READ ] Total Phases: {total_phases}. Phases: {phases_str}")
     
     # Ingest enviroment for GitHub Actions
-    exec_mode = os.environ.get("INPUT_EXEC_MODE", "auto_cron") or "auto_cron"
+    exec_mode = os.environ.get("INPUT_EXEC_MODE", state.get("exec_mode", "auto_cron")) or "auto_cron"
     scope = os.environ.get("INPUT_TARGET_SCOPE", "")
     val_str = os.environ.get("INPUT_VALUE", "")
     
@@ -46,9 +49,7 @@ def main():
         print("🕒 [ MODE ] Detected Auto Cron Execution. Resolving historical state matrix...")
         
         # load previous state
-        if os.path.exists(state_path):
-            with open(state_path, 'r') as f:
-                state = json.load(f)
+        if state:
             curr_day = state.get("current_day", 0)
             curr_phase = state.get("current_phase", 1)
             print(f"📖 [ READ ] Prior stored baseline matrix: Phase {curr_phase} / Day {curr_day}")
@@ -80,6 +81,7 @@ def main():
     # -------------------------------------------------------------
     else:
         should_save_state = False
+        exec_mode = 'manual'
         print("🎛️ [ MODE ] Detected Manual Override Target Mode. Evaluating dynamic constraints...")
         if not val_str:
             print("❌ [ ERROR ] Manual execution mode requires a target INPUT_VALUE!")
@@ -130,7 +132,8 @@ def main():
         f"PHASE_ENDED={'true' if phase_ended else 'false'}",
         f"PROJECT_ENDED={'true' if project_ended else 'false'}",
         f"TOTAL_PHASES={total_phases}",
-        f"TOTAL_DAYS={total_days_allowed}"
+        f"TOTAL_DAYS={total_days_allowed}",
+        f"EXEC_MODE={exec_mode}"
     ]
     print(f"🆕 [ FINAL STATE ] Phase Meta: {agents_state}")
 
