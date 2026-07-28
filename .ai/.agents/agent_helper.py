@@ -93,7 +93,7 @@ def write_file(file, data, dir=None, append=False):
     os.makedirs(checked_dir, exist_ok=True)
     out_path = os.path.join(checked_dir, checked_file)
     with open(out_path, opts, encoding="utf-8") as f:
-        f.write(str(data))
+        f.write(str(data).replace('\\n', '\n'))
     return out_path # full path of file
 
 def write_json_file(file, json_data, dir=None, append=False):
