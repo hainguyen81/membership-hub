@@ -30,6 +30,7 @@ MODELS_POOL_PATH            = resolve_absolute_path(".ai/.agents/.models/models.
 class AbstractAgent(ABC):
     def __init__(self, agent_id, **kwargs):
         self.agent_id = agent_id if agent_id else "Super"
+        self.logger = get_logger(self.agent_id)
         self.kwargs = kwargs or {}
         self.secrets_key = self.agent_secrets_key()
         self.secrets = self.load_secrets(self.secrets_key)
@@ -46,7 +47,7 @@ class AbstractAgent(ABC):
         self.client = None
         self.current_model_config = None
         if not self.rotate_model():
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ] Not found any available AI models to execute!")
+            self.logger.critical(f"[ 💀 CRITICAL ] Not found any available AI models to execute!")
             sys.exit(1)
     
     def get_kwargs_by_key(self, key: str, **kwargs):
@@ -67,20 +68,20 @@ class AbstractAgent(ABC):
     
     def load_secrets(self, secrets_key):
         if not secrets_key or len(secrets_key) <= 0:
-            print(f"[ 💀 {self.agent_id} Agent | WARN ] Invalid secrets key to load secrets!")
+            self.logger.warn(f"[ 💀 WARN ] Invalid secrets key to load secrets!")
             return None
         
         # load secrets from environment
         raw_secrets = os.environ.get(secrets_key)
         if not raw_secrets:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ] The environment variable '{secrets_key}' is completely absent.")
+            self.logger.critical(f"[ 💀 CRITICAL ] The environment variable '{secrets_key}' is completely absent.")
             sys.exit(1)
         
         # parse secrets to JSON
         try:
             return json.loads(raw_secrets)
         except Exception as e:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ] Failed to parse environment '{secrets_key}' JSON string: {exception_stacktrace(e)}")
+            self.logger.critical(f"[ 💀 CRITICAL ] Failed to parse environment '{secrets_key}' JSON string: {exception_stacktrace(e)}")
             sys.exit(1)
     
     def load_models_pool(self):
@@ -89,7 +90,7 @@ class AbstractAgent(ABC):
     
     def rotate_model(self):
         if not self.models_secrets or len(self.models_secrets) <= 0:
-            print(f"[ 💀 {self.agent_id} Agent | WARN ] Not found any models secrets to rotate!")
+            self.logger.warn(f"[ 💀 WARN ] Not found any models secrets to rotate!")
             return False
         
         models_pool_len = len(self.models_pool) if isinstance(self.models_pool, list) else 0
@@ -100,17 +101,17 @@ class AbstractAgent(ABC):
             target_model_name = config.get("model_name") if isinstance(config, dict) else None
             target_model_endpoint = config.get("api_endpoint") if isinstance(config, dict) else None
             
-            print("==============================================")
-            print("🔍 DEBUG: 'config':")
+            self.logger.debug("==============================================")
+            self.logger.debug("🔍 DEBUG: 'config':")
             try:
-                print(json.dumps(config, indent=4, ensure_ascii=False))
+                self.logger.debug(json.dumps(config, indent=4, ensure_ascii=False))
             except Exception:
-                print(f"⚠️ Exception while dump 'config' json: {type(config)} - Config: {config}")
-            print("==============================================")
+                self.logger.error(f"⚠️ Exception while dump 'config' json: {type(config)} - Config: {config}")
+            self.logger.debug("==============================================")
             
             # If endpoint is missing, None, empty "", or just whitespaces "   ", skip it cleanly
             if not target_model_name or not target_model_endpoint or not str(target_model_endpoint).strip():
-                print(f"⚠️ {self.agent_id} Agent | Ignore this config due to invalid 'model_name': {target_model_name} or 'model_endpoint': {target_model_endpoint}")
+                self.logger.info(f"⚠️ Ignore this config due to invalid 'model_name': {target_model_name} or 'model_endpoint': {target_model_endpoint}")
                 self.active_model_index += 1
                 continue # 🔄 Immediately jumps to the next iteration of the while loop
             
@@ -120,13 +121,13 @@ class AbstractAgent(ABC):
                 self.current_model_config["api_key"]=api_key
                 try:
                     self.client = self.__create_ai_client__()
-                    print(f"[ 💀 {self.agent_id} Agent | FAILOVER ENGAGED ] Successfully authenticated model: {target_model_name} | endpoint: {target_model_endpoint}")
+                    self.logger.info(f"[ 💀 FAILOVER ENGAGED ] Successfully authenticated model: {target_model_name} | endpoint: {target_model_endpoint}")
                     return True
                 except Exception as e:
                     # just ignoring exception while creating AI client, jump to next model
-                    print(f"[ ✅ {self.agent_id} Agent - ERROR | Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} ] SKip this tier, due to exception while creating AI Client: {exception_stacktrace(e)}.")
+                    self.logger.error(f"[ ✅ ERROR | Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} ] SKip this tier, due to exception while creating AI Client: {exception_stacktrace(e)}.")
             self.active_model_index += 1
-        print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Exhausted all registered fallback models: model_interation {self.active_model_index} models number {len(self.models_pool)}")
+        self.logger.critical(f"[ 💀 CRITICAL ] Exhausted all registered fallback models: model_interation {self.active_model_index} models number {len(self.models_pool)}")
         return False
     
     def __create_ai_client__(self):
@@ -213,7 +214,7 @@ class AbstractAgent(ABC):
                 raw_response = self.__parse_ai_response__(response=response) if response else None
                 success = True   # success
             except Exception as e:
-                print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.config_model_name()}: {str(e)}")
+                self.logger.error(f"[ 💀 ERROR ] Exception caught on model {self.config_model_name()}: {str(e)}")
                 # rotate next model
                 if not self.__rotate_next_model__():
                     raise # re-throw exception to super
@@ -242,7 +243,7 @@ class AbstractAgent(ABC):
         
         # process AI response
         kwargs = self.process_communication(**kwargs) or {}
-        print(f"[ ✅ {self.agent_id} Agent - SUCCESS | Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} ] Process successfully!")
+        self.logger.info(f"[ ✅ SUCCESS | Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} ] Process successfully!")
         
         # return new values kwargs
         return { **kwargs }
@@ -269,7 +270,7 @@ class AbstractAgent(ABC):
             kwargs = self.__ai_execute__(**kwargs) or {}
             success = True
         except Exception as e:
-            print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.config_model_name()}: {exception_stacktrace(e)}")
+            self.logger.error(f"[ 💀 ERROR ] Exception caught on model {self.config_model_name()}: {exception_stacktrace(e)}")
             if not "exception" in kwargs:
                 kwargs = { **kwargs, "exception": exception_stacktrace(e) }
         
@@ -280,7 +281,7 @@ class AbstractAgent(ABC):
         }
     
     def __handle_execute_exception__(self, e, **kwargs):
-        print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.config_model_name()}: {exception_stacktrace(e)}")
+        self.logger.error(f"[ 💀 ERROR ] Exception caught on model {self.config_model_name()}: {exception_stacktrace(e)}")
         # write log
         self.write_log(
             data=f"# Exception:\n\n{exception_stacktrace(e)}\n\n---\n\n",

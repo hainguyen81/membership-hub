@@ -33,8 +33,6 @@ if PARENT_AGENTS_DIR not in sys.path:
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-BLUEPRINT_WORKING_HISTORY_FILE = "sources/output/architecture-blueprint.md"
-
 # logging configuration
 # logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s]: %(message)s")
 logging.basicConfig(
@@ -42,6 +40,8 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
 )
+def get_logger(logger_name="Helper"):
+    return logging.getLogger("CommunityForumScraper")
 
 def resolve_absolute_path(relative_target_path):
     """
@@ -122,37 +122,9 @@ def read_file_raw(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         return (file_path, f.read())
 
-def write_blueprint_log(phase_idx, instruction, prompt, raw_content, is_step, model_name=None, out_dir=None):
-    pattern = r"\{.*\}|\[.*\]"
-    raw_content = json_raw_content(raw_content)
-    is_json = bool(re.search(pattern, raw_content, re.DOTALL))
-    model_name_safe = f"AI Model: {model_name} - " if model_name and len(model_name) > 0 else ""
-    if phase_idx <= 0:
-        header_title = f"# {model_name_safe}Global Prompt:\n\n{prompt}\n\n"
-    elif not is_step:
-        header_title = f"# {model_name_safe}Phase {phase_idx} - Prompt:\n\n{prompt}\n\n"
-    else:
-        header_title = f"# {model_name_safe}Phase {phase_idx} STEPS - Prompt:\n\n{prompt}\n\n"
-    instruction_block = f"# System Instruction\n\n{instruction}\n\n"
-    if is_json:
-        response_block = f"# Raw Response / Exception:\n\n```json\n{raw_content}\n```\n\n"
-    else:
-        response_block = f"# Raw Response / Exception:\n\n```text\n{raw_content}\n```\n\n"
-    log_content = header_title + instruction_block + response_block
-    log_file = resolve_absolute_path(BLUEPRINT_WORKING_HISTORY_FILE)
-    if out_dir and len(out_dir) > 0:
-        log_file = os.path.join(out_dir, "architecture-blueprint.md")
-    write_file(os.path.dirname(log_file), os.path.basename(log_file), log_content, append=True)
-
 def delete_file(file):
     if os.path.exists(file):
         os.remove(file)
-
-def delete_log(out_dir=None):
-    log_file = resolve_absolute_path(BLUEPRINT_WORKING_HISTORY_FILE)
-    if out_dir and len(out_dir) > 0:
-        log_file = os.path.join(out_dir, "architecture-blueprint.md")
-    delete_file(file=log_file)
 
 def render_prompt(template: str, context: dict) -> str:
     if not os.path.exists(template):
