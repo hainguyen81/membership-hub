@@ -10,7 +10,11 @@ name: "🏢 Enterprise Project AI Agents Pipeline"
 
 on:
   schedule:
-    - cron: '0 0 * * *' # 🕒 Automated daily scheduler trigger executed exactly at 00:00 UTC
+    # - cron: '0 0 * * *' # 🕒 Automated daily scheduler trigger executed exactly at 00:00 UTC
+    
+    # Automated every 6 hours (0h, 6h, 12h, 18h UTC GMT+0).
+    - cron: '0 */6 * * *'
+  
   workflow_dispatch:
     inputs:
       execution_mode:
