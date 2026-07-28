@@ -202,12 +202,15 @@ class AbstractAgent(ABC):
     
     def communicate(self, **kwargs):
         response = None
+        raw_response = None
         
         # only rotate on communitating with AI
         success= False
         while not success:
             try:
                 response = self.__communicate_ai__(**kwargs)
+                # parse AI response, due to AI could return 404, at that moment, should rotate model
+                raw_response = self.__parse_ai_response__(response=response) if response else None
                 success = True   # success
             except Exception as e:
                 print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {self.config_model_name()}: {str(e)}")
@@ -215,8 +218,6 @@ class AbstractAgent(ABC):
                 if not self.__rotate_next_model__():
                     raise # re-throw exception to super
         
-        # parse AI response
-        raw_response = self.__parse_ai_response__(response=response) if response else None
         # remove old raw_response if existing
         old_raw_response = kwargs.pop("raw_response", None)
         clean_response = self.clean_response(raw_response=raw_response, **kwargs) if raw_response else None
