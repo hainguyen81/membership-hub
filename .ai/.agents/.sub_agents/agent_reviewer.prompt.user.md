@@ -27,4 +27,6 @@ The codebase above triggered the following compiler or runtime exceptions. You M
 ---
 
 ### ⚙️ LEAD REVIEWER/FIXER EXECUTION INSTRUCTION:
-Please read the comprehensive architectural constraints, workspace folder routing rules, sub-task specifications, and potential compiler log streams provided above. Automatically evaluate the error signatures or static code anomalies to construct either a fully patched backend Java component or a frontend TypeScript/Next.js asset. Ensure the final code is completely self-contained and compiler-ready. Emit the production source code inside a single valid markdown code block now.
+Please read the comprehensive architectural constraints, workspace folder routing rules, sub-task specifications, and potential compiler log streams provided above. Automatically evaluate the error signatures or static code anomalies to construct either a fully patched backend Java component or a frontend TypeScript/Next.js asset. 
+
+Ensure that you read the exact Tag IDs from the `{{ targeted_tags }}` variable, merge them seamlessly with any pre-existing tags inside the source payload, and permanently inject/preserve those exact Tag IDs within the generated code's Javadoc documentation or file header comments. The final code must be completely self-contained and compiler-ready. Emit the production source code inside a single valid markdown code block now.

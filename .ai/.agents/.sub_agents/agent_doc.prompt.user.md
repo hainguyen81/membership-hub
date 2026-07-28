@@ -17,4 +17,6 @@ Analyze the following live source codes, configuration parameters, or database s
 ---
 
 ### ⚙️ TECHNICAL WRITER EXECUTION INSTRUCTION:
-Please read the comprehensive architectural constraints, workspace folder guardrails, and detailed sub-task document specifications provided above. Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.
+Please read the comprehensive architectural constraints, workspace folder guardrails, and detailed sub-task document specifications provided above. 
+
+Ensure that you read the exact Tag IDs from the `{{ targeted_tags }}` variable, and permanently burn those codes into the generated documentation layout (inside the table columns or the dedicated Traceability Matrix Reference section). Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.

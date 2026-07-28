@@ -183,11 +183,13 @@ class AbstractSubAgent(AbstractAgent):
             
             # parse task description
             sub_tasks = [ sub_task.get("desc") ]
+            targeted_tags = sub_task.get("targeted_tags") or []
             print("=================================================")
             print(f"[ 💀 {self.agent_id} Agent | INFO ] Do Task: {str(sub_tasks)}")
             print("=================================================")
             task_kwargs = {
                 **kwargs,
+                "targeted_tags": targeted_tags,
                 "sub_tasks": sub_tasks
             }
             

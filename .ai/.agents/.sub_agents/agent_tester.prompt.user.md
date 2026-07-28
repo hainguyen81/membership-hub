@@ -19,4 +19,6 @@ Analyze the core logical operations within this implementation code block to con
 ---
 
 ### ⚙️ TEST ENGINEER EXECUTION INSTRUCTION:
-Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Automatically evaluate the extension profile of the target test component path to construct either an isolated backend unit/integration suite or a frontend E2E/Unit suite. Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.{{ project_name }}` structure. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided away. Automatically evaluate the extension profile of the target test component path to construct either an isolated backend unit/integration suite or a frontend E2E/Unit suite. 
+
+Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.{{ project_name }}` structure. Ensure that you read the exact Tag IDs from the `{{ targeted_tags }}` variable, and permanently burn those codes into the Javadoc metadata blocks (for Java) or the test case description strings (for TypeScript/JavaScript). Emit the final compiler-ready production source code inside a single valid markdown code block now.
