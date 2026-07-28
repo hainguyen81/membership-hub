@@ -13,11 +13,6 @@
         "api_endpoint": "https://openrouter.ai/api/v1"
     },
     {
-        "model_name": "qwen/qwen-2.5-coder-32b-instruct:free",
-        "provider": "OpenRouter AI",
-        "api_endpoint": "https://openrouter.ai/api/v1"
-    },
-    {
         "model_name": "qwen/qwen-2.5-coder-32b-instruct",
         "provider": "OpenRouter AI",
         "api_endpoint": "https://openrouter.ai/api/v1"
