@@ -39,4 +39,4 @@ Analyze the file extension and directory prefixes of the target destination '{{ 
 
 ### 📋 COMPLIANCE MANDATES:
 - **Zero Conversational Output:** Output ONLY pure executable code blocks wrapped inside a single markdown codeblock matching the language grammar (e.g., ```java, ```typescript). No explanations, no introductory text, no post-implementation bullet points.
-- **Production Completeness:** Include all required library imports, annotations, context decorators, setup/teardown code blocks, and granular asset initializations. Never use comments like '// TODO: implement test cases' for brevity.
+- **Production Completeness & Test Documentation:** Include all required library imports, annotations, context decorators, setup/teardown code blocks, and granular asset initializations. Never use comments like '// TODO: implement test cases' for brevity. **You MUST include explicit inline comments inside the test code block explaining the specific assertion logic, edge-case validation strategy, and what business requirement is being tested in each test case.**
