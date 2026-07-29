@@ -44,7 +44,7 @@ class GcpAgent(AbstractSubAgent):
             subprocess.run(["gcloud", "auth", "configure-docker", f"{self.gcp_region}-docker.pkg.dev"], check=True)
             os.remove("gcp-key.json")
         else:
-            self.logger.warn(f"⚠️ Missing parameters inside GCP_SECRETS. Relying on active local shell auth context.")
+            self.logger.warning(f"⚠️ Missing parameters inside GCP_SECRETS. Relying on active local shell auth context.")
     
     def gcp_cloud_repo(self) -> str:
         return os.environ.get("GCP_REPO")
@@ -95,7 +95,7 @@ class GcpAgent(AbstractSubAgent):
     def pre_execute(self, **kwargs):
         # validate repository
         if not self.gcp_repo or len(self.gcp_repo.strip()) <= 0:
-            self.logger.warn(f"⚠️ Not found 'GCP_REPO' enviroment to publish image for deploying.")
+            self.logger.warning(f"⚠️ Not found 'GCP_REPO' enviroment to publish image for deploying.")
             sys.exit(0)
         
         # log-in repository
@@ -115,7 +115,7 @@ class GcpAgent(AbstractSubAgent):
         workspace_path = resolve_absolute_path("sources/backend") if is_backend else resolve_absolute_path("sources/frontend")
         
         if not os.path.exists(dockerfile_path):
-            self.logger.warn(f"⚠️ Target container instruction blueprint absent at: {dockerfile_path}")
+            self.logger.warning(f"⚠️ Target container instruction blueprint absent at: {dockerfile_path}")
             return (True, None, None, f"⚠️ Target container instruction blueprint absent at: {dockerfile_path}")
         
         # build image

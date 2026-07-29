@@ -112,7 +112,7 @@ class AbstractSubAgent(AbstractAgent):
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
         agent_tasks = self.collect_agent_tasks(target_day)
         if not agent_tasks or len(agent_tasks) <= 0:
-            self.logger.warn(f"⚠️ Step Day { self.day_num }, File { phase_step_file } has no any task!")
+            self.logger.warning(f"⚠️ Step Day { self.day_num }, File { phase_step_file } has no any task!")
             sys.exit(0)
         
         # tracing
@@ -121,7 +121,7 @@ class AbstractSubAgent(AbstractAgent):
         # check whether exists any components for this agent
         components = self.collect_agent_components(agent_tasks)
         if not components or len(components) <= 0:
-            self.logger.warn(f"⚠️ Step Day { self.day_num }, File { phase_step_file } has no any components!")
+            self.logger.warning(f"⚠️ Step Day { self.day_num }, File { phase_step_file } has no any components!")
             sys.exit(0)
         
         # read global context md
@@ -174,7 +174,7 @@ class AbstractSubAgent(AbstractAgent):
         for sub_task in agent_tasks:
             components = sub_task['components']
             if not components or len(components) <= 0:
-                self.logger.warn(f"⚠️ Step Day { self.day_num }, File { phase_step_file } has no any task components!")
+                self.logger.warning(f"⚠️ Step Day { self.day_num }, File { phase_step_file } has no any task components!")
                 continue
             
             # parse task description
@@ -204,7 +204,7 @@ class AbstractSubAgent(AbstractAgent):
                 
                 # check if invalid target component
                 if len(target_component) <= 0:
-                    self.logger.warn(f"⚠️ Step Day { self.day_num }, File { phase_step_file }, Target Component not found to do")
+                    self.logger.warning(f"⚠️ Step Day { self.day_num }, File { phase_step_file }, Target Component not found to do")
                     continue
                 
                 # do task component

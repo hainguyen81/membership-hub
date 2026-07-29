@@ -62,7 +62,7 @@ class EnterpriseMultiAgentManager:
                     if os.path.exists(componentPart):
                         pushed_components.append(componentPart)
         if len(pushed_components) <= 0:
-            self.logger.warn(f"⚠️ Not found any target component to commit/push!")
+            self.logger.warning(f"⚠️ Not found any target component to commit/push!")
             sys.exit(0)
         
         self.logger.info(f"[ GIT ] All pipeline validation thresholds passed. Committing structural assets...")

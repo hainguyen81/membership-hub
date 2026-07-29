@@ -190,7 +190,7 @@ class BugFixerAgent(AbstractSubAgent):
                 break
             
             # build user prompt
-            self.logger.warn(f"⚠️ Build check failed on validation loop: {iteration}. Ingesting raw error logs...")
+            self.logger.warning(f"⚠️ Build check failed on validation loop: {iteration}. Ingesting raw error logs...")
             user_prompt = self.build_user_prompt(**kwargs)
             
             # build new values kwargs

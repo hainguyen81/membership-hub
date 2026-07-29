@@ -50,7 +50,7 @@ class DockerHubAgent(AbstractSubAgent):
                 sys.exit(1)
             self.logger.info(f"✅ Docker Hub authentication session activated successfully.")
         else:
-            self.logger.warn(f"⚠️ Missing data keys parameters inside DOCKERHUB_SECRETS mapping registry.")
+            self.logger.warning(f"⚠️ Missing data keys parameters inside DOCKERHUB_SECRETS mapping registry.")
     
     def docker_hub_repo(self) -> str:
         return self.agent_secrets("DOCKERHUB_REPO")
@@ -93,7 +93,7 @@ class DockerHubAgent(AbstractSubAgent):
     def pre_execute(self, **kwargs):
         # validate repository
         if not self.docker_repo or len(self.docker_repo.strip()) <= 0:
-            self.logger.warn(f"⚠️ Not found 'DOCKERHUB_REPO' enviroment to publish docker images.")
+            self.logger.warning(f"⚠️ Not found 'DOCKERHUB_REPO' enviroment to publish docker images.")
             sys.exit(0)
         
         # log-in repository
@@ -114,7 +114,7 @@ class DockerHubAgent(AbstractSubAgent):
         
         # check whether exists docker file
         if not os.path.exists(dockerfile_path):
-            self.logger.warn(f"⚠️ Target container instruction blueprint absent at: {dockerfile_path}")
+            self.logger.warning(f"⚠️ Target container instruction blueprint absent at: {dockerfile_path}")
             return (True, None, None, f"⚠️ Target container instruction blueprint absent at: {dockerfile_path}")
         
         # build image

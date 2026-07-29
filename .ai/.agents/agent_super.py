@@ -68,7 +68,7 @@ class AbstractAgent(ABC):
     
     def load_secrets(self, secrets_key):
         if not secrets_key or len(secrets_key) <= 0:
-            self.logger.warn(f"⚠️ Invalid secrets key to load secrets!")
+            self.logger.warning(f"⚠️ Invalid secrets key to load secrets!")
             return None
         
         # load secrets from environment
@@ -90,7 +90,7 @@ class AbstractAgent(ABC):
     
     def rotate_model(self):
         if not self.models_secrets or len(self.models_secrets) <= 0:
-            self.logger.warn(f"⚠️ Not found any models secrets to rotate!")
+            self.logger.warning(f"⚠️ Not found any models secrets to rotate!")
             return False
         
         models_pool_len = len(self.models_pool) if isinstance(self.models_pool, list) else 0

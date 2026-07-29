@@ -42,7 +42,7 @@ class GkeAgent(GcpAgent):
                 f"--region={self.gcp_region}", f"--project={self.gcp_project}"
             ], check=True)
         else:
-            self.logger.warn(f"⚠️ Missing data keys inside GKE_SECRETS array map framework parameters.")
+            self.logger.warning(f"⚠️ Missing data keys inside GKE_SECRETS array map framework parameters.")
     
     def gke_cloud_deployment_name(self) -> str:
         return self.agent_secrets("GKE_DEPLOYMENT_NAME")
@@ -68,7 +68,7 @@ class GkeAgent(GcpAgent):
     def pre_execute(self, **kwargs):
         # validate repository
         if not self.gke_deployment_name or len(self.gke_deployment_name.strip()) <= 0:
-            self.logger.warn(f"⚠️ Not found 'GKE_DEPLOYMENT_NAME' enviroment. Step is explicitly marked as 'none'. Skipping GKE cluster rollout update loops framework entirely.")
+            self.logger.warning(f"⚠️ Not found 'GKE_DEPLOYMENT_NAME' enviroment. Step is explicitly marked as 'none'. Skipping GKE cluster rollout update loops framework entirely.")
             sys.exit(0)
         
         # as super
