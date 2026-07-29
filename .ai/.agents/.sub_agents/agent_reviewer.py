@@ -1,14 +1,10 @@
 # .ai/.agents/.sub-agents/agent-fixer.py
 import os
-import sys
-import json
-import re
 import argparse
 import subprocess
 import yaml
 import xml.etree.ElementTree as ET
 from jproperties import Properties
-from openai import OpenAI
 
 # ==============================================================================
 # 🏢 ENTERPRISE INTER-PACKAGE ROUTING LAYER
@@ -158,8 +154,8 @@ class BugFixerAgent(AbstractSubAgent):
         
         # check whether project had been initialized
         project_initialized, project_main_component = self.check_project_initialized(target_component)
-        print(f"[ ℹ️ {self.agent_id} Agent | F.Y.I ] Project {project_name} had been initialized?. {project_initialized} - Project Main Component: {project_main_component}")
-        print(f"            - Target Component: {target_component}")
+        self.logger.info(f"[ ℹ️ F.Y.I ] Project {project_name} had been initialized?. {project_initialized} - Project Main Component: {project_main_component}")
+        self.logger.info(f"            - Target Component: {target_component}")
         
         # execute super
         kwargs = {
@@ -188,13 +184,13 @@ class BugFixerAgent(AbstractSubAgent):
             # only compile project when it had been initialized
             is_clean, compiler_log = self.run_compile_check(target_component, project_initialized)
             if is_clean:
-                print(f"[ ✅ {self.agent_id} Agent | SUCCESS ] Target codebase component compiled cleanly on iteration loop: {iteration}!")
-                latest_response = f"Target codebase component {target_component} compiled cleanly on iteration loop {iteration}"
+                self.logger.info(f"✅ Target codebase component compiled cleanly on iteration loop: {iteration}!")
+                latest_response = f"✅ Target codebase component {target_component} compiled cleanly on iteration loop {iteration}"
                 success = True
                 break
             
             # build user prompt
-            print(f"[ ⚠️ {self.agent_id} Agent | WARNING ] Build check failed on validation loop: {iteration}. Ingesting raw error logs...")
+            self.logger.warn(f"⚠️ Build check failed on validation loop: {iteration}. Ingesting raw error logs...")
             user_prompt = self.build_user_prompt(**kwargs)
             
             # build new values kwargs
@@ -210,7 +206,7 @@ class BugFixerAgent(AbstractSubAgent):
                 latest_response = kwargs_by_key(key="latest_response", **kwargs)
                 success = True
             except Exception as e:
-                print(f"[ 💀 {self.agent_id} Agent | RECOVERY ] API transaction exception caught. Swapping model: {exception_stacktrace(e)}")
+                self.logger.error(f"💀 API transaction exception caught. Swapping model: {exception_stacktrace(e)}")
                 latest_response = str(e) if not latest_response else latest_response
                 # rotate next model
                 if not self.__rotate_next_model__():
@@ -218,7 +214,7 @@ class BugFixerAgent(AbstractSubAgent):
                     break
         
         if not success:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ] Structural compiler repairs failed within maximum iteration bounds.")
+            self.logger.critical(f"💀 Structural compiler repairs failed within maximum iteration bounds.")
         return (success, system_prompt, user_prompt, latest_response)
 
 if __name__ == "__main__":

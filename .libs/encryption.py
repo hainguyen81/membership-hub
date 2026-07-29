@@ -1,9 +1,9 @@
 # requirements: `pip install cryptography`
+import os
 import base64
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.fernet import Fernet, InvalidToken
-import os
+from cryptography.fernet import Fernet
 
 def generate_key_from_password(password: str, salt: bytes) -> bytes:
     """Derives a secure cryptographic key from a user-provided password using PBKDF2.

@@ -1,7 +1,6 @@
 # .ai/.agents/.sub-agents/agent-docker.py
 import os
 import sys
-import json
 import argparse
 import subprocess
 
@@ -14,7 +13,6 @@ import subprocess
 # request agent_helper from `.libs/project_agents_package_loader.py`
 from _0d_ai._0d_agents.agent_0u_helper import (
     resolve_absolute_path,
-    exception_stacktrace,
     kwargs_by_key
 )
 
@@ -37,7 +35,7 @@ class DockerHubAgent(AbstractSubAgent):
         )
 
     def authenticate_dockerhub(self):
-        print(f"[ {self.agent_id} Agent ] Attaching secure registry authorization handshakes...")
+        self.logger.info(f"ℹ️ Attaching secure registry authorization handshakes...")
         username = self.agent_secrets("DOCKERHUB_USERNAME")
         password = self.agent_secrets("DOCKERHUB_PASSWORD")
 
@@ -48,11 +46,11 @@ class DockerHubAgent(AbstractSubAgent):
             )
             stdout, stderr = login_process.communicate(input=password)
             if login_process.returncode != 0:
-                print(f"[ 💀 {self.agent_id} Agent | ERROR] Authentication verification failed natively: {stderr}")
+                self.logger.critical(f"💀 Authentication verification failed natively: {stderr}")
                 sys.exit(1)
-            print(f"[ ✅ {self.agent_id} Agent | SUCCESS ] Docker Hub authentication session activated successfully.")
+            self.logger.info(f"✅ Docker Hub authentication session activated successfully.")
         else:
-            print(f"[ ⚠️ {self.agent_id} Agent | WARNING ] Missing data keys parameters inside DOCKERHUB_SECRETS mapping registry.")
+            self.logger.warn(f"⚠️ Missing data keys parameters inside DOCKERHUB_SECRETS mapping registry.")
     
     def docker_hub_repo(self) -> str:
         return self.agent_secrets("DOCKERHUB_REPO")
@@ -95,7 +93,7 @@ class DockerHubAgent(AbstractSubAgent):
     def pre_execute(self, **kwargs):
         # validate repository
         if not self.docker_repo or len(self.docker_repo.strip()) <= 0:
-            print(f"[ ⚠️ {self.agent_id} Agent | SKIP ] Not found 'DOCKERHUB_REPO' enviroment to publish docker images.")
+            self.logger.warn(f"⚠️ Not found 'DOCKERHUB_REPO' enviroment to publish docker images.")
             sys.exit(0)
         
         # log-in repository
@@ -107,12 +105,7 @@ class DockerHubAgent(AbstractSubAgent):
     # @ override
     def __execute__(self, **kwargs):
         # extract arguments
-        project_name = kwargs_by_key(key="project_name", **kwargs)
-        global_context = kwargs_by_key(key="global_context", **kwargs)
-        day_context = kwargs_by_key(key="day_context", **kwargs)
-        source_component = kwargs_by_key(key="source_component", **kwargs)
         target_component = kwargs_by_key(key="target_component", **kwargs)
-        sub_tasks = kwargs_by_key(key="sub_tasks", **kwargs)
         
         # check task for backend or frontend
         is_backend = "backend" in target_component
@@ -121,24 +114,24 @@ class DockerHubAgent(AbstractSubAgent):
         
         # check whether exists docker file
         if not os.path.exists(dockerfile_path):
-            print(f"[ ⚠️ {self.agent_id} Agent | SKIP ] Target container instruction blueprint absent at: {dockerfile_path}")
-            return (True, None, None, f"[ ⚠️ {self.agent_id} Agent | SKIP ] Target container instruction blueprint absent at: {dockerfile_path}")
+            self.logger.warn(f"⚠️ Target container instruction blueprint absent at: {dockerfile_path}")
+            return (True, None, None, f"⚠️ Target container instruction blueprint absent at: {dockerfile_path}")
         
         # build image
-        print(f"[ {self.agent_id} Agent | BUILD ] Packaging multi-stage application image component: {self.docker_image}")
+        self.logger.info(f"ℹ️ Packaging multi-stage application image component: {self.docker_image}")
         subprocess.run(["docker", "build", "-t", self.docker_image, "-f", dockerfile_path, workspace_path], check=True)
         
         # push image to DockerHub
-        print(f"[ {self.agent_id} Agent | PUSH ] Streaming production release tag across remote Docker Hub brokers pipelines...")
+        self.logger.info(f"ℹ️ Streaming production release tag across remote Docker Hub brokers pipelines...")
         subprocess.run(["docker", "push", self.docker_image], check=True)
-        print(f"[ ✅ {self.agent_id} Agent | SUCCESS] Image package {self.docker_image} successfully committed upstream!")
+        self.logger.info(f"✅ Image package {self.docker_image} successfully committed upstream!")
         
         # result
         return {
             **kwargs,
             "system_prompt": None,
             "user_prompt": None,
-            "raw_response": f"Image package {self.docker_image} successfully committed upstream!"
+            "raw_response": f"✅ Image package {self.docker_image} successfully committed upstream!"
         }
 
 if __name__ == "__main__":

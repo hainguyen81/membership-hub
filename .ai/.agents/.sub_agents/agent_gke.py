@@ -1,7 +1,5 @@
 # .ai/.agents/.sub-agents/agent-gke.py
-import os
 import sys
-import json
 import argparse
 import subprocess
 
@@ -14,7 +12,6 @@ import subprocess
 # request agent_helper from `.libs/project_agents_package_loader.py`
 from _0d_ai._0d_agents.agent_0u_helper import (
     resolve_absolute_path,
-    exception_stacktrace,
     kwargs_by_key
 )
 
@@ -39,13 +36,13 @@ class GkeAgent(GcpAgent):
     
     def configure_gke_credentials(self):
         if self.gke_cluster_name and self.gcp_region and self.gcp_project:
-            print(f"[ {self.agent_id} Agent ] Fetching security credentials context for cluster registry: {self.gke_cluster_name}")
+            self.logger.info(f"ℹ️ Fetching security credentials context for cluster registry: {self.gke_cluster_name}")
             subprocess.run([
                 "gcloud", "container", "clusters", "get-credentials", self.gke_cluster_name,
                 f"--region={self.gcp_region}", f"--project={self.gcp_project}"
             ], check=True)
         else:
-            print(f"[ ⚠️ {self.agent_id} Agent | WARNING ] Missing data keys inside GKE_SECRETS array map framework parameters.")
+            self.logger.warn(f"⚠️ Missing data keys inside GKE_SECRETS array map framework parameters.")
     
     def gke_cloud_deployment_name(self) -> str:
         return self.agent_secrets("GKE_DEPLOYMENT_NAME")
@@ -71,7 +68,7 @@ class GkeAgent(GcpAgent):
     def pre_execute(self, **kwargs):
         # validate repository
         if not self.gke_deployment_name or len(self.gke_deployment_name.strip()) <= 0:
-            print(f"[ ⚠️ {self.agent_id} Agent | SKIP ] Not found 'GKE_DEPLOYMENT_NAME' enviroment. Step is explicitly marked as 'none'. Skipping GKE cluster rollout update loops framework entirely.")
+            self.logger.warn(f"⚠️ Not found 'GKE_DEPLOYMENT_NAME' enviroment. Step is explicitly marked as 'none'. Skipping GKE cluster rollout update loops framework entirely.")
             sys.exit(0)
         
         # as super
@@ -80,12 +77,7 @@ class GkeAgent(GcpAgent):
     # @ override
     def __execute__(self, **kwargs):
         # extract arguments
-        project_name = kwargs_by_key(key="project_name", **kwargs)
-        global_context = kwargs_by_key(key="global_context", **kwargs)
-        day_context = kwargs_by_key(key="day_context", **kwargs)
-        source_component = kwargs_by_key(key="source_component", **kwargs)
         target_component = kwargs_by_key(key="target_component", **kwargs)
-        sub_tasks = kwargs_by_key(key="sub_tasks", **kwargs)
         
         # Standard Microservice Application Rollout Logic using your custom prefixed parameters name (e.g. gke-membership-hub-backend)
         is_backend = "backend" in target_component
@@ -93,10 +85,10 @@ class GkeAgent(GcpAgent):
         
         # Check if the target day represents a dedicated infrastructure day targeting raw K8s deployment manifests (like Day 23)
         if "infrastructure/k8s" in target_component:
-            print(f"[ {self.agent_id} Agent ] Applying raw enterprise infrastructure update manifests: {target_component}")
+            self.logger.info(f"ℹ️ Applying raw enterprise infrastructure update manifests: {target_component}")
             target_component = resolve_absolute_path(target_component)
             subprocess.run(["kubectl", "apply", "-f", target_component], check=True)
-            print(f"[ ✅ {self.agent_id} Agent | SUCCESS ] Cloud infrastructure manifest rules applied securely on GKE compute pools!")
+            self.logger.info(f"✅ Cloud infrastructure manifest rules applied securely on GKE compute pools!")
             
             # result
             return {
@@ -105,24 +97,24 @@ class GkeAgent(GcpAgent):
                 "user_prompt": None,
                 "latest_system_prompt": None,
                 "latest_user_prompt": None,
-                "raw_response": "Cloud infrastructure manifest rules applied securely on GKE compute pools!"
+                "raw_response": "✅ Cloud infrastructure manifest rules applied securely on GKE compute pools!"
             }
         
-        print(f"[ {self.agent_id} Agent | ROLLOUT ] Activating safe, zero-downtime rolling update across container workloads for deployment: {self.gke_deployment_name}")
+        self.logger.info(f"ℹ️ Activating safe, zero-downtime rolling update across container workloads for deployment: {self.gke_deployment_name}")
         subprocess.run([
             "kubectl", "set", "image", f"deployment/{self.gke_deployment_name}",
             f"{app_domain}-container={self.gcp_image}"
         ], check=True)
         
         subprocess.run(["kubectl", "rollout", "status", f"deployment/{self.gke_deployment_name}"], check=True)
-        print(f"[ ✅ {self.agent_id} Agent | SUCCESS ] Successfully deployed container version {self.image_tag} to GKE pods clusters!")
+        self.logger.info(f"✅ Successfully deployed container version {self.image_tag} to GKE pods clusters!")
         
         # result
         return {
             **kwargs,
             "system_prompt": None,
             "user_prompt": None,
-            "raw_response": f"Successfully deployed container version {self.image_tag} to GKE pods clusters!"
+            "raw_response": f"✅ Successfully deployed container version {self.image_tag} to GKE pods clusters!"
         }
 
 if __name__ == "__main__":

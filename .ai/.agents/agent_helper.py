@@ -30,18 +30,6 @@ PARENT_AGENTS_DIR  = os.path.abspath(os.path.join(CURRENT_SCRIPT_DIR, "../")) # 
 if PARENT_AGENTS_DIR not in sys.path:
     sys.path.insert(0, PARENT_AGENTS_DIR)
 
-# ==============================================================================
-# GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
-# ==============================================================================
-# logging configuration
-# logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s]: %(message)s")
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
-def get_logger(logger_name="Helper"):
-    return logging.getLogger("CommunityForumScraper")
 
 def resolve_absolute_path(relative_target_path):
     """
@@ -275,3 +263,56 @@ def count_files_by_pattern(dir, file_filter_pattern) -> int:
 
 def kwargs_by_key(key: str, **kwargs):
     return (kwargs or {}).get(key) if key else None
+
+
+# ==============================================================================
+# GLOBAL CONFIGURATION LOGGER
+# ==============================================================================
+# Color ANSI table of log levels
+LOG_COLORS = {
+    'TRACE':    '\033[90m',     # Dark Gray (Highly detailed logs)
+    'DEBUG':    '\033[94m',     # Light Blue (Debugging information)
+    'INFO':     '\033[92m',     # Green (Normal operational messages)
+    'SUCCESS':  '\033[96m',     # Cyan (Successful operations)
+    'WARNING':  '\033[93m',     # Yellow (Warnings/non-critical issues)
+    'ERROR':    '\033[91m',     # Red (Errors/runtime exceptions)
+    'CRITICAL': '\033[95m',     # Magenta (Critical system failures)
+    'RESET':    '\033[0m'       # Reset to default terminal text color
+}
+LOG_EMOJIS = {
+    'TRACE':    '🔍',            # Magnifying glass for deep tracing
+    'DEBUG':    '⚙️',            # Gear for debugging details
+    'INFO':     'ℹ️',            # Information source icon
+    'SUCCESS':  '✅',            # Check mark for successful operations
+    'WARNING':  '⚠️',            # Warning sign for non-critical alerts
+    'ERROR':    '❌',            # Cross mark for runtime errors
+    'CRITICAL': '💀'             # Police car light for critical failures
+}
+
+class FullColorFormatter(logging.Formatter):
+    def format(self, record):
+        color = LOG_COLORS.get(record.levelname, LOG_COLORS['RESET'])
+        reset = LOG_COLORS['RESET']
+        emoji = LOG_EMOJIS.get(record.levelname, '')
+        emoji_level = f"{emoji} {record.levelname}" if emoji else record.levelname
+        
+        # Place the color code at the very beginning and the reset code at the very end
+        # This forces the entire log line to inherit the level color
+        log_format = f"{color}%(asctime)s [ %(name)s | {emoji_level} ] %(message)s{reset}"
+        
+        formatter = logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S')
+        return formatter.format(record)
+
+# logging configuration
+# logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s]: %(message)s")
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format="%(asctime)s [ %(name)s | %(levelname)s ] %(message)s",
+#     datefmt="%Y-%m-%d %H:%M:%S"
+# )
+def get_logger(logger_name="Helper"):
+    logger = logging.getLogger(logger_name)
+    handler = logging.StreamHandler()
+    handler.setFormatter(FullColorFormatter())
+    logger.addHandler(handler)
+    return logger

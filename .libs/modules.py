@@ -3,7 +3,7 @@ import sys
 import importlib
 import importlib.util
 from pathlib import Path
-from importlib.abc import MetaPathFinder, Loader
+from importlib.abc import MetaPathFinder
 from importlib.machinery import ModuleSpec
 
 import re
@@ -204,7 +204,7 @@ def register_packages(packages):
     for package in packages:
         package_path = Path(package).resolve() if package else None
         if package_path and package_path.is_dir():
-            packageFinder = FolderPackageFinder(str(package_path));
+            packageFinder = FolderPackageFinder(str(package_path))
             sys.meta_path.insert(0, packageFinder)
             print(f"✅ Registered {package_path} to sys.meta_path for finding with alias: {packageFinder.alias()}")
         

@@ -1,12 +1,8 @@
 # .ai/.agents/.sub-agents/agent-tester.py
 import os
 import sys
-import json
 import re
-import argparse
 from datetime import datetime
-from openai import OpenAI
-from abc import ABC, abstractmethod
 
 # ==============================================================================
 # 🏢 ENTERPRISE INTER-PACKAGE ROUTING LAYER
@@ -95,7 +91,7 @@ class AbstractSubAgent(AbstractAgent):
             file=target_component,
             data=response_data
         )
-        print(f"[ ✅ {self.agent_id} Agent - SUCCESS | Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} | Day {self.day_num} ] Saved to: { target_component }")
+        self.logger.info(f"[ ✅ Model {self.config_model_name()} | API Endpoint {self.config_api_endpoint()} | Day {self.day_num} ] Saved to: { target_component }")
         return { **kwargs }
     
     # @ override
@@ -104,7 +100,7 @@ class AbstractSubAgent(AbstractAgent):
         phase_step_file = f"phase-{self.phase_str}.steps.json"
         _, steps_data = read_json_file(os.path.join(STEPS_PLAN_DIR, phase_step_file))
         if not steps_data:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Not found phase steps JSON file { phase_step_file }")
+            self.logger.critical(f"💀 Not found phase steps JSON file { phase_step_file }")
             sys.exit(1)
         
         # parse project name from phase steps data
@@ -116,28 +112,28 @@ class AbstractSubAgent(AbstractAgent):
         target_day = next((d for d in steps_data["days"] if d["day"] == self.day_num), None)
         agent_tasks = self.collect_agent_tasks(target_day)
         if not agent_tasks or len(agent_tasks) <= 0:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL WARN ] Step Day { self.day_num }, File { phase_step_file } has no any task!")
+            self.logger.warn(f"⚠️ Step Day { self.day_num }, File { phase_step_file } has no any task!")
             sys.exit(0)
         
         # tracing
-        print(f"[ 💀 {self.agent_id} Agent | INFO ] Step Day { self.day_num }, File { phase_step_file }, Execute Agent Project {project_name}...")
+        self.logger.info(f"ℹ️ Step Day { self.day_num }, File { phase_step_file }, Execute Agent Project {project_name}...")
         
         # check whether exists any components for this agent
         components = self.collect_agent_components(agent_tasks)
         if not components or len(components) <= 0:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL WARN ] Step Day { self.day_num }, File { phase_step_file } has no any components!")
+            self.logger.warn(f"⚠️ Step Day { self.day_num }, File { phase_step_file } has no any components!")
             sys.exit(0)
         
         # read global context md
         global_context_file, global_context = read_file_raw(resolve_absolute_path(steps_data["global_context_file"]))
         if not global_context:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Not found GLOBAL project context markdown { global_context_file }")
+            self.logger.critical(f"💀 Not found GLOBAL project context markdown { global_context_file }")
             sys.exit(1)
         
         # request phase context
         phase_context_file, phase_context = read_file_raw(resolve_absolute_path(target_day["context_file"]))
         if not phase_context:
-            print(f"[ 💀 {self.agent_id} Agent | CRITICAL ERROR ] Not found PHASE context markdown { phase_context_file }")
+            self.logger.critical(f"💀 Not found PHASE context markdown { phase_context_file }")
             sys.exit(1)
         
         # prepare prompt context
@@ -158,7 +154,7 @@ class AbstractSubAgent(AbstractAgent):
     # @override
     def __handle_execute_exception__(self, e, **kwargs):
         model_name = self.config_model_name() if self.current_model_config else None
-        print(f"[ 💀 {self.agent_id} Agent | ERROR ] Exception caught on model {model_name}: {exception_stacktrace(e)}")
+        self.logger.error(f"❌ Exception caught on model {model_name}: {exception_stacktrace(e)}")
         # write log
         self.write_history_log(
             source_component=kwargs_by_key(key="source_component", **kwargs),
@@ -178,15 +174,15 @@ class AbstractSubAgent(AbstractAgent):
         for sub_task in agent_tasks:
             components = sub_task['components']
             if not components or len(components) <= 0:
-                print(f"[ 💀 {self.agent_id} Agent | CRITICAL WARN ] Step Day { self.day_num }, File { phase_step_file } has no any task components!")
+                self.logger.warn(f"⚠️ Step Day { self.day_num }, File { phase_step_file } has no any task components!")
                 continue
             
             # parse task description
             sub_tasks = [ sub_task.get("desc") ]
             targeted_tags = sub_task.get("targeted_tags") or []
-            print("=================================================")
-            print(f"[ 💀 {self.agent_id} Agent | INFO ] Do Task: {str(sub_tasks)}")
-            print("=================================================")
+            self.logger.info("=================================================")
+            self.logger.info(f"ℹ️ Do Task: {str(sub_tasks)}")
+            self.logger.info("=================================================")
             task_kwargs = {
                 **kwargs,
                 "targeted_tags": targeted_tags,
@@ -195,8 +191,8 @@ class AbstractSubAgent(AbstractAgent):
             
             # iterate every target component
             for component in components:
-                print(f"➡️ Target Component: {component}")
-                print("-------------------------------------------------")
+                self.logger.info(f"➡️ Target Component: {component}")
+                self.logger.info("-------------------------------------------------")
                 componentParts = component.split(";")
                 source_component = componentParts[0] if len(componentParts) > 1 else "INTEGRATION_SCOPE"
                 target_component = componentParts[0] if 0 < len(componentParts) < 2 else componentParts[1] if len(componentParts) > 1 else ""
@@ -208,7 +204,7 @@ class AbstractSubAgent(AbstractAgent):
                 
                 # check if invalid target component
                 if len(target_component) <= 0:
-                    print(f"[ 💀 {self.agent_id} Agent | CRITICAL WARN ] Step Day { self.day_num }, File { phase_step_file }, Target Component not found to do")
+                    self.logger.warn(f"⚠️ Step Day { self.day_num }, File { phase_step_file }, Target Component not found to do")
                     continue
                 
                 # do task component
