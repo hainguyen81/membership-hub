@@ -31,7 +31,8 @@ def main():
     print(f"🕒 [ READ ] Total Phases: {total_phases}. Phases: {phases_str}")
     
     # Ingest enviroment for GitHub Actions
-    exec_mode = os.environ.get("INPUT_EXEC_MODE", state.get("exec_mode", "auto_cron")) or "auto_cron"
+    state_exec_mode = state.get("exec_mode", "auto_cron") if state else None
+    exec_mode = os.environ.get("INPUT_EXEC_MODE", state_exec_mode) or "auto_cron"
     scope = os.environ.get("INPUT_TARGET_SCOPE", "")
     val_str = os.environ.get("INPUT_VALUE", "")
     
