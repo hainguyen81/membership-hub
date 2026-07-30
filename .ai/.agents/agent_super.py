@@ -19,7 +19,8 @@ from _0d_ai._0d_agents.agent_0u_helper import (
     parseAIResponseData,
     exception_stacktrace,
     kwargs_by_key,
-    get_logger
+    get_logger,
+    json_loads
 )
 
 # ==============================================================================
@@ -79,7 +80,7 @@ class AbstractAgent(ABC):
         
         # parse secrets to JSON
         try:
-            return json.loads(raw_secrets)
+            return json_loads(raw_secrets)
         except Exception as e:
             self.logger.critical(f"💀 Failed to parse environment '{secrets_key}' JSON string: {exception_stacktrace(e)}")
             sys.exit(1)
