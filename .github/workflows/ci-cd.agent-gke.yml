@@ -5,7 +5,7 @@
 # Triggers safe, zero-downtime rolling updates over active computing nodes.
 # ==============================================================================
 
-name: "☸️ GKE Deployment Agent Worker"
+name: "🤖☸️ GKE Deployment Agent Worker"
 
 on:
   workflow_call:
@@ -34,7 +34,7 @@ env:
 
 jobs:
   execute_gke:
-    name: "☸️ Trigger Zero-Downtime Rolling Update Operations"
+    name: "🤖☸️ Trigger Zero-Downtime Rolling Update Operations"
     runs-on: ubuntu-latest
     
     steps:
@@ -107,7 +107,7 @@ jobs:
           pip install jproperties
 
       # Step 3: Trigger safe rolling upgrades or apply raw infrastructure manifests straight to pods
-      - name: "☸️ Trigger Kubernetes Cluster Pod Rollout Infrastructure Engine"
+      - name: "🤖☸️ Trigger Kubernetes Cluster Pod Rollout Infrastructure Engine"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
           # specify root path to load modules

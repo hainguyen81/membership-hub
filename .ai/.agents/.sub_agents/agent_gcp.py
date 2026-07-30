@@ -13,7 +13,8 @@ import subprocess
 # request agent_helper from `.libs/project_agents_package_loader.py`
 from _0d_ai._0d_agents.agent_0u_helper import (
     resolve_absolute_path,
-    kwargs_by_key
+    kwargs_by_key,
+    parse_args
 )
 
 # super agent
@@ -22,7 +23,7 @@ from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-AGENT_ID                    = "GCP"
+AGENT_ID                    = "🤖☁️ EnterpriseGCPDeployerAgent"
 BACKEND_DOCKERFILE          = resolve_absolute_path("sources/backend/src/main/docker/Dockerfile.native")
 FRONTEND_DOCKERFILE         = resolve_absolute_path("sources/frontend/Dockerfile")
 
@@ -135,10 +136,15 @@ class GcpAgent(AbstractSubAgent):
         }
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--phase", required=True)
-    parser.add_argument("--day", required=True)
-    args = parser.parse_args()
+    def add_known_arguments(parser):
+        parser.add_argument("--phase", required=True)
+        parser.add_argument("--day", required=True)
+    
+    args, unknown_args = parse_args(
+        description=AGENT_ID,
+        parser_callback=add_known_arguments
+    )
+    
     print(f"☁️ Connecting to Google Cloud SDK components to route compiled GAR assets for Phase { args.phase } Day { args.day }...")
     GcpAgent(
         phase_str=args.phase,

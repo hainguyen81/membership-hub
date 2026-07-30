@@ -120,7 +120,7 @@ jobs:
           pip install jproperties
 
       # Step 6: Start self-healing iteration pipelines intercepting native CLI stack errors
-      - name: "🩹 Trigger Elite Debugger Syntactic Patch Engineering"
+      - name: "🤖🛠️ Trigger Elite Debugger Syntactic Patch Engineering"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
           # specify root path to load modules

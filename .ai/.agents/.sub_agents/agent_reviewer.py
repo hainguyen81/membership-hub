@@ -16,7 +16,8 @@ from jproperties import Properties
 from _0d_ai._0d_agents.agent_0u_helper import (
     resolve_absolute_path,
     exception_stacktrace,
-    kwargs_by_key
+    kwargs_by_key,
+    parse_args
 )
 
 # super agent
@@ -25,7 +26,7 @@ from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-AGENT_ID                    = "Reviewer"
+AGENT_ID                    = "🤖🛠️ EnterpriseCodeReviewerAgent"
 SYSTEM_PROMPT_FILE          = resolve_absolute_path(".ai/.agents/.sub_agents/agent_reviewer.prompt.system.md")
 USER_PROMPT_FILE            = resolve_absolute_path(".ai/.agents/.sub_agents/agent_reviewer.prompt.user.md")
 BACKEND_WORKSPACE           = resolve_absolute_path("sources/backend")
@@ -218,11 +219,16 @@ class BugFixerAgent(AbstractSubAgent):
         return (success, system_prompt, user_prompt, latest_response)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--phase", required=True)
-    parser.add_argument("--day", required=True)
-    args = parser.parse_args()
-    print(f"🩹 Initiating compiler analysis and automated code healing routines for Phase { args.phase } Day { args.day }...")
+    def add_known_arguments(parser):
+        parser.add_argument("--phase", required=True)
+        parser.add_argument("--day", required=True)
+    
+    args, unknown_args = parse_args(
+        description=AGENT_ID,
+        parser_callback=add_known_arguments
+    )
+    
+    print(f"🛠️ Initiating compiler analysis and automated code healing routines for Phase { args.phase } Day { args.day }...")
     BugFixerAgent(
         phase_str=args.phase,
         day_num=args.day

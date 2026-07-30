@@ -31,6 +31,61 @@ if PARENT_AGENTS_DIR not in sys.path:
     sys.path.insert(0, PARENT_AGENTS_DIR)
 
 
+def parse_unknown_args_to_dict(unknown_args):
+    if not unknown_args or not isinstance(unknown_args, list):
+        return {}
+
+    result = {}
+    iterator = iter(unknown_args)
+    for item in iterator:
+        # Case 1: `--key=value`
+        if '=' in item and item.startswith('-'):
+            key, value = item.split('=', 1)
+            result[key.lstrip('-')] = value
+            
+        # Case 2 & 3: starts with `-` (ex: --user or -u)
+        elif item.startswith('-'):
+            key = item.lstrip('-')
+            try:
+                # check next item whether is its value
+                next_item = next(iterator)
+                
+                # if next item is another arguments (ex: --debug --verbose)
+                if next_item.startswith('-'):
+                    result[key] = True  # default this argument is boolean flag as True
+                    # jump to next argument by creating new iterator mới
+                    unknown_args.insert(unknown_args.index(next_item), next_item)
+                    iterator = iter(unknown_args[unknown_args.index(next_item):])
+                
+                # else if next item is its value
+                else:
+                    result[key] = next_item
+            except StopIteration:
+                # if this's end item of list, default its value is boolean flag as True
+                result[key] = True
+    return result
+
+def parse_args(description=None, parser_callback=None):
+    """
+    - Init parser
+    - Execute `parser_callback` to `add_argument` if necessary
+    - Return (known_args, unknown_args_dict)
+    """
+    parser = argparse.ArgumentParser(description=description)
+    
+    # 2. callback for `add_argument``
+    if parser_callback and callable(parser_callback):
+        parser_callback(parser)
+        
+    # 3. parse known/un-known arguments
+    args, unknown_args = parser.parse_known_args()
+    
+    # 4. convert unknown_args from List to Dict
+    unknown_args = parse_unknown_args_to_dict(unknown_args)
+    
+    # 5. result (known_args, unknown_dict)
+    return args, unknown_args
+
 def resolve_absolute_path(relative_target_path):
     """
     Ingests a relative path string and safely interpolates it using the absolute 

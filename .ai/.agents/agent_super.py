@@ -34,6 +34,9 @@ class AbstractAgent(ABC):
         self.agent_id = agent_id if agent_id else "Super"
         self.logger = get_logger(self.agent_id)
         self.kwargs = kwargs or {}
+        self.debug = self.get_kwargs(key="verbose")
+        if self.debug:
+            self.enabled_log_debug()
         self.secrets_key = self.agent_secrets_key()
         self.secrets = self.load_secrets(self.secrets_key)
         self.initialize()

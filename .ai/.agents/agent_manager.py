@@ -26,7 +26,7 @@ class EnterpriseMultiAgentManager:
     monitors sequential standalone sub-agent script executions, and handles conditional cloud dual registry releases.
     """
     def __init__(self, phase_id, day_num, is_release_triggered):
-        self.agent_id = "Manager"
+        self.agent_id = "🏢 EnterpriseAIManagerAgent"
         self.phase_int = int(phase_id)
         self.phase_str = f"{self.phase_int:02d}" 
         self.day_num = int(day_num)
@@ -138,13 +138,17 @@ class EnterpriseMultiAgentManager:
         self.logger.info(f"\n[ ✅ ORCHESTRATOR COMPLETE ] Day {self.day_num} operations successfully completed!")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--phase", required=True, help="Target Phase formatted string or number (e.g., 1 or 01)")
-    parser.add_argument("--day", required=True, help="Target Day sequence position (e.g., 1)")
-    parser.add_argument("--release", action="store_true", help="Trigger manual production rollout deployment to all cloud registries")
-    args = parser.parse_args()
+    def add_known_arguments(parser):
+        parser.add_argument("--phase", required=True, help="Target Phase formatted string or number (e.g., 1 or 01)")
+        parser.add_argument("--day", required=True, help="Target Day sequence position (e.g., 1)")
+        parser.add_argument("--release", action="store_true", help="Trigger manual production rollout deployment to all cloud registries")
     
-    print(f"🏢 Enterprise SaaS AI Manager Agent: Phase { args.phase } Day { args.day } Release { args.release }...")
+    args, unknown_args = agent_helper.parse_args(
+        description="🏢 Enterprise AI Manager Agent",
+        parser_callback=add_known_arguments
+    )
+    
+    print(f"🏢 Enterprise AI Manager Agent: Phase { args.phase } Day { args.day } Release { args.release }...")
     EnterpriseMultiAgentManager(
         phase_id=args.phase,
         day_num=args.day,
