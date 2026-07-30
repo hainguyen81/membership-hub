@@ -59,16 +59,25 @@ def json_tostring(json_data) -> str:
 def __fix_json__(data):
     return re.sub(r'("(?:[^"\\]|\\.)*")', lambda m: m.group(1).replace('\n', '\\n'), str(data).strip())
 
+def __load_jsons__(data, silent=True):
+    try:
+        return json.loads(str(data))
+    except Exception as e:
+        if not silent:
+            raise e
+        else:
+            print(f"Exception while loading JSON: {str(e)}")
+            print(f"- JSON: {str(data)}")
+
 def json_loads(data):
     # try to parse json
     if not data:
         return None
     
-    try:
-        return json.loads(str(data))
-    except Exception:
-        # fail to load at the first time, so trying to fix data and re-load it
-        return json.loads(__fix_json__(data))
+    json_data = __load_jsons__(data=data, silent=True)
+    if not json_data:
+        json_data = __load_jsons__(data=__fix_json__(data), silent=False)
+    return json_data
 
 def json_raw_content(raw_content):
     """Securely serialize input telemetry payloads into structural double-quoted strings."""
@@ -354,3 +363,15 @@ def get_logger(logger_name="Helper"):
         handler.setFormatter(FullColorFormatter())
         logger.addHandler(handler)
     return logger
+
+def enabledLogLevel(logger, level=logging.INFO):
+    try:
+        logger.setLevel(level)
+        return True
+    except Exception:
+        return False
+
+def enabledLogDebug(logger):
+    return enabledLogLevel(logger=logger, level=logging.DEBUG)
+
+

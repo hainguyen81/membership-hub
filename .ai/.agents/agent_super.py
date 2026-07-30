@@ -20,7 +20,8 @@ from _0d_ai._0d_agents.agent_0u_helper import (
     exception_stacktrace,
     kwargs_by_key,
     get_logger,
-    json_loads
+    json_loads,
+    enabledLogDebug
 )
 
 # ==============================================================================
@@ -50,6 +51,9 @@ class AbstractAgent(ABC):
         if not self.rotate_model():
             self.logger.critical(f"💀 Not found any available AI models to execute!")
             sys.exit(1)
+    
+    def enabled_log_debug(self):
+        enabledLogDebug(self.logger)
     
     def get_kwargs_by_key(self, key: str, **kwargs):
         return kwargs_by_key(key=key, **kwargs)
@@ -189,12 +193,23 @@ class AbstractAgent(ABC):
         return raw_response
     
     def __communicate_ai__(self, **kwargs):
+        # tracing
+        system_prompt = kwargs_by_key(key="system_prompt", **kwargs)
+        self.logger.debug("- 🤷 System Prompt: %s", system_prompt)
+        if not system_prompt:
+            self.logger.error("➡️➡️➡️ 💀 Invalid System Prompt. So the AI reponse maybe wrong your expectation!")
+        user_prompt = kwargs_by_key(key="user_prompt", **kwargs)
+        self.logger.debug("- 🤷 User Prompt: %s", user_prompt)
+        if not user_prompt:
+            self.logger.error("➡️➡️➡️ 💀 Invalid User Prompt. So the AI reponse maybe wrong your expectation!")
+        
+        # communicate with AI
         return self.client.chat.completions.create(
             model=self.config_model_name(),
             messages=[{
-                "role": "system", "content": kwargs_by_key(key="system_prompt", **kwargs)
+                "role": "system", "content": system_prompt
             }, {
-                "role": "user", "content": kwargs_by_key(key="user_prompt", **kwargs)
+                "role": "user", "content": user_prompt
             }],
             temperature=self.agent_temperature()
         )
