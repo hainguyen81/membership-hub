@@ -12,13 +12,17 @@ import subprocess
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
-from _0d_ai._0d_agents import agent_helper
+from _0d_ai._0d_agents.agent_0u_helper import (
+    resolve_absolute_path,
+    get_logger,
+    parse_args
+)
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-STEPS_PLAN_DIR   = agent_helper.resolve_absolute_path(".ai/.plan/.steps")
-SUB_AGENTS_DIR   = agent_helper.resolve_absolute_path(".ai/.agents/.sub_agents")
+STEPS_PLAN_DIR   = resolve_absolute_path(".ai/.plan/.steps")
+SUB_AGENTS_DIR   = resolve_absolute_path(".ai/.agents/.sub_agents")
 
 class EnterpriseMultiAgentManager:
     """
@@ -30,7 +34,7 @@ class EnterpriseMultiAgentManager:
         self.phase_int = int(phase_id)
         self.phase_str = f"{self.phase_int:02d}" 
         self.day_num = int(day_num)
-        self.logger = agent_helper.get_logger("EnterpriseMultiAgentManager")
+        self.logger = get_logger("EnterpriseMultiAgentManager")
         self.target_branch = f"features/development-day-{self.day_num}"
         self.is_release_triggered = is_release_triggered
     
@@ -69,7 +73,7 @@ class EnterpriseMultiAgentManager:
         
         # add components to push GIT
         for component in pushed_components:
-            pushed_component = agent_helper.resolve_absolute_path(component)
+            pushed_component = resolve_absolute_path(component)
             subprocess.run(["git", "add", pushed_component], capture_output=True)
         
         # commit GIT
@@ -143,7 +147,7 @@ if __name__ == "__main__":
         parser.add_argument("--day", required=True, help="Target Day sequence position (e.g., 1)")
         parser.add_argument("--release", action="store_true", help="Trigger manual production rollout deployment to all cloud registries")
     
-    args, unknown_args = agent_helper.parse_args(
+    args, unknown_args = parse_args(
         description="🏢 Enterprise AI Manager Agent",
         parser_callback=add_known_arguments
     )
