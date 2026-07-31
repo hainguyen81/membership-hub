@@ -23,7 +23,8 @@ from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-AGENT_ID                    = "🤖☁️ EnterpriseGCPDeployerAgent"
+AGENT_ID                    = "GCP"
+AGENT_NAME                  = "🤖☁️ EnterpriseGCPDeployerAgent"
 BACKEND_DOCKERFILE          = resolve_absolute_path("sources/backend/src/main/docker/Dockerfile.native")
 FRONTEND_DOCKERFILE         = resolve_absolute_path("sources/frontend/Dockerfile")
 
@@ -31,6 +32,7 @@ class GcpAgent(AbstractSubAgent):
     def __init__(self, phase_str, day_num):
         super().__init__(
             agent_id=AGENT_ID,
+            agent_name=AGENT_NAME,
             phase_str=phase_str,
             day_num=day_num
         )

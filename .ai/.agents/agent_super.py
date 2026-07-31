@@ -32,8 +32,9 @@ MODELS_POOL_PATH            = resolve_absolute_path(".ai/.agents/.models/models.
 class AbstractAgent(ABC):
     def __init__(self, agent_id, **kwargs):
         self.agent_id = agent_id if agent_id else "Super"
-        self.logger = get_logger(self.agent_id)
         self.kwargs = kwargs or {}
+        self.agent_name = self.get_kwargs(key="agent_name") or self.agent_id
+        self.logger = get_logger(self.agent_name or self.agent_id)
         self.debug = self.get_kwargs(key="verbose")
         if self.debug:
             self.enabled_log_debug()

@@ -19,14 +19,16 @@ from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-AGENT_ID                    = "🤖✍️ EnterpriseTechnicalDocumentWriterAgent"
-SYSTEM_PROMPT_FILE          = resolve_absolute_path(".ai/.agents/.sub_agents/agent_doc.prompt.system.md")
-USER_PROMPT_FILE            = resolve_absolute_path(".ai/.agents/.sub_agents/agent_doc.prompt.user.md")
+AGENT_ID                    = "Doc"
+AGENT_NAME                  = "🤖✍️ EnterpriseTechnicalDocumentWriterAgent"
+SYSTEM_PROMPT_FILE          = resolve_absolute_path(".ai/.agents/.sub_agents/prompts/agent_doc.prompt.system.md")
+USER_PROMPT_FILE            = resolve_absolute_path(".ai/.agents/.sub_agents/prompts/agent_doc.prompt.user.md")
 
 class DocumentationAgent(AbstractSubAgent):
     def __init__(self, phase_str, day_num):
         super().__init__(
             agent_id=AGENT_ID,
+            agent_name=AGENT_NAME,
             phase_str=phase_str,
             day_num=day_num
         )

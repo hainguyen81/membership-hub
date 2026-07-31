@@ -26,9 +26,10 @@ from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-AGENT_ID                    = "🤖🛠️ EnterpriseCodeReviewerAgent"
-SYSTEM_PROMPT_FILE          = resolve_absolute_path(".ai/.agents/.sub_agents/agent_reviewer.prompt.system.md")
-USER_PROMPT_FILE            = resolve_absolute_path(".ai/.agents/.sub_agents/agent_reviewer.prompt.user.md")
+AGENT_ID                    = "Reviewer"
+AGENT_NAME                  = "🤖🛠️ EnterpriseCodeReviewerAgent"
+SYSTEM_PROMPT_FILE          = resolve_absolute_path(".ai/.agents/.sub_agents/prompts/agent_reviewer.prompt.system.md")
+USER_PROMPT_FILE            = resolve_absolute_path(".ai/.agents/.sub_agents/prompts/agent_reviewer.prompt.user.md")
 BACKEND_WORKSPACE           = resolve_absolute_path("sources/backend")
 FRONTEND_WORKSPACE          = resolve_absolute_path("sources/frontend")
 
@@ -36,6 +37,7 @@ class BugFixerAgent(AbstractSubAgent):
     def __init__(self, phase_str, day_num):
         super().__init__(
             agent_id=AGENT_ID,
+            agent_name=AGENT_NAME,
             phase_str=phase_str,
             day_num=day_num
         )

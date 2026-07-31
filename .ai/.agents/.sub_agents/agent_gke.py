@@ -22,12 +22,14 @@ from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_gcp import GcpAgent
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-AGENT_ID    = "🤖☸️ EnterpriseGKEDeployerAgent"
+AGENT_ID    = "GKE"
+AGENT_NAME  = "🤖☸️ EnterpriseGKEDeployerAgent"
 
 class GkeAgent(GcpAgent):
     def __init__(self, phase_str, day_num):
         super().__init__(
             agent_id=AGENT_ID,
+            agent_name=AGENT_NAME,
             phase_str=phase_str,
             day_num=day_num
         )

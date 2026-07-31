@@ -19,14 +19,16 @@ from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
-AGENT_ID                    = "👩‍💻 EnterpriseCoderAgent"
-SYSTEM_PROMPT_FILE          = resolve_absolute_path(".ai/.agents/.sub_agents/agent_coder.prompt.system.md")
-USER_PROMPT_FILE            = resolve_absolute_path(".ai/.agents/.sub_agents/agent_coder.prompt.user.md")
+AGENT_ID                    = "Coder"
+AGENT_NAME                  = "👩‍💻 EnterpriseCoderAgent"
+SYSTEM_PROMPT_FILE          = resolve_absolute_path(".ai/.agents/.sub_agents/prompts/agent_coder.prompt.system.md")
+USER_PROMPT_FILE            = resolve_absolute_path(".ai/.agents/.sub_agents/prompts/agent_coder.prompt.user.md")
 
 class CoderAgent(AbstractSubAgent):
     def __init__(self, phase_str, day_num):
         super().__init__(
             agent_id=AGENT_ID,
+            agent_name=AGENT_NAME,
             phase_str=phase_str,
             day_num=day_num
         )
