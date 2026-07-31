@@ -30,11 +30,12 @@ class EnterpriseMultiAgentManager:
     monitors sequential standalone sub-agent script executions, and handles conditional cloud dual registry releases.
     """
     def __init__(self, phase_id, day_num, is_release_triggered):
-        self.agent_id = "🏢 EnterpriseAIManagerAgent"
+        self.agent_id = "EnterpriseAIManagerAgent"
+        self.agent_name = "🏢 EnterpriseAIManagerAgent"
         self.phase_int = int(phase_id)
         self.phase_str = f"{self.phase_int:02d}" 
         self.day_num = int(day_num)
-        self.logger = get_logger("EnterpriseMultiAgentManager")
+        self.logger = get_logger(self.agent_name)
         self.target_branch = f"features/development-day-{self.day_num}"
         self.is_release_triggered = is_release_triggered
     
