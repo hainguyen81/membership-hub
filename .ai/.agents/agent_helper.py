@@ -31,6 +31,17 @@ if PARENT_AGENTS_DIR not in sys.path:
     sys.path.insert(0, PARENT_AGENTS_DIR)
 
 
+def merge_master_prompt(master_prompt: str, system_prompt: str) -> str:
+    return (
+        "<GLOBAL_GOVERNANCE_MATRIX>\n"
+        f"{master_prompt}\n"
+        "</GLOBAL_GOVERNANCE_MATRIX>\n\n"
+        "<ACTIVE_TASK_SYSTEM_INSTRUCTION>\n"
+        f"{system_prompt}\n"
+        "</ACTIVE_TASK_SYSTEM_INSTRUCTION>"
+    ) if master_prompt and system_prompt else system_prompt if not master_prompt else None
+
+
 def parse_unknown_args_to_dict(unknown_args):
     if not unknown_args or not isinstance(unknown_args, list):
         return {}
@@ -122,16 +133,16 @@ def __load_jsons__(data, silent=True):
             raise e
         else:
             print(f"Exception while loading JSON: {str(e)}")
-            print(f"- JSON: {str(data)}")
+            return {}
 
-def json_loads(data):
+def json_loads(data, silent=False):
     # try to parse json
     if not data:
         return None
     
     json_data = __load_jsons__(data=data, silent=True)
     if not json_data:
-        json_data = __load_jsons__(data=__fix_json__(data), silent=False)
+        json_data = __load_jsons__(data=__fix_json__(data), silent=silent)
     return json_data
 
 def json_raw_content(raw_content):
