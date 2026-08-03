@@ -97,6 +97,13 @@ class AbstractAgent(ABC):
         _, models_json = read_json_file(MODELS_POOL_PATH)
         return models_json
     
+    def __close_ai_client__(self):
+        if self.client:
+            try:
+                self.client.close()
+            except Exception as e:
+                self.logger.error(f"⚠️ Exception while closing AI client: {exception_stacktrace(e)}")
+    
     def rotate_model(self):
         if not self.models_secrets or len(self.models_secrets) <= 0:
             self.logger.warning(f"⚠️ Not found any models secrets to rotate!")
@@ -126,6 +133,10 @@ class AbstractAgent(ABC):
             
             api_key = self.models_secrets.get(target_model_endpoint)
             if api_key:
+                # close old AI client if existing
+                self.__close_ai_client__()
+                
+                # start new session
                 self.current_model_config = config
                 self.current_model_config["api_key"]=api_key
                 try:
@@ -334,4 +345,7 @@ class AbstractAgent(ABC):
         except Exception as e:
             self.__handle_execute_exception__(e, **safe_kwargs)
             sys.exit(1)
+        finally:
+            # close AI client if existing
+            self.__close_ai_client__()
 
