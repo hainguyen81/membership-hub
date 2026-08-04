@@ -10,8 +10,8 @@ import sys
 import json
 import logging
 import re
-import json
 import traceback
+import argparse
 from pathlib import Path
 
 # to load prompt template
