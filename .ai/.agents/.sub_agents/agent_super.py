@@ -136,10 +136,6 @@ class AbstractSubAgent(AbstractAgent):
             self.logger.critical(f"💀 Not found PHASE context markdown { phase_context_file }")
             sys.exit(1)
         
-        # prepare prompt context
-        pattern = rf"(## {target_day['context_section']}:.*?)((?=\n## DAY )|\Z)"
-        day_context = re.search(pattern, phase_context, re.DOTALL | re.IGNORECASE).group(1).strip()
-        
         # return merged new values
         return {
             **kwargs,
@@ -148,7 +144,7 @@ class AbstractSubAgent(AbstractAgent):
             "agent_tasks": agent_tasks,
             "global_context": global_context,
             "phase_context": phase_context,
-            "day_context": day_context
+            "day_context": target_day['context_section']
         }
     
     # @override
