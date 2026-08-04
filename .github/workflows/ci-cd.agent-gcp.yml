@@ -5,7 +5,7 @@
 # Tags and streams artifacts safely straight into Google Artifact Registry.
 # ==============================================================================
 
-name: "🤖☁️ GCP GAR Agent Worker"
+name: "🤖☁️ Agent Worker: GCP"
 
 on:
   workflow_call:
@@ -34,7 +34,7 @@ env:
 
 jobs:
   execute_gcp:
-    name: "🤖☁️ Compile and Publish Cloud Native Images to GAR"
+    name: "🤖☁️ Execute Compiling and Publishing Cloud Native Images to GAR"
     runs-on: ubuntu-latest
     
     steps:
@@ -107,7 +107,7 @@ jobs:
           pip install jproperties
 
       # Step 3: Activate service account mappings and push built binary structures into private GCP repos
-      - name: "🤖☁️ Trigger Google Artifact Registry Publication Core Layer"
+      - name: "🤖☁️ Trigger Agent Worker: GCP"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
           # specify root path to load modules

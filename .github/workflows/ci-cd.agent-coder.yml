@@ -5,7 +5,7 @@
 # Inputs parameters are passed down sequentially from the main orchestrator engine.
 # ==============================================================================
 
-name: "👩‍💻 Coder Agent Worker"
+name: "👩‍💻 Agent Worker: Coder"
 
 on:
   workflow_call:
@@ -34,7 +34,7 @@ env:
 
 jobs:
   execute_coder:
-    name: "👩‍💻 Execute Core Architectural Generation Task"
+    name: "👩‍💻 Execute Code Generation Task"
     runs-on: ubuntu-latest
     
     steps:
@@ -107,7 +107,7 @@ jobs:
           pip install jproperties
 
       # Step 4: Invoke the localized standalone architect engine to output pristine binaries
-      - name: "👩‍💻 Trigger Principal Architect LLM Generation Loop"
+      - name: "👩‍💻 Trigger Agent Worker: Coder"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
           # specify root path to load modules

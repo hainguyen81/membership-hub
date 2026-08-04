@@ -6,7 +6,7 @@
 # Directs parallel standalone executions or sequential cron schedules seamlessly.
 # ==============================================================================
 
-name: "🏢 Enterprise Project AI Agents Pipeline"
+name: "🏢 Enterprise Project AI Agents Management"
 
 on:
   schedule:

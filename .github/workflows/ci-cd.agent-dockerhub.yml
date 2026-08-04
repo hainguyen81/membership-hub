@@ -5,7 +5,7 @@
 # Authenticates and pushes multi-stage native container packages upstream.
 # ==============================================================================
 
-name: "🐳 DockerHub Agent Worker"
+name: "🐳 Agent Worker: Docker"
 
 on:
   workflow_call:
@@ -34,7 +34,7 @@ env:
 
 jobs:
   execute_dockerhub:
-    name: "🐳 Build and Push Cross-Platform Multistage Containers"
+    name: "🐳 Execute Building and Pushing Docker Image"
     runs-on: ubuntu-latest
     
     steps:
@@ -107,7 +107,7 @@ jobs:
           pip install jproperties
 
       # Step 3: Connect to Docker Hub APIs and stream dual multi-stage native compiled application layers
-      - name: "🐳 Trigger Cross-Platform Native Image Containerization Client"
+      - name: "🐳 Trigger Agent Worker: Docker"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
           # specify root path to load modules

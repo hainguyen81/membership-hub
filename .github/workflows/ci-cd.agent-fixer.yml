@@ -5,7 +5,7 @@
 # Triggers automated verification builds, catches error logs, and auto-patches syntax.
 # ==============================================================================
 
-name: "🤖🛠️ Fixer Agent Worker"
+name: "🤖🛠️ Agent Worker: Reviewer/Fixer"
 
 on:
   workflow_call:
@@ -120,7 +120,7 @@ jobs:
           pip install jproperties
 
       # Step 6: Start self-healing iteration pipelines intercepting native CLI stack errors
-      - name: "🤖🛠️ Trigger Elite Debugger Syntactic Patch Engineering"
+      - name: "🤖🛠️ Trigger Agent Worker: Reviewer/Fixer"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
           # specify root path to load modules

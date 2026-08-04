@@ -5,7 +5,7 @@
 # Enforces rigid code coverage standards matching enterprise structural policies.
 # ==============================================================================
 
-name: "🤖🛡️ Tester Agent Worker"
+name: "🤖🛡️ Agent Worker: Tester"
 
 on:
   workflow_call:
@@ -107,7 +107,7 @@ jobs:
           pip install jproperties
 
       # Step 4: Evaluate written production logic assets to output complete JUnit/Jest testing frameworks
-      - name: "🤖🛡️ Trigger Lead QA Test Framework Synthesizer"
+      - name: "🤖🛡️ Trigger Agent Worker: Tester"
         working-directory: ${{ env.PROJECT_WORKSPACE }}
         env:
           # specify root path to load modules
