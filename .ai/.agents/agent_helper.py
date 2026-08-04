@@ -148,19 +148,21 @@ def json_loads(data, silent=False):
 def json_raw_content(raw_content):
     """Securely serialize input telemetry payloads into structural double-quoted strings."""
     # If the payload is already a memory object list or dictionary
+    cleaned_str = str(raw_content).strip() if raw_content else None
     if isinstance(raw_content, (dict, list)):
-        return json.dumps(raw_content, indent=4, ensure_ascii=False)
+        try:
+            return json.dumps(raw_content, indent=4, ensure_ascii=False)
+        except Exception:
+            pass
     
-    if isinstance(raw_content, str):
-        cleaned_str = raw_content.strip()
-        # If it is a stringified JSON layout, decode and encode with indentation rules
-        if (cleaned_str.startswith("{") or cleaned_str.startswith("[")) and '"' in cleaned_str:
-            try:
-                return json.dumps(json_loads(cleaned_str), indent=4, ensure_ascii=False)
-            except Exception:
-                pass
-    
-    return str(raw_content)
+    # try to parse json
+    cleaned_json = json_loads(cleaned_str, silent=True)
+    if cleaned_json:
+        try:
+            cleaned_str = json.dumps(cleaned_json, indent=4, ensure_ascii=False)
+        except Exception:
+            pass
+    return cleaned_str
 
 def exception_stacktrace(e) -> str:
     stacktrace = traceback.format_exception(type(e), e, e.__traceback__) if isinstance(e, BaseException) or isinstance(e, Exception) else None
@@ -290,7 +292,7 @@ def parseAIResponseData(response):
     # Safe fallback if choice format changes or breaks unexpectedly
     return str(first_choice).strip()
 
-def splitOpenAIResponseJsonData(raw_data):
+def splitAIResponseJsonData(raw_data):
     clean_json_str = raw_data.strip()
     
     # 💡 Use find() to split json block
@@ -344,7 +346,7 @@ def parseAIResponseJsonData(response):
     # Pattern 3: Hardened bracket boundary locator leveraging non-greedy isolation
     # Fixes the broken greedy regex logic to ensure text outside the curly braces is safely ignored
     try:
-        return (raw_data, json_loads(splitOpenAIResponseJsonData(raw_data)))
+        return (raw_data, json_loads(splitAIResponseJsonData(raw_data)))
     except Exception as e:
         json_match = re.search(r"(\{[\s\S]*\})", raw_data, re.DOTALL)
         if json_match:
