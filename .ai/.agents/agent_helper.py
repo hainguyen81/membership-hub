@@ -132,7 +132,7 @@ def __load_jsons__(data, silent=True):
         if not silent:
             raise e
         else:
-            print(f"Exception while loading JSON: {str(e)}")
+            # print(f"Exception while loading JSON: {str(e)}")
             return {}
 
 def json_loads(data, silent=False):
