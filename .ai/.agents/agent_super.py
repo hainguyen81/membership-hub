@@ -21,13 +21,16 @@ from _0d_ai._0d_agents.agent_0u_helper import (
     kwargs_by_key,
     get_logger,
     json_loads,
-    enabledLogDebug
+    enabledLogDebug,
+    merge_master_prompt
 )
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
 MODELS_POOL_PATH            = resolve_absolute_path(".ai/.agents/.models/models.json")
+AGENT_MASTER_PROMPTS_PATH   = resolve_absolute_path(".ai/.agents/.prompts")
+MASTER_RULE_PROMPT_TEMPLATE = "prompt.rule.enterprise.governance.guardrails.md"
 
 class AbstractAgent(ABC):
     def __init__(self, agent_id, **kwargs):
@@ -179,6 +182,19 @@ class AbstractAgent(ABC):
             append=append
         )
     
+    def master_prompt_file(self) -> str:
+            pass
+    
+    def master_prompt_template(self) -> str:
+        return os.path.join(AGENT_MASTER_PROMPTS_PATH, self.master_prompt_file() or MASTER_RULE_PROMPT_TEMPLATE)
+    
+    def build_master_prompt_context(self, **kwargs):
+        return { **kwargs }
+    
+    def build_master_prompt(self, **kwargs) -> str:
+        master_prompt_context = self.build_master_prompt_context(**kwargs) or {}
+        return render_prompt(self.master_prompt_template(), master_prompt_context)
+    
     @abstractmethod
     def system_prompt_template(self) -> str:
         pass
@@ -285,8 +301,11 @@ class AbstractAgent(ABC):
         user_prompt = None
         success = False
         try:
+            # build master prompt
+            master_prompt = self.build_master_prompt(**kwargs)
             # build system prompt
             system_prompt = self.build_system_prompt(**kwargs)
+            system_prompt = merge_master_prompt(master_prompt, system_prompt)
             # build user prompt
             user_prompt = self.build_user_prompt(**kwargs)
             
