@@ -1,0 +1,163 @@
+{
+    "phase_id": 2,
+    "phase_name": "Phase 2",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "DAY 1",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "coder",
+                    "desc": "coder Agent: Implement Internal and External Authentication Services: Provide `authenticate(String email, String password)` returning JWT token; enforce tenant‑scoped `tenant_id` validation. Use parameterized queries for user lookup; hash passwords with bcrypt. Apply AES‑256 encryption for any PII fields stored in token claims. Implement `authenticateWithFirebase(String idToken)`, `authenticateWithGoogle(String accessToken)`, `authenticateWithFacebook(String longLivedToken)`. Validate provider tokens against their public keys; map provider user IDs to internal `User` entities with tenant isolation. Store provider‑specific refresh tokens encrypted with AES‑256. Configure Quarkus JWT realm; enforce role‑based permission checks via `AuthorizationService`. Enable CORS for allowed origins; enforce HTTPS in production.",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/auth/InternalAuthService.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/auth/ExternalAuthAdapter.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/security/SecurityConfig.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "tester",
+                    "desc": "tester Agent: Write Unit Tests for Authentication Services",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/auth/InternalAuthService.java;./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/auth/InternalAuthServiceTest.java",
+                        "./sources/backend/src/main/java/极n4j/saas/membershiphub/auth/ExternalAuthAdapter.java;./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/auth/ExternalAuthAdapterTest.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "reviewer",
+                    "desc": "reviewer Agent: Review Authentication Source Files",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/auth/InternalAuthService.java",
+                        "./sources/backend/src极/main/java/org/nlh4j/saas/membershiphub/auth/ExternalAuthAdapter.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST4",
+                    "agent": "doc",
+                    "desc": "doc Agent: Document Authentication Flow: Include sequence diagram for internal login, external provider redirect, JWT issuance, and tenant scoping. Note OWASP A01 (broken authentication) mitigations applied.",
+                    "components": [
+                        "./sources/backend/docs/auth-flow.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "DAY 2",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "coder",
+                    "desc": "coder Agent: Define Role, Permission, and Authorization Service: Enum constants for SYSTEM_ADMIN, ADMIN, MANAGER, TEACHER, STUDENT. Attach tenant‑scope flag (`boolean global`) to differentiate system vs center roles. Define granular permissions (e.g., COURSE_READ, COURSE_WRITE, ENROLLMENT_CREATE, ATTENDANCE_RECORD). Store permissions in a tenant‑isolated lookup table; use parameterized queries. Method `hasPermission(User user, Permission perm)` enforcing tenant‑id check. Implement AES‑256 encryption for any sensitive permission metadata. Log all authorization decisions for audit (OWASP A09: security misconfiguration).",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/rbac/Role.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/rbac/Permission.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/rbac/AuthorizationService.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST2",
+                    "agent": "tester",
+                    "desc": "tester Agent: Write Unit Tests for RBAC Components",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/rbac/Role.java;./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/rbac/RoleTest.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/rbac/Permission.java;./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/rbac/PermissionTest.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/rbac/AuthorizationService.java;./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/rbac/AuthorizationServiceTest.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST3",
+                    "agent": "reviewer",
+                    "desc": "reviewer Agent: Review Authorization Service",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/rbac/AuthorizationService.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST4",
+                    "agent": "doc",
+                    "desc": "doc Agent: Document RBAC Specification: Detail role hierarchy, tenant scoping, and permission matrix. Highlight OWASP A08 (software integrity) controls applied.",
+                    "components": [
+                        "./sources/backend/docs/rbac-spec.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "DAY 3",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "coder",
+                    "desc": "coder Agent: Build Core Service Layer (Course, Enrollment, Attendance, Notification): CRUD for courses with overlap detection; enforce tenant isolation. Use parameterized queries; encrypt course pricing fields with AES‑256. Manage student enrollment, assign points (10 per enrollment), link to teacher. Validate enrollment windows; log enrollment events for audit. Process QR scan events; maintain daily attendance flag per student. Compute and expose remaining validity days for student cards. Store attendance records with tenant scoping; use prepared statements. Send notifications via Zalo group and mobile push; integrate with external notification APIs. Ensure message payloads are sanitized (OWASP A03: injection). Log all outbound notifications for traceability.",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/CourseService.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/EnrollmentService.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/AttendanceService.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/NotificationService.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST2",
+                    "agent": "tester",
+                    "desc": "tester Agent: Write Unit Tests for Core Services",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4极/saas/membershiphub/service/CourseService.java;./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/service/C极urseServiceTest.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/EnrollmentService.java;./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/service/EnrollmentServiceTest.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/AttendanceService.java;./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/service/AttendanceServiceTest.java",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/NotificationService.java;./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/service/NotificationServiceTest.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST3",
+                    "agent": "reviewer",
+                    "desc": "reviewer Agent: Review CourseService Implementation",
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/CourseService.java"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 4,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "DAY 4",
+            "sub_tasks": [
+                {
+                    "id": "D4_ST1",
+                    "agent": "tester",
+                    "desc": "tester Agent: Execute End‑to‑End Integration Test: Simulate full user journey: internal sign‑up → login → course enrollment → QR attendance → notification receipt. Validate tenant isolation across all steps; assert JWT claims contain correct `tenant_id`. Verify that all service responses are sanitized (OWASP A03) and audit logs are populated.",
+                    "components": [
+                        "INTEGRATION_SCOPE;./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/IntegrationTest.java"
+                    ]
+                },
+                {
+                    "id": "D4_ST2",
+                    "agent": "doc",
+                    "desc": "doc Agent: Produce Core API Documentation: Document REST endpoints for authentication, RBAC, courses, enrollments, attendance, notifications. Include request/response schemas, tenant‑scope notes, and security constraints (JWT, AES‑256).",
+                    "components": [
+                        "./sources/backend/docs/api-core.md"
+                    ]
+                },
+                {
+                    "id": "D4_ST3",
+                    "agent": "reviewer",
+                    "desc": "reviewer Agent: Review Integration Test Suite",
+                    "components": [
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/IntegrationTest.java"
+                    ]
+                }
+            ]
+        }
+    ]
+}

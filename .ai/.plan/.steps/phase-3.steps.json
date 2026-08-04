@@ -1,6 +1,7 @@
 {
     "phase_id": 3,
-    "phase_name": "Phase 3",
+    "phase_name": "phase_3",
+    "phase_description": "Triển khai các tính năng đăng ký và ghi danh học viên, điểm danh và quét mã QR",
     "project_name": "membership-hub",
     "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
     "source_target_dir": "sources/",
@@ -8,31 +9,43 @@
         {
             "day": 1,
             "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
-            "context_section": "DAY 1",
+            "context_section": "NGÀY 7: Triển khai các tính năng đăng ký và ghi danh học viên",
             "sub_tasks": [
                 {
                     "id": "D1_ST1",
-                    "agent": "coder",
-                    "desc": "coder Agent: Initialize Next.js Project & i18n Configuration: Configure basePath, trailingSlash, and output directory for production builds. Integrate i18n with locales (en, vi) and defaultLocale detection from user preference, browser, or device. Enable OWASP-compliant CSP headers via headers() to mitigate XSS. Implement react-i18next with namespace-based resource loading. Add locale detection middleware that reads Accept-Language header and user-stored preference. Sanitize locale values to prevent injection attacks.",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ duyệt khóa học, đăng ký khóa học của học viên",
+                    "targeted_tags": [
+                        "[REQ-010]",
+                        "[REQ-011]"
+                    ],
                     "components": [
-                        "./sources/frontend/next.config.js",
-                        "./sources/frontend/src/lib/i18n.ts"
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/enrollment"
                     ]
                 },
                 {
                     "id": "D1_ST2",
-                    "agent": "coder",
-                    "desc": "coder Agent: Create Frontend State Management Layer: Set up Redux Toolkit with root reducer combining feature slices. Persist auth tokens and user roles using redux-persist with secure storage (AsyncStorage for mobile, localStorage for web). Enforce token expiration and refresh logic following OWASP A07:2021 – Identification and Authentication Failures.",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng duyệt khóa học, đăng ký khóa học của học viên",
+                    "targeted_tags": [
+                        "[REQ-010]",
+                        "[REQ-011]"
+                    ],
                     "components": [
-                        "./sources/frontend/src/store/index.ts"
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/enrollment",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/enrollment"
                     ]
                 },
                 {
                     "id": "D1_ST3",
-                    "agent": "doc",
-                    "desc": "doc Agent: Generate Frontend Architecture Documentation: Document project structure, routing, i18n setup, state management, API client patterns. Include OWASP security controls applied at the frontend layer. Provide component interaction diagrams and data flow sketches.",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng duyệt khóa học, đăng ký khóa học của học viên",
+                    "targeted_tags": [
+                        "[REQ-010]",
+                        "[REQ-011]"
+                    ],
                     "components": [
-                        "./sources/frontend/docs/FRONTEND_ARCHITECTURE.md"
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/enrollment"
                     ]
                 }
             ]
@@ -40,30 +53,49 @@
         {
             "day": 2,
             "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
-            "context_section": "DAY 2",
+            "context_section": "NGÀY 8: Triển khai các tính năng điểm danh và quét mã QR",
             "sub_tasks": [
                 {
                     "id": "D2_ST1",
-                    "agent": "coder",
-                    "desc": "coder Agent: Implement Admin Center Management Screen: Build CRUD UI for centers (list, add, edit, delete) with form validation. Integrate CSRF token in form submissions; sanitize all user inputs. Apply role-based access control (only System Admin can access).",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ chụp ảnh điểm danh QR, tính chất bất biến của điểm danh",
+                    "targeted_tags": [
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
                     "components": [
-                        "./sources/frontend/src/pages/admin/centers.tsx"
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/attendance"
                     ]
                 },
                 {
                     "id": "D2_ST2",
-                    "agent": "tester",
-                    "desc": "tester Agent: Write Unit Tests for Center Management Component: Test rendering of center list, form fields, and validation logic. Verify OWASP input sanitization via mocked API responses. Ensure component re-renders correctly on store updates.",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng chụp ảnh điểm danh QR, tính chất bất biến của điểm danh",
+                    "targeted_tags": [
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
                     "components": [
-                        "./sources/frontend/src/pages/admin/centers.tsx;./sources/frontend/tests/pages/admin/centers.test.tsx"
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/attendance",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/attendance"
                     ]
                 },
                 {
                     "id": "D2_ST3",
-                    "agent": "coder",
-                    "desc": "coder Agent: Implement Manager Dashboard with Course & Student Assignment: UI for selecting existing courses and assigning students. Use secure API client with JWT token interception. Enforce minimum password complexity for auto-generated Teacher accounts (OWASP A02:2021 – Cryptographic Failures).",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng chụp ảnh điểm danh QR, tính chất bất biến của điểm danh",
+                    "targeted_tags": [
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
                     "components": [
-                        "./sources/frontend/src/components/manager/CourseAssignment.tsx"
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/attendance"
                     ]
                 }
             ]
@@ -71,30 +103,49 @@
         {
             "day": 3,
             "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
-            "context_section": "DAY 3",
+            "context_section": "NGÀY 9: Tích hợp các tính năng điểm danh và quét mã QR với ứng dụng di động",
             "sub_tasks": [
                 {
                     "id": "D3_ST1",
-                    "agent": "coder",
-                    "desc": "coder Agent: Build Mobile Student Dashboard with QR Scanner & Token Expiry: Implement QR code scanning using react-native-camera or equivalent. On scan, call attendance API and display remaining token days. Store token expiry locally using secure storage (RNSecureStorage) and enforce expiration warnings. Integrate push notifications via Firebase Cloud Messaging (FCM) with token refresh handling.",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Tích hợp các tính năng điểm danh và quét mã QR với ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
                     "components": [
-                        "./sources/frontend/mobile/src/screens/StudentDashboard.tsx"
+                        "./sources/frontend/src/components/attendance"
                     ]
                 },
                 {
                     "id": "D3_ST2",
-                    "agent": "tester",
-                    "desc": "tester Agent: Write Mobile Integration/E2E Tests: Simulate QR scan flow, attendance submission, and token expiry display. Validate push notification receipt and UI update. Ensure tests run on both iOS and Android emulators.",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng điểm danh và quét mã QR trên ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
                     "components": [
-                        "INTEGRATION_SCOPE;./sources/frontend/tests/mobile/StudentDashboard.e2e.ts"
+                        "./sources/frontend/src/components/attendance",
+                        "./sources/frontend/src/components/attendance"
                     ]
                 },
                 {
                     "id": "D3_ST3",
-                    "agent": "reviewer",
-                    "desc": "reviewer Agent: Perform Static Code Analysis & Security Review: Run ESLint, Prettier, and Snyk checks for vulnerabilities. Verify implementation of OWASP A03:2021 – Injection (SQL/GraphQL) mitigations in login payload. Confirm secure password handling (bcrypt hashing on client-side token storage).",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng điểm danh và quét mã QR trên ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
                     "components": [
-                        "./sources/frontend/src/components/auth/Login.tsx"
+                        "./sources/frontend/src/components/attendance"
                     ]
                 }
             ]

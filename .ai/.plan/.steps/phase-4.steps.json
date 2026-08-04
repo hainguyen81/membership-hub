@@ -1,6 +1,7 @@
 {
     "phase_id": 4,
-    "phase_name": "Phase 4",
+    "phase_name": "phase_4",
+    "phase_description": "Triển khai các tính năng quản lý thẻ hội viên, thông báo và truyền thông",
     "project_name": "membership-hub",
     "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
     "source_target_dir": "sources/",
@@ -8,38 +9,43 @@
         {
             "day": 1,
             "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
-            "context_section": "DAY 1",
+            "context_section": "NGÀY 10: Triển khai các tính năng quản lý thẻ hội viên",
             "sub_tasks": [
                 {
                     "id": "D1_ST1",
-                    "agent": "coder",
-                    "desc": "coder Agent: No description provided",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ hiển thị tính hợp lệ của thẻ, gia hạn thẻ",
+                    "targeted_tags": [
+                        "[REQ-014]",
+                        "[REQ-015]"
+                    ],
                     "components": [
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/PaymentService.java"
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/studentcard"
                     ]
                 },
                 {
                     "id": "D1_ST2",
-                    "agent": "coder",
-                    "desc": "coder Agent: No description provided",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng hiển thị tính hợp lệ của thẻ, gia hạn thẻ",
+                    "targeted_tags": [
+                        "[REQ-014]",
+                        "[REQ-015]"
+                    ],
                     "components": [
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/controller/PaymentController.java"
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/studentcard",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/studentcard"
                     ]
                 },
                 {
                     "id": "D1_ST3",
-                    "agent": "doc",
-                    "desc": "doc Agent: No description provided",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng hiển thị tính hợp lệ của thẻ, gia hạn thẻ",
+                    "targeted_tags": [
+                        "[REQ-014]",
+                        "[REQ-015]"
+                    ],
                     "components": [
-                        "./sources/backend/docs/payment-api.md"
-                    ]
-                },
-                {
-                    "id": "D1_ST4",
-                    "agent": "docker",
-                    "desc": "docker Agent: No description provided",
-                    "components": [
-                        "./sources/backend/Dockerfile"
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/studentcard"
                     ]
                 }
             ]
@@ -47,39 +53,43 @@
         {
             "day": 2,
             "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
-            "context_section": "DAY 2",
+            "context_section": "NGÀY 11: Triển khai các tính năng thông báo và truyền thông",
             "sub_tasks": [
                 {
                     "id": "D2_ST1",
-                    "agent": "coder",
-                    "desc": "coder Agent: No description provided",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ kích hoạt thông báo",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
                     "components": [
-                        "./sources/frontend/src/components/PaymentForm.tsx",
-                        "./sources/frontend/src/pages/payments.tsx"
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/notification"
                     ]
                 },
                 {
                     "id": "D2_ST2",
-                    "agent": "tester",
-                    "desc": "tester Agent: No description provided",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng kích hoạt thông báo",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
                     "components": [
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/PaymentService.java;./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/service/PaymentServiceTest.java"
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/notification",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/notification"
                     ]
                 },
                 {
                     "id": "D2_ST3",
-                    "agent": "reviewer",
-                    "desc": "reviewer Agent: No description provided",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng kích hoạt thông báo",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
                     "components": [
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/service/PaymentService.java"
-                    ]
-                },
-                {
-                    "id": "D2_ST4",
-                    "agent": "GCP",
-                    "desc": "GCP Agent: No description provided",
-                    "components": [
-                        "./sources/backend/gcp/payment-service.yaml"
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/notification"
                     ]
                 }
             ]
@@ -87,85 +97,43 @@
         {
             "day": 3,
             "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
-            "context_section": "DAY 3",
+            "context_section": "NGÀY 12: Tích hợp các tính năng thông báo và truyền thông với ứng dụng di động",
             "sub_tasks": [
                 {
                     "id": "D3_ST1",
-                    "agent": "tester",
-                    "desc": "tester Agent: No description provided",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Tích hợp các tính năng thông báo và truyền thông với ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
                     "components": [
-                        "INTEGRATION_SCOPE;./sources/frontend/tests/payment.e2e.spec.ts"
+                        "./sources/frontend/src/components/notification"
                     ]
                 },
                 {
                     "id": "D3_ST2",
-                    "agent": "docker",
-                    "desc": "docker Agent: No description provided",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng thông báo và truyền thông trên ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
                     "components": [
-                        "./sources/backend/docker-compose.yml"
+                        "./sources/frontend/src/components/notification",
+                        "./sources/frontend/src/components/notification"
                     ]
                 },
                 {
                     "id": "D3_ST3",
-                    "agent": "GKE",
-                    "desc": "GKE Agent: No description provided",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng thông báo và truyền thông trên ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
                     "components": [
-                        "./sources/backend/k8s/payment-deployment.yaml"
-                    ]
-                },
-                {
-                    "id": "D3_ST4",
-                    "agent": "doc",
-                    "desc": "doc Agent: No description provided",
-                    "components": [
-                        "./sources/backend/docs/integration-guide.md"
-                    ]
-                }
-            ]
-        },
-        {
-            "day": 4,
-            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
-            "context_section": "DAY 4",
-            "sub_tasks": [
-                {
-                    "id": "D4_ST1",
-                    "agent": "reviewer",
-                    "desc": "reviewer Agent: No description provided",
-                    "components": [
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/controller/PaymentController.java"
-                    ]
-                },
-                {
-                    "id": "D4_ST2",
-                    "agent": "docker",
-                    "desc": "docker Agent: No description provided",
-                    "components": [
-                        "./sources/backend/Dockerfile"
-                    ]
-                },
-                {
-                    "id": "D4_ST3",
-                    "agent": "GCP",
-                    "desc": "GCP Agent: No description provided",
-                    "components": [
-                        "./sources/backend/gcp/deploy-payment.sh"
-                    ]
-                },
-                {
-                    "id": "D4_ST4",
-                    "agent": "GKE",
-                    "desc": "GKE Agent: No description provided",
-                    "components": [
-                        "./sources/backend/k8s/deploy.sh"
-                    ]
-                },
-                {
-                    "id": "D4_ST5",
-                    "agent": "doc",
-                    "desc": "doc Agent: No description provided",
-                    "components": [
-                        "./sources/backend/docs/payment-api-final.md"
+                        "./sources/frontend/src/components/notification"
                     ]
                 }
             ]
