@@ -1,0 +1,142 @@
+{
+    "phase_id": 4,
+    "phase_name": "phase_4",
+    "phase_description": "Triển khai các tính năng quản lý thẻ hội viên, thông báo và truyền thông",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
+            "context_section": "NGÀY 10: Triển khai các tính năng quản lý thẻ hội viên",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ hiển thị tính hợp lệ của thẻ, gia hạn thẻ",
+                    "targeted_tags": [
+                        "[REQ-014]",
+                        "[REQ-015]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/studentcard"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng hiển thị tính hợp lệ của thẻ, gia hạn thẻ",
+                    "targeted_tags": [
+                        "[REQ-014]",
+                        "[REQ-015]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/studentcard",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/studentcard"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng hiển thị tính hợp lệ của thẻ, gia hạn thẻ",
+                    "targeted_tags": [
+                        "[REQ-014]",
+                        "[REQ-015]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/studentcard"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
+            "context_section": "NGÀY 11: Triển khai các tính năng thông báo và truyền thông",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ kích hoạt thông báo",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/notification"
+                    ]
+                },
+                {
+                    "id": "D2_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng kích hoạt thông báo",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/notification",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/notification"
+                    ]
+                },
+                {
+                    "id": "D2_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng kích hoạt thông báo",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/notification"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
+            "context_section": "NGÀY 12: Tích hợp các tính năng thông báo và truyền thông với ứng dụng di động",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Tích hợp các tính năng thông báo và truyền thông với ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
+                    "components": [
+                        "./sources/frontend/src/components/notification"
+                    ]
+                },
+                {
+                    "id": "D3_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng thông báo và truyền thông trên ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
+                    "components": [
+                        "./sources/frontend/src/components/notification",
+                        "./sources/frontend/src/components/notification"
+                    ]
+                },
+                {
+                    "id": "D3_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng thông báo và truyền thông trên ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
+                    "components": [
+                        "./sources/frontend/src/components/notification"
+                    ]
+                }
+            ]
+        }
+    ]
+}

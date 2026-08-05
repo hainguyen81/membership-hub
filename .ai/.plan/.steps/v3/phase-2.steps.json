@@ -1,0 +1,151 @@
+{
+    "phase_id": 2,
+    "phase_name": "phase_2",
+    "phase_description": "Triển khai các tính năng quản lý người dùng, quản lý trung tâm, quản lý khóa học",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "NGÀY 4: Triển khai các tính năng quản lý người dùng",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[REQ-002]",
+                        "[REQ-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[REQ-002]",
+                        "[REQ-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/user",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[REQ-002]",
+                        "[REQ-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "NGÀY 5: Triển khai các tính năng quản lý trung tâm",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm",
+                    "targeted_tags": [
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[REQ-006]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center"
+                    ]
+                },
+                {
+                    "id": "D2_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm",
+                    "targeted_tags": [
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[REQ-006]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/center",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center"
+                    ]
+                },
+                {
+                    "id": "D2_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm",
+                    "targeted_tags": [
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[REQ-006]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "NGÀY 6: Triển khai các tính năng quản lý khóa học",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học",
+                    "targeted_tags": [
+                        "[REQ-007]",
+                        "[REQ-008]",
+                        "[REQ-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course"
+                    ]
+                },
+                {
+                    "id": "D3_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học",
+                    "targeted_tags": [
+                        "[REQ-007]",
+                        "[REQ-008]",
+                        "[REQ-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/course",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course"
+                    ]
+                },
+                {
+                    "id": "D3_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học",
+                    "targeted_tags": [
+                        "[REQ-007]",
+                        "[REQ-008]",
+                        "[REQ-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course"
+                    ]
+                }
+            ]
+        }
+    ]
+}

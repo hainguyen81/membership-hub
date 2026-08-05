@@ -1,57 +1,62 @@
 # GLOBAL PROJECT CONTEXT: membership-hub
 
-## 📊 Document Control
+## 📊 Kiểm soát tài liệu
 
 | Item | Details |
 | :--- | :--- |
-| **Blueprint ID** | ARCH-20260804052551 |
+| **Blueprint ID** | ARCH-20260804165526 |
 | **Project Name** | membership-hub |
 | **Version** | 1.0 (Baseline) |
-| **Date.Time** | 2026/08/04 05:25:51 |
+| **Date.Time** | 2026/08/04 16:55:26 |
 | **Author** | Enterprise System Architect (SA Agent) |
 | **Approval** | Pending Technical Governance Review |
 
-## 📊 1. SYSTEM OVERVIEW & CORE ARCHITECTURE MODALITY
+## 📊 1. TỔNG QUAN HỆ THỐNG & MÔ HÌNH KIẾN TRÚC CỐT LÕ
 
-### 1.1. Core System Modality & Architecture Modality
-Hệ thống membership-hub là một nền tảng quản lý hội viên đa trung tâm với kiến trúc đa lớp bao gồm:
-- Lớp giao diện người dùng (UI) bao gồm web và ứng dụng di động
-- Lớp backend với các dịch vụ vi dịch vụ (microservices)
-- Lớp cơ sở dữ liệu với PostgreSQL
-- Lớp tích hợp với các dịch vụ bên ngoài như Firebase Authentication, Google Cloud Messaging (FCM), và Zalo API
+### 1.1. Mô hình hệ thống cốt lõi và mô hình kiến trúc
 
-### 1.2. Enterprise Data Flow Topologies & Core Ecosystems
-Hệ thống sử dụng các kênh truyền thông bất đồng bộ bao gồm:
-- Hệ thống thông báo đẩy (FCM/APNs) cho các thông báo thời gian thực
-- Hệ thống tích hợp Zalo API cho các thông báo nhóm
-- Hệ thống xử lý điểm danh QR với tính năng idempotent
+Hệ thống được thiết kế theo kiến trúc **microservices** với các dịch vụ Quarkus độc lập, giao tiếp qua **REST** và **Kafka** cho các sự kiện. Mỗi dịch vụ có **CQRS** riêng, sử dụng **PostgreSQL** làm nguồn dữ liệu chính và **Redis** cho session caching. Các API được bảo vệ bằng **JWT** (15 phút) và **refresh token** (7 ngày). Frontend là **Next.js** (React + TypeScript) và ứng dụng di động **Capacitor** (React Native) chia sẻ logic và tài nguyên.
 
-## 📁 2. TECH STACK DEPENDENCIES & ECOSYSTEM LIBRARIES
-- **Backend Infrastructure Core Stack:** Java/Quarkus, PostgreSQL, Docker, Kubernetes (GKE), Firebase Authentication, Google Cloud Messaging (FCM), Redis
-- **Frontend & Cross-Platform UI Mobile Stack:** Next.js, React, Firebase Authentication, Google Cloud Messaging (FCM)
+### 1.2. Định hướng luồng dữ liệu và hệ sinh thái
 
-## 📁 3. GLOBAL GUARDRAILS & ENTERPRISE COMPLIANCE STANDARDS
-- **Absolute Workspace Boundary Rule:** The true repository workspace root is permanently fixed at the project root `..`. All paths generated MUST begin with `./sources/`.
-- **Dynamic Directory Prefixing Compliance:** Enforce the dynamic path mapping rules defined in Protocol 1 strictly matching the detected project structure.
-- **[CONDITION: JAVA_STACK_ONLY] Java Package Standard:** If the tech stack utilizes Java frameworks, all Java source codes MUST strictly reside within the corporate package foundation: `org.nlh4j.saas.<project_name_alphanumeric_lowercase>`. You MUST dynamically convert the string "membership-hub" into a strict pure alphanumeric lowercase token by stripping out whitespaces, hyphens, and underscores. Non-Java projects are completely banned from applying this package segment.
-- **Strict Tester Target Path Syntax:** Any component targeted by a Tester Sub-Agent must be structured as a strict semi-colon separated pair `<source_component_or_token>;<test_suite_file_to_execute>`. Both paths inside the pair MUST begin with `./sources/`.
+- **Luồng xác thực**: OAuth2 (Firebase, Google, Facebook) → JWT → API Gateway.  
+- **Luồng điểm danh QR**: Mobile scan → API → idempotent attendance record.  
+- **Luồng thông báo**: Event bus → Push (FCM/APNs) + Zalo API.  
+- **Luồng backend di động**: Next.js tiêu thụ REST, caching offline, retry logic.
 
-## 📁 4. HIGH-LEVEL MULTI-PHASE ARCHITECTURAL SYNOPSIS GRID
+## 📁 2. ĐỘC ĐẠO CÔNG NGHỆ & THƯ VIỆN
 
-| Phase | Day Range | Architectural Component / Module Path | Technical Deliverables Summary | Assigned Sub-Agent | Targeted Tag IDs |
+- **Backend**: Java 17, Quarkus 3, Hibernate ORM, Flyway, Redis, Firebase Admin SDK, GCP SDK.  
+- **Frontend**: Next.js 13, React 18, TypeScript, Tailwind CSS, Capacitor 4.  
+- **CI/CD**: GitHub Actions, Docker, GKE, Helm, Terraform.
+
+## 📁 3. QUY ĐỊNH BẢO VỆ & CHẤT LƯỢNG DOANH NGHIỆP
+
+- **Root repository**: `..` → tất cả các đường dẫn bắt đầu bằng `./sources/`.  
+- **Dynamic prefix**: Backend → `./sources/backend.<service-name>.`, Frontend → `./sources/frontend.<app-name>.`, Infra → `./sources/infra.`  
+- **Java package**: `org.nlh4j.saas.membershiphub`.  
+- **Tester target syntax**: `<source_component>;<test_suite_file>` bắt đầu bằng `./sources/`.
+
+## 📁 4. BẢNG TỔNG QUAN ĐIỀU HƯỚNG GIAO DIỆN GIAO ĐIỆN
+
+| Giai đoạn | Khoảng ngày | Đường dẫn Cấu phần / Module | Tóm tắt Sản phẩm Bàn giao | Sub-Agent | Tag IDs Mục tiêu |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | 1-3 | `./sources/backend`, `./sources/frontend` | Thiết lập cơ sở hạ tầng backend và frontend, triển khai cơ sở dữ liệu PostgreSQL, tích hợp Firebase Authentication | Coder, Docker, GCP | [ARC-006], [ARC-010], [DAT-001], [DAT-003], [DAT-004], [DAT-005], [DAT-006], [DAT-007], [DAT-008], [DAT-009], [DAT-011] |
-| 2 | 4-6 | `./sources/backend`, `./sources/frontend` | Triển khai các tính năng quản lý người dùng, quản lý trung tâm, quản lý khóa học | Coder, Tester, Reviewer | [REQ-001], [REQ-002], [REQ-003], [REQ-004], [REQ-005], [REQ-006], [REQ-007], [REQ-008], [REQ-009] |
-| 3 | 7-9 | `./sources/backend`, `./sources/frontend` | Triển khai các tính năng đăng ký và ghi danh học viên, điểm danh và quét mã QR | Coder, Tester, Reviewer | [REQ-010], [REQ-011], [REQ-012], [REQ-013], [EXC-001], [EXC-002], [EXC-004] |
-| 4 | 10-12 | `./sources/backend`, `./sources/frontend` | Triển khai các tính năng quản lý thẻ hội viên, thông báo và truyền thông | Coder, Tester, Reviewer | [REQ-014], [REQ-015], [REQ-016], [EXC-003] |
-| 5 | 13-15 | `./sources/backend`, `./sources/frontend` | Triển khai các tính năng quản lý khuyến mãi và thông báo, chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO | Coder, Tester, Reviewer, Doc | [REQ-017], [REQ-018], [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009] |
+| 1 | 1-3 | `./sources/backend/auth-service`, `./sources/backend/user-service`, `./sources/backend/role-service`, `./sources/backend/database/migrations` | Xây dựng xác thực, RBAC, schema Users & Roles, JWT, unit test | Coder, Tester, Reviewer | [REQ-001], [REQ-002], [REQ-003], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [ARC-006], [ARC-007], [ARC-008], [ARC-009], [ARC-010], [DAT-001], [DAT-002], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009] |
+| 2 | 1-3 | `./sources/backend/center-service`, `./sources/backend/course-service`, `./sources/backend/enrollment-service`, `./sources/backend/attendance-service`, `./sources/backend/database/migrations` | CRUD trung tâm, khóa học, ghi danh, điểm danh, schema Centers, Courses, Enrollments, Attendance | Coder, Tester, Reviewer | [REQ-004], [REQ-005], [REQ-006], [REQ-007], [REQ-008], [REQ-009], [REQ-010], [REQ-011], [REQ-012], [REQ-013], [DAT-003], [DAT-004], [DAT-005], [DAT-006], [EXC-001], [EXC-002], [EXC-003], [EXC-004], [EXC-005] |
+| 3 | 1-3 | `./sources/backend/notification-service`, `./sources/backend/promotion-service`, `./sources/backend/announcement-service`, `./sources/backend/chatbot-service`, `./sources/backend/mobile-service` | Thông báo push/Zalo, khuyến mãi, thông báo, chatbot, mobile API | Coder, Tester, Reviewer | [REQ-016], [REQ-017], [REQ-018], [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [DAT-007], [DAT-008], [DAT-009], [DAT-010], [DAT-011], [EXC-003] |
+| 4 | 1-2 | `./sources/frontend/mobile-app`, `./sources/frontend/web-app` | UI responsive, i18n, SEO, documentation | Doc, GCP | [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [DAT-011] |
+| 5 | 1-2 | `./sources/infra/docker`, `./sources/infra/gcp`, `./sources/infra/gke` | Dockerfile, GCP deployment, GKE orchestration | Docker, GKE | [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009], [ARC-010] |
 
-## 5. GRANULAR PHASE SPECIALIZATIONS & DAY-BY-DAY DELIVERABLES
+## 5. CHI TIẾT GIAO DIỆN GIAO ĐIỆN MỖI GIAO DIỆN
 
 ### Phase 1 Detailed Architectural Specification
-- **Phase Core Objective & Purpose:** Thiết lập cơ sở hạ tầng backend và frontend, triển khai cơ sở dữ liệu PostgreSQL, tích hợp Firebase Authentication
-- **Target Physical Directory Matrix Map:** `./sources/backend`, `./sources/frontend`
-- **Database Schema DDL SQL Specification [DAT-001], [DAT-003], [DAT-004], [DAT-005], [DAT-006], [DAT-007], [DAT-008], [DAT-009], [DAT-011]:**
+- **Mục tiêu Cốt lõi & Mục đích của Giai đoạn 1**: Thiết lập nền tảng xác thực, quản lý người dùng và quyền truy cập, xây dựng schema cơ sở dữ liệu Users & Roles, triển khai JWT, chuẩn hoá API, kiểm thử đơn vị.
+- **Ma trận Bản đồ Thư mục Vật lý Mục tiêu**:  
+  - `./sources/backend/auth-service [REQ-001], [REQ-002], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [DAT-001], [DAT-002], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]`  
+  - `./sources/backend/user-service [REQ-001], [REQ-002], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [DAT-001], [DAT-002], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]`  
+  - `./sources/backend/role-service [REQ-001], [REQ-002], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [DAT-001], [DAT-002], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]`  
+  - `./sources/backend/database/migrations [DAT-001], [DAT-002]`
+- **Đặc tả DDL SQL Schema Cơ sở Dữ liệu**  
   ```sql
   CREATE TABLE USERS (
       userId UUID PRIMARY KEY,
@@ -59,85 +64,162 @@ Hệ thống sử dụng các kênh truyền thông bất đồng bộ bao gồm
       passwordHash CHAR(60) NOT NULL,
       fullName VARCHAR(100) NOT NULL,
       roleId SMALLINT NOT NULL,
-      provider VARCHAR(10) DEFAULT 'local',
-      createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
-      updatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
-      FOREIGN KEY (roleId) REFERENCES ROLES(roleId)
+      provider VARCHAR(20) NOT NULL DEFAULT 'local',
+      createdAt TIMESTAMP NOT NULL DEFAULT now(),
+      updatedAt TIMESTAMP NOT NULL DEFAULT now()
   );
-
   CREATE TABLE ROLES (
       roleId SMALLINT PRIMARY KEY,
       name VARCHAR(30) NOT NULL UNIQUE,
       description VARCHAR(200)
   );
+  ALTER TABLE USERS ADD CONSTRAINT fk_user_role FOREIGN KEY (roleId) REFERENCES ROLES(roleId);
+  ```
+- **Hợp đồng Định tuyến API và Sự kiện**  
+  - `POST /api/auth/register` → Body: `{email, password, provider}` → Response: `{token, refreshToken}`  
+  - `POST /api/auth/login` → Body: `{email, password}` → Response: `{token, refreshToken}`  
+  - `GET /api/auth/me` → Header: `Authorization: Bearer <token>` → Response: `{userId, email, role}`  
+- **Xử lý ngoại lệ**  
+  - `[EXC-004]` → Kiểm tra đầu vào email, password, provider. Trả lỗi 400 với chi tiết trường sai.
 
+#### 📅 Chronological Day-by-Day Sub-Agent Task Distribution Logs (Phase 1)
+
+- **DAY 1:** Xây dựng API đăng ký và login, tạo schema Users & Roles, triển khai JWT, unit test.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **Coder:**  
+      - **Target Component file path (`target_component`):** `./sources/backend/auth-service [REQ-001], [REQ-002], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [DAT-001], [DAT-002], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]`  
+      - **Low-Level Technical Task Instruction:** Xây dựng controller, service, repository, JWT provider, validation, exception handling, unit test.  
+      - **Targeted Tag IDs:** [REQ-001], [REQ-002], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [DAT-001], [DAT-002], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]  
+- **DAY 2:** Viết test tích hợp cho luồng xác thực, kiểm tra token expiration, idempotent.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **Tester:**  
+      - **Target Component file path (`target_component`):** `./sources/backend/auth-service;./sources/backend/auth-service/src/test/java/com/membershiphub/auth/AuthServiceTest.java [ARC-006], [ARC-007], [ARC-008], [ARC-009], [ARC-010]`  
+      - **Low-Level Technical Task Instruction:** Viết test unit và integration, mock Firebase, kiểm tra refresh token, kiểm tra bảo mật.  
+      - **Targeted Tag IDs:** [ARC-006], [ARC-007], [ARC-008], [ARC-009], [ARC-010]  
+- **DAY 3:** Đánh giá mã, kiểm tra bảo mật, chuẩn hoá API, kiểm tra performance.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **Reviewer:**  
+      - **Target Component file path (`target_component`):** `./sources/backend/auth-service [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [DAT-001], [DAT-002], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]`  
+      - **Low-Level Technical Task Instruction:** Đánh giá code quality, kiểm tra OWASP, performance profiling, đề xuất cải tiến.  
+      - **Targeted Tag IDs:** [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [DAT-001], [DAT-002], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]  
+
+### Phase 2 Detailed Architectural Specification
+- **Mục tiêu Cốt lõi & Mục đích của Giai đoạn 2**: Xây dựng CRUD trung tâm, khóa học, ghi danh, điểm danh, schema Centers, Courses, Enrollments, Attendance, kiểm thử, exception handling.
+- **Ma trận Bản đồ Thư mục Vật lý Mục tiêu**:  
+  - `./sources/backend/center-service [REQ-004], [REQ-005], [REQ-006], [DAT-003]`  
+  - `./sources/backend/course-service [REQ-007], [REQ-008], [REQ-009], [DAT-004]`  
+  - `./sources/backend/enrollment-service [REQ-010], [REQ-011], [DAT-005]`  
+  - `./sources/backend/attendance-service [REQ-012], [REQ-013], [DAT-006]`  
+  - `./sources/backend/database/migrations [DAT-003], [DAT-004], [DAT-005], [DAT-006]`
+- **Đặc tả DDL SQL Schema Cơ sở Dữ liệu**  
+  ```sql
   CREATE TABLE CENTERS (
       centerId UUID PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
       address VARCHAR(255) NOT NULL,
       taxId VARCHAR(13) NOT NULL UNIQUE,
-      contactPhone VARCHAR(20),
+      contactPhone VARCHAR(50),
       contactEmail VARCHAR(255)
   );
-
   CREATE TABLE COURSES (
       courseId UUID PRIMARY KEY,
       title VARCHAR(150) NOT NULL,
       description TEXT,
       startDate DATE NOT NULL,
       endDate DATE NOT NULL,
-      teacherId UUID,
+      teacherId UUID NOT NULL,
       maxStudents INT DEFAULT 30,
-      FOREIGN KEY (teacherId) REFERENCES USERS(userId)
+      CONSTRAINT fk_course_teacher FOREIGN KEY (teacherId) REFERENCES USERS(userId)
   );
-
   CREATE TABLE ENROLLMENTS (
       enrollmentId UUID PRIMARY KEY,
       studentId UUID NOT NULL,
       courseId UUID NOT NULL,
-      enrollmentDate TIMESTAMP NOT NULL DEFAULT NOW(),
-      FOREIGN KEY (studentId) REFERENCES USERS(userId),
-      FOREIGN KEY (courseId) REFERENCES COURSES(courseId)
+      enrollmentDate TIMESTAMP NOT NULL DEFAULT now(),
+      CONSTRAINT fk_enrollment_student FOREIGN KEY (studentId) REFERENCES USERS(userId),
+      CONSTRAINT fk_enrollment_course FOREIGN KEY (courseId) REFERENCES COURSES(courseId)
   );
-
   CREATE TABLE ATTENDANCE (
       attendanceId UUID PRIMARY KEY,
       studentId UUID NOT NULL,
       courseId UUID NOT NULL,
       attendanceDate DATE NOT NULL,
-      timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
-      FOREIGN KEY (studentId) REFERENCES USERS(userId),
-      FOREIGN KEY (courseId) REFERENCES COURSES(courseId)
+      timestamp TIMESTAMP NOT NULL DEFAULT now(),
+      CONSTRAINT fk_attendance_student FOREIGN KEY (studentId) REFERENCES USERS(userId),
+      CONSTRAINT fk_attendance_course FOREIGN KEY (courseId) REFERENCES COURSES(courseId),
+      CONSTRAINT uq_attendance UNIQUE (studentId, courseId, attendanceDate)
   );
+  ```
+- **Hợp đồng Định tuyến API và Sự kiện**  
+  - `GET /api/centers` → Response: list of centers.  
+  - `POST /api/centers` → Body: center details → Response: created center.  
+  - `GET /api/courses` → Response: list of courses.  
+  - `POST /api/courses` → Body: course details → Response: created course.  
+  - `POST /api/enrollments` → Body: enrollment details → Response: created enrollment.  
+  - `POST /api/attendance` → Body: studentId, courseId → Response: attendance record.  
+- **Xử lý ngoại lệ**  
+  - `[EXC-001]` → Network drop during QR scan.  
+  - `[EXC-002]` → Duplicate attendance submission.  
+  - `[EXC-003]` → Duplicate tax ID.  
+  - `[EXC-004]` → Input validation failure.  
+  - `[EXC-005]` → System outage recovery.
 
-  CREATE TABLE STUDENTCARDS (
-      cardId UUID PRIMARY KEY,
-      studentId UUID NOT NULL,
-      issueDate DATE NOT NULL,
-      validityDays INT NOT NULL,
-      remainingDays INT,
-      FOREIGN KEY (studentId) REFERENCES USERS(userId)
-  );
+#### 📅 Chronological Day-by-Day Sub-Agent Task Distribution Logs (Phase 2)
 
+- **DAY 1:** Xây dựng CRUD trung tâm, schema Centers, kiểm thử.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **Coder:**  
+      - **Target Component file path (`target_component`):** `./sources/backend/center-service [REQ-004], [REQ-005], [REQ-006], [DAT-003]`  
+      - **Low-Level Technical Task Instruction:** Xây dựng controller, service, repository, validation, exception handling, unit test.  
+      - **Targeted Tag IDs:** [REQ-004], [REQ-005], [REQ-006], [DAT-003]  
+- **DAY 2:** Xây dựng CRUD khóa học, schema Courses, kiểm thử.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **Coder:**  
+      - **Target Component file path (`target_component`):** `./sources/backend/course-service [REQ-007], [REQ-008], [REQ-009], [DAT-004]`  
+      - **Low-Level Technical Task Instruction:** Xây dựng controller, service, repository, validation, conflict detection, unit test.  
+      - **Targeted Tag IDs:** [REQ-007], [REQ-008], [REQ-009], [DAT-004]  
+- **DAY 3:** Xây dựng ghi danh, điểm danh, schema Enrollments & Attendance, exception handling, integration test.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **Coder:**  
+      - **Target Component file path (`target_component`):** `./sources/backend/enrollment-service [REQ-010], [REQ-011], [DAT-005]`  
+      - **Low-Level Technical Task Instruction:** Xây dựng controller, service, repository, validation, idempotent attendance, unit test.  
+      - **Targeted Tag IDs:** [REQ-010], [REQ-011], [DAT-005]  
+    * **Tester:**  
+      - **Target Component file path (`target_component`):** `./sources/backend/attendance-service;./sources/backend/attendance-service/src/test/java/com/membershiphub/attendance/AttendanceServiceTest.java [REQ-012], [REQ-013], [DAT-006], [EXC-001], [EXC-002]`  
+      - **Low-Level Technical Task Instruction:** Viết test integration, mock network, test idempotency, test duplicate handling.  
+      - **Targeted Tag IDs:** [REQ-012], [REQ-013], [DAT-006], [EXC-001], [EXC-002]  
+    * **Reviewer:**  
+      - **Target Component file path (`target_component`):** `./sources/backend/enrollment-service [REQ-010], [REQ-011], [DAT-005]`  
+      - **Low-Level Technical Task Instruction:** Đánh giá code quality, kiểm tra exception handling, performance.  
+      - **Targeted Tag IDs:** [REQ-010], [REQ-011], [DAT-005]  
+
+### Phase 3 Detailed Architectural Specification
+- **Mục tiêu Cốt lõi & Mục đích của Giai đoạn 3**: Xây dựng dịch vụ thông báo, khuyến mãi, thông báo, chatbot, mobile API, kiểm thử, exception handling.
+- **Ma trận Bản đồ Thư mục Vật lý Mục tiêu**:  
+  - `./sources/backend/notification-service [REQ-016], [REQ-017], [REQ-018], [REQ-019], [DAT-007], [DAT-008]`  
+  - `./sources/backend/promotion-service [REQ-017], [DAT-009]`  
+  - `./sources/backend/announcement-service [REQ-018], [DAT-010]`  
+  - `./sources/backend/chatbot-service [REQ-019]`  
+  - `./sources/backend/mobile-service [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [DAT-011]`  
+  - `./sources/backend/database/migrations [DAT-007], [DAT-008], [DAT-009], [DAT-010], [DAT-011]`
+- **Đặc tả DDL SQL Schema Cơ sở Dữ liệu**  
+  ```sql
   CREATE TABLE NOTIFICATIONS (
       notificationId UUID PRIMARY KEY,
       userId UUID,
       groupZalo VARCHAR(255),
       message TEXT NOT NULL,
-      sentAt TIMESTAMP NOT NULL DEFAULT NOW(),
-      delivered BOOLEAN DEFAULT FALSE,
-      FOREIGN KEY (userId) REFERENCES USERS(userId)
+      sentAt TIMESTAMP NOT NULL DEFAULT now(),
+      delivered BOOLEAN NOT NULL DEFAULT false
   );
-
   CREATE TABLE PROMOTIONS (
       promoId UUID PRIMARY KEY,
-      code VARCHAR(20) UNIQUE,
+      code VARCHAR(50) NOT NULL UNIQUE,
       discountPercent SMALLINT NOT NULL,
       startDate DATE,
       endDate DATE,
       description TEXT
   );
-
   CREATE TABLE ANNOUNCEMENTS (
       announcementId UUID PRIMARY KEY,
       title VARCHAR(150) NOT NULL,
@@ -145,1968 +227,103 @@ Hệ thống sử dụng các kênh truyền thông bất đồng bộ bao gồm
       startDate DATE,
       endDate DATE
   );
-
-  CREATE TABLE SYSTEMSETTINGS (
-      settingKey VARCHAR(50) PRIMARY KEY,
-      settingValue TEXT NOT NULL,
-      description TEXT
-  );
   ```
-- **API and Event Routing Contracts [REQ-001], [REQ-002], [REQ-003], [REQ-004], [REQ-005], [REQ-006], [REQ-007], [REQ-008], [REQ-009], [ARC-006], [ARC-010]:**
-  ```json
-  {
-    "paths": {
-      "/api/auth/register": {
-        "post": {
-          "summary": "Đăng ký người dùng mới",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "email": {
-                      "type": "string",
-                      "format": "email"
-                    },
-                    "password": {
-                      "type": "string",
-                      "minLength": 8
-                    },
-                    "fullName": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["email", "password", "fullName"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Đăng ký thành công",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "token": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/auth/login": {
-        "post": {
-          "summary": "Đăng nhập người dùng",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "email": {
-                      "type": "string",
-                      "format": "email"
-                    },
-                    "password": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["email", "password"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Đăng nhập thành công",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "token": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/auth/oauth": {
-        "post": {
-          "summary": "Đăng nhập qua mạng xã hội",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "provider": {
-                      "type": "string",
-                      "enum": ["firebase", "google", "facebook"]
-                    },
-                    "token": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["provider", "token"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Đăng nhập thành công",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "token": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/users/{userId}/role": {
-        "put": {
-          "summary": "Cập nhật vai trò người dùng",
-          "parameters": [
-            {
-              "name": "userId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "roleId": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": ["roleId"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Cập nhật vai trò thành công"
-            }
-          }
-        }
-      },
-      "/api/centers": {
-        "get": {
-          "summary": "Lấy danh sách trung tâm",
-          "responses": {
-            "200": {
-              "description": "Danh sách trung tâm",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "centerId": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "address": {
-                          "type": "string"
-                        },
-                        "taxId": {
-                          "type": "string"
-                        },
-                        "contactPhone": {
-                          "type": "string"
-                        },
-                        "contactEmail": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "post": {
-          "summary": "Tạo trung tâm mới",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "address": {
-                      "type": "string"
-                    },
-                    "taxId": {
-                      "type": "string"
-                    },
-                    "contactPhone": {
-                      "type": "string"
-                    },
-                    "contactEmail": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "address", "taxId"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Tạo trung tâm thành công"
-            }
-          }
-        }
-      },
-      "/api/centers/{centerId}": {
-        "put": {
-          "summary": "Cập nhật trung tâm",
-          "parameters": [
-            {
-              "name": "centerId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "address": {
-                      "type": "string"
-                    },
-                    "taxId": {
-                      "type": "string"
-                    },
-                    "contactPhone": {
-                      "type": "string"
-                    },
-                    "contactEmail": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Cập nhật trung tâm thành công"
-            }
-          }
-        },
-        "delete": {
-          "summary": "Xóa trung tâm",
-          "parameters": [
-            {
-              "name": "centerId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Xóa trung tâm thành công"
-            }
-          }
-        }
-      },
-      "/api/centers/{centerId}/admin": {
-        "put": {
-          "summary": "Phân quyền quản trị trung tâm",
-          "parameters": [
-            {
-              "name": "centerId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "userId": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  },
-                  "required": ["userId"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Phân quyền quản trị trung tâm thành công"
-            }
-          }
-        }
-      },
-      "/api/courses": {
-        "get": {
-          "summary": "Lấy danh sách khóa học",
-          "responses": {
-            "200": {
-              "description": "Danh sách khóa học",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "courseId": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "title": {
-                          "type": "string"
-                        },
-                        "startDate": {
-                          "type": "string",
-                          "format": "date"
-                        },
-                        "endDate": {
-                          "type": "string",
-                          "format": "date"
-                        },
-                        "teacherId": {
-                          "type": "string",
-                          "format": "uuid"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "post": {
-          "summary": "Tạo khóa học mới",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string"
-                    },
-                    "startDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "endDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "teacherId": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  },
-                  "required": ["title", "startDate", "endDate", "teacherId"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Tạo khóa học thành công"
-            }
-          }
-        }
-      },
-      "/api/courses/{courseId}": {
-        "put": {
-          "summary": "Cập nhật khóa học",
-          "parameters": [
-            {
-              "name": "courseId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string"
-                    },
-                    "startDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "endDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "teacherId": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Cập nhật khóa học thành công"
-            }
-          }
-        },
-        "delete": {
-          "summary": "Xóa khóa học",
-          "parameters": [
-            {
-              "name": "courseId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Xóa khóa học thành công"
-            }
-          }
-        }
-      },
-      "/api/courses/{courseId}/teacher": {
-        "put": {
-          "summary": "Phân công giáo viên vào khóa học",
-          "parameters": [
-            {
-              "name": "courseId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "teacherId": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  },
-                  "required": ["teacherId"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Phân công giáo viên vào khóa học thành công"
-            }
-          }
-        }
-      }
-    }
-  }
-  ```
-- **Phase Localized Exception Handlers [EXC-004]:**
-  - **Xác thực đầu vào không hợp lệ:** Nếu xác thực thất bại trên form submission, Khi lỗi được trả về cho người dùng, Sau đó một thông báo rõ ràng liệt kê từng trường không hợp lệ và yêu cầu chỉnh sửa.
-
-#### 📅 Chronological Day-by-Day Sub-Agent Task Distribution Logs (Phase 1)
-- **DAY 1: Thiết lập cơ sở hạ tầng backend và frontend**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/config [ARC-006], [ARC-010]`
-      - **Low-Level Technical Task Instruction:** Triển khai cấu hình cơ sở dữ liệu PostgreSQL, tích hợp Firebase Authentication, thiết lập cấu hình Docker và Kubernetes (GKE)
-      - **Targeted Tag IDs:** [ARC-006], [ARC-010]
-    * **Docker:**
-      - **Target Component file path (`target_component`):** `./sources/backend/Dockerfile [ARC-010]`
-      - **Low-Level Technical Task Instruction:** Viết Dockerfile cho dịch vụ backend, cấu hình multi-stage build để giảm kích thước image
-      - **Targeted Tag IDs:** [ARC-010]
-    * **GCP:**
-      - **Target Component file path (`target_component`):** `./sources/infra/gcp [ARC-010]`
-      - **Low-Level Technical Task Instruction:** Triển khai cơ sở hạ tầng trên Google Cloud Platform, cấu hình VPC, IAM, và các dịch vụ cần thiết
-      - **Targeted Tag IDs:** [ARC-010]
-
-- **DAY 2: Triển khai cơ sở dữ liệu PostgreSQL**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/resources/db/migration [DAT-001], [DAT-003], [DAT-004], [DAT-005], [DAT-006], [DAT-007], [DAT-008], [DAT-009], [DAT-011]`
-      - **Low-Level Technical Task Instruction:** Viết các script Flyway/Liquibase để tạo các bảng cơ sở dữ liệu, thiết lập các ràng buộc và chỉ mục
-      - **Targeted Tag IDs:** [DAT-001], [DAT-003], [DAT-004], [DAT-005], [DAT-006], [DAT-007], [DAT-008], [DAT-009], [DAT-011]
-
-- **DAY 3: Tích hợp Firebase Authentication**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/auth [ARC-006]`
-      - **Low-Level Technical Task Instruction:** Triển khai các dịch vụ xác thực qua email/mật khẩu, Firebase, Google, và Facebook OAuth2, cấu hình JWT token với thời hạn 15 phút và refresh token
-      - **Targeted Tag IDs:** [ARC-006]
-
-### Phase 2 Detailed Architectural Specification
-- **Phase Core Objective & Purpose:** Triển khai các tính năng quản lý người dùng, quản lý trung tâm, quản lý khóa học
-- **Target Physical Directory Matrix Map:** `./sources/backend`, `./sources/frontend`
-- **API and Event Routing Contracts [REQ-001], [REQ-002], [REQ-003], [REQ-004], [REQ-005], [REQ-006], [REQ-007], [REQ-008], [REQ-009]:**
-  ```json
-  {
-    "paths": {
-      "/api/users": {
-        "get": {
-          "summary": "Lấy danh sách người dùng",
-          "responses": {
-            "200": {
-              "description": "Danh sách người dùng",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "userId": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "email": {
-                          "type": "string",
-                          "format": "email"
-                        },
-                        "fullName": {
-                          "type": "string"
-                        },
-                        "roleId": {
-                          "type": "integer"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/users/{userId}": {
-        "get": {
-          "summary": "Lấy thông tin người dùng",
-          "parameters": [
-            {
-              "name": "userId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Thông tin người dùng",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "userId": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "email": {
-                        "type": "string",
-                        "format": "email"
-                      },
-                      "fullName": {
-                        "type": "string"
-                      },
-                      "roleId": {
-                        "type": "integer"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/centers": {
-        "get": {
-          "summary": "Lấy danh sách trung tâm",
-          "responses": {
-            "200": {
-              "description": "Danh sách trung tâm",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "centerId": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "address": {
-                          "type": "string"
-                        },
-                        "taxId": {
-                          "type": "string"
-                        },
-                        "contactPhone": {
-                          "type": "string"
-                        },
-                        "contactEmail": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "post": {
-          "summary": "Tạo trung tâm mới",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "address": {
-                      "type": "string"
-                    },
-                    "taxId": {
-                      "type": "string"
-                    },
-                    "contactPhone": {
-                      "type": "string"
-                    },
-                    "contactEmail": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["name", "address", "taxId"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Tạo trung tâm thành công"
-            }
-          }
-        }
-      },
-      "/api/centers/{centerId}": {
-        "put": {
-          "summary": "Cập nhật trung tâm",
-          "parameters": [
-            {
-              "name": "centerId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "address": {
-                      "type": "string"
-                    },
-                    "taxId": {
-                      "type": "string"
-                    },
-                    "contactPhone": {
-                      "type": "string"
-                    },
-                    "contactEmail": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Cập nhật trung tâm thành công"
-            }
-          }
-        },
-        "delete": {
-          "summary": "Xóa trung tâm",
-          "parameters": [
-            {
-              "name": "centerId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Xóa trung tâm thành công"
-            }
-          }
-        }
-      },
-      "/api/centers/{centerId}/admin": {
-        "put": {
-          "summary": "Phân quyền quản trị trung tâm",
-          "parameters": [
-            {
-              "name": "centerId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "userId": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  },
-                  "required": ["userId"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Phân quyền quản trị trung tâm thành công"
-            }
-          }
-        }
-      },
-      "/api/courses": {
-        "get": {
-          "summary": "Lấy danh sách khóa học",
-          "responses": {
-            "200": {
-              "description": "Danh sách khóa học",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "courseId": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "title": {
-                          "type": "string"
-                        },
-                        "startDate": {
-                          "type": "string",
-                          "format": "date"
-                        },
-                        "endDate": {
-                          "type": "string",
-                          "format": "date"
-                        },
-                        "teacherId": {
-                          "type": "string",
-                          "format": "uuid"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "post": {
-          "summary": "Tạo khóa học mới",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string"
-                    },
-                    "startDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "endDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "teacherId": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  },
-                  "required": ["title", "startDate", "endDate", "teacherId"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Tạo khóa học thành công"
-            }
-          }
-        }
-      },
-      "/api/courses/{courseId}": {
-        "put": {
-          "summary": "Cập nhật khóa học",
-          "parameters": [
-            {
-              "name": "courseId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string"
-                    },
-                    "startDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "endDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "teacherId": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Cập nhật khóa học thành công"
-            }
-          }
-        },
-        "delete": {
-          "summary": "Xóa khóa học",
-          "parameters": [
-            {
-              "name": "courseId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Xóa khóa học thành công"
-            }
-          }
-        }
-      },
-      "/api/courses/{courseId}/teacher": {
-        "put": {
-          "summary": "Phân công giáo viên vào khóa học",
-          "parameters": [
-            {
-              "name": "courseId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "teacherId": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  },
-                  "required": ["teacherId"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Phân công giáo viên vào khóa học thành công"
-            }
-          }
-        }
-      }
-    }
-  }
-  ```
-
-#### 📅 Chronological Day-by-Day Sub-Agent Task Distribution Logs (Phase 2)
-- **DAY 4: Triển khai các tính năng quản lý người dùng**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user [REQ-001], [REQ-002], [REQ-003]`
-      - **Low-Level Technical Task Instruction:** Triển khai các dịch vụ đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng
-      - **Targeted Tag IDs:** [REQ-001], [REQ-002], [REQ-003]
-    * **Tester:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/user;./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user [REQ-001], [REQ-002], [REQ-003]`
-      - **Low-Level Technical Task Instruction:** Viết các test case cho các tính năng đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng
-      - **Targeted Tag IDs:** [REQ-001], [REQ-002], [REQ-003]
-    * **Reviewer:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user [REQ-001], [REQ-002], [REQ-003]`
-      - **Low-Level Technical Task Instruction:** Review code cho các tính năng đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng
-      - **Targeted Tag IDs:** [REQ-001], [REQ-002], [REQ-003]
-
-- **DAY 5: Triển khai các tính năng quản lý trung tâm**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center [REQ-004], [REQ-005], [REQ-006]`
-      - **Low-Level Technical Task Instruction:** Triển khai các dịch vụ xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm
-      - **Targeted Tag IDs:** [REQ-004], [REQ-005], [REQ-006]
-    * **Tester:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/center;./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center [REQ-004], [REQ-005], [REQ-006]`
-      - **Low-Level Technical Task Instruction:** Viết các test case cho các tính năng xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm
-      - **Targeted Tag IDs:** [REQ-004], [REQ-005], [REQ-006]
-    * **Reviewer:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center [REQ-004], [REQ-005], [REQ-006]`
-      - **Low-Level Technical Task Instruction:** Review code cho các tính năng xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm
-      - **Targeted Tag IDs:** [REQ-004], [REQ-005], [REQ-006]
-
-- **DAY 6: Triển khai các tính năng quản lý khóa học**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course [REQ-007], [REQ-008], [REQ-009]`
-      - **Low-Level Technical Task Instruction:** Triển khai các dịch vụ xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học
-      - **Targeted Tag IDs:** [REQ-007], [REQ-008], [REQ-009]
-    * **Tester:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/course;./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course [REQ-007], [REQ-008], [REQ-009]`
-      - **Low-Level Technical Task Instruction:** Viết các test case cho các tính năng xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học
-      - **Targeted Tag IDs:** [REQ-007], [REQ-008], [REQ-009]
-    * **Reviewer:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course [REQ-007], [REQ-008], [REQ-009]`
-      - **Low-Level Technical Task Instruction:** Review code cho các tính năng xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học
-      - **Targeted Tag IDs:** [REQ-007], [REQ-008], [REQ-009]
-
-### Phase 3 Detailed Architectural Specification
-- **Phase Core Objective & Purpose:** Triển khai các tính năng đăng ký và ghi danh học viên, điểm danh và quét mã QR
-- **Target Physical Directory Matrix Map:** `./sources/backend`, `./sources/frontend`
-- **API and Event Routing Contracts [REQ-010], [REQ-011], [REQ-012], [REQ-013]:**
-  ```json
-  {
-    "paths": {
-      "/api/courses/available": {
-        "get": {
-          "summary": "Lấy danh sách khóa học có thể đăng ký",
-          "responses": {
-            "200": {
-              "description": "Danh sách khóa học có thể đăng ký",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "courseId": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "title": {
-                          "type": "string"
-                        },
-                        "startDate": {
-                          "type": "string",
-                          "format": "date"
-                        },
-                        "endDate": {
-                          "type": "string",
-                          "format": "date"
-                        },
-                        "teacherId": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "maxStudents": {
-                          "type": "integer"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/enrollments": {
-        "post": {
-          "summary": "Đăng ký khóa học",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "courseId": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  },
-                  "required": ["courseId"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Đăng ký khóa học thành công"
-            }
-          }
-        }
-      },
-      "/api/attendance": {
-        "post": {
-          "summary": "Điểm danh qua mã QR",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "studentId": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "courseId": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  },
-                  "required": ["studentId", "courseId"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Điểm danh thành công"
-            }
-          }
-        }
-      }
-    }
-  }
-  ```
-- **Phase Localized Exception Handlers [EXC-001], [EXC-002], [EXC-004]:**
-  - **Network & Connectivity Drops During QR Scan:** If a student scans a QR but the network is unavailable, When the app retries the request after reconnection, Then the attendance is recorded once the service is reachable.
-  - **Duplicate Attendance Submission:** If the same student scans the same course QR multiple times within the same day, When the system detects a duplicate, Then it returns a success response indicating ‘already recorded’ and does not create extra rows.
-  - **Xác thực đầu vào không hợp lệ:** Nếu xác thực thất bại trên form submission, Khi lỗi được trả về cho người dùng, Sau đó một thông báo rõ ràng liệt kê từng trường không hợp lệ và yêu cầu chỉnh sửa.
+- **Hợp đồng Định tuyến API và Sự kiện**  
+  - `POST /api/notifications` → Body: notification details → Response: created notification.  
+  - `POST /api/promotions` → Body: promotion details → Response: created promotion.  
+  - `POST /api/announcements` → Body: announcement details → Response: created announcement.  
+  - `POST /api/chatbot/message` → Body: user message → Response: bot reply.  
+  - `GET /api/mobile/cards` → Response: student card info.  
+- **Xử lý ngoại lệ**  
+  - `[EXC-003]` → Failed notification delivery.
 
 #### 📅 Chronological Day-by-Day Sub-Agent Task Distribution Logs (Phase 3)
-- **DAY 7: Triển khai các tính năng đăng ký và ghi danh học viên**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/enrollment [REQ-010], [REQ-011]`
-      - **Low-Level Technical Task Instruction:** Triển khai các dịch vụ duyệt khóa học, đăng ký khóa học của học viên
-      - **Targeted Tag IDs:** [REQ-010], [REQ-011]
-    * **Tester:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/enrollment;./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/enrollment [REQ-010], [REQ-011]`
-      - **Low-Level Technical Task Instruction:** Viết các test case cho các tính năng duyệt khóa học, đăng ký khóa học của học viên
-      - **Targeted Tag IDs:** [REQ-010], [REQ-011]
-    * **Reviewer:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/enrollment [REQ-010], [REQ-011]`
-      - **Low-Level Technical Task Instruction:** Review code cho các tính năng duyệt khóa học, đăng ký khóa học của học viên
-      - **Targeted Tag IDs:** [REQ-010], [REQ-011]
 
-- **DAY 8: Triển khai các tính năng điểm danh và quét mã QR**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/attendance [REQ-012], [REQ-013], [EXC-001], [EXC-002]`
-      - **Low-Level Technical Task Instruction:** Triển khai các dịch vụ chụp ảnh điểm danh QR, tính chất bất biến của điểm danh
-      - **Targeted Tag IDs:** [REQ-012], [REQ-013], [EXC-001], [EXC-002]
-    * **Tester:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/attendance;./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/attendance [REQ-012], [REQ-013], [EXC-001], [EXC-002]`
-      - **Low-Level Technical Task Instruction:** Viết các test case cho các tính năng chụp ảnh điểm danh QR, tính chất bất biến của điểm danh
-      - **Targeted Tag IDs:** [REQ-012], [REQ-013], [EXC-001], [EXC-002]
-    * **Reviewer:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/attendance [REQ-012], [REQ-013], [EXC-001], [EXC-002]`
-      - **Low-Level Technical Task Instruction:** Review code cho các tính năng chụp ảnh điểm danh QR, tính chất bất biến của điểm danh
-      - **Targeted Tag IDs:** [REQ-012], [REQ-013], [EXC-001], [EXC-002]
-
-- **DAY 9: Tích hợp các tính năng điểm danh và quét mã QR với ứng dụng di động**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/frontend/src/components/attendance [REQ-012], [REQ-013], [EXC-001], [EXC-002]`
-      - **Low-Level Technical Task Instruction:** Tích hợp các tính năng điểm danh và quét mã QR với ứng dụng di động
-      - **Targeted Tag IDs:** [REQ-012], [REQ-013], [EXC-001], [EXC-002]
-    * **Tester:**
-      - **Target Component file path (`target_component`):** `./sources/frontend/src/components/attendance;./sources/frontend/src/components/attendance [REQ-012], [REQ-013], [EXC-001], [EXC-002]`
-      - **Low-Level Technical Task Instruction:** Viết các test case cho các tính năng điểm danh và quét mã QR trên ứng dụng di động
-      - **Targeted Tag IDs:** [REQ-012], [REQ-013], [EXC-001], [EXC-002]
-    * **Reviewer:**
-      - **Target Component file path (`target_component`):** `./sources/frontend/src/components/attendance [REQ-012], [REQ-013], [EXC-001], [EXC-002]`
-      - **Low-Level Technical Task Instruction:** Review code cho các tính năng điểm danh và quét mã QR trên ứng dụng di động
-      - **Targeted Tag IDs:** [REQ-012], [REQ-013], [EXC-001], [EXC-002]
+- **DAY 1:** Xây dựng dịch vụ thông báo, khuyến mãi, thông báo, chatbot, schema Notifications, Promotions, Announcements.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **Coder:**  
+      - **Target Component file path (`target_component`):** `./sources/backend/notification-service [REQ-016], [REQ-017], [REQ-018], [REQ-019], [DAT-007], [DAT-008]`  
+      - **Low-Level Technical Task Instruction:** Xây dựng controller, service, repository, integration với Firebase, Zalo, unit test.  
+      - **Targeted Tag IDs:** [REQ-016], [REQ-017], [REQ-018], [REQ-019], [DAT-007], [DAT-008]  
+- **DAY 2:** Xây dựng mobile API, schema StudentCards, i18n, SEO, kiểm thử.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **Tester:**  
+      - **Target Component file path (`target_component`):** `./sources/backend/mobile-service;./sources/backend/mobile-service/src/test/java/com/membershiphub/mobile/MobileServiceTest.java [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [DAT-011]`  
+      - **Low-Level Technical Task Instruction:** Viết test API, kiểm tra i18n, SEO meta tags, unit test.  
+      - **Targeted Tag IDs:** [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [DAT-011]  
+- **DAY 3:** Đánh giá bảo mật, exception handling, performance.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **Reviewer:**  
+      - **Target Component file path (`target_component`):** `./sources/backend/notification-service [REQ-016], [REQ-017], [REQ-018], [REQ-019], [DAT-007], [DAT-008], [EXC-003]`  
+      - **Low-Level Technical Task Instruction:** Đánh giá code quality, kiểm tra exception handling, performance profiling.  
+      - **Targeted Tag IDs:** [REQ-016], [REQ-017], [REQ-018], [REQ-019], [DAT-007], [DAT-008], [EXC-003]  
 
 ### Phase 4 Detailed Architectural Specification
-- **Phase Core Objective & Purpose:** Triển khai các tính năng quản lý thẻ hội viên, thông báo và truyền thông
-- **Target Physical Directory Matrix Map:** `./sources/backend`, `./sources/frontend`
-- **API and Event Routing Contracts [REQ-014], [REQ-015], [REQ-016]:**
-  ```json
-  {
-    "paths": {
-      "/api/studentcards/{studentId}": {
-        "get": {
-          "summary": "Lấy thông tin thẻ hội viên",
-          "parameters": [
-            {
-              "name": "studentId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Thông tin thẻ hội viên",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "cardId": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "studentId": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "issueDate": {
-                        "type": "string",
-                        "format": "date"
-                      },
-                      "validityDays": {
-                        "type": "integer"
-                      },
-                      "remainingDays": {
-                        "type": "integer"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/studentcards/{studentId}/renew": {
-        "post": {
-          "summary": "Gia hạn thẻ hội viên",
-          "parameters": [
-            {
-              "name": "studentId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "days": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": ["days"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Gia hạn thẻ hội viên thành công"
-            }
-          }
-        }
-      },
-      "/api/notifications": {
-        "post": {
-          "summary": "Tạo thông báo",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "userId": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "groupZalo": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["message"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Tạo thông báo thành công"
-            }
-          }
-        }
-      }
-    }
-  }
-  ```
-- **Phase Localized Exception Handlers [EXC-003]:**
-  - **Failed Notification Delivery:** When a push notification cannot be delivered (e.g., device token invalid), Then the system logs the failure and schedules a retry up to three times before marking as failed.
+- **Mục tiêu Cốt lõi & Mục đích của Giai đoạn 4**: Phát triển UI responsive, i18n, SEO, tài liệu, triển khai GCP.
+- **Ma trận Bản đồ Thư mục Vật lý Mục tiêu**:  
+  - `./sources/frontend/mobile-app [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [DAT-011]`  
+  - `./sources/frontend/web-app [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [DAT-011]`  
+  - `./sources/frontend/nextjs-app`  
+- **Hợp đồng Định tuyến API và Sự kiện**  
+  - `GET /api/mobile/cards` → Response: student card info.  
+  - `GET /api/announcements` → Response: announcements list.  
+- **Xử lý ngoại lệ**  
+  - Không có ngoại lệ riêng.
 
 #### 📅 Chronological Day-by-Day Sub-Agent Task Distribution Logs (Phase 4)
-- **DAY 10: Triển khai các tính năng quản lý thẻ hội viên**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/studentcard [REQ-014], [REQ-015]`
-      - **Low-Level Technical Task Instruction:** Triển khai các dịch vụ hiển thị tính hợp lệ của thẻ, gia hạn thẻ
-      - **Targeted Tag IDs:** [REQ-014], [REQ-015]
-    * **Tester:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/studentcard;./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/studentcard [REQ-014], [REQ-015]`
-      - **Low-Level Technical Task Instruction:** Viết các test case cho các tính năng hiển thị tính hợp lệ của thẻ, gia hạn thẻ
-      - **Targeted Tag IDs:** [REQ-014], [REQ-015]
-    * **Reviewer:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/studentcard [REQ-014], [REQ-015]`
-      - **Low-Level Technical Task Instruction:** Review code cho các tính năng hiển thị tính hợp lệ của thẻ, gia hạn thẻ
-      - **Targeted Tag IDs:** [REQ-014], [REQ-015]
 
-- **DAY 11: Triển khai các tính năng thông báo và truyền thông**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/notification [REQ-016], [EXC-003]`
-      - **Low-Level Technical Task Instruction:** Triển khai các dịch vụ kích hoạt thông báo
-      - **Targeted Tag IDs:** [REQ-016], [EXC-003]
-    * **Tester:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/notification;./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/notification [REQ-016], [EXC-003]`
-      - **Low-Level Technical Task Instruction:** Viết các test case cho các tính năng kích hoạt thông báo
-      - **Targeted Tag IDs:** [REQ-016], [EXC-003]
-    * **Reviewer:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/notification [REQ-016], [EXC-003]`
-      - **Low-Level Technical Task Instruction:** Review code cho các tính năng kích hoạt thông báo
-      - **Targeted Tag IDs:** [REQ-016], [EXC-003]
-
-- **DAY 12: Tích hợp các tính năng thông báo và truyền thông với ứng dụng di động**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/frontend/src/components/notification [REQ-016], [EXC-003]`
-      - **Low-Level Technical Task Instruction:** Tích hợp các tính năng thông báo và truyền thông với ứng dụng di động
-      - **Targeted Tag IDs:** [REQ-016], [EXC-003]
-    * **Tester:**
-      - **Target Component file path (`target_component`):** `./sources/frontend/src/components/notification;./sources/frontend/src/components/notification [REQ-016], [EXC-003]`
-      - **Low-Level Technical Task Instruction:** Viết các test case cho các tính năng thông báo và truyền thông trên ứng dụng di động
-      - **Targeted Tag IDs:** [REQ-016], [EXC-003]
-    * **Reviewer:**
-      - **Target Component file path (`target_component`):** `./sources/frontend/src/components/notification [REQ-016], [EXC-003]`
-      - **Low-Level Technical Task Instruction:** Review code cho các tính năng thông báo và truyền thông trên ứng dụng di động
-      - **Targeted Tag IDs:** [REQ-016], [EXC-003]
+- **DAY 1:** Viết tài liệu chi tiết UI, API, i18n, SEO.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **Doc:**  
+      - **Target Component file path (`target_component`):** `./sources/frontend/mobile-app [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [DAT-011]`  
+      - **Low-Level Technical Task Instruction:** Viết tài liệu chi tiết, hướng dẫn sử dụng, tài liệu API, cấu hình i18n, SEO meta tags.  
+      - **Targeted Tag IDs:** [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [DAT-011]  
+- **DAY 2:** Cấu hình GCP Cloud Build, Cloud Run, Firebase Hosting.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **GCP:**  
+      - **Target Component file path (`target_component`):** `./sources/frontend/mobile-app;./sources/frontend/web-app [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [DAT-011]`  
+      - **Low-Level Technical Task Instruction:** Viết cấu hình Terraform, Cloud Build, Cloud Run, Firebase Hosting, CI/CD pipeline.  
+      - **Targeted Tag IDs:** [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [DAT-011]  
 
 ### Phase 5 Detailed Architectural Specification
-- **Phase Core Objective & Purpose:** Triển khai các tính năng quản lý khuyến mãi và thông báo, chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO
-- **Target Physical Directory Matrix Map:** `./sources/backend`, `./sources/frontend`
-- **API and Event Routing Contracts [REQ-017], [REQ-018], [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025]:**
-  ```json
-  {
-    "paths": {
-      "/api/promotions": {
-        "get": {
-          "summary": "Lấy danh sách khuyến mãi",
-          "responses": {
-            "200": {
-              "description": "Danh sách khuyến mãi",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "promoId": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "code": {
-                          "type": "string"
-                        },
-                        "discountPercent": {
-                          "type": "integer"
-                        },
-                        "startDate": {
-                          "type": "string",
-                          "format": "date"
-                        },
-                        "endDate": {
-                          "type": "string",
-                          "format": "date"
-                        },
-                        "description": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "post": {
-          "summary": "Tạo khuyến mãi mới",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string"
-                    },
-                    "discountPercent": {
-                      "type": "integer"
-                    },
-                    "startDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "endDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "description": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["code", "discountPercent"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Tạo khuyến mãi thành công"
-            }
-          }
-        }
-      },
-      "/api/promotions/{promoId}": {
-        "put": {
-          "summary": "Cập nhật khuyến mãi",
-          "parameters": [
-            {
-              "name": "promoId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string"
-                    },
-                    "discountPercent": {
-                      "type": "integer"
-                    },
-                    "startDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "endDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "description": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Cập nhật khuyến mãi thành công"
-            }
-          }
-        },
-        "delete": {
-          "summary": "Xóa khuyến mãi",
-          "parameters": [
-            {
-              "name": "promoId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Xóa khuyến mãi thành công"
-            }
-          }
-        }
-      },
-      "/api/announcements": {
-        "get": {
-          "summary": "Lấy danh sách thông báo",
-          "responses": {
-            "200": {
-              "description": "Danh sách thông báo",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "announcementId": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "title": {
-                          "type": "string"
-                        },
-                        "content": {
-                          "type": "string"
-                        },
-                        "startDate": {
-                          "type": "string",
-                          "format": "date"
-                        },
-                        "endDate": {
-                          "type": "string",
-                          "format": "date"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "post": {
-          "summary": "Tạo thông báo mới",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string"
-                    },
-                    "content": {
-                      "type": "string"
-                    },
-                    "startDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "endDate": {
-                      "type": "string",
-                      "format": "date"
-                    }
-                  },
-                  "required": ["title", "content"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Tạo thông báo thành công"
-            }
-          }
-        }
-      },
-      "/api/announcements/{announcementId}": {
-        "put": {
-          "summary": "Cập nhật thông báo",
-          "parameters": [
-            {
-              "name": "announcementId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string"
-                    },
-                    "content": {
-                      "type": "string"
-                    },
-                    "startDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "endDate": {
-                      "type": "string",
-                      "format": "date"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Cập nhật thông báo thành công"
-            }
-          }
-        },
-        "delete": {
-          "summary": "Xóa thông báo",
-          "parameters": [
-            {
-              "name": "announcementId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Xóa thông báo thành công"
-            }
-          }
-        }
-      },
-      "/api/chatbot": {
-        "post": {
-          "summary": "Tương tác với chatbot AI",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["message"]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Trả lời từ chatbot AI",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "response": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/mobile": {
-        "get": {
-          "summary": "Lấy giao diện người dùng cho ứng dụng di động",
-          "responses": {
-            "200": {
-              "description": "Giao diện người dùng cho ứng dụng di động",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "ui": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/notifications/mobile": {
-        "get": {
-          "summary": "Lấy danh sách thông báo cho ứng dụng di động",
-          "responses": {
-            "200": {
-              "description": "Danh sách thông báo cho ứng dụng di động",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "notificationId": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "sentAt": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/i18n": {
-        "get": {
-          "summary": "Lấy các chuỗi ngôn ngữ cho bản địa hóa",
-          "responses": {
-            "200": {
-              "description": "Các chuỗi ngôn ngữ cho bản địa hóa",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "strings": {
-                        "type": "object"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/seo": {
-        "get": {
-          "summary": "Lấy các thẻ meta cho SEO",
-          "responses": {
-            "200": {
-              "description": "Các thẻ meta cho SEO",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "metaTags": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "content": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/reports/attendance": {
-        "get": {
-          "summary": "Tạo báo cáo điểm danh",
-          "responses": {
-            "200": {
-              "description": "Báo cáo điểm danh",
-              "content": {
-                "text/csv": {
-                  "schema": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/dashboard": {
-        "get": {
-          "summary": "Lấy dữ liệu bảng điều khiển",
-          "responses": {
-            "200": {
-              "description": "Dữ liệu bảng điều khiển",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "totalStudents": {
-                        "type": "integer"
-                      },
-                      "activeCourses": {
-                        "type": "integer"
-                      },
-                      "upcomingSessions": {
-                        "type": "integer"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  ```
-- **Phase Localized Exception Handlers [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]:**
-  - **System Recovery After Outage:** If the service becomes unavailable, When it restores, Then any pending attendance scans are processed in FIFO order, and users receive a notification of recovered events.
-  - **Performance Metrics:** Core API responses (authentication, attendance capture, course list) must complete within 200 ms average latency. Database queries must be indexed to support sub‑second reads for up to 10 000 concurrent users.
-  - **Availability:** Target 99.9 % annual uptime; SLA includes automatic failover across GKE clusters.
-  - **Security:** All data in transit must use TLS 1.3; at rest encryption with AES‑256. JWT access tokens expire after 15 minutes; refresh tokens have 7‑day expiry. Implement OWASP Top 10 mitigations (SQL injection, XSS, CSRF).
-  - **Scalability & Availability:** Horizontal scaling of Quarkus services via Kubernetes HPA based on CPU > 70 % or request latency > 300 ms. PostgreSQL read replicas for reporting workloads.
-  - **Docker Image Size:** Base image size < 200 MB; final image < 500 MB.
-  - **Logging & Audit:** All user actions (role changes, attendance records, notifications) must be logged with timestamps, user ID, and action details; logs retained for 1 year.
-  - **Multi‑Language Support:** UI strings must be externalized; support English, Vietnamese, Spanish; locale switching without page reload where feasible.
-  - **GDPR/CCPA Compliance:** Personal data deletion on user request; data export in JSON format; consent management for marketing communications.
-  - **Backup & Disaster Recovery:** Daily PostgreSQL full backups; point‑in‑time recovery up to 24 hours; GKE cluster backup to separate region.
+- **Mục tiêu Cốt lõi & Mục đích của Giai đoạn 5**: Containerization, GCP deployment, GKE orchestration, bảo mật, compliance.
+- **Ma trận Bản đồ Thư mục Vật lý Mục tiêu**:  
+  - `./sources/infra/docker [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009], [ARC-010]`  
+  - `./sources/infra/gcp [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009], [ARC-010]`  
+  - `./sources/infra/gke [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009], [ARC-010]`  
+- **Hợp đồng Định tuyến API và Sự kiện**  
+  - Không có API riêng.
 
 #### 📅 Chronological Day-by-Day Sub-Agent Task Distribution Logs (Phase 5)
-- **DAY 13: Triển khai các tính năng quản lý khuyến mãi và thông báo**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/promotion [REQ-017], [REQ-018]`
-      - **Low-Level Technical Task Instruction:** Triển khai các dịch vụ quản lý khuyến mãi, quản lý thông báo
-      - **Targeted Tag IDs:** [REQ-017], [REQ-018]
-    * **Tester:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/promotion;./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/promotion [REQ-017], [REQ-018]`
-      - **Low-Level Technical Task Instruction:** Viết các test case cho các tính năng quản lý khuyến mãi, quản lý thông báo
-      - **Targeted Tag IDs:** [REQ-017], [REQ-018]
-    * **Reviewer:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/promotion [REQ-017], [REQ-018]`
-      - **Low-Level Technical Task Instruction:** Review code cho các tính năng quản lý khuyến mãi, quản lý thông báo
-      - **Targeted Tag IDs:** [REQ-017], [REQ-018]
 
-- **DAY 14: Triển khai các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/chatbot [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]`
-      - **Low-Level Technical Task Instruction:** Triển khai các dịch vụ chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO
-      - **Targeted Tag IDs:** [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]
-    * **Tester:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/chatbot;./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/chatbot [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]`
-      - **Low-Level Technical Task Instruction:** Viết các test case cho các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO
-      - **Targeted Tag IDs:** [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]
-    * **Reviewer:**
-      - **Target Component file path (`target_component`):** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/chatbot [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]`
-      - **Low-Level Technical Task Instruction:** Review code cho các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO
-      - **Targeted Tag IDs:** [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]
-    * **Doc:**
-      - **Target Component file path (`target_component`):** `./sources/docs [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]`
-      - **Low-Level Technical Task Instruction:** Viết tài liệu cho các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO
-      - **Targeted Tag IDs:** [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]
+- **DAY 1:** Xây dựng Dockerfile multi-stage, tối ưu kích thước, push registry.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **Docker:**  
+      - **Target Component file path (`target_component`):** `./sources/infra/docker [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009], [ARC-010]`  
+      - **Low-Level Technical Task Instruction:** Viết Dockerfile multi-stage, giảm kích thước, build, push tới registry, test image.  
+      - **Targeted Tag IDs:** [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009], [ARC-010]  
+- **DAY 2:** Xây dựng Helm charts, HPA, autoscaling, monitoring.  
+  - **Sub-Agent Workflow Specialization:**  
+    * **GKE:**  
+      - **Target Component file path (`target_component`):** `./sources/infra/gke [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009], [ARC-010]`  
+      - **Low-Level Technical Task Instruction:** Viết Helm chart, cấu hình HPA, autoscaling, monitoring, logging, CI/CD.  
+      - **Targeted Tag IDs:** [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009], [ARC-010]  
 
-- **DAY 15: Tích hợp các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO với ứng dụng di động**
-  - **Sub-Agent Workflow Specialization:**
-    * **Coder:**
-      - **Target Component file path (`target_component`):** `./sources/frontend/src/components/chatbot [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]`
-      - **Low-Level Technical Task Instruction:** Tích hợp các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO với ứng dụng di động
-      - **Targeted Tag IDs:** [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]
-    * **Tester:**
-      - **Target Component file path (`target_component`):** `./sources/frontend/src/components/chatbot;./sources/frontend/src/components/chatbot [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]`
-      - **Low-Level Technical Task Instruction:** Viết các test case cho các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO trên ứng dụng di động
-      - **Targeted Tag IDs:** [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]
-    * **Reviewer:**
-      - **Target Component file path (`target_component`):** `./sources/frontend/src/components/chatbot [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]`
-      - **Low-Level Technical Task Instruction:** Review code cho các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO trên ứng dụng di động
-      - **Targeted Tag IDs:** [REQ-019], [REQ-020], [REQ-021], [REQ-022], [REQ-023], [REQ-024], [REQ-025], [EXC-005], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]
+## 📁 6. Mã Bảo Vệ & Biện Pháp Chống Xâm Nhập
 
-## 📁 6. UNIVERSAL ENTERPRISE SECURITY CODES & INJECTION COUNTERMEASURES [NFR-XXX]
-- **SQL Injection (SQLi) Absolute Countermeasures:** Rule parameters for prepared statements, positional query parameters, and dynamic sorting input Whitelists.
-- **Cross-Site Scripting (XSS) & Content Security Policy (CSP):** Layout standards for automated context sanitization, JSX auto-escaping, and dynamic injection of strict CSP headers (`unsafe-inline` restriction).
-- **Multi-Tenant CORS Security Rails:** Configurations for origin wildcard prohibitions and dynamic tenant origin database metrics validation.
-- **Zero-Leak Log Scrubbing & PII Data Masking Engines:** Rules for automated masking interceptors (`@JsonSerialize`) and log scrubbing thresholds.
+- **SQL Injection (SQLi) Absolute Countermeasures**: Sử dụng prepared statements, parameter binding, whitelist cho các tham số sắp xếp.  
+- **Cross-Site Scripting (XSS) & Content Security Policy (CSP)**: Tự động escape output, sử dụng `Content-Security-Policy: default-src 'self'; script-src 'self';`  
+- **Multi-Tenant CORS Security Rails**: Không cho phép wildcard, chỉ cho phép origin từ danh sách whitelist, xác thực tenant ID trong header.  
+- **Zero-Leak Log Scrubbing & PII Data Masking Engines**: Sử dụng interceptor `@JsonSerialize` để mask email, phone, token trong logs, giới hạn độ dài, ghi log với mức độ `INFO` hoặc `WARN`.
 
-## 📁 7. HYBRID MOBILE COMPLIANCE RAIL RULES & INTERNATIONALIZED SEO MECHANISMS
-- **Capacitor Mobile Hybrid Compliance Rails:** [IF Mobile active] Rules for dynamic client-side fetching, absolute URL addressing, hydration safeguards, native storage abstractions (`@capacitor/preferences`), and hardware back-button interception.
-- **Internationalization (i18n) & Dynamic SEO Injection:** Edge-layer locale recognition middleware architectures, hreflang dynamic hypermedia control injection, and search crawler robots indexing limits.
+## 📁 7. Quy Định Tuân Thủ Di Động & SEO
 
-## 📁 8. PIPELINE AUTOMATED DAILY SESSION GIT BRANCH FLOW
-- **Daily Workspace Forking Isolation:** Programmatic forking controls for branch `features/development-phase-X-day-Y` (`X` is the number of phase, from 1 to N, where N <= 5; `Y` is the day number in phase, it will start from 1 for each phase).
-- **Validation Guard Pipeline Gates:** Execution rules for compilation verification, automated code coverage goals (`>= 85%`), and context summary serialization logs.
+- **Capacitor Mobile Hybrid Compliance Rails**: Sử dụng `@capacitor/preferences` cho lưu trữ, intercept back button, offline caching, dynamic URL handling.  
+- **Internationalization (i18n) & Dynamic SEO Injection**: Middleware nhận locale từ header hoặc URL, inject `<html lang='vi'>`, `<link rel='alternate' hreflang='en' href='...'>`, robots.txt, sitemap.xml.
 
-[TRACEABILITY MATRIX ENFORCEMENT: 100% COVERAGE VALIDATED. TOTAL UNIQUE REQ TAGS MAPPED: 25, TOTAL ARC TAGS: 10, TOTAL EXC TAGS: 5, TOTAL DAT TAGS: 11, TOTAL NFR TAGS: 9. ZERO UNASSIGNED CODES FOUND.]
+## 📁 8. Pipeline Automated Daily Session Git Branch Flow
+
+- **Daily Workspace Forking Isolation**: Mỗi ngày tạo branch `features/development-phase-X-day-Y`.  
+- **Validation Guard Pipeline Gates**: Kiểm tra compile, coverage ≥ 85%, lint, unit test, integration test, build Docker image, push, deploy to GKE, run smoke test.
+
+[TRACEABILITY MATRIX ENFORCEMENT: 100% COVERAGE VALIDATED. TOTAL UNIQUE REQ TAGS MAPPED: 24, TOTAL ARC TAGS: 10, TOTAL EXC TAGS: 5, TOTAL DAT TAGS: 11, TOTAL NFR TAGS: 9. ZERO UNASSIGNED CODES FOUND.]

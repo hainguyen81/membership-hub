@@ -1,0 +1,154 @@
+{
+    "phase_id": 3,
+    "phase_name": "phase_3",
+    "phase_description": "Triển khai các tính năng đăng ký và ghi danh học viên, điểm danh và quét mã QR",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
+            "context_section": "NGÀY 7: Triển khai các tính năng đăng ký và ghi danh học viên",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ duyệt khóa học, đăng ký khóa học của học viên",
+                    "targeted_tags": [
+                        "[REQ-010]",
+                        "[REQ-011]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/enrollment"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng duyệt khóa học, đăng ký khóa học của học viên",
+                    "targeted_tags": [
+                        "[REQ-010]",
+                        "[REQ-011]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/enrollment",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/enrollment"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng duyệt khóa học, đăng ký khóa học của học viên",
+                    "targeted_tags": [
+                        "[REQ-010]",
+                        "[REQ-011]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/enrollment"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
+            "context_section": "NGÀY 8: Triển khai các tính năng điểm danh và quét mã QR",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ chụp ảnh điểm danh QR, tính chất bất biến của điểm danh",
+                    "targeted_tags": [
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/attendance"
+                    ]
+                },
+                {
+                    "id": "D2_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng chụp ảnh điểm danh QR, tính chất bất biến của điểm danh",
+                    "targeted_tags": [
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/attendance",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/attendance"
+                    ]
+                },
+                {
+                    "id": "D2_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng chụp ảnh điểm danh QR, tính chất bất biến của điểm danh",
+                    "targeted_tags": [
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/attendance"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
+            "context_section": "NGÀY 9: Tích hợp các tính năng điểm danh và quét mã QR với ứng dụng di động",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Tích hợp các tính năng điểm danh và quét mã QR với ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
+                    "components": [
+                        "./sources/frontend/src/components/attendance"
+                    ]
+                },
+                {
+                    "id": "D3_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng điểm danh và quét mã QR trên ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
+                    "components": [
+                        "./sources/frontend/src/components/attendance",
+                        "./sources/frontend/src/components/attendance"
+                    ]
+                },
+                {
+                    "id": "D3_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng điểm danh và quét mã QR trên ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
+                    "components": [
+                        "./sources/frontend/src/components/attendance"
+                    ]
+                }
+            ]
+        }
+    ]
+}

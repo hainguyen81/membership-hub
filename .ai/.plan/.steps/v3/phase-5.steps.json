@@ -1,0 +1,259 @@
+{
+    "phase_id": 5,
+    "phase_name": "phase_5",
+    "phase_description": "Triển khai các tính năng quản lý khuyến mãi và thông báo, chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
+            "context_section": "NGÀY 13: Triển khai các tính năng quản lý khuyến mãi và thông báo",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ quản lý khuyến mãi, quản lý thông báo",
+                    "targeted_tags": [
+                        "[REQ-017]",
+                        "[REQ-018]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/promotion"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng quản lý khuyến mãi, quản lý thông báo",
+                    "targeted_tags": [
+                        "[REQ-017]",
+                        "[REQ-018]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/promotion",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/promotion"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng quản lý khuyến mãi, quản lý thông báo",
+                    "targeted_tags": [
+                        "[REQ-017]",
+                        "[REQ-018]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/promotion"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
+            "context_section": "NGÀY 14: Triển khai các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO",
+                    "targeted_tags": [
+                        "[REQ-019]",
+                        "[REQ-020]",
+                        "[REQ-021]",
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[REQ-024]",
+                        "[REQ-025]",
+                        "[EXC-005]",
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-003]",
+                        "[NFR-004]",
+                        "[NFR-005]",
+                        "[NFR-006]",
+                        "[NFR-007]",
+                        "[NFR-008]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/chatbot"
+                    ]
+                },
+                {
+                    "id": "D2_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO",
+                    "targeted_tags": [
+                        "[REQ-019]",
+                        "[REQ-020]",
+                        "[REQ-021]",
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[REQ-024]",
+                        "[REQ-025]",
+                        "[EXC-005]",
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-003]",
+                        "[NFR-004]",
+                        "[NFR-005]",
+                        "[NFR-006]",
+                        "[NFR-007]",
+                        "[NFR-008]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/chatbot",
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/chatbot"
+                    ]
+                },
+                {
+                    "id": "D2_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO",
+                    "targeted_tags": [
+                        "[REQ-019]",
+                        "[REQ-020]",
+                        "[REQ-021]",
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[REQ-024]",
+                        "[REQ-025]",
+                        "[EXC-005]",
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-003]",
+                        "[NFR-004]",
+                        "[NFR-005]",
+                        "[NFR-006]",
+                        "[NFR-007]",
+                        "[NFR-008]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/chatbot"
+                    ]
+                },
+                {
+                    "id": "D2_ST4",
+                    "agent": "Doc",
+                    "desc": "Doc Agent: Viết tài liệu cho các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO",
+                    "targeted_tags": [
+                        "[REQ-019]",
+                        "[REQ-020]",
+                        "[REQ-021]",
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[REQ-024]",
+                        "[REQ-025]",
+                        "[EXC-005]",
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-003]",
+                        "[NFR-004]",
+                        "[NFR-005]",
+                        "[NFR-006]",
+                        "[NFR-007]",
+                        "[NFR-008]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/docs"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
+            "context_section": "NGÀY 15: Tích hợp các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO với ứng dụng di động",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Tích hợp các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO với ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-019]",
+                        "[REQ-020]",
+                        "[REQ-021]",
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[REQ-024]",
+                        "[REQ-025]",
+                        "[EXC-005]",
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-003]",
+                        "[NFR-004]",
+                        "[NFR-005]",
+                        "[NFR-006]",
+                        "[NFR-007]",
+                        "[NFR-008]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/frontend/src/components/chatbot"
+                    ]
+                },
+                {
+                    "id": "D3_ST2",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết các test case cho các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO trên ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-019]",
+                        "[REQ-020]",
+                        "[REQ-021]",
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[REQ-024]",
+                        "[REQ-025]",
+                        "[EXC-005]",
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-003]",
+                        "[NFR-004]",
+                        "[NFR-005]",
+                        "[NFR-006]",
+                        "[NFR-007]",
+                        "[NFR-008]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/frontend/src/components/chatbot",
+                        "./sources/frontend/src/components/chatbot"
+                    ]
+                },
+                {
+                    "id": "D3_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Review code cho các tính năng chatbot dịch vụ khách hàng AI, các tính năng cốt lõi của ứng dụng di động, bản địa hóa và SEO trên ứng dụng di động",
+                    "targeted_tags": [
+                        "[REQ-019]",
+                        "[REQ-020]",
+                        "[REQ-021]",
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[REQ-024]",
+                        "[REQ-025]",
+                        "[EXC-005]",
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-003]",
+                        "[NFR-004]",
+                        "[NFR-005]",
+                        "[NFR-006]",
+                        "[NFR-007]",
+                        "[NFR-008]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/frontend/src/components/chatbot"
+                    ]
+                }
+            ]
+        }
+    ]
+}

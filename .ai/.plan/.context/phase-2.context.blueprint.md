@@ -1,98 +1,84 @@
-# Giai đoạn 2: <!--PHASE_NAME_START-->phase_2<!--PHASE_NAME_END--> | Mô tả: Triển khai các tính năng quản lý người dùng, quản lý trung tâm, quản lý khóa học
+# Giai đoạn 2: <!--PHASE_NAME_START-->Xây dựng CRUD trung tâm, khóa học, ghi danh và điểm danh<!--PHASE_NAME_END-->
+
 ## 📊 Document Control
 
 | Mục | Chi tiết |
 | :--- | :--- |
-| **ID Blueprint** | ARCH-20260804052551 |
+| **ID Kiến trúc** | ARCH-20260804165526 |
 | **Tên dự án** | membership-hub |
 | **Giai đoạn** | 2 |
-| **Tên kỹ thuật giai đoạn** | <!--PHASE_NAME_START-->phase_2<!--PHASE_NAME_END--> |
-| **Mô tả** | Triển khai các tính năng quản lý người dùng, quản lý trung tâm, quản lý khóa học |
+| **Tên Giai đoạn** | <!--PHASE_NAME_START-->Xây dựng CRUD trung tâm, khóa học, ghi danh và điểm danh<!--PHASE_NAME_END--> |
+| **Mô tả** | <!--PHASE_DESC_START-->Giai đoạn này tập trung vào việc triển khai các dịch vụ CRUD cho trung tâm, khóa học, ghi danh và điểm danh, đồng thời xây dựng schema dữ liệu tương ứng, thực hiện kiểm thử, xử lý ngoại lệ và đảm bảo tuân thủ các tiêu chuẩn bảo mật OWASP.<!--PHASE_DESC_END--> |
 | **Phiên bản** | 1.0 (Baseline) |
-| **Ngày/Giờ** | 2026/08/04 05:25:51 |
+| **Ngày/Giờ** | 2026/08/04 16:55:26 |
 | **Tác giả** | Enterprise System Architect (SA Agent) |
 | **Phê duyệt** | Pending Technical Governance Review |
 
-## 1. Phạm vi hoạt động và mục tiêu của giai đoạn
-Giai đoạn 2 tập trung vào việc triển khai các tính năng quản lý người dùng, quản lý trung tâm, và quản lý khóa học. Các nhiệm vụ chính bao gồm:
-- Triển khai các dịch vụ đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng.
-- Triển khai các dịch vụ xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm.
-- Triển khai các dịch vụ xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học.
+## 1. Phạm vi và mục tiêu của Giai đoạn
+Giai đoạn 2 thực hiện xây dựng các dịch vụ CRUD cho trung tâm, khóa học, ghi danh và điểm danh, bao gồm thiết kế schema dữ liệu, triển khai API REST, thực hiện kiểm thử đơn vị và tích hợp, xử lý ngoại lệ, và đảm bảo tuân thủ các tiêu chuẩn bảo mật OWASP.
 
-## 2. Phạm vi kỹ thuật và ranh giới thư mục được phép
-- `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user`
-- `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center`
-- `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course`
+## 2. Phạm vi kỹ thuật và ranh giới thư mục
+- **Thư mục**  
+  - `./sources/backend/center-service`  
+  - `./sources/backend/course-service`  
+  - `./sources/backend/enrollment-service`  
+  - `./sources/backend/attendance-service`  
+  - `./sources/backend/database/migrations`  
+- **Endpoint REST**  
+  - `GET /api/centers` → danh sách trung tâm  
+  - `POST /api/centers` → tạo trung tâm  
+  - `GET /api/courses` → danh sách khóa học  
+  - `POST /api/courses` → tạo khóa học  
+  - `POST /api/enrollments` → ghi danh học viên  
+  - `POST /api/attendance` → ghi điểm danh
 
-## 3. Hướng dẫn chức năng chuyên dụng cho các tác vụ con
-- **Coder:** Triển khai các dịch vụ đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng, xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm, xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học.
-- **Tester:** Viết các test case cho các tính năng đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng, xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm, xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học.
-- **Reviewer:** Review code cho các tính năng đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng, xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm, xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học.
+## 3. Hướng dẫn chức năng dành cho Sub-Agent
+- **Coder**: Xây dựng controller, service, repository, validation, exception handling, unit test cho các dịch vụ.  
+- **Tester**: Viết và thực thi test integration, kiểm tra idempotency, duplicate handling.  
+- **Reviewer**: Đánh giá code quality, kiểm tra exception handling, performance.  
+- **Doc**: Tài liệu chi tiết API, quy trình triển khai, hướng dẫn bảo mật.  
+- **Docker / GCP / GKE**: Không áp dụng trong giai đoạn này.
 
-## 4. Định nghĩa hoàn thành giai đoạn (DoD)
-- Hoàn thành 100% các nhiệm vụ được chỉ định cho giai đoạn 2.
-- Đảm bảo tuân thủ các tiêu chuẩn bảo mật OWASP.
-- Đảm bảo hoàn thành các bài kiểm tra chức năng cho các yêu cầu được phân bổ.
-- Đảm bảo 100% các Tag ID được ánh xạ.
+## 4. Định nghĩa Hoàn thành Giai đoạn (DoD)
+- Tất cả yêu cầu [REQ-004]–[REQ-013] và các dữ liệu [DAT-003]–[DAT-006] được triển khai và kiểm thử.  
+- Coverage test ≥ 90 % cho các module center, course, enrollment, attendance.  
+- Kiểm tra OWASP (SQLi, XSS, CSRF, JWT) đạt 100 %.  
+- Mọi tag ID được map đầy đủ, không còn tag chưa được sử dụng.
 
-## 5. NHẬT KÝ THỰC HIỆN KIẾN TRÚC THEO NGÀY
+## 5. Nhật ký thực thi kiến trúc theo ngày
 
-### NGÀY 4: Triển khai các tính năng quản lý người dùng
+### DAY 1: <!--DAY_HEADER_START-->XÂY DỰNG CRUD TRUNG TÂM<!--DAY_HEADER_END-->
 
-#### NHIỆM VỤ CON 4.1: Triển khai các dịch vụ đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng
-##### Người phụ trách: Coder
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-001], [REQ-002], [REQ-003]<!--END_TAGS-->
+#### SUB-TASK 1.1: Xây dựng API CRUD trung tâm, schema Centers, kiểm thử đơn vị
+##### Được giao cho Sub-Agent: Coder
+##### Yêu cầu thành phần & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu**: `./sources/backend/center-service`
+* **Thẻ mã theo dõi**: <!--START_TAGS-->[REQ-004], [REQ-005], [REQ-006], [DAT-003]<!--END_TAGS-->
 
-#### NHIỆM VỤ CON 4.2: Viết các test case cho các tính năng đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng
-##### Người phụ trách: Tester
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/user;./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-001], [REQ-002], [REQ-003]<!--END_TAGS-->
+### DAY 2: <!--DAY_HEADER_START-->XÂY DỰNG CRUD KHÓA HỌC<!--DAY_HEADER_END-->
 
-#### NHIỆM VỤ CON 4.3: Review code cho các tính năng đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng
-##### Người phụ trách: Reviewer
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-001], [REQ-002], [REQ-003]<!--END_TAGS-->
+#### SUB-TASK 2.1: Xây dựng API CRUD khóa học, schema Courses, kiểm thử đơn vị
+##### Được giao cho Sub-Agent: Coder
+##### Yêu cầu thành phần & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu**: `./sources/backend/course-service`
+* **Thẻ mã theo dõi**: <!--START_TAGS-->[REQ-007], [REQ-008], [REQ-009], [DAT-004]<!--END_TAGS-->
 
-### NGÀY 5: Triển khai các tính năng quản lý trung tâm
+### DAY 3: <!--DAY_HEADER_START-->XÂY DỰNG GHI DANH VÀ ĐIỂM DANH<!--DAY_HEADER_END-->
 
-#### NHIỆM VỤ CON 5.1: Triển khai các dịch vụ xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm
-##### Người phụ trách: Coder
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-004], [REQ-005], [REQ-006]<!--END_TAGS-->
+#### SUB-TASK 3.1: Xây dựng API ghi danh, attendance, schema Enrollments & Attendance, exception handling, kiểm thử đơn vị
+##### Được giao cho Sub-Agent: Coder
+##### Yêu cầu thành phần & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu**: `./sources/backend/enrollment-service`
+* **Thẻ mã theo dõi**: <!--START_TAGS-->[REQ-010], [REQ-011], [DAT-005]<!--END_TAGS-->
 
-#### NHIỆM VỤ CON 5.2: Viết các test case cho các tính năng xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm
-##### Người phụ trách: Tester
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/center;./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-004], [REQ-005], [REQ-006]<!--END_TAGS-->
+#### SUB-TASK 3.2: Viết test integration cho attendance, kiểm tra idempotency, duplicate handling
+##### Được giao cho Sub-Agent: Tester
+##### Yêu cầu thành phần & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu**: `./sources/backend/attendance-service;./sources/backend/attendance-service/src/test/java/com/membershiphub/attendance/AttendanceServiceTest.java`
+* **Thẻ mã theo dõi**: <!--START_TAGS-->[REQ-012], [REQ-013], [DAT-006], [EXC-001], [EXC-002]<!--END_TAGS-->
 
-#### NHIỆM VỤ CON 5.3: Review code cho các tính năng xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm
-##### Người phụ trách: Reviewer
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-004], [REQ-005], [REQ-006]<!--END_TAGS-->
-
-### NGÀY 6: Triển khai các tính năng quản lý khóa học
-
-#### NHIỆM VỤ CON 6.1: Triển khai các dịch vụ xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học
-##### Người phụ trách: Coder
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-007], [REQ-008], [REQ-009]<!--END_TAGS-->
-
-#### NHIỆM VỤ CON 6.2: Viết các test case cho các tính năng xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học
-##### Người phụ trách: Tester
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/course;./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-007], [REQ-008], [REQ-009]<!--END_TAGS-->
-
-#### NHIỆM VỤ CON 6.3: Review code cho các tính năng xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học
-##### Người phụ trách: Reviewer
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-007], [REQ-008], [REQ-009]<!--END_TAGS-->
+#### SUB-TASK 3.3: Đánh giá code quality, exception handling, performance
+##### Được giao cho Sub-Agent: Reviewer
+##### Yêu cầu thành phần & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu**: `./sources/backend/enrollment-service`
+* **Thẻ mã theo dõi**: <!--START_TAGS-->[REQ-010], [REQ-011], [DAT-005]<!--END_TAGS-->

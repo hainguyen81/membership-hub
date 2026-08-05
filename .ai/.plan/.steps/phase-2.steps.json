@@ -1,7 +1,7 @@
 {
     "phase_id": 2,
-    "phase_name": "phase_2",
-    "phase_description": "Triển khai các tính năng quản lý người dùng, quản lý trung tâm, quản lý khóa học",
+    "phase_name": "Xây dựng CRUD trung tâm, khóa học, ghi danh và điểm danh",
+    "phase_description": "Giai đoạn này tập trung vào việc triển khai các dịch vụ CRUD cho trung tâm, khóa học, ghi danh và điểm danh, đồng thời xây dựng schema dữ liệu tương ứng, thực hiện kiểm thử, xử lý ngoại lệ và đảm bảo tuân thủ các tiêu chuẩn bảo mật OWASP.",
     "project_name": "membership-hub",
     "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
     "source_target_dir": "sources/",
@@ -9,46 +9,23 @@
         {
             "day": 1,
             "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
-            "context_section": "NGÀY 4: Triển khai các tính năng quản lý người dùng",
+            "context_section": "DAY 1",
             "sub_tasks": [
                 {
                     "id": "D1_ST1",
                     "agent": "Coder",
-                    "desc": "Coder Agent: Triển khai các dịch vụ đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng",
+                    "desc": "Coder Agent: Xây dựng API CRUD trung tâm, schema Centers, kiểm thử đơn vị",
                     "targeted_tags": [
-                        "[REQ-001]",
-                        "[REQ-002]",
-                        "[REQ-003]"
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[REQ-006]",
+                        "[DAT-003]"
                     ],
                     "components": [
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user"
-                    ]
-                },
-                {
-                    "id": "D1_ST2",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Viết các test case cho các tính năng đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng",
-                    "targeted_tags": [
-                        "[REQ-001]",
-                        "[REQ-002]",
-                        "[REQ-003]"
-                    ],
-                    "components": [
-                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/user",
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user"
-                    ]
-                },
-                {
-                    "id": "D1_ST3",
-                    "agent": "Reviewer",
-                    "desc": "Reviewer Agent: Review code cho các tính năng đăng ký người dùng, xác thực qua mạng xã hội, phân quyền người dùng",
-                    "targeted_tags": [
-                        "[REQ-001]",
-                        "[REQ-002]",
-                        "[REQ-003]"
-                    ],
-                    "components": [
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/user"
+                        "./sources/backend/center-service/src/main/java/com/membershiphub/center/CenterController.java",
+                        "./sources/backend/center-service/src/main/java/com/membershiphub/center/CenterService.java",
+                        "./sources/backend/center-service/src/main/java/com/membershiphub/center/CenterRepository.java",
+                        "./sources/backend/center-service/src/test/java/com/membershiphub/center/CenterServiceTest.java"
                     ]
                 }
             ]
@@ -56,46 +33,23 @@
         {
             "day": 2,
             "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
-            "context_section": "NGÀY 5: Triển khai các tính năng quản lý trung tâm",
+            "context_section": "DAY 2",
             "sub_tasks": [
                 {
                     "id": "D2_ST1",
                     "agent": "Coder",
-                    "desc": "Coder Agent: Triển khai các dịch vụ xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm",
+                    "desc": "Coder Agent: Xây dựng API CRUD khóa học, schema Courses, kiểm thử đơn vị",
                     "targeted_tags": [
-                        "[REQ-004]",
-                        "[REQ-005]",
-                        "[REQ-006]"
+                        "[REQ-007]",
+                        "[REQ-008]",
+                        "[REQ-009]",
+                        "[DAT-004]"
                     ],
                     "components": [
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center"
-                    ]
-                },
-                {
-                    "id": "D2_ST2",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Viết các test case cho các tính năng xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm",
-                    "targeted_tags": [
-                        "[REQ-004]",
-                        "[REQ-005]",
-                        "[REQ-006]"
-                    ],
-                    "components": [
-                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/center",
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center"
-                    ]
-                },
-                {
-                    "id": "D2_ST3",
-                    "agent": "Reviewer",
-                    "desc": "Reviewer Agent: Review code cho các tính năng xem danh sách trung tâm, tạo/cập nhật/xóa trung tâm, phân quyền quản trị trung tâm",
-                    "targeted_tags": [
-                        "[REQ-004]",
-                        "[REQ-005]",
-                        "[REQ-006]"
-                    ],
-                    "components": [
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/center"
+                        "./sources/backend/course-service/src/main/java/com/membershiphub/course/CourseController.java",
+                        "./sources/backend/course-service/src/main/java/com/membershiphub/course/CourseService.java",
+                        "./sources/backend/course-service/src/main/java/com/membershiphub/course/CourseRepository.java",
+                        "./sources/backend/course-service/src/test/java/com/membershiphub/course/CourseServiceTest.java"
                     ]
                 }
             ]
@@ -103,46 +57,51 @@
         {
             "day": 3,
             "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
-            "context_section": "NGÀY 6: Triển khai các tính năng quản lý khóa học",
+            "context_section": "DAY 3",
             "sub_tasks": [
                 {
                     "id": "D3_ST1",
                     "agent": "Coder",
-                    "desc": "Coder Agent: Triển khai các dịch vụ xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học",
+                    "desc": "Coder Agent: Xây dựng API ghi danh, attendance, schema Enrollments & Attendance, exception handling, kiểm thử đơn vị",
                     "targeted_tags": [
-                        "[REQ-007]",
-                        "[REQ-008]",
-                        "[REQ-009]"
+                        "[REQ-010]",
+                        "[REQ-011]",
+                        "[DAT-005]"
                     ],
                     "components": [
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course"
+                        "./sources/backend/enrollment-service/src/main/java/com/membershiphub/enrollment/EnrollmentController.java",
+                        "./sources/backend/enrollment-service/src/main/java/com/membershiphub/enrollment/EnrollmentService.java",
+                        "./sources/backend/enrollment-service/src/main/java/com/membershiphub/enrollment/EnrollmentRepository.java",
+                        "./sources/backend/enrollment-service/src/test/java/com/membershiphub/enrollment/EnrollmentServiceTest.java"
                     ]
                 },
                 {
                     "id": "D3_ST2",
                     "agent": "Tester",
-                    "desc": "Tester Agent: Viết các test case cho các tính năng xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học",
+                    "desc": "Tester Agent: Viết test integration cho attendance, kiểm tra idempotency, duplicate handling",
                     "targeted_tags": [
-                        "[REQ-007]",
-                        "[REQ-008]",
-                        "[REQ-009]"
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[DAT-006]",
+                        "[EXC-001]",
+                        "[EXC-002]"
                     ],
                     "components": [
-                        "./sources/backend/src/test/java/org/nlh4j/saas/membershiphub/course",
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course"
+                        "./sources/backend/attendance-service/src/test/java/com/membershiphub/attendance/AttendanceServiceTest.java"
                     ]
                 },
                 {
                     "id": "D3_ST3",
                     "agent": "Reviewer",
-                    "desc": "Reviewer Agent: Review code cho các tính năng xem danh sách khóa học, tạo/cập nhật/xóa khóa học, phân công giáo viên vào khóa học",
+                    "desc": "Reviewer Agent: Đánh giá code quality, exception handling, performance",
                     "targeted_tags": [
-                        "[REQ-007]",
-                        "[REQ-008]",
-                        "[REQ-009]"
+                        "[REQ-010]",
+                        "[REQ-011]",
+                        "[DAT-005]"
                     ],
                     "components": [
-                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/course"
+                        "./sources/backend/enrollment-service/src/main/java/com/membershiphub/enrollment/EnrollmentController.java",
+                        "./sources/backend/enrollment-service/src/main/java/com/membershiphub/enrollment/EnrollmentService.java"
                     ]
                 }
             ]

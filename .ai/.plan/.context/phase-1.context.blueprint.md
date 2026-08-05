@@ -1,77 +1,68 @@
-# Giai đoạn 1: <!--PHASE_NAME_START-->phase_1<!--PHASE_NAME_END--> | Mô tả: Thiết lập cơ sở hạ tầng backend và frontend, triển khai cơ sở dữ liệu PostgreSQL, tích hợp Firebase Authentication
+# Phase 1: Thiết lập Xác thực và Quản lý Người dùng
+
 ## 📊 Document Control
 
-| Mục | Chi tiết |
+| Item | Details |
 | :--- | :--- |
-| **ID Blueprint** | ARCH-20260804052551 |
-| **Tên dự án** | membership-hub |
-| **Giai đoạn** | 1 |
-| **Tên kỹ thuật giai đoạn** | <!--PHASE_NAME_START-->phase_1<!--PHASE_NAME_END--> |
-| **Mô tả** | Thiết lập cơ sở hạ tầng backend và frontend, triển khai cơ sở dữ liệu PostgreSQL, tích hợp Firebase Authentication |
-| **Phiên bản** | 1.0 (Baseline) |
-| **Ngày/Giờ** | 2026/08/04 05:25:51 |
-| **Tác giả** | Enterprise System Architect (SA Agent) |
-| **Phê duyệt** | Pending Technical Governance Review |
+| **Blueprint ID** | ARCH-20260804165526 |
+| **Project Name** | membership-hub |
+| **Phase** | 1 |
+| **Phase Name** | Thiết lập Xác thực và Quản lý Người dùng |
+| **Description** | Giai đoạn này tập trung vào việc xây dựng nền tảng xác thực, quản lý người dùng và quyền truy cập, triển khai JWT, chuẩn hoá API, và thực hiện kiểm thử đơn vị. |
+| **Version** | 1.0 (Baseline) |
+| **Date/Time** | 2026/08/04 16:55:26 |
+| **Author** | Enterprise System Architect (SA Agent) |
+| **Approval** | Pending Technical Governance Review |
 
-## 1. Phạm vi hoạt động và mục tiêu của giai đoạn
-Giai đoạn 1 tập trung vào việc thiết lập cơ sở hạ tầng backend và frontend, triển khai cơ sở dữ liệu PostgreSQL, và tích hợp Firebase Authentication. Các nhiệm vụ chính bao gồm:
-- Thiết lập cấu hình cơ sở dữ liệu PostgreSQL
-- Tích hợp Firebase Authentication
-- Thiết lập cấu hình Docker và Kubernetes (GKE)
-- Viết Dockerfile cho dịch vụ backend
-- Triển khai cơ sở hạ tầng trên Google Cloud Platform
+## 1. Phase Operational Scope & Objectives
+Giai đoạn 1 thực hiện các chức năng chính: đăng ký, đăng nhập, lấy thông tin người dùng, quản lý vai trò, tạo và duy trì schema Users & Roles, phát hành JWT, và thực hiện kiểm thử đơn vị. Mọi hoạt động phải tuân thủ các yêu cầu bảo mật OWASP, hiệu năng, và khả năng mở rộng theo NFR.
 
-## 2. Phạm vi kỹ thuật và ranh giới thư mục được phép
-- `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/config`
-- `./sources/backend/src/main/resources/db/migration`
-- `./sources/backend/Dockerfile`
-- `./sources/infra/gcp`
+## 2. Allowed Technical Scope & Directory Boundaries (Files, paths, and endpoints)
+- **Directories**  
+  - `./sources/backend/auth-service`  
+  - `./sources/backend/user-service`  
+  - `./sources/backend/role-service`  
+  - `./sources/backend/database/migrations`  
+- **REST Endpoints**  
+  - `POST /api/auth/register` → Body: `{email, password, provider}` → Response: `{token, refreshToken}`  
+  - `POST /api/auth/login` → Body: `{email, password}` → Response: `{token, refreshToken}`  
+  - `GET /api/auth/me` → Header: `Authorization: Bearer <token>` → Response: `{userId, email, role}`  
 
-## 3. Hướng dẫn chức năng chuyên dụng cho các tác vụ con
-- **Coder:** Triển khai cấu hình cơ sở dữ liệu PostgreSQL, tích hợp Firebase Authentication, thiết lập cấu hình Docker và Kubernetes (GKE), viết Dockerfile cho dịch vụ backend, triển khai cơ sở hạ tầng trên Google Cloud Platform.
-- **Docker:** Viết Dockerfile cho dịch vụ backend, cấu hình multi-stage build để giảm kích thước image.
-- **GCP:** Triển khai cơ sở hạ tầng trên Google Cloud Platform, cấu hình VPC, IAM, và các dịch vụ cần thiết.
+## 3. Dedicated Sub-Agent Functional Directives
+- **Coder**: Xây dựng controller, service, repository, JWT provider, validation, exception handling, và unit test cho dịch vụ auth, user, role.  
+- **Tester**: Viết và thực thi các test unit và integration, mock Firebase, kiểm tra token expiration, idempotent, và bảo mật.  
+- **Reviewer**: Đánh giá code quality, kiểm tra OWASP, profiling hiệu năng, đề xuất cải tiến.  
+- **Doc**: Tài liệu chi tiết API, quy trình triển khai, và hướng dẫn bảo mật.  
 
-## 4. Định nghĩa hoàn thành giai đoạn (DoD)
-- Hoàn thành 100% các nhiệm vụ được chỉ định cho giai đoạn 1.
-- Đảm bảo tuân thủ các tiêu chuẩn bảo mật OWASP.
-- Đảm bảo hoàn thành các bài kiểm tra chức năng cho các yêu cầu được phân bổ.
-- Đảm bảo 100% các Tag ID được ánh xạ.
+## 4. Phase Definition of Done (DoD)
+- Tất cả yêu cầu [REQ-001]–[REQ-005] và [ARC-001]–[ARC-005] được triển khai và kiểm thử.  
+- Coverage test ≥ 90 % cho các module auth, user, role.  
+- Kiểm tra OWASP (SQLi, XSS, CSRF, JWT) đạt mức 100 %.  
+- Tất cả tag ID được map đầy đủ, không còn tag chưa được sử dụng.  
+- Đã thực hiện review code, performance profiling, và tối ưu.  
 
-## 5. NHẬT KÝ THỰC HIỆN KIẾN TRÚC THEO NGÀY
+## 5. DAY-BY-DAY ARCHITECTURAL EXECUTION LOGS
 
-### NGÀY 1: Thiết lập cơ sở hạ tầng backend và frontend
+### DAY 1: XÂY ĐẾN API ĐĂNG KÝ VÀ XÁC THỰC
 
-#### NHIỆM VỤ CON 1.1: Thiết lập cấu hình cơ sở dữ liệu PostgreSQL, tích hợp Firebase Authentication, thiết lập cấu hình Docker và Kubernetes (GKE)
-##### Người phụ trách: Coder
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/config`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-006], [ARC-010]<!--END_TAGS-->
+#### SUB-TASK 1.1: Xây dựng API đăng ký, đăng nhập và schema Users & Roles
+##### Assigned Sub-Agent: Coder
+##### Targeted Components & Technical Requirements:
+* **Target Path**: `./sources/backend/auth-service`
+* **Traceability Tag Tokens**: <!--START_TAGS-->[REQ-001], [REQ-002], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [DAT-001], [DAT-002], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]<!--END_TAGS-->
 
-#### NHIỆM VỤ CON 1.2: Viết Dockerfile cho dịch vụ backend, cấu hình multi-stage build để giảm kích thước image
-##### Người phụ trách: Docker
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/Dockerfile`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-010]<!--END_TAGS-->
+### DAY 2: THỰC HIỆN KIỂM THỬ TÍNH NĂNG XÁC THỰC
 
-#### NHIỆM VỤ CON 1.3: Triển khai cơ sở hạ tầng trên Google Cloud Platform, cấu hình VPC, IAM, và các dịch vụ cần thiết
-##### Người phụ trách: GCP
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/infra/gcp`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-010]<!--END_TAGS-->
+#### SUB-TASK 2.1: Viết test integration, kiểm tra token expiration và idempotent
+##### Assigned Sub-Agent: Tester
+##### Targeted Components & Technical Requirements:
+* **Target Path**: `./sources/backend/auth-service;./sources/backend/auth-service/src/test/java/com/membershiphub/auth/AuthServiceTest.java`
+* **Traceability Tag Tokens**: <!--START_TAGS-->[ARC-006], [ARC-007], [ARC-008], [ARC-009], [ARC-010], [EXC-004], [DAT-001], [DAT-002], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]<!--END_TAGS-->
 
-### NGÀY 2: Triển khai cơ sở dữ liệu PostgreSQL
+### DAY 3: ĐÁNH GIÁ BẢO MẬT VÀ TIỆN ĐIỆN
 
-#### NHIỆM VỤ CON 2.1: Viết các script Flyway/Liquibase để tạo các bảng cơ sở dữ liệu, thiết lập các ràng buộc và chỉ mục
-##### Người phụ trách: Coder
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/src/main/resources/db/migration`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[DAT-001], [DAT-003], [DAT-004], [DAT-005], [DAT-006], [DAT-007], [DAT-008], [DAT-009], [DAT-011]<!--END_TAGS-->
-
-### NGÀY 3: Tích hợp Firebase Authentication
-
-#### NHIỆM VỤ CON 3.1: Triển khai các dịch vụ xác thực qua email/mật khẩu, Firebase, Google, và Facebook OAuth2, cấu hình JWT token với thời hạn 15 phút và refresh token
-##### Người phụ trách: Coder
-##### Yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/auth`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-006]<!--END_TAGS-->
+#### SUB-TASK 3.1: Đánh giá bảo mật, chuẩn hoá API và kiểm tra hiệu năng
+##### Assigned Sub-Agent: Reviewer
+##### Targeted Components & Technical Requirements:
+* **Target Path**: `./sources/backend/auth-service`
+* **Traceability Tag Tokens**: <!--START_TAGS-->[ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [DAT-001], [DAT-002], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]<!--END_TAGS-->

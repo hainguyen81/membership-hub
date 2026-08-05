@@ -1,0 +1,95 @@
+{
+    "phase_id": 1,
+    "phase_name": "phase_1",
+    "phase_description": "Thiết lập cơ sở hạ tầng backend và frontend, triển khai cơ sở dữ liệu PostgreSQL, tích hợp Firebase Authentication",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "NGÀY 1: Thiết lập cơ sở hạ tầng backend và frontend",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Thiết lập cấu hình cơ sở dữ liệu PostgreSQL, tích hợp Firebase Authentication, thiết lập cấu hình Docker và Kubernetes (GKE)",
+                    "targeted_tags": [
+                        "[ARC-006]",
+                        "[ARC-010]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/config"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Docker",
+                    "desc": "Docker Agent: Viết Dockerfile cho dịch vụ backend, cấu hình multi-stage build để giảm kích thước image",
+                    "targeted_tags": [
+                        "[ARC-010]"
+                    ],
+                    "components": [
+                        "./sources/backend/Dockerfile"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Gcp",
+                    "desc": "Gcp Agent: Triển khai cơ sở hạ tầng trên Google Cloud Platform, cấu hình VPC, IAM, và các dịch vụ cần thiết",
+                    "targeted_tags": [
+                        "[ARC-010]"
+                    ],
+                    "components": [
+                        "./sources/infra/gcp"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "NGÀY 2: Triển khai cơ sở dữ liệu PostgreSQL",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Viết các script Flyway/Liquibase để tạo các bảng cơ sở dữ liệu, thiết lập các ràng buộc và chỉ mục",
+                    "targeted_tags": [
+                        "[DAT-001]",
+                        "[DAT-003]",
+                        "[DAT-004]",
+                        "[DAT-005]",
+                        "[DAT-006]",
+                        "[DAT-007]",
+                        "[DAT-008]",
+                        "[DAT-009]",
+                        "[DAT-011]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/resources/db/migration"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "NGÀY 3: Tích hợp Firebase Authentication",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Triển khai các dịch vụ xác thực qua email/mật khẩu, Firebase, Google, và Facebook OAuth2, cấu hình JWT token với thời hạn 15 phút và refresh token",
+                    "targeted_tags": [
+                        "[ARC-006]"
+                    ],
+                    "components": [
+                        "./sources/backend/src/main/java/org/nlh4j/saas/membershiphub/auth"
+                    ]
+                }
+            ]
+        }
+    ]
+}
