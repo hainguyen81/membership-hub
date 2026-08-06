@@ -402,6 +402,14 @@ LOG_EMOJIS = {
     'CRITICAL': '💀'             # Police car light for critical failures
 }
 
+# Define `TRACE` level because python doesn't have it
+TRACE_LEVEL_NUM = 5
+logging.addLevelName(TRACE_LEVEL_NUM, "TRACE")
+def trace(self, message, *args, **kws):
+    if self.isEnabledFor(TRACE_LEVEL_NUM):
+        self._log(TRACE_LEVEL_NUM, message, args, **kws)
+logging.Logger.trace = trace
+
 class FullColorFormatter(logging.Formatter):
     def format(self, record):
         color = LOG_COLORS.get(record.levelname, LOG_COLORS['RESET'])
