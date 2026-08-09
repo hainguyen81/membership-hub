@@ -261,7 +261,8 @@ def render_prompt(template: str, context: dict) -> str:
     
     # for tracing
     required_variables = jinja2_required_variables(template=template)
-    missing_vars = required_variables - set(context.keys())
+    context_variables = set(context.keys())
+    missing_vars = [ var for var in required_variables if var not in context_variables ]
     if missing_vars and len(missing_vars) > 0:
         print(f"[WARING] - Render Template {template} maybe wrong, due to missing required variables: {missing_vars}")
     
