@@ -5,22 +5,19 @@
 # using GitHub Actions infrastructure environment tokens instead of brittle backtracking.
 # ==============================================================================
 
-import os
-import sys
+import argparse
 import json
 import logging
+import os
 import re
+import sys
 import traceback
-import argparse
 from pathlib import Path
 
+from jinja2 import Environment, FileSystemLoader, meta
+
 # to load prompt template
-from jinja2 import (
-    Template as JinjaTemplate,
-    Environment,
-    FileSystemLoader,
-    meta
-)
+from jinja2 import Template as JinjaTemplate
 
 # ==============================================================================
 # 🏢 ENTERPRISE INTER-PACKAGE ROUTING LAYER
@@ -109,9 +106,9 @@ def resolve_absolute_path(relative_target_path):
     """
     # 🚀 CORE RAIL: Ingest the absolute repository root path straight from GitHub infrastructure
     # Fallback to current working directory (os.getcwd()) if executing on a local machine
-    current_directory_path = os.getcwd()
-    github_workspace = os.environ.get("GITHUB_WORKSPACE", '')
-    project_workspace = os.environ.get("PROJECT_WORKSPACE", '')
+    # current_directory_path = os.getcwd()
+    # github_workspace = os.environ.get("GITHUB_WORKSPACE", '')
+    # project_workspace = os.environ.get("PROJECT_WORKSPACE", '')
     # print(f"CURRENT WORKING DIR: { current_directory_path } | GITHUB_WORKSPACE: { github_workspace } | PROJECT_WORKSPACE: { project_workspace }")
     repo_root_path = os.environ.get("PROJECT_WORKSPACE", os.environ.get("GITHUB_WORKSPACE", os.getcwd()))
     
@@ -170,8 +167,8 @@ def json_raw_content(raw_content):
     return cleaned_str
 
 def exception_stacktrace(e) -> str:
-    stacktrace = traceback.format_exception(type(e), e, e.__traceback__) if isinstance(e, BaseException) or isinstance(e, Exception) else None
-    return None if not e else f"{str(e)}: {stacktrace}" if stacktrace else str(e)
+    stacktrace = traceback.format_exception(type(e), e, e.__traceback__) if isinstance(e, (BaseException, Exception)) else None
+    return None if not e else f"{e!s}: {stacktrace}" if stacktrace else str(e)
 
 def makedirs(path):
     """
@@ -280,12 +277,12 @@ def render_kwargs_prompt(template: str, **kwargs) -> str:
 
 def validateAIResponse(response):
     if not response or not hasattr(response, 'choices') or not response.choices:
-        raise RuntimeError(f"[API Upstream Error 404]: No Response Found")
+        raise RuntimeError("[API Upstream Error 404]: No Response Found")
     
     # 1. Check response choices
     choices_data = response.choices
     if not isinstance(choices_data, list) or len(choices_data) <= 0:
-        raise RuntimeError(f"[API Upstream Error 404]: Response Choices is empty/None")
+        raise RuntimeError("[API Upstream Error 404]: Response Choices is empty/None")
     
     # parse first choice
     first_choice = choices_data[0]
@@ -307,7 +304,7 @@ def validateAIResponse(response):
         
     # 3. check content whether is None (although finish_reason is `stop`)
     if not hasattr(first_choice, 'message') or not first_choice.message or getattr(first_choice.message, 'content', None) is None:
-        raise ValueError(f"[API Upstream Error 404]: AI response content is empty/None.")
+        raise ValueError("[API Upstream Error 404]: AI response content is empty/None.")
     
     # Guard against malformed message blocks or unexpected payload closures
     return first_choice
@@ -450,11 +447,14 @@ class FullColorFormatter(logging.Formatter):
         color = LOG_COLORS.get(record.levelname, LOG_COLORS['RESET'])
         reset = LOG_COLORS['RESET']
         emoji = LOG_EMOJIS.get(record.levelname, '')
-        emoji_level = f"{emoji} {record.levelname}" if emoji else record.levelname
+        raw_level = f"{emoji} {record.levelname}" if emoji else record.levelname
+        emoji_level = f"{raw_level:<12}"
         
         # Place the color code at the very beginning and the reset code at the very end
         # This forces the entire log line to inherit the level color
-        log_format = f"{color}%(asctime)s [ %(name)s | {emoji_level} ] %(message)s{reset}"
+        log_format = (
+            f"{color}%(asctime)s [ %(name)s | {emoji_level} ] %(message)s{reset}"
+        )
         
         formatter = logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S')
         return formatter.format(record)
