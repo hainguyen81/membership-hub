@@ -275,6 +275,31 @@ def render_prompt(template: str, context: dict) -> str:
 def render_kwargs_prompt(template: str, **kwargs) -> str:
     return render_prompt(template=template, context={ **kwargs })
 
+def regex_extract(pattern, data):
+    if not pattern or not data:
+        return (0, [])
+
+    reg_pattern = re.compile(
+        pattern,
+        re.DOTALL,
+    )
+    extracted_data = reg_pattern.findall(data)
+    return (len(extracted_data) if extracted_data else 0, extracted_data)
+
+def regex_extract_by_pair_tags(tag_start: str, tag_end: str, data):
+    if not tag_start and tag_end:
+        return regex_extract(pattern=rf"<!--\s*{tag_end}\s*-->", data=data)
+    elif tag_start:
+        return regex_extract(pattern=rf"<!--\s*{tag_start}\s*-->", data=data)
+    elif tag_start and tag_end:
+        return regex_extract(
+            pattern=rf"<!--\s*{tag_start}\s*-->(.*?)<!--\s*{tag_end}\s*-->", data=data
+        )
+    return (0, [])
+
+def regex_extract_by_tag(tag: str, data):
+    return regex_extract_by_pair_tags(tag_start=tag, tag_end=None, data=data)
+
 def validateAIResponse(response):
     if not response or not hasattr(response, 'choices') or not response.choices:
         raise RuntimeError("[API Upstream Error 404]: No Response Found")
