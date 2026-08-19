@@ -1,0 +1,152 @@
+{
+    "phase_id": 3,
+    "phase_name": "Xây dựng dịch vụ thông báo, khuyến mãi, và API di động",
+    "phase_description": "Giai đoạn này triển khai các dịch vụ thông báo push và Zalo, khuyến mãi, thông báo nội bộ, chatbot AI, và API di động, đồng thời thực hiện kiểm thử, xử lý ngoại lệ và bảo mật cho toàn bộ hệ thống.",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
+            "context_section": "DAY 1",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Xây dựng controller, service, repository, và tích hợp Firebase, Zalo, đồng thời áp dụng OWASP Top 10 bảo mật cho API và dữ liệu",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[REQ-017]",
+                        "[REQ-018]",
+                        "[REQ-019]",
+                        "[DAT-007]",
+                        "[DAT-008]"
+                    ],
+                    "components": [
+                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/NotificationController.java",
+                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/NotificationService.java",
+                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/NotificationRepository.java",
+                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/FirebaseIntegration.java",
+                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/ZaloIntegration.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Xây dựng promotion-service với mã code duy nhất, kiểm tra trùng lặp, áp dụng OWASP",
+                    "targeted_tags": [
+                        "[REQ-017]",
+                        "[DAT-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/promotion-service/src/main/java/com/membershiphub/promotion/PromotionController.java",
+                        "./sources/backend/promotion-service/src/main/java/com/membershiphub/promotion/PromotionService.java",
+                        "./sources/backend/promotion-service/src/main/java/com/membershiphub/promotion/PromotionRepository.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Xây dựng announcement-service, kiểm tra trùng lặp, bảo mật",
+                    "targeted_tags": [
+                        "[REQ-018]",
+                        "[DAT-010]"
+                    ],
+                    "components": [
+                        "./sources/backend/announcement-service/src/main/java/com/membershiphub/announcement/AnnouncementController.java",
+                        "./sources/backend/announcement-service/src/main/java/com/membershiphub/announcement/AnnouncementService.java",
+                        "./sources/backend/announcement-service/src/main/java/com/membershiphub/announcement/AnnouncementRepository.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST4",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Xây dựng chatbot-service, tích hợp AI, bảo mật",
+                    "targeted_tags": [
+                        "[REQ-019]"
+                    ],
+                    "components": [
+                        "./sources/backend/chatbot-service/src/main/java/com/membershiphub/chatbot/ChatbotController.java",
+                        "./sources/backend/chatbot-service/src/main/java/com/membershiphub/chatbot/ChatbotService.java",
+                        "./sources/backend/chatbot-service/src/main/java/com/membershiphub/chatbot/ChatbotRepository.java",
+                        "./sources/backend/chatbot-service/src/main/java/com/membershiphub/chatbot/AIIntegration.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST5",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Xây dựng mobile-service, API, i18n, SEO, bảo mật",
+                    "targeted_tags": [
+                        "[REQ-020]",
+                        "[REQ-021]",
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[REQ-024]",
+                        "[REQ-025]",
+                        "[DAT-011]"
+                    ],
+                    "components": [
+                        "./sources/backend/mobile-service/src/main/java/com/membershiphub/mobile/MobileController.java",
+                        "./sources/backend/mobile-service/src/main/java/com/membershiphub/mobile/MobileService.java",
+                        "./sources/backend/mobile-service/src/main/java/com/membershiphub/mobile/MobileRepository.java",
+                        "./sources/backend/mobile-service/src/main/java/com/membershiphub/mobile/I18nConfig.java",
+                        "./sources/backend/mobile-service/src/main/java/com/membershiphub/mobile/SEOConfig.java"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
+            "context_section": "DAY 2",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết test API, kiểm tra i18n, SEO meta tags, bảo mật",
+                    "targeted_tags": [
+                        "[REQ-020]",
+                        "[REQ-021]",
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[REQ-024]",
+                        "[REQ-025]",
+                        "[DAT-011]"
+                    ],
+                    "components": [
+                        "./sources/backend/mobile-service/src/test/java/com/membershiphub/mobile/MobileServiceTest.java"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
+            "context_section": "DAY 3",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Đánh giá code quality, kiểm tra exception handling, performance, bảo mật",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[REQ-017]",
+                        "[REQ-018]",
+                        "[REQ-019]",
+                        "[DAT-007]",
+                        "[DAT-008]",
+                        "[EXC-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/NotificationController.java",
+                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/NotificationService.java",
+                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/NotificationRepository.java",
+                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/FirebaseIntegration.java",
+                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/ZaloIntegration.java"
+                    ]
+                }
+            ]
+        }
+    ]
+}

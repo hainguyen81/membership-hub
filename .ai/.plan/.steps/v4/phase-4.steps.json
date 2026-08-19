@@ -1,0 +1,60 @@
+{
+    "phase_id": 4,
+    "phase_name": "Phát triển giao diện người dùng đáp ứng, đa ngôn ngữ, tối ưu SEO và triển khai trên GCP",
+    "phase_description": "Giai đoạn này tập trung vào việc xây dựng giao diện người dùng đáp ứng cho cả web và ứng dụng di động, triển khai đa ngôn ngữ, tối ưu SEO, tạo tài liệu kỹ thuật chi tiết và triển khai toàn bộ dịch vụ trên nền tảng GCP, bao gồm Cloud Build, Cloud Run, Firebase Hosting và Terraform.",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
+            "context_section": "DAY 1",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Doc",
+                    "desc": "Doc Agent: Tạo tài liệu chi tiết UI, API, i18n, SEO",
+                    "targeted_tags": [
+                        "[REQ-020]",
+                        "[REQ-021]",
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[REQ-024]",
+                        "[REQ-025]",
+                        "[DAT-011]"
+                    ],
+                    "components": [
+                        "./sources/frontend/mobile-app/README.md",
+                        "./sources/frontend/web-app/README.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
+            "context_section": "DAY 2",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Gcp",
+                    "desc": "Gcp Agent: Cấu hình và triển khai dịch vụ trên GCP",
+                    "targeted_tags": [
+                        "[REQ-020]",
+                        "[REQ-021]",
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[REQ-024]",
+                        "[REQ-025]",
+                        "[DAT-011]"
+                    ],
+                    "components": [
+                        "./sources/frontend/mobile-app/Dockerfile",
+                        "./sources/frontend/web-app/Dockerfile"
+                    ]
+                }
+            ]
+        }
+    ]
+}

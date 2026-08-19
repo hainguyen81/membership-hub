@@ -1,7 +1,7 @@
 {
     "phase_id": 3,
-    "phase_name": "Xây dựng dịch vụ thông báo, khuyến mãi, và API di động",
-    "phase_description": "Giai đoạn này triển khai các dịch vụ thông báo push và Zalo, khuyến mãi, thông báo nội bộ, chatbot AI, và API di động, đồng thời thực hiện kiểm thử, xử lý ngoại lệ và bảo mật cho toàn bộ hệ thống.",
+    "phase_name": "Triển khai dịch vụ hội viên, thông báo đa kênh và quản lý khuyến mãi",
+    "phase_description": "Giai đoạn này tập trung vào triển khai các chức năng quản lý thẻ hội viên kỹ thuật số (hiển thị số ngày còn lại hiệu lực, gia hạn thẻ với tích hợp thanh toán), hệ thống thông báo đa kênh (push di động qua FCM/APNs, đăng bài lên nhóm Zalo) với cơ chế xử lý lỗi và retry tự động, quản lý khuyến mãi và thông báo có thời hạn hiển thị tùy chọn, đảm bảo tất cả các chức năng này tuân thủ các yêu cầu nghiệp vụ",
     "project_name": "membership-hub",
     "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
     "source_target_dir": "sources/",
@@ -9,89 +9,64 @@
         {
             "day": 1,
             "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
-            "context_section": "DAY 1",
+            "context_section": "Triển khai dịch vụ thẻ hội viên cốt lõi và schema cơ sở dữ liệu",
             "sub_tasks": [
                 {
                     "id": "D1_ST1",
                     "agent": "Coder",
-                    "desc": "Coder Agent: Xây dựng controller, service, repository, và tích hợp Firebase, Zalo, đồng thời áp dụng OWASP Top 10 bảo mật cho API và dữ liệu",
+                    "desc": "Triển khai logic tính toán số ngày còn lại hiệu lực của thẻ hội viên dựa trên issue_date và validity_days, đảm bảo giá trị remaining_days được cập nhật tự động mỗi ngày qua scheduled job, tuân thủ các ràng buộc NOT NULL và CHECK cho các trường dữ liệu.",
                     "targeted_tags": [
-                        "[REQ-016]",
-                        "[REQ-017]",
-                        "[REQ-018]",
-                        "[REQ-019]",
-                        "[DAT-007]",
-                        "[DAT-008]"
+                        "[REQ-014]",
+                        "[DAT-007]"
                     ],
                     "components": [
-                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/NotificationController.java",
-                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/NotificationService.java",
-                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/NotificationRepository.java",
-                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/FirebaseIntegration.java",
-                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/ZaloIntegration.java"
+                        "./sources/backend/membership-service/src/main/java/com/hub/membership/MembershipService.java"
                     ]
                 },
                 {
                     "id": "D1_ST2",
                     "agent": "Coder",
-                    "desc": "Coder Agent: Xây dựng promotion-service với mã code duy nhất, kiểm tra trùng lặp, áp dụng OWASP",
+                    "desc": "Xây dựng endpoint API và repository truy cập dữ liệu thẻ hội viên",
                     "targeted_tags": [
-                        "[REQ-017]",
-                        "[DAT-009]"
+                        "[REQ-014]",
+                        "[DAT-007]"
                     ],
                     "components": [
-                        "./sources/backend/promotion-service/src/main/java/com/membershiphub/promotion/PromotionController.java",
-                        "./sources/backend/promotion-service/src/main/java/com/membershiphub/promotion/PromotionService.java",
-                        "./sources/backend/promotion-service/src/main/java/com/membershiphub/promotion/PromotionRepository.java"
+                        "./sources/backend/membership-service/src/main/java/com/hub/membership/MembershipController.java"
                     ]
                 },
                 {
                     "id": "D1_ST3",
                     "agent": "Coder",
-                    "desc": "Coder Agent: Xây dựng announcement-service, kiểm tra trùng lặp, bảo mật",
+                    "desc": "Tạo migration DDL và kiểm tra tính toàn vẹn schema thẻ hội viên",
                     "targeted_tags": [
-                        "[REQ-018]",
-                        "[DAT-010]"
+                        "[DAT-007]"
                     ],
                     "components": [
-                        "./sources/backend/announcement-service/src/main/java/com/membershiphub/announcement/AnnouncementController.java",
-                        "./sources/backend/announcement-service/src/main/java/com/membershiphub/announcement/AnnouncementService.java",
-                        "./sources/backend/announcement-service/src/main/java/com/membershiphub/announcement/AnnouncementRepository.java"
+                        "./sources/backend/membership-service/src/main/resources/db/migration/V3__create_student_cards.sql"
                     ]
                 },
                 {
                     "id": "D1_ST4",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Xây dựng chatbot-service, tích hợp AI, bảo mật",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử đơn vị cho logic nghiệp vụ thẻ hội viên",
                     "targeted_tags": [
-                        "[REQ-019]"
+                        "[REQ-014]",
+                        "[DAT-007]"
                     ],
                     "components": [
-                        "./sources/backend/chatbot-service/src/main/java/com/membershiphub/chatbot/ChatbotController.java",
-                        "./sources/backend/chatbot-service/src/main/java/com/membershiphub/chatbot/ChatbotService.java",
-                        "./sources/backend/chatbot-service/src/main/java/com/membershiphub/chatbot/ChatbotRepository.java",
-                        "./sources/backend/chatbot-service/src/main/java/com/membershiphub/chatbot/AIIntegration.java"
+                        "./sources/backend/membership-service/src/test/java/com/hub/membership/MembershipServiceTest.java"
                     ]
                 },
                 {
                     "id": "D1_ST5",
-                    "agent": "Coder",
-                    "desc": "Coder Agent: Xây dựng mobile-service, API, i18n, SEO, bảo mật",
+                    "agent": "Doc",
+                    "desc": "Khởi tạo tài liệu kiến trúc và từ điển dữ liệu cho module thẻ hội viên",
                     "targeted_tags": [
-                        "[REQ-020]",
-                        "[REQ-021]",
-                        "[REQ-022]",
-                        "[REQ-023]",
-                        "[REQ-024]",
-                        "[REQ-025]",
-                        "[DAT-011]"
+                        "[DAT-007]"
                     ],
                     "components": [
-                        "./sources/backend/mobile-service/src/main/java/com/membershiphub/mobile/MobileController.java",
-                        "./sources/backend/mobile-service/src/main/java/com/membershiphub/mobile/MobileService.java",
-                        "./sources/backend/mobile-service/src/main/java/com/membershiphub/mobile/MobileRepository.java",
-                        "./sources/backend/mobile-service/src/main/java/com/membershiphub/mobile/I18nConfig.java",
-                        "./sources/backend/mobile-service/src/main/java/com/membershiphub/mobile/SEOConfig.java"
+                        "./sources/docs/data-dictionary/student-cards.md"
                     ]
                 }
             ]
@@ -99,23 +74,52 @@
         {
             "day": 2,
             "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
-            "context_section": "DAY 2",
+            "context_section": "Triển khai chức năng gia hạn thẻ và dịch vụ thông báo cốt lõi",
             "sub_tasks": [
                 {
                     "id": "D2_ST1",
-                    "agent": "Tester",
-                    "desc": "Tester Agent: Viết test API, kiểm tra i18n, SEO meta tags, bảo mật",
+                    "agent": "Coder",
+                    "desc": "Xây dựng endpoint gia hạn thẻ hội viên và tích hợp logic thanh toán",
                     "targeted_tags": [
-                        "[REQ-020]",
-                        "[REQ-021]",
-                        "[REQ-022]",
-                        "[REQ-023]",
-                        "[REQ-024]",
-                        "[REQ-025]",
-                        "[DAT-011]"
+                        "[REQ-015]"
                     ],
                     "components": [
-                        "./sources/backend/mobile-service/src/test/java/com/membershiphub/mobile/MobileServiceTest.java"
+                        "./sources/backend/membership-service/src/main/java/com/hub/membership/MembershipController.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST2",
+                    "agent": "Coder",
+                    "desc": "Xây dựng lớp dịch vụ thông báo cốt lõi và trình gửi FCM",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/notification-service/src/main/java/com/hub/notification/NotificationService.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST3",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử đơn vị cho chức năng gia hạn thẻ",
+                    "targeted_tags": [
+                        "[REQ-015]"
+                    ],
+                    "components": [
+                        "./sources/backend/membership-service/src/test/java/com/hub/membership/MembershipRenewalTest.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST4",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử đơn vị cho dịch vụ thông báo cốt lõi",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[EXC-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/notification-service/src/test/java/com/hub/notification/NotificationServiceTest.java"
                     ]
                 }
             ]
@@ -123,27 +127,155 @@
         {
             "day": 3,
             "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
-            "context_section": "DAY 3",
+            "context_section": "Hoàn thiện hệ thống thông báo đa kênh và triển khai quản lý khuyến mãi, thông báo",
             "sub_tasks": [
                 {
                     "id": "D3_ST1",
-                    "agent": "Reviewer",
-                    "desc": "Reviewer Agent: Đánh giá code quality, kiểm tra exception handling, performance, bảo mật",
+                    "agent": "Coder",
+                    "desc": "Xây dựng trình gửi thông báo nhóm Zalo và tích hợp hàng đợi sự kiện",
                     "targeted_tags": [
                         "[REQ-016]",
+                        "[ARC-008]"
+                    ],
+                    "components": [
+                        "./sources/backend/notification-service/src/main/java/com/hub/notification/ZaloNotificationSender.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST2",
+                    "agent": "Coder",
+                    "desc": "Xây dựng dịch vụ và controller quản lý khuyến mãi",
+                    "targeted_tags": [
                         "[REQ-017]",
+                        "[DAT-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/promotion-service/src/main/java/com/hub/promotion/PromotionService.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST3",
+                    "agent": "Coder",
+                    "desc": "Xây dựng dịch vụ và controller quản lý thông báo hệ thống",
+                    "targeted_tags": [
                         "[REQ-018]",
-                        "[REQ-019]",
-                        "[DAT-007]",
-                        "[DAT-008]",
+                        "[DAT-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/promotion-service/src/main/java/com/hub/promotion/AnnouncementService.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST4",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử tích hợp cho luồng gửi thông báo đa kênh",
+                    "targeted_tags": [
+                        "[REQ-016]",
                         "[EXC-003]"
                     ],
                     "components": [
-                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/NotificationController.java",
-                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/NotificationService.java",
-                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/NotificationRepository.java",
-                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/FirebaseIntegration.java",
-                        "./sources/backend/notification-service/src/main/java/com/membershiphub/notification/ZaloIntegration.java"
+                        "./sources/backend/notification-service/src/test/java/com/hub/notification/NotificationIntegrationTest.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST5",
+                    "agent": "Doc",
+                    "desc": "Viết tài liệu tham chiếu API cho các dịch vụ giai đoạn 3",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[REQ-017]",
+                        "[REQ-018]"
+                    ],
+                    "components": [
+                        "./sources/docs/api/notification-promotion-api.md"
+                    ]
+                },
+                {
+                    "id": "D3_ST6",
+                    "agent": "Doc",
+                    "desc": "Cập nhật từ điển dữ liệu và tài liệu tích hợp Zalo",
+                    "targeted_tags": [
+                        "[REQ-016]",
+                        "[ARC-008]"
+                    ],
+                    "components": [
+                        "./sources/docs/integrations/zalo-api.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 4,
+            "context_file": ".ai/.plan/.context/phase-3.context.blueprint.md",
+            "context_section": "Triển khai giao diện người dùng cho các chức năng giai đoạn 3 và kiểm tra cuối cùng",
+            "sub_tasks": [
+                {
+                    "id": "D4_ST1",
+                    "agent": "Coder",
+                    "desc": "Xây dựng giao diện hiển thị thẻ hội viên trên frontend web",
+                    "targeted_tags": [
+                        "[REQ-014]"
+                    ],
+                    "components": [
+                        "./sources/frontend/web/membership/src/app/membership/page.tsx"
+                    ]
+                },
+                {
+                    "id": "D4_ST2",
+                    "agent": "Coder",
+                    "desc": "Xây dựng giao diện gia hạn thẻ hội viên trên frontend web",
+                    "targeted_tags": [
+                        "[REQ-015]"
+                    ],
+                    "components": [
+                        "./sources/frontend/web/membership/src/app/membership/renew/page.tsx"
+                    ]
+                },
+                {
+                    "id": "D4_ST3",
+                    "agent": "Coder",
+                    "desc": "Xây dựng giao diện quản lý khuyến mãi và thông báo cho quản trị viên",
+                    "targeted_tags": [
+                        "[REQ-017]",
+                        "[REQ-018]"
+                    ],
+                    "components": [
+                        "./sources/frontend/web/membership/src/app/promotions/page.tsx"
+                    ]
+                },
+                {
+                    "id": "D4_ST4",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử đơn vị cho các thành phần frontend giai đoạn 3",
+                    "targeted_tags": [
+                        "[REQ-014]",
+                        "[REQ-015]",
+                        "[REQ-017]",
+                        "[REQ-018]"
+                    ],
+                    "components": [
+                        "./sources/frontend/web/membership/src/app/membership/__tests__/membership.test.tsx"
+                    ]
+                },
+                {
+                    "id": "D4_ST5",
+                    "agent": "Reviewer",
+                    "desc": "Rà soát mã nguồn toàn bộ giai đoạn 3 để đảm bảo tuân thủ RBAC và bảo mật",
+                    "targeted_tags": [
+                        "[REQ-014]",
+                        "[REQ-015]",
+                        "[REQ-016]",
+                        "[REQ-017]",
+                        "[REQ-018]",
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[NFR-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/membership-service",
+                        "./sources/backend/notification-service",
+                        "./sources/backend/promotion-service",
+                        "./sources/frontend/web/membership"
                     ]
                 }
             ]

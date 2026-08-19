@@ -1,0 +1,120 @@
+{
+    "phase_id": 1,
+    "phase_name": "Thiết lập Xác thực và Quản lý Người dùng",
+    "phase_description": "Giai đoạn này tập trung vào việc xây dựng nền tảng xác thực, quản lý người dùng và quyền truy cập, triển khai JWT, chuẩn hoá API, và thực hiện kiểm thử đơn vị.",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "DAY 1",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Coder Agent: Xây dựng API đăng ký, đăng nhập và schema Users & Roles",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[REQ-002]",
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]",
+                        "[DAT-001]",
+                        "[DAT-002]",
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-003]",
+                        "[NFR-004]",
+                        "[NFR-005]",
+                        "[NFR-006]",
+                        "[NFR-007]",
+                        "[NFR-008]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth-service/AuthController.java",
+                        "./sources/backend/auth-service/AuthService.java",
+                        "./sources/backend/auth-service/UserRepository.java",
+                        "./sources/backend/auth-service/RoleRepository.java",
+                        "./sources/backend/auth-service/JwtProvider.java",
+                        "./sources/backend/auth-service/AuthValidation.java",
+                        "./sources/backend/auth-service/AuthExceptionHandler.java",
+                        "./sources/backend/auth-service/AuthServiceTest.java"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "DAY 2",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Tester",
+                    "desc": "Tester Agent: Viết test integration, kiểm tra token expiration và idempotent",
+                    "targeted_tags": [
+                        "[ARC-006]",
+                        "[ARC-007]",
+                        "[ARC-008]",
+                        "[ARC-009]",
+                        "[ARC-010]",
+                        "[EXC-004]",
+                        "[DAT-001]",
+                        "[DAT-002]",
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-003]",
+                        "[NFR-004]",
+                        "[NFR-005]",
+                        "[NFR-006]",
+                        "[NFR-007]",
+                        "[NFR-008]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "INTEGRATION_SCOPE;./sources/backend/auth-service/src/test/java/com/membershiphub/auth/AuthServiceTest.java"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "DAY 3",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer Agent: Đánh giá bảo mật, chuẩn hoá API và kiểm tra hiệu năng",
+                    "targeted_tags": [
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]",
+                        "[DAT-001]",
+                        "[DAT-002]",
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-003]",
+                        "[NFR-004]",
+                        "[NFR-005]",
+                        "[NFR-006]",
+                        "[NFR-007]",
+                        "[NFR-008]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth-service/AuthSecurityReview.md",
+                        "./sources/backend/auth-service/AuthPerformanceReview.md"
+                    ]
+                }
+            ]
+        }
+    ]
+}
