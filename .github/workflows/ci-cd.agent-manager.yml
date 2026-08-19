@@ -191,6 +191,7 @@ jobs:
           AGENTS_PACKAGE_PATH: ${{ env.PROJECT_WORKSPACE }}/.ai
           
           # inputted values
+          TRIGGER_EVENT: github.event_name
           INPUT_EXEC_MODE: ${{ inputs.execution_mode == '🕒🔄📅 Auto Schedule' && 'auto_cron' || 'manual' }}
           INPUT_TARGET_SCOPE: ${{ inputs.target_scope == '🗓️ By Day' && 'by_day' || 'by_phase' }}
           INPUT_VALUE: ${{ inputs.input_value }}

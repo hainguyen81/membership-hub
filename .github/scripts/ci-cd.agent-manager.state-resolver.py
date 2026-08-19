@@ -4,10 +4,11 @@ import os
 import sys
 
 from _0d_ai._0d_agents.agent_0u_helper import (
-    resolve_absolute_path,
     read_json_file,
-    write_file
+    resolve_absolute_path,
+    write_file,
 )
+
 
 def main():
     plan_path = resolve_absolute_path(os.environ.get("PLAN_FILE", ".ai/.plan/plan.spec.json"))
@@ -31,10 +32,13 @@ def main():
     print(f"🕒 [ READ ] Total Phases: {total_phases}. Phases: {phases_str}")
     
     # Ingest enviroment for GitHub Actions
+    trigger_event = os.environ.get("TRIGGER_EVENT", "workflow_dispatch")
+    is_schedule_event = trigger_event.lower() == "schedule"
     state_exec_mode = state.get("exec_mode", "auto_cron") if state else None
-    exec_mode = os.environ.get("INPUT_EXEC_MODE", state_exec_mode) or "auto_cron"
+    exec_mode = state_exec_mode if is_schedule_event and state_exec_mode else os.environ.get("INPUT_EXEC_MODE", state_exec_mode) or "auto_cron"
     scope = os.environ.get("INPUT_TARGET_SCOPE", "")
     val_str = os.environ.get("INPUT_VALUE", "")
+    print(f"🕒 [ PARAMETERS ] State Execution: BY_SCHEDULE {is_schedule_event}; EXEC_MODE {exec_mode}; SCOPE {scope}")
     
     final_phase = 1
     final_day = 1
