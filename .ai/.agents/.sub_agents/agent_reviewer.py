@@ -226,7 +226,13 @@ class BugFixerAgent(AbstractSubAgent):
         
         if not success:
             self.logger.critical("💀 Structural compiler repairs failed within maximum iteration bounds.")
-        return (success, system_prompt, user_prompt, latest_response)
+        return {
+            **kwargs,
+            "success": success,
+            "system_prompt": system_prompt,
+            "user_prompt": user_prompt,
+            "latest_response": latest_response,
+        }
 
 if __name__ == "__main__":
     def add_known_arguments(parser):
