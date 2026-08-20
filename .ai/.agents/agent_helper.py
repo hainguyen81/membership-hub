@@ -351,7 +351,23 @@ def parseAIResponseData(response):
     # Safe fallback if choice format changes or breaks unexpectedly
     return str(first_choice).strip()
 
+def splitAIResponseData(raw_data):
+    if not raw_data:
+        return None
+
+    # extract by regex
+    match = re.search(
+        r"```(?:text|json|xml|mermaid|sql|python|code)?\s*(.*?)\s*```",
+        raw_data,
+        re.DOTALL,
+    )
+    return match.group(1).strip() if match else raw_data.strip()
+
 def splitAIResponseJsonData(raw_data):
+    if not raw_data:
+        return None
+
+    clean_json_str = raw_data.strip()
     clean_json_str = raw_data.strip()
     
     # 💡 Use find() to split json block
