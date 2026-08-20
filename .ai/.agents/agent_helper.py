@@ -253,7 +253,9 @@ def jinja2_required_variables(template: str) -> set[str]:
     return meta.find_undeclared_variables(parsed_content)
 
 def render_prompt(template: str, context: dict) -> str:
+    logger = get_logger()
     if not os.path.exists(template):
+        logger.warning(f"[WARING] - Template {template} is MISSING/NOT_FOUND")
         return None
     
     # for tracing
@@ -261,7 +263,7 @@ def render_prompt(template: str, context: dict) -> str:
     context_variables = set(context.keys())
     missing_vars = [ var for var in required_variables if var not in context_variables ]
     if missing_vars and len(missing_vars) > 0:
-        print(f"[WARING] - Render Template {template} maybe wrong, due to missing required variables: {missing_vars}")
+        logger.warning(f"[WARING] - Render Template {template} maybe wrong, due to missing required variables: {missing_vars}")
     
     # read prompt template
     _, template_content = read_file_raw(template)
@@ -420,7 +422,7 @@ def parseAIResponseJsonData(response):
     try:
         return (raw_data, json_loads(raw_data.strip()))
     except Exception as final_error:
-        print(f"⚠️  [PARSER WARNING] Local string-to-json mapping failed: {final_error}")
+        get_logger().warning(f"⚠️  [PARSER WARNING] Local string-to-json mapping failed: {final_error}")
         return (raw_data, None)
 
 def count_files_by_pattern(dir, file_filter_pattern) -> int:
