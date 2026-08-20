@@ -1,7 +1,10 @@
 # .ai/.agents/.sub-agents/agent-docker.py
 import os
-import sys
 import subprocess
+import sys
+
+# super agent
+from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 
 # ==============================================================================
 # 🏢 ENTERPRISE INTER-PACKAGE ROUTING LAYER
@@ -11,13 +14,10 @@ import subprocess
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
 from _0d_ai._0d_agents.agent_0u_helper import (
-    resolve_absolute_path,
     kwargs_by_key,
-    parse_args
+    parse_args,
+    resolve_absolute_path,
 )
-
-# super agent
-from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
@@ -37,7 +37,7 @@ class DockerHubAgent(AbstractSubAgent):
         )
 
     def authenticate_dockerhub(self):
-        self.logger.info(f"ℹ️ Attaching secure registry authorization handshakes...")
+        self.logger.info("ℹ️ Attaching secure registry authorization handshakes...")
         username = self.agent_secrets("DOCKERHUB_USERNAME")
         password = self.agent_secrets("DOCKERHUB_PASSWORD")
 
@@ -46,13 +46,13 @@ class DockerHubAgent(AbstractSubAgent):
                 ["docker", "login", "-u", username, "--password-stdin"],
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
             )
-            stdout, stderr = login_process.communicate(input=password)
+            _, stderr = login_process.communicate(input=password)
             if login_process.returncode != 0:
                 self.logger.critical(f"💀 Authentication verification failed natively: {stderr}")
                 sys.exit(1)
-            self.logger.info(f"✅ Docker Hub authentication session activated successfully.")
+            self.logger.info("✅ Docker Hub authentication session activated successfully.")
         else:
-            self.logger.warning(f"⚠️ Missing data keys parameters inside DOCKERHUB_SECRETS mapping registry.")
+            self.logger.warning("⚠️ Missing data keys parameters inside DOCKERHUB_SECRETS mapping registry.")
     
     def docker_hub_repo(self) -> str:
         return self.agent_secrets("DOCKERHUB_REPO")
@@ -95,7 +95,7 @@ class DockerHubAgent(AbstractSubAgent):
     def pre_execute(self, **kwargs):
         # validate repository
         if not self.docker_repo or len(self.docker_repo.strip()) <= 0:
-            self.logger.warning(f"⚠️ Not found 'DOCKERHUB_REPO' enviroment to publish docker images.")
+            self.logger.warning("⚠️ Not found 'DOCKERHUB_REPO' enviroment to publish docker images.")
             sys.exit(0)
         
         # log-in repository
@@ -124,7 +124,7 @@ class DockerHubAgent(AbstractSubAgent):
         subprocess.run(["docker", "build", "-t", self.docker_image, "-f", dockerfile_path, workspace_path], check=True)
         
         # push image to DockerHub
-        self.logger.info(f"ℹ️ Streaming production release tag across remote Docker Hub brokers pipelines...")
+        self.logger.info("ℹ️ Streaming production release tag across remote Docker Hub brokers pipelines...")
         subprocess.run(["docker", "push", self.docker_image], check=True)
         self.logger.info(f"✅ Image package {self.docker_image} successfully committed upstream!")
         
