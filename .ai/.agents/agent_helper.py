@@ -12,8 +12,8 @@ import os
 import re
 import sys
 import traceback
+from collections.abc import Generator
 from pathlib import Path
-from types import Generator
 
 from jinja2 import Environment, FileSystemLoader, meta
 
