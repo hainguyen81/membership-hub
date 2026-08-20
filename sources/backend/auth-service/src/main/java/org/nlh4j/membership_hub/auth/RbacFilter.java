@@ -1,245 +1,284 @@
-/**
- * Global RBAC filter enforcing role-based access control across all REST endpoints.
- * Traceability Tags: [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]
- */
-package org.nlh4j.saas.membership-hub.auth;
+package org.nlh4j.saas.membership_hub.auth;
 
-import java.io.IOException;
-import java.util.Set;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+// [IMPORT SECTION: Core JAX-RS and Quarkus dependencies]
+import java.util.Arrays;
+import java.util.List;
+import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ResourceMethodInvoker;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
+import javax.ws.rs.Priorities;
+import javax.inject.Inject;
+import org.jboss.logging.Logger;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.nlh4j.saas.membership_hub.entity.User;
+import org.nlh4j.saas.membership_hub.enums.UserRole;
+import org.nlh4j.saas.membership_hub.service.UserService;
 
 /**
- * RbacFilter implements {@link Filter} to enforce enterprise RBAC policies.
+ * Global RBAC (Role-Based Access Control) filter for all API endpoints in the membership-hub system.
  * <p>
- * This filter validates JWT tokens from the {@code Authorization} header, extracts
- * user roles, and checks whether the requesting principal is authorized to access
- * the target endpoint based on a simple path‑role mapping. All decisions are
- * logged for auditability and any validation failure results in a structured
- * error log that includes the original exception message and the traceability
- * tag identifiers required by the enterprise governance framework.
+ * This filter intercepts all incoming HTTP requests, validates JWT authentication tokens,
+ * enforces role-based access permissions, and ensures center-level access isolation for Center Admin roles.
+ * It complies with OWASP Top 10 security standards, enforces least privilege access principles,
+ * and integrates with the enterprise audit logging framework for full traceability of all access attempts.
  * </p>
  *
  * @traceability [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]
+ * @author Enterprise Core Security Team
+ * @version 1.0
  */
-public class RbacFilter implements Filter {
+@Provider // Register as JAX-RS provider for automatic request interception
+@Priority(Priorities.AUTHORIZATION) // Ensure execution after authentication filters
+public class RbacFilter implements ContainerRequestFilter {
+    // -------------------------------------------------------------------------
+    // [ENTERPRISE LOGGING COMPLIANCE: Mandatory logger initialization per governance matrix]
+    // -------------------------------------------------------------------------
+    private static final Logger logger = Logger.getLogger(RbacFilter.class);
 
-    /** Logger instance for audit and error reporting. */
-    private static final Logger logger = LoggerFactory.getLogger(RbacFilter.class);
+    // -------------------------------------------------------------------------
+    // [CONSTANTS DECLARATION: All hardcoded values isolated at class crown per anti-magic-numbers policy]
+    // -------------------------------------------------------------------------
+    public static final class Constants {
+        // JWT Token Configuration
+        public static final String JWT_AUTH_HEADER = "Authorization";
+        public static final String JWT_BEARER_PREFIX = "Bearer ";
+        public static final String JWT_ROLE_CLAIM = "role";
+        public static final String JWT_USER_ID_CLAIM = "user_id";
+        public static final String JWT_CENTER_IDS_CLAIM = "assigned_center_ids";
 
-    /**
-     * Role constants used for permission evaluation.
-     * <p>
-     * These constants are aligned with the enterprise role definitions described in
-     * the architectural requirement set (ARC‑001 through ARC‑005). They are kept
-     * at the class level to satisfy the anti‑magic‑numbers policy and to allow
-     * easy reference throughout the filter logic.
-     * </p>
-     */
-    public static final String ROLE_SYSTEM_ADMIN = "SYSTEM_ADMIN";
-    public static final String ROLE_CENTER_ADMIN = "CENTER_ADMIN";
-    public static final String ROLE_MANAGER = "MANAGER";
-    public static final String ROLE_TEACHER = "TEACHER";
-    public static final String ROLE_STUDENT = "STUDENT";
+        // HTTP Response Status Codes
+        public static final Response.Status STATUS_UNAUTHORIZED = Response.Status.UNAUTHORIZED;
+        public static final Response.Status STATUS_FORBIDDEN = Response.Status.FORBIDDEN;
 
-    /**
-     * Path prefixes mapped to required roles.
-     * <p>
-     * This simple mapping enforces the RBAC rules defined in the specification:
-     * <ul>
-     *   <li>{@code /api/admin/*} → {@code SYSTEM_ADMIN} or {@code CENTER_ADMIN}</li>
-     *   <li>{@code /api/center/*} → {@code CENTER_ADMIN}</li>
-     *   <li>{@code /api/manager/*} → {@code MANAGER}</li>
-     *   <li>{@code /api/teacher/*} → {@code TEACHER}</li>
-     *   <li>{@code /api/student/*} → {@code STUDENT}</li>
-     *   <li>All other paths → any authenticated user</li>
-     * </ul>
-     * </p>
-     */
-    private static final String[] ADMIN_PATHS = {"/api/admin/", "/api/centers/", "/api/courses/"};
-    private static final String[] CENTER_PATHS = {"/api/center/"};
-    private static final String[] MANAGER_PATHS = {"/api/manager/"};
-    private static final String[] TEACHER_PATHS = {"/api/teacher/"};
-    private static final String[] STUDENT_PATHS = {"/api/student/"};
+        // Error Message Templates (no hardcoded strings in business logic)
+        public static final String ERR_MISSING_TOKEN = "Missing or invalid Authorization token";
+        public static final String ERR_INVALID_TOKEN = "Invalid or expired JWT token";
+        public static final String ERR_INSUFFICIENT_PERMISSIONS = "User does not have sufficient permissions to access this resource";
+        public static final String ERR_CENTER_ACCESS_DENIED = "User is not authorized to access resources for the specified center";
+        public static final String ERR_USER_ACCESS_DENIED = "User is not authorized to access this user's resources";
 
-    /**
-     * No‑arg constructor required by the Servlet container.
-     */
-    public RbacFilter() {
-        // Intentionally left empty – initialization is deferred to init()
+        // Audit Log Message Templates
+        public static final String LOG_ACCESS_DENIED = "[RBAC] Access denied for user ID: {} to resource: {} {}. Reason: {}";
+        public static final String LOG_ACCESS_GRANTED = "[RBAC] Access granted for user ID: {} with role {} to resource: {} {}";
+        public static final String LOG_PROCESSING_ERROR = "[RBAC] Error processing RBAC check for request to {}. Raw error: {}";
+
+        // Path Parameter Keys
+        public static final String PATH_PARAM_CENTER_ID = "centerId";
+        public static final String PATH_PARAM_USER_ID = "userId";
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * The filter performs token validation and role extraction here. All
-     * {@code IOException} and {@code ServletException} instances are caught,
-     * logged with the required traceability tag, and re‑thrown to preserve the
-     * original cause chain as mandated by the enterprise exception handling
-     * policy.
-     * </p>
-     */
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-        final HttpServletRequest httpRequest = (HttpServletRequest) request;
-        final HttpServletResponse httpResponse = (HttpServletResponse) response;
+    // -------------------------------------------------------------------------
+    // [DEPENDENCY INJECTION: Quarkus native injection for JWT and user service]
+    // -------------------------------------------------------------------------
+    @Inject
+    JsonWebToken jwt; // SmallRye JWT for token claim extraction
 
-        // Log entry point for audit tracing
-        logger.info("[ENTRY] RBAC filter processing request for URI: {}", httpRequest.getRequestURI());
+    @Inject
+    UserService userService; // Service for user/center association checks
+
+    // -------------------------------------------------------------------------
+    // [CORE RBAC FILTER LOGIC: Intercepts all requests for access control]
+    // -------------------------------------------------------------------------
+    @Override
+    public void filter(ContainerRequestContext requestContext) {
+        // [ARC-001] Log entry point of RBAC check for audit trail compliance
+        logger.debug("[RBAC] Starting RBAC check for request: {} {}", requestContext.getMethod(), requestContext.getUri().getPath());
 
         try {
-            // 1. Extract Authorization header
-            final String authHeader = httpRequest.getHeader("Authorization");
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                logger.error("[CRITICAL FAIL] [ARC-001] RBAC filter failed due to missing or malformed Authorization header. Raw error: {}", "Authorization header not present or does not start with Bearer");
-                httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header");
+            // --------------------------
+            // Step 1: Validate JWT Token
+            // --------------------------
+            String authHeader = requestContext.getHeaderString(Constants.JWT_AUTH_HEADER);
+            // Check for missing or malformed Authorization header
+            if (authHeader == null || !authHeader.startsWith(Constants.JWT_BEARER_PREFIX)) {
+                logger.warn(Constants.LOG_ACCESS_DENIED, "anonymous", requestContext.getUri().getPath(), "Missing or invalid token");
+                requestContext.abortWith(Response.status(Constants.STATUS_UNAUTHORIZED.getStatusCode())
+                        .entity("{\"error\": \"UNAUTHORIZED\", \"message\": \"" + Constants.ERR_MISSING_TOKEN + "\"}")
+                        .build());
                 return;
             }
 
-            // 2. Validate JWT token and retrieve roles
-            final String token = authHeader.substring(7);
-            final Set<String> userRoles = TokenService.validateToken(token);
-            if (userRoles == null || userRoles.isEmpty()) {
-                logger.error("[CRITICAL FAIL] [ARC-002] RBAC filter failed due to invalid or expired JWT token. Raw error: {}", "Token validation returned no roles");
-                httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+            // Extract raw JWT token without Bearer prefix
+            String token = authHeader.substring(Constants.JWT_BEARER_PREFIX.length());
+            // Validate token has required claims (SmallRye JWT automatically validates signature and expiration)
+            if (!jwt.getClaimNames().contains(Constants.JWT_USER_ID_CLAIM)) {
+                logger.warn(Constants.LOG_ACCESS_DENIED, "anonymous", requestContext.getUri().getPath(), "Invalid token claims");
+                requestContext.abortWith(Response.status(Constants.STATUS_UNAUTHORIZED.getStatusCode())
+                        .entity("{\"error\": \"UNAUTHORIZED\", \"message\": \"" + Constants.ERR_INVALID_TOKEN + "\"}")
+                        .build());
                 return;
             }
 
-            // 3. Determine required role based on request path
-            final String requestPath = httpRequest.getRequestURI();
-            final String requiredRole = resolveRequiredRole(requestPath);
-
-            // 4. Perform role check
-            if (!hasRequiredRole(userRoles, requiredRole)) {
-                logger.error("[CRITICAL FAIL] [ARC-003] RBAC filter failed due to insufficient permissions. Raw error: {}", "User does not possess required role for path " + requestPath);
-                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Insufficient permissions");
+            // --------------------------
+            // Step 2: Extract User Identity and Role
+            // --------------------------
+            String userId = jwt.getClaim(Constants.JWT_USER_ID_CLAIM);
+            String roleName = jwt.getClaim(Constants.JWT_ROLE_CLAIM);
+            // Convert role string to enum for type-safe comparison
+            UserRole userRole;
+            try {
+                userRole = UserRole.valueOf(roleName.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                logger.error(Constants.LOG_PROCESSING_ERROR, requestContext.getUri().getPath(), "Invalid role in JWT token: " + roleName);
+                requestContext.abortWith(Response.status(Constants.STATUS_UNAUTHORIZED.getStatusCode())
+                        .entity("{\"error\": \"UNAUTHORIZED\", \"message\": \"" + Constants.ERR_INVALID_TOKEN + "\"}")
+                        .build());
                 return;
             }
 
-            // 5. All checks passed – continue filter chain
-            chain.doFilter(request, response);
-        } catch (final Exception e) {
-            // Preserve original cause and log with traceability tag
-            logger.error("[CRITICAL FAIL] [ARC-004] RBAC filter encountered an unexpected error while processing request. Raw error: {}", e.getMessage(), e);
-            throw new ServletException("RBAC filter processing failed", e);
-        } finally {
-            // Log exit point for audit completeness
-            logger.info("[EXIT] RBAC filter completed request for URI: {}", httpRequest.getRequestURI());
+            logger.debug("[RBAC] Processing request for user ID: {}, role: {}", userId, userRole);
+
+            // --------------------------
+            // Step 3: System Admin Full Access Bypass
+            // --------------------------
+            // [ARC-001] System Admin has unrestricted access to all system resources
+            if (userRole == UserRole.SYSTEM_ADMIN) {
+                logger.info(Constants.LOG_ACCESS_GRANTED, userId, userRole, requestContext.getMethod(), requestContext.getUri().getPath());
+                return; // No further checks required for System Admin
+            }
+
+            // --------------------------
+            // Step 4: Center-Level Access Isolation Check
+            // --------------------------
+            // [ARC-002] Enforce center access isolation for non-System Admin roles
+            String centerIdPathParam = requestContext.getUriInfo().getPathParameters().getFirst(Constants.PATH_PARAM_CENTER_ID);
+            if (centerIdPathParam != null && !centerIdPathParam.isEmpty()) {
+                if (!hasCenterAccess(userId, userRole, centerIdPathParam)) {
+                    logger.warn(Constants.LOG_ACCESS_DENIED, userId, requestContext.getUri().getPath(), "Unauthorized center access");
+                    requestContext.abortWith(Response.status(Constants.STATUS_FORBIDDEN.getStatusCode())
+                            .entity("{\"error\": \"FORBIDDEN\", \"message\": \"" + Constants.ERR_CENTER_ACCESS_DENIED + "\"}")
+                            .build());
+                    return;
+                }
+            }
+
+            // --------------------------
+            // Step 5: Role-Based Permission Check
+            // --------------------------
+            // [ARC-003], [ARC-004], [ARC-005] Validate user role against @RolesAllowed annotation on resource
+            if (!hasRequiredRolePermission(requestContext, userRole)) {
+                logger.warn(Constants.LOG_ACCESS_DENIED, userId, requestContext.getUri().getPath(), "Insufficient role permissions");
+                requestContext.abortWith(Response.status(Constants.STATUS_FORBIDDEN.getStatusCode())
+                        .entity("{\"error\": \"FORBIDDEN\", \"message\": \"" + Constants.ERR_INSUFFICIENT_PERMISSIONS + "\"}")
+                        .build());
+                return;
+            }
+
+            // --------------------------
+            // Step 6: User-Level Resource Access Check
+            // --------------------------
+            // [ARC-004] Ensure users can only access their own resources unless they are privileged roles
+            String userIdPathParam = requestContext.getUriInfo().getPathParameters().getFirst(Constants.PATH_PARAM_USER_ID);
+            if (userIdPathParam != null && !userIdPathParam.isEmpty() && !userId.equals(userIdPathParam)) {
+                // Allow only System Admin, Center Admin, Manager, and Teacher to access other users' resources
+                if (userRole != UserRole.CENTER_ADMIN && userRole != UserRole.MANAGER && userRole != UserRole.TEACHER) {
+                    logger.warn(Constants.LOG_ACCESS_DENIED, userId, requestContext.getUri().getPath(), "Unauthorized access to user resource");
+                    requestContext.abortWith(Response.status(Constants.STATUS_FORBIDDEN.getStatusCode())
+                            .entity("{\"error\": \"FORBIDDEN\", \"message\": \"" + Constants.ERR_USER_ACCESS_DENIED + "\"}")
+                            .build());
+                    return;
+                }
+            }
+
+            // All checks passed: log access granted
+            logger.info(Constants.LOG_ACCESS_GRANTED, userId, userRole, requestContext.getMethod(), requestContext.getUri().getPath());
+
+        } catch (Exception e) {
+            // [ARC-001] [ARC-002] [ARC-003] [ARC-004] [ARC-005] Mandatory error logging with full context per enterprise logging law
+            logger.error("[CRITICAL FAIL] [ARC-001] [ARC-002] [ARC-003] [ARC-004] [ARC-005] RBAC processing failed for request to {}. Raw error: {}", requestContext.getUri().getPath(), e.getMessage(), e);
+            // Abort request with 500 to prevent unauthorized access due to processing failure
+            requestContext.abortWith(Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())
+                    .entity("{\"error\": \"INTERNAL_SERVER_ERROR\", \"message\": \"Failed to process access control check\"}")
+                    .build());
         }
     }
 
+    // -------------------------------------------------------------------------
+    // [HELPER METHODS: Encapsulated business logic for RBAC checks]
+    // -------------------------------------------------------------------------
     /**
-     * Resolve the required role for a given request path.
+     * Checks if the user has access to the specified center.
      * <p>
-     * This method implements the simple path‑to‑role mapping described in the
-     * class‑level documentation. It is kept lightweight to avoid heavy
-     * computation at runtime and to satisfy the performance constraints of
-     * the enterprise platform.
+     * Business Rules:
+     * 1. System Admin has full access to all centers
+     * 2. Center Admin has access only to centers explicitly assigned to them
+     * 3. Manager, Teacher, and Student have access only if they are associated with the center (enrolled in course, assigned to class, etc.)
      * </p>
-     *
-     * @param path the request URI path
-     * @return the role name that is required for the path, or {@code null} if any
-     *         authenticated user is allowed
+     * @param userId the ID of the requesting user
+     * @param userRole the role of the user
+     * @param centerId the ID of the center to access
+     * @return true if user has access to the center, false otherwise
+     * @traceability [ARC-002]
      */
-    private String resolveRequiredRole(final String path) {
-        for (final String admin : ADMIN_PATHS) {
-            if (path.startsWith(admin)) {
-                return ROLE_SYSTEM_ADMIN; // System Admin or Center Admin
-            }
+    private boolean hasCenterAccess(String userId, UserRole userRole, String centerId) {
+        // System Admin has unrestricted center access
+        if (userRole == UserRole.SYSTEM_ADMIN) {
+            return true;
         }
-        for (final String center : CENTER_PATHS) {
-            if (path.startsWith(center)) {
-                return ROLE_CENTER_ADMIN;
+
+        // Center Admin: check against pre-assigned centers in JWT (optimized to avoid DB call)
+        if (userRole == UserRole.CENTER_ADMIN) {
+            List<String> assignedCenterIds = jwt.getClaim(Constants.JWT_CENTER_IDS_CLAIM);
+            // Fallback to DB query if JWT claim is missing (e.g., token issued before claim was added)
+            if (assignedCenterIds == null || assignedCenterIds.isEmpty()) {
+                User user = userService.findById(userId);
+                assignedCenterIds = user.getAssignedCenters().stream()
+                        .map(center -> center.getCenterId().toString())
+                        .collect(Collectors.toList());
             }
+            return assignedCenterIds.contains(centerId);
         }
-        for (final String manager : MANAGER_PATHS) {
-            if (path.startsWith(manager)) {
-                return ROLE_MANAGER;
-            }
-        }
-        for (final String teacher : TEACHER_PATHS) {
-            if (path.startsWith(teacher)) {
-                return ROLE_TEACHER;
-            }
-        }
-        for (final String student : STUDENT_PATHS) {
-            if (path.startsWith(student)) {
-                return ROLE_STUDENT;
-            }
-        }
-        // No specific role required – any authenticated user may proceed
-        return null;
+
+        // Other roles: delegate to UserService to check association with center
+        // (e.g., Teacher is assigned to active course in center, Student is enrolled in active course in center)
+        return userService.isUserAssociatedWithCenter(userId, centerId);
     }
 
     /**
-     * Check whether the user’s role set satisfies the required role.
+     * Checks if the user's role has permission to access the requested endpoint.
      * <p>
-     * The evaluation follows the enterprise RBAC hierarchy:
-     * <ul>
-     *   <li>{@code SYSTEM_ADMIN} can act as any role.</li>
-     *   <li>{@code CENTER_ADMIN} can act as {@code CENTER_ADMIN} or {@code MANAGER}.</li>
-     *   <li>{@code MANAGER} can act as {@code MANAGER}.</li>
-     *   <li>{@code TEACHER} can act as {@code TEACHER}.</li>
-     *   <li>{@code STUDENT} can act as {@code STUDENT}.</li>
-     * </ul>
+     * Business Rules:
+     * 1. Checks for @RolesAllowed annotation on the resource method first, then on the resource class
+     * 2. Denies access by default if no @RolesAllowed annotation is present (secure by default principle)
+     * 3. Role comparison is case-insensitive
      * </p>
-     *
-     * @param userRoles   the set of roles extracted from the JWT token
-     * @param requiredRole the role required by the target endpoint (may be {@code null})
-     * @return {@code true} if the user possesses the required role or a higher‑privilege role
+     * @param requestContext the JAX-RS request context
+     * @param userRole the role of the requesting user
+     * @return true if the user has the required role, false otherwise
+     * @traceability [ARC-001], [ARC-003], [ARC-004], [ARC-005]
      */
-    private boolean hasRequiredRole(final Set<String> userRoles, final String requiredRole) {
-        if (requiredRole == null) {
-            return true; // any authenticated user is allowed
+    private boolean hasRequiredRolePermission(ContainerRequestContext requestContext, UserRole userRole) {
+        // Retrieve the resource method being invoked from request context
+        ResourceMethodInvoker methodInvoker = (ResourceMethodInvoker) requestContext.getProperty("org.jboss.resteasy.core.ResourceMethodInvoker");
+        if (methodInvoker == null) {
+            logger.warn("[RBAC] Could not retrieve resource method invoker for request: {} {}", requestContext.getMethod(), requestContext.getUri().getPath());
+            return false; // Deny access if resource method cannot be determined
         }
-        if (userRoles == null) {
+
+        // Check for @RolesAllowed annotation on method first, then fallback to class-level annotation
+        RolesAllowed rolesAllowed = methodInvoker.getMethod().getAnnotation(RolesAllowed.class);
+        if (rolesAllowed == null) {
+            rolesAllowed = methodInvoker.getResourceClass().getAnnotation(RolesAllowed.class);
+        }
+
+        // Secure by default: deny access if no @RolesAllowed annotation is defined
+        if (rolesAllowed == null) {
+            logger.debug("[RBAC] No @RolesAllowed annotation found for resource: {} {}", requestContext.getMethod(), requestContext.getUri().getPath());
             return false;
         }
 
-        // SYSTEM_ADMIN can bypass any role check
-        if (userRoles.contains(ROLE_SYSTEM_ADMIN)) {
-            return true;
+        // Check if user's role is in the allowed roles list (case-insensitive comparison)
+        List<String> allowedRoles = Arrays.asList(rolesAllowed.value());
+        boolean hasPermission = allowedRoles.stream()
+                .anyMatch(allowedRole -> allowedRole.equalsIgnoreCase(userRole.name()));
+
+        if (!hasPermission) {
+            logger.debug("[RBAC] User role {} not in allowed roles {} for resource: {}", userRole, Arrays.toString(rolesAllowed.value()), requestContext.getUri().getPath());
         }
 
-        // Direct role match
-        if (userRoles.contains(requiredRole)) {
-            return true;
-        }
-
-        // Additional hierarchical allowances (e.g., CENTER_ADMIN can act as MANAGER)
-        if (ROLE_CENTER_ADMIN.equals(requiredRole) && userRoles.contains(ROLE_CENTER_ADMIN)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void init(final FilterConfig filterConfig) throws ServletException {
-        // No external resources are required for this filter – initialization is a no‑op.
-        logger.info("[INIT] RBAC filter initialized successfully.");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void destroy() {
-        // Clean up any resources if needed. Currently none.
-        logger.info("[DESTROY] RBAC filter destroyed.");
+        return hasPermission;
     }
 }
