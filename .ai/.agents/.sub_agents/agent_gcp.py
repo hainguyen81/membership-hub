@@ -1,7 +1,10 @@
 # .ai/.agents/.sub-agents/agent-gcp.py
 import os
-import sys
 import subprocess
+import sys
+
+# super agent
+from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 
 # ==============================================================================
 # 🏢 ENTERPRISE INTER-PACKAGE ROUTING LAYER
@@ -11,13 +14,10 @@ import subprocess
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
 from _0d_ai._0d_agents.agent_0u_helper import (
-    resolve_absolute_path,
     kwargs_by_key,
-    parse_args
+    parse_args,
+    resolve_absolute_path,
 )
-
-# super agent
-from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
@@ -37,7 +37,7 @@ class GcpAgent(AbstractSubAgent):
         )
 
     def authenticate_gcp(self):
-        self.logger.info(f"ℹ️ Authenticating context with Google Cloud Platform SDK...")
+        self.logger.info("ℹ️ Authenticating context with Google Cloud Platform SDK...")
         if self.gcp_sa_key and self.gcp_project and self.gcp_region:
             with open("gcp-key.json", "w", encoding="utf-8") as f:
                 f.write(self.gcp_sa_key)
@@ -46,7 +46,7 @@ class GcpAgent(AbstractSubAgent):
             subprocess.run(["gcloud", "auth", "configure-docker", f"{self.gcp_region}-docker.pkg.dev"], check=True)
             os.remove("gcp-key.json")
         else:
-            self.logger.warning(f"⚠️ Missing parameters inside GCP_SECRETS. Relying on active local shell auth context.")
+            self.logger.warning("⚠️ Missing parameters inside GCP_SECRETS. Relying on active local shell auth context.")
     
     def gcp_cloud_repo(self) -> str:
         return os.environ.get("GCP_REPO")
@@ -97,7 +97,7 @@ class GcpAgent(AbstractSubAgent):
     def pre_execute(self, **kwargs):
         # validate repository
         if not self.gcp_repo or len(self.gcp_repo.strip()) <= 0:
-            self.logger.warning(f"⚠️ Not found 'GCP_REPO' enviroment to publish image for deploying.")
+            self.logger.warning("⚠️ Not found 'GCP_REPO' enviroment to publish image for deploying.")
             sys.exit(0)
         
         # log-in repository
@@ -124,7 +124,7 @@ class GcpAgent(AbstractSubAgent):
         self.logger.info(f"ℹ️ Compiling multi-stage container artifact: {self.gcp_image}")
         subprocess.run(["docker", "build", "-t", self.gcp_image, "-f", dockerfile_path, workspace_path], check=True)
 
-        self.logger.info(f"ℹ️ Uploading image binary up to Google Artifact Registry...")
+        self.logger.info("ℹ️ Uploading image binary up to Google Artifact Registry...")
         subprocess.run(["docker", "push", self.gcp_image], check=True)
         self.logger.info(f"✅ Image version {self.image_tag} published safely to GAR!")
         

@@ -1,29 +1,29 @@
 # .ai/.agents/agent_super.py
 
+import json
 import os
 import sys
-import json
 
 # for abstract class
 from abc import ABC, abstractmethod
 
-# openAI
-from openai import OpenAI
-
 # agent helper
 from _0d_ai._0d_agents.agent_0u_helper import (
-    resolve_absolute_path,
-    write_file,
-    read_json_file,
-    render_prompt,
-    parseAIResponseData,
+    enabledLogDebug,
     exception_stacktrace,
-    kwargs_by_key,
     get_logger,
     json_loads,
-    enabledLogDebug,
-    merge_master_prompt
+    kwargs_by_key,
+    merge_master_prompt,
+    parseAIResponseData,
+    read_json_file,
+    render_prompt,
+    resolve_absolute_path,
+    write_file,
 )
+
+# openAI
+from openai import OpenAI
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
@@ -56,7 +56,7 @@ class AbstractAgent(ABC):
         self.client = None
         self.current_model_config = None
         if not self.rotate_model():
-            self.logger.critical(f"💀 Not found any available AI models to execute!")
+            self.logger.critical("💀 Not found any available AI models to execute!")
             sys.exit(1)
     
     def enabled_log_debug(self):
@@ -80,7 +80,7 @@ class AbstractAgent(ABC):
     
     def load_secrets(self, secrets_key):
         if not secrets_key or len(secrets_key) <= 0:
-            self.logger.warning(f"⚠️ Invalid secrets key to load secrets!")
+            self.logger.warning("⚠️ Invalid secrets key to load secrets!")
             return None
         
         # load secrets from environment
@@ -109,7 +109,7 @@ class AbstractAgent(ABC):
     
     def rotate_model(self):
         if not self.models_secrets or len(self.models_secrets) <= 0:
-            self.logger.warning(f"⚠️ Not found any models secrets to rotate!")
+            self.logger.warning("⚠️ Not found any models secrets to rotate!")
             return False
         
         models_pool_len = len(self.models_pool) if isinstance(self.models_pool, list) else 0
