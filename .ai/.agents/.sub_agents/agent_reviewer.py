@@ -1,9 +1,12 @@
 # .ai/.agents/.sub-agents/agent-fixer.py
 import os
 import subprocess
-import yaml
 import xml.etree.ElementTree as ET
-from jproperties import Properties
+
+import yaml
+
+# super agent
+from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 
 # ==============================================================================
 # 🏢 ENTERPRISE INTER-PACKAGE ROUTING LAYER
@@ -13,14 +16,12 @@ from jproperties import Properties
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
 from _0d_ai._0d_agents.agent_0u_helper import (
-    resolve_absolute_path,
     exception_stacktrace,
     kwargs_by_key,
-    parse_args
+    parse_args,
+    resolve_absolute_path,
 )
-
-# super agent
-from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
+from jproperties import Properties
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
@@ -52,7 +53,7 @@ class BugFixerAgent(AbstractSubAgent):
         if file_extension == '.sql':
             # use sqlfluff (linter to check SQL, need `pip install sqlfluff`)
             # --dialect ansi to check syntax SQL following global standards
-            result = subprocess.run([ "sqlfluff", "lint", target_path, "--dialect", "ansi" ], capture_output=True, text=True, timeout=120)
+            result = subprocess.run([ "sqlfluff", "lint", target_path, "--dialect", "ansi" ], capture_output=True, text=True, timeout=120, check=False)
             if not check_by_compile:
                 return (result.returncode == 0, result.stdout + "\n" + result.stderr)
         
@@ -106,13 +107,20 @@ class BugFixerAgent(AbstractSubAgent):
         package_path = os.path.join(FRONTEND_WORKSPACE, "package.json")
         if "backend" in target_path and os.path.exists(pom_path):
             # build to check error
-            result = subprocess.run(["mvn", "clean", "test-compile"], cwd=BACKEND_WORKSPACE, capture_output=True, text=True, timeout=120)
+            result = subprocess.run(["mvn", "clean", "test-compile"], cwd=BACKEND_WORKSPACE, capture_output=True, text=True, timeout=120, check=False)
             # return compile result
             return (result.returncode == 0, result.stdout + "\n" + result.stderr)
         
         elif "frontend" in target_path and os.path.exists(package_path):
             # build to check error
-            result = subprocess.run(["npm", "run", "build"], cwd=FRONTEND_WORKSPACE, capture_output=True, text=True, timeout=120)
+            result = subprocess.run(
+                ["npm", "run", "build"],
+                cwd=FRONTEND_WORKSPACE,
+                capture_output=True,
+                text=True,
+                timeout=120,
+                check=False,
+            )
             # return compile result
             return (result.returncode == 0, result.stdout + "\n" + result.stderr)
         
@@ -171,7 +179,7 @@ class BugFixerAgent(AbstractSubAgent):
     def __execute__(self, **kwargs):
         # parse arguments
         project_initialized = kwargs_by_key(key="project_initialized", **kwargs)
-        source_component = kwargs_by_key(key="source_component", **kwargs)
+        # source_component = kwargs_by_key(key="source_component", **kwargs)
         target_component = kwargs_by_key(key="target_component", **kwargs)
         
         # build system prompt
@@ -193,6 +201,7 @@ class BugFixerAgent(AbstractSubAgent):
             
             # build user prompt
             self.logger.warning(f"⚠️ Build check failed on validation loop: {iteration}. Ingesting raw error logs...")
+            self.logger.warning(f"   |__ ⚠️ Compile Error: {compiler_log}")
             user_prompt = self.build_user_prompt(**kwargs)
             
             # build new values kwargs
@@ -216,7 +225,7 @@ class BugFixerAgent(AbstractSubAgent):
                     break
         
         if not success:
-            self.logger.critical(f"💀 Structural compiler repairs failed within maximum iteration bounds.")
+            self.logger.critical("💀 Structural compiler repairs failed within maximum iteration bounds.")
         return (success, system_prompt, user_prompt, latest_response)
 
 if __name__ == "__main__":

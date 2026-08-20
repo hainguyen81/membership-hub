@@ -1,8 +1,10 @@
 # .ai/.agents/.sub-agents/agent-tester.py
 import os
 import sys
-import re
 from datetime import datetime
+
+# Now Python can seamlessly see and import the centralized helper utility cleanly!
+from _0d_ai._0d_agents._0d_sub_0u_agents.helper import write_sub_agent_history
 
 # ==============================================================================
 # 🏢 ENTERPRISE INTER-PACKAGE ROUTING LAYER
@@ -12,19 +14,15 @@ from datetime import datetime
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
 from _0d_ai._0d_agents.agent_0u_helper import (
-    resolve_absolute_path,
+    exception_stacktrace,
+    kwargs_by_key,
     read_file_raw,
     read_json_file,
+    resolve_absolute_path,
     write_file,
-    exception_stacktrace,
-    kwargs_by_key
 )
 from _0d_ai._0d_agents.agent_0u_super import AbstractAgent
 
-# Now Python can seamlessly see and import the centralized helper utility cleanly!
-from _0d_ai._0d_agents._0d_sub_0u_agents.helper import write_sub_agent_history
-
-# ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
 # ==============================================================================
 STEPS_PLAN_DIR              = resolve_absolute_path(".ai/.plan/.steps")
@@ -177,7 +175,7 @@ class AbstractSubAgent(AbstractAgent):
             sub_tasks = [ sub_task.get("desc") ]
             targeted_tags = sub_task.get("targeted_tags") or []
             self.logger.info("=================================================")
-            self.logger.info(f"ℹ️ Do Task: {str(sub_tasks)}")
+            self.logger.info(f"ℹ️ Do Task: {sub_tasks!s}")
             self.logger.info("=================================================")
             task_kwargs = {
                 **kwargs,
