@@ -1,296 +1,276 @@
 package org.nlh4j.saas.membership_hub.security;
 
-// Traceability Tags: [REQ-003], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.core.Response;
+import java.lang.reflect.Method;
+import java.util.Set;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 /**
- * RBAC Middleware (JAX-RS ContainerRequestFilter)
- * <p>
- * Implements global Role-Based Access Control (RBAC) for all backend endpoints,
- * enforcing permission rules aligned with the 5 defined user roles:
- * System Admin, Center Admin, Manager, Teacher, Student.
- * </p>
- * <p>
- * Security features:
- * - Extracts user role and claims from validated JWT token (no direct DB calls for low latency)
- * - Enforces path-based permission matrix with method-level access control
- * - Sanitizes all input to prevent XSS attacks
- * - Prevents SQL injection by avoiding dynamic query construction (uses JWT claims and parameterized queries if DB access is needed)
- * - Blocks unauthorized access with detailed error logging for audit compliance
- * </p>
- *
- * @author Enterprise Security Team
- * @version 1.0
- * @since 2024-06-01
+ * Comprehensive unit test suite for RbacMiddleware
+ * Verifies compliance with RBAC requirements and enterprise security constraints
+ * @verifies [REQ-003], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]
  */
-@Provider
-public class RbacMiddleware implements ContainerRequestFilter {
-
-    // -------------------------------------------------------------------------
-    // ENTERPRISE CONSTANTS (Top-of-class declaration per governance mandate)
-    // -------------------------------------------------------------------------
-    /** HTTP Status Codes */
-    public static final int SC_UNAUTHORIZED = 401;
-    public static final int SC_FORBIDDEN = 403;
-    public static final int SC_INTERNAL_SERVER_ERROR = 500;
-
-    /** Standardized Error Codes */
-    public static final String ERR_INVALID_TOKEN = "INVALID_TOKEN";
-    public static final String ERR_INSUFFICIENT_PERMISSIONS = "INSUFFICIENT_PERMISSIONS";
-    public static final String ERR_INTERNAL_RBAC_ERROR = "RBAC_INTERNAL_ERROR";
-
-    /** Standardized Error Messages */
-    public static final String MSG_INVALID_TOKEN = "Invalid or missing authentication token";
-    public static final String MSG_INSUFFICIENT_PERMISSIONS = "User does not have permission to access this resource";
-    public static final String MSG_INTERNAL_RBAC_ERROR = "An error occurred while verifying access permissions";
-
-    /** Defined User Roles (aligned with system RBAC policy) */
-    public static final String ROLE_SYSTEM_ADMIN = "SYSTEM_ADMIN";
-    public static final String ROLE_CENTER_ADMIN = "CENTER_ADMIN";
-    public static final String ROLE_MANAGER = "MANAGER";
-    public static final String ROLE_TEACHER = "TEACHER";
-    public static final String ROLE_STUDENT = "STUDENT";
-
-    /** Public endpoints that do not require RBAC authentication */
-    public static final Set<String> PUBLIC_ENDPOINTS = Set.of(
-            "/api/v1/auth/register",
-            "/api/v1/auth/login",
-            "/api/v1/auth/oauth2",
-            "/api/v1/auth/refresh",
-            "/api/v1/notifications/register-token",
-            "/api/v1/chatbot/message",
-            "/api/v1/user/locale",
-            "/actuator/health",
-            "/actuator/info"
-    );
-
-    /** Allowed HTTP methods per role for path pattern matching */
-    public static final Set<String> ALLOWED_METHODS_READ = Set.of("GET");
-    public static final Set<String> ALLOWED_METHODS_WRITE = Set.of("GET", "POST", "PUT", "PATCH");
-    public static final Set<String> ALLOWED_METHODS_STUDENT = Set.of("GET", "POST");
-
-    /** Path patterns for role-based access (regex compatible) */
-    public static final String PATH_COURSES = "/api/v1/courses(/.*)?";
-    public static final String PATH_ENROLLMENTS = "/api/v1/enrollments(/.*)?";
-    public static final String PATH_ATTENDANCE = "/api/v1/attendance(/.*)?";
-    public static final String PATH_MEMBERSHIP = "/api/v1/membership(/.*)?";
-    public static final String PATH_ANNOUNCEMENTS = "/api/v1/announcements(/.*)?";
-    public static final String PATH_PROMOTIONS = "/api/v1/promotions(/.*)?";
-    public static final String PATH_NOTIFICATIONS = "/api/v1/notifications(/.*)?";
-    public static final String PATH_STUDENTS = "/api/v1/students(/.*)?";
-    public static final String PATH_CENTERS = "/api/v1/centers(/.*)?";
-    public static final String PATH_ADMIN = "/api/v1/admin(/.*)?";
-
-    // -------------------------------------------------------------------------
-    // DEPENDENCY INJECTION & LOGGER
-    // -------------------------------------------------------------------------
-    private static final Logger logger = LoggerFactory.getLogger(RbacMiddleware.class);
-
-    /** SmallRye JWT injection to extract validated user claims (no DB call needed) */
-    @Inject
-    JsonWebToken jwt;
-
-    // -------------------------------------------------------------------------
-    // CORE RBAC FILTER LOGIC
-    // -------------------------------------------------------------------------
-    /**
-     * JAX-RS request filter method that executes RBAC checks before request processing
-     * @param requestContext The JAX-RS container request context
-     * @throws IOException If an I/O error occurs during filter processing
-     */
-    @Override
-    public void filter(ContainerRequestContext requestContext) throws IOException {
-        // [REQ-003] [ARC-001] Log entry point of RBAC check for audit trail
-        String requestPath = requestContext.getUriInfo().getPath();
-        String httpMethod = requestContext.getMethod().toUpperCase();
-        logger.info("[RBAC_FILTER] [REQ-003] Starting RBAC check for path: {}, method: {}", requestPath, httpMethod);
-
-        try {
-            // Step 1: Skip RBAC check for public endpoints
-            if (isPublicEndpoint(requestPath)) {
-                logger.info("[RBAC_FILTER] [REQ-003] Public endpoint detected, skipping RBAC check for path: {}", requestPath);
-                return;
-            }
-
-            // Step 2: Validate user authentication status
-            if (jwt == null || jwt.getUserName() == null || jwt.getUserName().isEmpty()) {
-                logger.error("[RBAC_FILTER] [REQ-003] [ARC-001] Unauthenticated access attempt to path: {}. Raw error: {}", requestPath, "Missing or invalid JWT token");
-                requestContext.abortWith(Response.status(SC_UNAUTHORIZED)
-                        .entity(Map.of("error", ERR_INVALID_TOKEN, "message", MSG_INVALID_TOKEN))
-                        .build());
-                return;
-            }
-
-            // Step 3: Extract user claims from validated JWT (no DB call, low latency)
-            String userId = jwt.getClaim("userId");
-            String userRole = jwt.getClaim("role");
-            String userCenterId = jwt.getClaim("centerId"); // Only populated for CENTER_ADMIN role
-
-            // Sanitize input to prevent XSS attacks (OWASP compliance)
-            String sanitizedPath = sanitizeInput(requestPath);
-            String sanitizedMethod = sanitizeInput(httpMethod);
-
-            // Step 4: Perform permission check
-            boolean hasPermission = hasPermission(userRole, sanitizedPath, sanitizedMethod, userCenterId);
-            if (!hasPermission) {
-                // [REQ-003] [ARC-001] [ARC-002] [ARC-003] [ARC-004] [ARC-005] Log permission denial with full audit context
-                logger.error("[RBAC_FILTER] [REQ-003] [ARC-001] [ARC-002] [ARC-003] [ARC-004] [ARC-005] Permission denied for user: {}, role: {}, path: {}, method: {}. Raw error: Insufficient privileges",
-                        userId, userRole, sanitizedPath, sanitizedMethod);
-                requestContext.abortWith(Response.status(SC_FORBIDDEN)
-                        .entity(Map.of("error", ERR_INSUFFICIENT_PERMISSIONS, "message", MSG_INSUFFICIENT_PERMISSIONS))
-                        .build());
-                return;
-            }
-
-            // [REQ-003] Log successful RBAC check for audit trail
-            logger.info("[RBAC_FILTER] [REQ-003] RBAC check passed for user: {}, role: {}, path: {}, method: {}", userId, userRole, sanitizedPath, sanitizedMethod);
-
-        } catch (Exception e) {
-            // [REQ-003] [ARC-001] [ARC-002] [ARC-003] [ARC-004] [ARC-005] Mandatory error logging with 3 required context keys
-            logger.error("[CRITICAL FAIL] [REQ-003] [ARC-001] [ARC-002] [ARC-003] [ARC-004] [ARC-005] RBAC check failed for path: {}, method: {}. Subsystem: RBAC_Middleware. Raw error: {}", requestPath, httpMethod, e.getMessage(), e);
-            // Preserve original exception cause chain per enterprise exception handling mandate
-            requestContext.abortWith(Response.status(SC_INTERNAL_SERVER_ERROR)
-                    .entity(Map.of("error", ERR_INTERNAL_RBAC_ERROR, "message", MSG_INTERNAL_RBAC_ERROR))
-                    .build());
-            throw new WebApplicationException(e);
-        }
+@ExtendWith(MockitoExtension.class)
+public class RbacMiddlewareTest {
+    // Enterprise logger instance per governance mandate [0.3]
+    private static final Logger logger = LoggerFactory.getLogger(RbacMiddlewareTest.class);
+    
+    // Top-level constants per anti-magic-number policy [0.2]
+    private static final String TEST_USER_EMAIL = "test@membershiphub.com";
+    private static final String TEST_CENTER_ID = "123e4567-e89b-12d3-a456-426614174000";
+    private static final String OTHER_CENTER_ID = "123e4567-e89b-12d3-a456-426614174001";
+    private static final String TEST_JWT_TOKEN = "valid.jwt.token";
+    private static final String INVALID_JWT_TOKEN = "invalid.jwt.token";
+    private static final String EXPIRED_JWT_TOKEN = "expired.jwt.token";
+    private static final int HTTP_OK = 200;
+    private static final int HTTP_UNAUTHORIZED = 401;
+    private static final int HTTP_FORBIDDEN = 403;
+    private static final long LATENCY_THRESHOLD_MS = 10; // NFR-001 requirement
+    
+    // Mock external dependencies for isolated unit testing
+    @Mock
+    private ContainerRequestContext requestContext;
+    
+    @Mock
+    private ResourceInfo resourceInfo;
+    
+    @Mock
+    private org.nlh4j.saas.membership_hub.security.service.JwtTokenService jwtTokenService;
+    
+    @Mock
+    private org.nlh4j.saas.membership_hub.security.service.RbacPermissionService rbacPermissionService;
+    
+    @Mock
+    private org.nlh4j.saas.membership_hub.security.model.UserContext userContext;
+    
+    // Instance under test
+    private RbacMiddleware rbacMiddleware;
+    
+    @BeforeEach
+    void setUp() {
+        // Initialize RbacMiddleware with mocked dependencies for isolation
+        rbacMiddleware = new RbacMiddleware(jwtTokenService, rbacPermissionService);
+        reset(requestContext, resourceInfo, jwtTokenService, rbacPermissionService, userContext);
+        logger.info("[TEST_SETUP] RbacMiddleware test environment initialized with mocked dependencies");
     }
-
-    // -------------------------------------------------------------------------
-    // HELPER METHODS (Private, no external exposure)
-    // -------------------------------------------------------------------------
+    
     /**
-     * Checks if the requested path is a public endpoint that does not require authentication
-     * @param path The request path to check
-     * @return True if the path is public, false otherwise
+     * Test case 1: System Admin successfully accesses center management endpoint
+     * Validates that System Admin role has full access to admin endpoints per RBAC matrix
+     * @verifies [REQ-003], [ARC-001], [ARC-002]
      */
-    private boolean isPublicEndpoint(String path) {
-        // Sanitize path before check to prevent bypass via malicious characters
-        String sanitizedPath = sanitizeInput(path);
-        return PUBLIC_ENDPOINTS.stream().anyMatch(sanitizedPath::startsWith);
+    @Test
+    void testSystemAdminAccessCenterManagement_Success() {
+        logger.info("[TEST_START] [REQ-003] [ARC-001] [ARC-002] Testing System Admin access to center management endpoint");
+        
+        // Arrange: Mock System Admin user with valid JWT token
+        mockValidJwtToken(TEST_JWT_TOKEN, "SYSTEM_ADMIN", null);
+        mockRequestEndpoint("/api/v1/admin/centers", "GET");
+        mockResourcePermissions(Set.of("SYSTEM_ADMIN"));
+        
+        // Act: Execute the RBAC filter and measure latency
+        long startTime = System.nanoTime();
+        rbacMiddleware.filter(requestContext);
+        long endTime = System.nanoTime();
+        long latencyMs = (endTime - startTime) / 1_000_000;
+        
+        // Assert: Verify request is not aborted, latency meets NFR-001 requirement
+        verify(requestContext, never()).abortWith(any(Response.class));
+        assertTrue(latencyMs < LATENCY_THRESHOLD_MS, 
+            "RBAC permission check latency must be under 10ms per NFR-001, actual: " + latencyMs + "ms");
+        
+        logger.info("[TEST_PASS] [REQ-003] System Admin access to center management endpoint allowed successfully, latency: {}ms", latencyMs);
     }
-
+    
     /**
-     * Core permission check logic aligned with the system RBAC matrix
-     * @param role The user's role extracted from JWT
-     * @param path The sanitized request path
-     * @param method The sanitized HTTP method
-     * @param userCenterId The center ID assigned to the user (only for CENTER_ADMIN role)
-     * @return True if the user has permission to access the resource, false otherwise
+     * Test case 2: Student accessing course management endpoint is denied with 403 Forbidden
+     * Validates that Student role has no access to admin course management endpoints
+     * @verifies [REQ-003], [ARC-001], [ARC-003]
      */
-    private boolean hasPermission(String role, String path, String method, String userCenterId) {
-        if (role == null || role.isEmpty()) {
-            return false;
-        }
-
-        return switch (role) {
-            // [ARC-001] System Admin has full access to all resources
-            case ROLE_SYSTEM_ADMIN -> true;
-
-            // [ARC-002] Center Admin has full access only to resources assigned to their center
-            case ROLE_CENTER_ADMIN -> {
-                if (userCenterId == null || userCenterId.isEmpty()) {
-                    yield false;
-                }
-                // Extract centerId from request path to validate ownership
-                String pathCenterId = extractCenterIdFromPath(path);
-                yield userCenterId.equals(pathCenterId) && isAllowedForCenterAdmin(path, method);
-            }
-
-            // [ARC-003] Manager has limited access: student management, notifications, no course modification
-            case ROLE_MANAGER -> isAllowedForManager(path, method);
-
-            // [ARC-004] Teacher has read-only access to assigned courses and student attendance
-            case ROLE_TEACHER -> isAllowedForTeacher(path, method);
-
-            // [ARC-005] Student has access to course browsing, enrollment, attendance, and personal membership
-            case ROLE_STUDENT -> isAllowedForStudent(path, method);
-
-            // Unknown roles are denied by default
-            default -> false;
-        };
+    @Test
+    void testStudentAccessCourseManagement_Denied403() {
+        logger.info("[TEST_START] [REQ-003] [ARC-001] [ARC-003] Testing Student access to course management endpoint");
+        
+        // Arrange: Mock Student user with valid JWT token
+        mockValidJwtToken(TEST_JWT_TOKEN, "STUDENT", TEST_CENTER_ID);
+        mockRequestEndpoint("/api/v1/admin/courses", "POST");
+        mockResourcePermissions(Set.of("SYSTEM_ADMIN", "CENTER_ADMIN"));
+        
+        // Act: Execute the RBAC filter
+        rbacMiddleware.filter(requestContext);
+        
+        // Assert: Verify request is aborted with 403 Forbidden
+        verify(requestContext).abortWith(Response.status(HTTP_FORBIDDEN).build());
+        
+        logger.info("[TEST_PASS] [REQ-003] Student access to course management endpoint correctly denied with 403 Forbidden");
     }
-
+    
     /**
-     * Checks if the requested path/method is allowed for Center Admin role
+     * Test case 3: Center Admin accessing another center's resource is denied with 403 Forbidden
+     * Validates that Center Admin role is scoped only to their assigned center per RBAC matrix
+     * @verifies [REQ-003], [ARC-002], [ARC-004]
      */
-    private boolean isAllowedForCenterAdmin(String path, String method) {
-        // Deny access to global admin endpoints
-        if (path.matches(PATH_ADMIN)) {
-            return false;
-        }
-        // Allow all methods for center-scoped resources
-        return path.matches(PATH_COURSES) || path.matches(PATH_ENROLLMENTS) || path.matches(PATH_ATTENDANCE)
-                || path.matches(PATH_NOTIFICATIONS) || path.matches(PATH_ANNOUNCEMENTS) || path.matches(PATH_PROMOTIONS)
-                || path.matches(PATH_STUDENTS) || path.matches(PATH_CENTERS);
+    @Test
+    void testCenterAdminAccessOtherCenterResource_Denied403() {
+        logger.info("[TEST_START] [REQ-003] [ARC-002] [ARC-004] Testing Center Admin access to other center's resource");
+        
+        // Arrange: Mock Center Admin user assigned to TEST_CENTER_ID, requesting OTHER_CENTER_ID resource
+        mockValidJwtToken(TEST_JWT_TOKEN, "CENTER_ADMIN", TEST_CENTER_ID);
+        mockRequestEndpoint("/api/v1/centers/" + OTHER_CENTER_ID + "/students", "GET");
+        mockResourcePermissions(Set.of("CENTER_ADMIN"));
+        // Mock center ID extraction from request path to return OTHER_CENTER_ID
+        when(requestContext.getUriInfo()).thenReturn(mock(javax.ws.rs.core.UriInfo.class));
+        when(requestContext.getUriInfo().getPath()).thenReturn("/api/v1/centers/" + OTHER_CENTER_ID + "/students");
+        
+        // Act: Execute the RBAC filter
+        rbacMiddleware.filter(requestContext);
+        
+        // Assert: Verify request is aborted with 403 Forbidden
+        verify(requestContext).abortWith(Response.status(HTTP_FORBIDDEN).build());
+        
+        logger.info("[TEST_PASS] [REQ-003] Center Admin access to other center's resource correctly denied with 403 Forbidden");
     }
-
+    
     /**
-     * Checks if the requested path/method is allowed for Manager role
+     * Test case 4: Manager accessing course edit endpoint is denied with 403 Forbidden
+     * Validates that Manager role has no permission to modify course resources per RBAC matrix
+     * @verifies [REQ-003], [ARC-003], [ARC-005]
      */
-    private boolean isAllowedForManager(String path, String method) {
-        // Deny access to course modification and center admin endpoints
-        if (path.matches(PATH_COURSES) && (method.equals("POST") || method.equals("PUT") || method.equals("DELETE"))) {
-            return false;
-        }
-        if (path.matches(PATH_ADMIN) || path.matches(PATH_CENTERS)) {
-            return false;
-        }
-        // Allow read/write for student, notification, announcement, promotion endpoints
-        return path.matches(PATH_STUDENTS) || path.matches(PATH_NOTIFICATIONS) || path.matches(PATH_ANNOUNCEMENTS)
-                || path.matches(PATH_PROMOTIONS);
+    @Test
+    void testManagerAccessCourseEditEndpoint_Denied403() {
+        logger.info("[TEST_START] [REQ-003] [ARC-003] [ARC-005] Testing Manager access to course edit endpoint");
+        
+        // Arrange: Mock Manager user with valid JWT token
+        mockValidJwtToken(TEST_JWT_TOKEN, "MANAGER", TEST_CENTER_ID);
+        mockRequestEndpoint("/api/v1/courses/123e4567-e89b-12d3-a456-426614174002", "PUT");
+        mockResourcePermissions(Set.of("SYSTEM_ADMIN", "CENTER_ADMIN"));
+        
+        // Act: Execute the RBAC filter
+        rbacMiddleware.filter(requestContext);
+        
+        // Assert: Verify request is aborted with 403 Forbidden
+        verify(requestContext).abortWith(Response.status(HTTP_FORBIDDEN).build());
+        
+        logger.info("[TEST_PASS] [REQ-003] Manager access to course edit endpoint correctly denied with 403 Forbidden");
     }
-
+    
     /**
-     * Checks if the requested path/method is allowed for Teacher role (read-only)
+     * Test case 5: Teacher accessing course enrollment endpoint is denied with 403 Forbidden
+     * Validates that Teacher role has no permission to manage student enrollments per RBAC matrix
+     * @verifies [REQ-003], [ARC-004], [ARC-005]
      */
-    private boolean isAllowedForTeacher(String path, String method) {
-        // Only allow GET requests for course and attendance endpoints
-        if (!ALLOWED_METHODS_READ.contains(method)) {
-            return false;
-        }
-        return path.matches(PATH_COURSES) || path.matches(PATH_ATTENDANCE) || path.matches(PATH_STUDENTS);
+    @Test
+    void testTeacherAccessEnrollmentEndpoint_Denied403() {
+        logger.info("[TEST_START] [REQ-003] [ARC-004] [ARC-005] Testing Teacher access to enrollment endpoint");
+        
+        // Arrange: Mock Teacher user with valid JWT token
+        mockValidJwtToken(TEST_JWT_TOKEN, "TEACHER", TEST_CENTER_ID);
+        mockRequestEndpoint("/api/v1/enrollments", "POST");
+        mockResourcePermissions(Set.of("STUDENT"));
+        
+        // Act: Execute the RBAC filter
+        rbacMiddleware.filter(requestContext);
+        
+        // Assert: Verify request is aborted with 403 Forbidden
+        verify(requestContext).abortWith(Response.status(HTTP_FORBIDDEN).build());
+        
+        logger.info("[TEST_PASS] [REQ-003] Teacher access to enrollment endpoint correctly denied with 403 Forbidden");
     }
-
+    
     /**
-     * Checks if the requested path/method is allowed for Student role
+     * Test case 6: Expired/invalid JWT token is denied with 401 Unauthorized
+     * Validates that invalid or expired authentication tokens are rejected at the entry point
+     * @verifies [REQ-003], [ARC-001], [ARC-006]
      */
-    private boolean isAllowedForStudent(String path, String method) {
-        // Only allow GET and POST requests for student-scoped endpoints
-        if (!ALLOWED_METHODS_STUDENT.contains(method)) {
-            return false;
-        }
-        return path.matches(PATH_COURSES) || path.matches(PATH_ENROLLMENTS) || path.matches(PATH_ATTENDANCE)
-                || path.matches(PATH_MEMBERSHIP) || path.matches(PATH_ANNOUNCEMENTS) || path.matches(PATH_PROMOTIONS);
+    @Test
+    void testInvalidJwtToken_Denied401() {
+        logger.info("[TEST_START] [REQ-003] [ARC-001] [ARC-006] Testing invalid/expired JWT token access");
+        
+        // Arrange: Mock invalid JWT token in request header
+        when(requestContext.getHeaderString("Authorization")).thenReturn("Bearer " + INVALID_JWT_TOKEN);
+        when(jwtTokenService.validateToken(INVALID_JWT_TOKEN)).thenThrow(new org.nlh4j.saas.membership_hub.security.exception.JwtValidationException("Token expired or invalid"));
+        mockRequestEndpoint("/api/v1/admin/centers", "GET");
+        
+        // Act: Execute the RBAC filter
+        rbacMiddleware.filter(requestContext);
+        
+        // Assert: Verify request is aborted with 401 Unauthorized
+        verify(requestContext).abortWith(Response.status(HTTP_UNAUTHORIZED).build());
+        
+        logger.info("[TEST_PASS] [REQ-003] Invalid JWT token correctly denied with 401 Unauthorized");
     }
-
+    
     /**
-     * Extracts centerId from the request path for Center Admin permission validation
-     * @param path The request path
-     * @return The extracted centerId, or null if not found
+     * Test case 7: RBAC permission check latency is under 10ms threshold per NFR-001
+     * Validates that permission checks do not introduce unacceptable latency for API requests
+     * @verifies [REQ-003], [ARC-001], [NFR-001]
      */
-    private String extractCenterIdFromPath(String path) {
-        // Regex to match centerId in paths like /api/v1/centers/{centerId}/...
-        java.util.regex.Matcher matcher = Pattern.compile("/api/v1/centers/([^/]+)").matcher(path);
-        if (matcher.find()) {
-            return matcher.group(1);
+    @Test
+    void testRbacPermissionCheckLatency_Under10ms() {
+        logger.info("[TEST_START] [REQ-003] [ARC-001] [NFR-001] Testing RBAC permission check latency compliance");
+        
+        // Arrange: Prepare valid request with System Admin role
+        mockValidJwtToken(TEST_JWT_TOKEN, "SYSTEM_ADMIN", null);
+        mockRequestEndpoint("/api/v1/admin/centers", "GET");
+        mockResourcePermissions(Set.of("SYSTEM_ADMIN"));
+        
+        // Act: Run 100 iterations to measure average and peak latency
+        long totalLatency = 0;
+        long maxLatency = 0;
+        int iterations = 100;
+        
+        for (int i = 0; i < iterations; i++) {
+            long startTime = System.nanoTime();
+            rbacMiddleware.filter(requestContext);
+            long endTime = System.nanoTime();
+            long latency = (endTime - startTime) / 1_000_000;
+            totalLatency += latency;
+            maxLatency = Math.max(maxLatency, latency);
         }
-        return null;
+        
+        long avgLatency = totalLatency / iterations;
+        
+        // Assert: Verify both average and peak latency meet NFR-001 requirements
+        assertTrue(avgLatency < LATENCY_THRESHOLD_MS, 
+            "Average RBAC latency must be under 10ms per NFR-001, actual: " + avgLatency + "ms");
+        assertTrue(maxLatency < LATENCY_THRESHOLD_MS, 
+            "Peak RBAC latency must be under 10ms per NFR-001, actual: " + maxLatency + "ms");
+        
+        logger.info("[TEST_PASS] [REQ-003] RBAC latency meets NFR-001 requirement: avg={}ms, peak={}ms", avgLatency, maxLatency);
     }
-
-    /**
-     * Sanitizes user input to prevent XSS attacks (OWASP compliance)
-     * Replaces HTML/JS special characters with safe equivalents
-     * @param input The raw input string to sanitize
-     * @return The sanitized safe string
-     */
-    private String sanitizeInput(String input) {
-        if (input == null || input.isEmpty()) {
-            return input;
-        }
-        return input.trim()
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("&", "&amp;")
-                .replace("\"", "&quot;")
-                .replace("'", "&#x27;");
+    
+    // Helper method to mock valid JWT token and user context
+    private void mockValidJwtToken(String token, String role, String centerId) {
+        when(userContext.getEmail()).thenReturn(TEST_USER_EMAIL);
+        when(userContext.getRole()).thenReturn(role);
+        when(userContext.getCenterId()).thenReturn(centerId);
+        when(jwtTokenService.validateToken(token)).thenReturn(userContext);
+        when(requestContext.getHeaderString("Authorization")).thenReturn("Bearer " + token);
+    }
+    
+    // Helper method to mock request endpoint and HTTP method
+    private void mockRequestEndpoint(String path, String method) {
+        javax.ws.rs.core.UriInfo uriInfo = mock(javax.ws.rs.core.UriInfo.class);
+        when(requestContext.getUriInfo()).thenReturn(uriInfo);
+        when(requestContext.getMethod()).thenReturn(method);
+        when(resourceInfo.getResourceMethod()).thenReturn(mock(Method.class));
+        when(uriInfo.getPath()).thenReturn(path);
+    }
+    
+    // Helper method to mock required permissions for requested resource
+    private void mockResourcePermissions(Set<String> allowedRoles) {
+        Method resourceMethod = resourceInfo.getResourceMethod();
+        when(rbacPermissionService.getRequiredRoles(resourceMethod)).thenReturn(allowedRoles);
     }
 }
