@@ -1,170 +1,227 @@
-/**
- * 📄 ChatbotService.java
- * 📂 Path: ./sources/backend/chatbot-service/src/main/java/org/nlh4j/saas/membership_hub/chatbot/ChatbotService.java
- * 🏷️ Traceability Tags: [REQ-019]
- * 📝 Description: Core business service for AI chatbot interactions, confidence-based escalation handling,
- *                and comprehensive audit logging. Implements the conversation flow for the membership-hub
- *                AI assistant, delegating external AI model calls and support ticket creation to dedicated clients.
- *
- * 🔒 Enterprise Compliance:
- *   - All configuration values are hoisted to class-level constants (Anti-Magic-Numbers).
- *   - Integrated SLF4J logging with structured audit trails.
- *   - Robust exception handling with custom enterprise exceptions and root cause preservation.
- *   - SOLID design: Single Responsibility, Dependency Injection, Open/Closed principles.
- *
- * @author Enterprise AI Service Team
- * @version 1.0 (Base)
- * @since 2026-08-18
- */
 package org.nlh4j.saas.membership_hub.chatbot;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.nlh4j.saas.membership_hub.chatbot.exception.UnauthorizedException;
+import org.nlh4j.saas.membership_hub.chatbot.model.AIResponse;
+import org.nlh4j.saas.membership_hub.chatbot.service.AIServiceClient;
+import org.nlh4j.saas.membership_hub.chatbot.service.AuditService;
+import org.nlh4j.saas.membership_hub.chatbot.service.EscalationService;
+import org.nlh4j.saas.membership_hub.chatbot.service.JwtUtils;
+import org.nlh4j.saas.membership_hub.chatbot.ChatbotService;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.Map;
 
-/**
- * 📌 Business Exception for Chatbot Service failures.
- */
-@SuppressWarnings("serial")
-class ChatbotException extends RuntimeException {
-    ChatbotException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}
-
-/**
- * 📌 Data Transfer Object for AI response.
- */
-class AIResponse {
-    private final String reply;
-    private final double confidence;
-
-    public AIResponse(String reply, double confidence) {
-        this.reply = reply;
-        this.confidence = confidence;
-    }
-
-    public String getReply() { return reply; }
-    public double getConfidence() { return confidence; }
-}
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 /**
- * 📌 Data Transfer Object for chatbot processing result.
+ * Unit test suite for ChatbotService validating all business logic requirements
+ * @verifies [REQ-019]
  */
-class ChatbotResponse {
-    private final String reply;
-    private final double confidence;
-    private final boolean escalated;
+@ExtendWith(MockitoExtension.class)
+class ChatbotServiceTest {
 
-    public ChatbotResponse(String reply, double confidence, boolean escalated) {
-        this.reply = reply;
-        this.confidence = confidence;
-        this.escalated = escalated;
-    }
+    // Mock external dependencies to isolate ChatbotService business logic
+    @Mock
+    private AIServiceClient aiServiceClient;
 
-    public String getReply() { return reply; }
-    public double getConfidence() { return confidence; }
-    public boolean isEscalated() { return escalated; }
-}
+    @Mock
+    private EscalationService escalationService;
 
-/**
- * 🏢 ChatbotService
- * Core service handling AI chatbot conversation flow, confidence evaluation, and escalation to human support.
- * All interactions are audited for compliance and model improvement.
- */
-@Service
-public class ChatbotService {
+    @Mock
+    private AuditService auditService;
 
-    // 📌 Enterprise Constants (Anti-Magic-Numbers enforcement)
-    /** Minimum confidence threshold to consider AI response reliable. */
-    private static final double AI_CONFIDENCE_THRESHOLD = 0.7;
-    /** Log tag for structured audit identification. */
-    private static final String LOG_TAG = "[CHATBOT-SERVICE]";
-    /** Audit action identifier for traceability. */
-    private static final String AUDIT_ACTION_CHATBOT_PROCESS = "CHATBOT_PROCESS";
+    @Mock
+    private JwtUtils jwtUtils;
 
-    // 📌 Logger for enterprise-grade logging
-    private static final Logger logger = LoggerFactory.getLogger(ChatbotService.class);
-
-    // 📌 Dependencies (Inversion of Control)
-    private final AIServiceClient aiServiceClient;
-    private final EscalationService escalationService;
+    // Inject mocked dependencies into the service under test
+    @InjectMocks
+    private ChatbotService chatbotService;
 
     /**
-     * 🔧 Constructor-based Dependency Injection.
-     * @param aiServiceClient Client for external AI model integration.
-     * @param escalationService Service for human support ticket creation.
+     * @verifies [REQ-019] Valid user query with AI confidence >= 0.7 returns AI reply without escalation
+     * Happy path test for high-confidence AI response flow
      */
-    @Autowired
-    public ChatbotService(AIServiceClient aiServiceClient, EscalationService escalationService) {
-        this.aiServiceClient = aiServiceClient;
-        this.escalationService = escalationService;
+    @Test
+    void processMessage_ValidHighConfidence_ReturnsAIReplyWithoutEscalation() {
+        // Arrange: Initialize test data and mock behavior
+        String validMessage = "Lịch học hôm nay của tôi là gì?";
+        String validSessionId = "session-123e4567-e89b-12d3-a456-426614174000";
+        String validJwt = "valid-jwt-token";
+        String testUserId = "user-123e4567-e89b-12d3-a456-426614174000";
+
+        // Mock JWT validation to return valid token and extract user ID
+        org.mockito.Mockito.when(jwtUtils.validateToken(validJwt)).thenReturn(true);
+        org.mockito.Mockito.when(jwtUtils.getUserIdFromToken(validJwt)).thenReturn(testUserId);
+
+        // Mock AI service to return high confidence response (meets 0.7 threshold)
+        AIResponse aiResponse = new AIResponse("Lịch học hôm nay của bạn là Toán 18h tại phòng A101", 0.8, false);
+        org.mockito.Mockito.when(aiServiceClient.getAIResponse(validMessage, validSessionId)).thenReturn(aiResponse);
+
+        // Act: Execute the method under test
+        var result = chatbotService.processMessage(validMessage, validSessionId, validJwt);
+
+        // Assert: Validate response payload and side effects
+        assertThat(result.getReply()).isEqualTo("Lịch học hôm nay của bạn là Toán 18h tại phòng A101");
+        assertThat(result.getConfidence()).isEqualTo(0.8);
+        assertThat(result.isEscalate()).isFalse();
+
+        // Verify escalation service is never invoked for high confidence queries
+        verify(escalationService, never()).createSupportTicket(any(), any(), any());
+
+        // Verify audit log is called with correct compliance parameters per NFR-006
+        verify(auditService).logAudit(
+                eq(testUserId),
+                eq("CHATBOT_QUERY_PROCESSED"),
+                eq("Chatbot query processed successfully with confidence 0.8, no escalation required"),
+                org.mockito.ArgumentMatchers.anyMap()
+        );
     }
 
     /**
-     * 🚀 Process an incoming user message through the AI chatbot.
-     * <p>
-     * Workflow:
-     * <ol>
-     *   <li>Validate input parameters.</li>
-     *   <li>Log audit entry for traceability.</li>
-     *   <li>Invoke external AI model via {@link AIServiceClient}.</li>
-     *   <li>Evaluate confidence score against {@value #AI_CONFIDENCE_THRESHOLD}.</li>
-     *   <li>If confidence sufficient → return AI reply.</li>
-     *   <li>Otherwise → create support ticket via {@link EscalationService} and signal escalation.</li>
-     * </ol>
-     *
-     * @param message   User message content (non-blank).
-     * @param sessionId Unique session identifier (non-blank).
-     * @param userId    Identifier of the requesting user (non-blank).
-     * @return {@link ChatbotResponse} containing reply, confidence, and escalation flag.
-     * @throws ChatbotException If processing fails due to AI service errors, validation issues, or unexpected conditions.
-     * 📌 Traceability Tags: [REQ-019]
+     * @verifies [REQ-019] Low confidence query (0.5 < 0.7 threshold) triggers escalation and support ticket creation
+     * Edge case test for AI confidence below threshold requiring human intervention
      */
-    @Transactional
-    public ChatbotResponse processMessage(final String message, final String sessionId, final String userId) {
-        // 📌 Input validation (defensive programming)
-        if (message == null || message.isBlank()) {
-            logger.warn("{} [REQ-019] Invalid input: message cannot be null or blank. sessionId={}, userId={}", LOG_TAG, sessionId, userId);
-            throw new IllegalArgumentException("Message cannot be null or blank");
-        }
-        if (sessionId == null || sessionId.isBlank()) {
-            logger.warn("{} [REQ-019] Invalid input: sessionId cannot be null or blank. userId={}", LOG_TAG, userId);
-            throw new IllegalArgumentException("Session ID cannot be null or blank");
-        }
-        if (userId == null || userId.isBlank()) {
-            logger.warn("{} [REQ-019] Invalid input: userId cannot be null or blank.", LOG_TAG);
-            throw new IllegalArgumentException("User ID cannot be null or blank");
-        }
+    @Test
+    void processMessage_LowConfidence_TriggersEscalationAndCreatesTicket() {
+        // Arrange: Setup test data for low confidence scenario
+        String validMessage = "Tôi muốn hủy khóa học nhưng không thấy nút hủy";
+        String validSessionId = "session-456e7890-e89b-12d3-a456-426614174000";
+        String validJwt = "valid-jwt-token-2";
+        String testUserId = "user-456e7890-e89b-12d3-a456-426614174000";
 
-        // 📌 Audit log for traceability (enterprise compliance)
-        logger.info("{} [REQ-019] [AUDIT] Processing chatbot message. userId={}, sessionId={}, messagePreview={}", LOG_TAG, userId, sessionId, message.substring(0, Math.min(message.length(), 50)));
+        // Mock JWT validation
+        org.mockito.Mockito.when(jwtUtils.validateToken(validJwt)).thenReturn(true);
+        org.mockito.Mockito.when(jwtUtils.getUserIdFromToken(validJwt)).thenReturn(testUserId);
 
-        try {
-            // 📌 Delegate AI model call to external client
-            AIResponse aiResponse = aiServiceClient.callAI(message, sessionId, userId);
+        // Mock AI service to return low confidence response (below 0.7 threshold)
+        AIResponse aiResponse = new AIResponse("Tôi không chắc về yêu cầu này, sẽ chuyển cho hỗ trợ viên", 0.5, true);
+        org.mockito.Mockito.when(aiServiceClient.getAIResponse(validMessage, validSessionId)).thenReturn(aiResponse);
 
-            // 📌 Confidence evaluation
-            if (aiResponse.getConfidence() >= AI_CONFIDENCE_THRESHOLD) {
-                // ✅ AI response accepted
-                logger.info("{} [REQ-019] AI response accepted. confidence={}, replyPreview={}", LOG_TAG, aiResponse.getConfidence(), aiResponse.getReply().substring(0, Math.min(aiResponse.getReply().length(), 50)));
-                return new ChatbotResponse(aiResponse.getReply(), aiResponse.getConfidence(), false);
-            } else {
-                // ⚠️ Low confidence → escalate to human support
-                logger.warn("{} [REQ-019] AI confidence low ({}). Escalating to human support. sessionId={}", LOG_TAG, aiResponse.getConfidence(), sessionId);
-                escalationService.createSupportTicket(sessionId, userId, "AI confidence low: " + aiResponse.getConfidence() + ". User message: " + message);
-                return new ChatbotResponse("Tôi sẽ chuyển bạn đến nhân viên hỗ trợ. Vui lòng chờ trong giây lát.", 0.0, true);
-            }
-        } catch (Exception e) {
-            // 🚨 Comprehensive error logging with root cause preservation
-            logger.error("{} [REQ-019] [CRITICAL] Chatbot processing failed. userId={}, sessionId={}, error={}", LOG_TAG, userId, sessionId, e.getMessage(), e);
-            // Re-throw as enterprise custom exception preserving original cause
-            throw new ChatbotException("Chatbot processing failed", e);
-        }
+        // Act: Execute the method under test
+        var result = chatbotService.processMessage(validMessage, validSessionId, validJwt);
+
+        // Assert: Validate escalation flag and support ticket creation
+        assertThat(result.isEscalate()).isTrue();
+        assertThat(result.getReply()).contains("chuyển cho hỗ trợ viên");
+
+        // Verify escalation service creates support ticket with correct parameters
+        verify(escalationService).createSupportTicket(eq(validSessionId), eq(validMessage), eq(testUserId));
+
+        // Verify audit log records the escalation event for compliance
+        verify(auditService).logAudit(
+                eq(testUserId),
+                eq("CHATBOT_ESCALATION_TRIGGERED"),
+                eq("Chatbot query escalated to human support due to low confidence 0.5"),
+                org.mockito.ArgumentMatchers.anyMap()
+        );
+    }
+
+    /**
+     * @verifies [REQ-019] Missing required input fields (message/sessionId) throws clear IllegalArgumentException
+     * Negative path test for input validation failure
+     */
+    @Test
+    void processMessage_MissingRequiredFields_ThrowsIllegalArgumentException() {
+        String validJwt = "valid-jwt-token";
+        String validSessionId = "session-789e0123-e89b-12d3-a456-426614174000";
+
+        // Test case 3a: Null message input
+        IllegalArgumentException exception1 = assertThrows(IllegalArgumentException.class,
+                () -> chatbotService.processMessage(null, validSessionId, validJwt));
+        assertThat(exception1.getMessage()).isEqualTo("Message and sessionId are required fields");
+
+        // Test case 3b: Empty message input
+        IllegalArgumentException exception2 = assertThrows(IllegalArgumentException.class,
+                () -> chatbotService.processMessage("", validSessionId, validJwt));
+        assertThat(exception2.getMessage()).isEqualTo("Message and sessionId are required fields");
+
+        // Test case 3c: Null sessionId input
+        IllegalArgumentException exception3 = assertThrows(IllegalArgumentException.class,
+                () -> chatbotService.processMessage("Test message", null, validJwt));
+        assertThat(exception3.getMessage()).isEqualTo("Message and sessionId are required fields");
+
+        // Test case 3d: Empty sessionId input
+        IllegalArgumentException exception4 = assertThrows(IllegalArgumentException.class,
+                () -> chatbotService.processMessage("Test message", "", validJwt));
+        assertThat(exception4.getMessage()).isEqualTo("Message and sessionId are required fields");
+
+        // Verify no external services are invoked for invalid input
+        verify(aiServiceClient, never()).getAIResponse(any(), any());
+        verify(escalationService, never()).createSupportTicket(any(), any(), any());
+        verify(auditService, never()).logAudit(any(), any(), any(), any());
+    }
+
+    /**
+     * @verifies [REQ-019] Expired/invalid JWT token returns 401 Unauthorized error
+     * Negative path test for authentication failure
+     */
+    @Test
+    void processMessage_ExpiredJwtToken_ThrowsUnauthorizedException() {
+        // Arrange: Setup test data for expired token scenario
+        String validMessage = "Test message";
+        String validSessionId = "session-012e3456-e89b-12d3-a456-426614174000";
+        String expiredJwt = "expired-jwt-token";
+
+        // Mock JWT validation to return false (expired/invalid token)
+        org.mockito.Mockito.when(jwtUtils.validateToken(expiredJwt)).thenReturn(false);
+
+        // Act & Assert: Verify UnauthorizedException is thrown (maps to HTTP 401)
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class,
+                () -> chatbotService.processMessage(validMessage, validSessionId, expiredJwt));
+        assertThat(exception.getMessage()).isEqualTo("JWT token is expired or invalid");
+
+        // Verify no external business logic services are called for unauthenticated requests
+        verify(aiServiceClient, never()).getAIResponse(any(), any());
+        verify(escalationService, never()).createSupportTicket(any(), any(), any());
+        verify(auditService, never()).logAudit(any(), any(), any(), any());
+    }
+
+    /**
+     * @verifies [REQ-019] Audit log is called with complete correct parameters for all valid requests
+     * Compliance test for NFR-006 audit logging requirements
+     */
+    @Test
+    void processMessage_ValidRequest_AuditLogCalledWithCorrectParameters() {
+        // Arrange: Setup test data for audit verification
+        String validMessage = "Câu hỏi về giá khóa học";
+        String validSessionId = "session-112e3456-e89b-12d3-a456-426614174000";
+        String validJwt = "valid-jwt-token-3";
+        String testUserId = "user-112e3456-e89b-12d3-a456-426614174000";
+        double testConfidence = 0.9;
+        boolean testEscalate = false;
+
+        // Mock dependencies
+        org.mockito.Mockito.when(jwtUtils.validateToken(validJwt)).thenReturn(true);
+        org.mockito.Mockito.when(jwtUtils.getUserIdFromToken(validJwt)).thenReturn(testUserId);
+        AIResponse aiResponse = new AIResponse("Giá khóa học là 2 triệu/tháng", testConfidence, testEscalate);
+        org.mockito.Mockito.when(aiServiceClient.getAIResponse(validMessage, validSessionId)).thenReturn(aiResponse);
+
+        // Act: Execute the method under test
+        chatbotService.processMessage(validMessage, validSessionId, validJwt);
+
+        // Assert: Verify audit log contains all required compliance fields
+        verify(auditService).logAudit(
+                eq(testUserId), // User identifier from validated JWT
+                eq("CHATBOT_QUERY_PROCESSED"), // Standardized audit action type
+                eq("Chatbot query processed with confidence: " + testConfidence + ", escalated: " + testEscalate), // Detailed action description
+                org.mockito.ArgumentMatchers.argMap -> {
+                    // Verify metadata contains all mandatory audit fields per NFR-006
+                    assertThat(argMap).containsEntry("sessionId", validSessionId);
+                    assertThat(argMap).containsEntry("confidence", testConfidence);
+                    assertThat(argMap).containsEntry("escalate", testEscalate);
+                    assertThat(argMap).containsEntry("messagePreview", validMessage.substring(0, Math.min(50, validMessage.length())));
+                    assertThat(argMap).containsKey("timestamp");
+                    assertThat(argMap).containsKey("ipAddress");
+                }
+        );
     }
 }
