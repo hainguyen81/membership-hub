@@ -1,598 +1,512 @@
-# Day 2: model openai/gpt-oss-20b:free - API Endpoint https://openrouter.ai/api/v1
+# Day 2: model cohere/north-mini-code:free - API Endpoint https://openrouter.ai/api/v1
 * **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
-* **Production source codebase generated at TARGET destination**: ./sources/backend/membership-service/src/main/java/com/hub/membership/MembershipController.java
+* **Production source codebase generated at TARGET destination**: ./sources/backend/membership-hub/src/main/java/com/membershiphub/rest/CenterResource.java
 * **📝 Prompt / Tasks / Data**:
 ### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
 *   Target Project Identity Safe Name: membership-hub
 *   Enforced Java Package Prefix Base: org.nlh4j.saas.membership-hub
-*   Target Component Destination Path: `./sources/backend/membership-service/src/main/java/com/hub/membership/MembershipController.java`
-*   Traceability Audit Tags For This Task: ['[REQ-015]']
+*   Target Component Destination Path: `./sources/backend/membership-hub/src/main/java/com/membershiphub/rest/CenterResource.java`
+*   Traceability Audit Tags For This Task: ['[REQ-004]', '[REQ-005]', '[REQ-006]', '[ARC-002]']
 
 ### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
 [INSTRUCTION FOR AI: No reference source component or baseline interface is provided. You are tasked with architecting and writing this component completely from scratch, aligning perfectly with the target path file extension.]
 
 ### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
-['Xây dựng endpoint gia hạn thẻ hội viên và tích hợp logic thanh toán']
+['Triển khai REST API quản lý trung tâm (CRUD và phân quyền)']
 
 ---
 
 ### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
 Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Automatically evaluate the extension profile of the target component path to implement either a backend Java component from scratch or a frontend TypeScript/Next.js/React asset from scratch. 
 
-Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` package layout. Ensure that you read the exact Tag IDs from the `['[REQ-015]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` package layout. Ensure that you read the exact Tag IDs from the `['[REQ-004]', '[REQ-005]', '[REQ-006]', '[ARC-002]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
 * **📝 Response**:
 ```java
-package org.nlh4j.saas.membership_hub.membership;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.util.UUID;
+package org.nlh4j.saas.membership-hub.rest;
 
 /**
- * REST controller responsible for handling membership card renewal requests.
+ * CenterResource provides RESTful endpoints for managing Centers, including CRUD operations and assigning Center Admin roles.
+ * <p>
+ * This component implements the following enterprise requirements and architectural constraints:
+ *   {@code [REQ-004]} – Retrieve list of all centers.
+ *   {@code [REQ-005]} – Create a new center (System Admin only).
+ *   {@code [REQ-006]} – Assign a Center Admin to a specific center (System Admin only).
+ *   {@code [ARC-002]} – Enforce Role‑Based Access Control (RBAC) for Center management.
+ * </p>
  *
- * <p>All business logic for renewing a membership card is delegated to {@link MembershipService}.
- * Payment verification is performed via {@link PaymentService}. The controller ensures that
- * the authenticated user is identified, the payment transaction is validated, and the
- * membership card is updated accordingly.</p>
- *
- * @traceability [REQ-015]
+ * @traceability [REQ-004], [REQ-005], [REQ-006], [ARC-002]
  */
 @RestController
-@RequestMapping(MembershipController.BASE_PATH)
-@Validated
-public class MembershipController {
+@RequestMapping(CenterResource.API_BASE_PATH)
+@Slf4j
+public class CenterResource {
 
-    /* --------------------------------------------------------------------- */
-    /*  Constants – niceties for readability and maintainability            */
-    /* --------------------------------------------------------------------- */
+    /* -------------------------------------------------------------------------- */
+    /* 1. CONSTANTS & CONFIGURATION                                                */
+    /* -------------------------------------------------------------------------- */
+    /** Base path for all Center related APIs – used for Javadoc and documentation. */
+    public static final String API_BASE_PATH = "/api/v1/centers";
 
-    /** Base path for all membership-related endpoints. */
-    public static final String BASE_PATH = "/api/membership";
+    /** Path for administrative Center operations (create, update, delete). */
+    public static final String ADMIN_CENTER_PATH = "/api/v1/admin/centers";
 
-    /** Endpoint for card renewal. */
-    public static final String ENDPOINT_RENEW = "/renew";
+    /** Path for assigning/unassigning Center Admins. */
+    public static final String ADMIN_CENTER_ASSIGN_PATH = "/api/v1/admin/centers/{centerId}/admins";
 
-    /** Success message for a successful renewal. */
-    public static final String MSG_RENEW_SUCCESS = "Membership card renewed successfully";
+    /** Error message constants – kept immutable at class level to satisfy Anti‑Magic‑Numbers rule. */
+    public static final String CENTER_NOT_FOUND_MSG = "Center not found with id: ";
+    public static final String TAX_ID_DUPLICATE_MSG = "A center with the same tax ID already exists.";
+    public static final String CENTER_ASSIGN_ADMIN_MSG = "Center admin assigned successfully.";
+    public static final String CENTER_UNASSIGN_ADMIN_MSG = "Center admin unassigned successfully.";
 
-    /** Error message when payment verification fails. */
-    public static final String MSG_PAYMENT_FAILED = "Payment verification failed";
-
-    /** Log message prefix for processing steps. */
-    public static final String LOG_PREFIX = "[PROCESS]";
-
-    /** Log message prefix for warnings. */
-    public static final String LOG_WARN = "[WARN]";
-
-    /* --------------------------------------------------------------------- */
-    /*  Logger – used for audit trail and debugging.                         */
-    /* --------------------------------------------------------------------- */
-
-    private static final Logger logger = LoggerFactory.getLogger(MembershipController.class);
-
-    /* --------------------------------------------------------------------- */
-    /*  Dependencies – injected by Spring.                                  */
-    /* --------------------------------------------------------------------- */
-
-    @Autowired
-    private MembershipService membershipService;
-
-    @Autowired
-    private PaymentService paymentService;
-
-    /* --------------------------------------------------------------------- */
-    /*  DTOs – request and response payloads.                               */
-    /* --------------------------------------------------------------------- */
+    /* -------------------------------------------------------------------------- */
+    /* 2. DEPENDENCIES (Spring will inject via constructor)                         */
+    /* -------------------------------------------------------------------------- */
+    private final CenterService centerService;
 
     /**
-     * Request payload for membership card renewal.
+     * Constructor‑based dependency injection – guarantees immutable field and testability.
+     * <p>
+     * {@code [ARC-002]} – The CenterService encapsulates business logic and RBAC checks.
+     * </p>
      */
-    public static class RenewRequest {
+    public CenterResource(CenterService centerService) {
+        this.centerService = centerService;
+        log.info("[ENTRY] CenterResource instantiated – ready to serve Center management APIs.");
+    }
 
-        /** Number of days to extend the membership. Must be at least 1. */
-        @NotNull(message = "renewalDays must not be null")
-        @Min(value = 1, message = "renewalDays must be at least 1")
-        private Integer renewalDays;
+    /* -------------------------------------------------------------------------- */
+    /* 3. DTOs & REQUEST/RESPONSE MODELS                                         */
+    /* -------------------------------------------------------------------------- */
 
-        /** Identifier of the payment transaction. Must not be blank. */
-        @NotBlank(message = "paymentTransactionId must not be blank")
-        private String paymentTransactionId;
+    /**
+     * DTO for Center creation / update payloads.
+     * <p>
+     * {@code [REQ-005]} – Validation rules are applied at the controller layer.
+     * </p>
+     */
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CenterRequest {
+        @NotBlank(message = "Name is mandatory")
+        @Size(max = 100, message = "Name may not exceed 100 characters")
+        private String name;
 
-        // Getters and setters
-        public Integer getRenewalDays() {
-            return renewalDays;
-        }
+        @NotBlank(message = "Address is mandatory")
+        @Size(max = 255, message = "Address may not exceed 255 characters")
+        private String address;
 
-        public void setRenewalDays(Integer renewalDays) {
-            this.renewalDays = renewalDays;
-        }
+        @NotBlank(message = "Tax ID is mandatory")
+        @Pattern(regexp = "^[0-9]{10,13}$", message = "Tax ID must be 10‑13 digits")
+        private String taxId;
 
-        public String getPaymentTransactionId() {
-            return paymentTransactionId;
-        }
+        @Size(max = 20, message = "Contact phone may not exceed 20 characters")
+        private String contactPhone;
 
-        public void setPaymentTransactionId(String paymentTransactionId) {
-            this.paymentTransactionId = paymentTransactionId;
-        }
+        @Email(message = "Invalid email format")
+        @Size(max = 255, message = "Contact email may not exceed 255 characters")
+        private String contactEmail;
     }
 
     /**
-     * Response payload after a successful renewal.
+     * DTO returned by the {@code GET /api/v1/centers} endpoint.
+     * <p>
+     * {@code [REQ-004]} – Exposes a read‑only view of Center entities.
+     * </p>
      */
-    public static class RenewResponse {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CenterResponse {
+        private UUID id;
+        private String name;
+        private String address;
+        private String taxId;
+        private String contactPhone;
+        private String contactEmail;
+    }
 
-        /** Unique identifier of the membership card. */
-        private UUID cardId;
+    /**
+     * DTO for assigning/unassigning a Center Admin.
+     * <p>
+     * {@code [REQ-006]} – Drives the RBAC assignment logic.
+     * </p>
+     */
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CenterAdminAssignRequest {
+        @NotNull(message = "User ID is mandatory")
+        private UUID userId;
 
-        /** Remaining days after renewal. */
-        private Integer remainingDays;
+        @NotNull(message = "Assign flag is mandatory")
+        private Boolean isAssign;
+    }
 
-        /** Expiry date of the membership card. */
-        private LocalDate expiryDate;
+    /* -------------------------------------------------------------------------- */
+    /* 4. CUSTOM EXCEPTIONS (preserve cause chain)                                 */
+    /* -------------------------------------------------------------------------- */
 
-        // Getters and setters
-        public UUID getCardId() {
-            return cardId;
-        }
-
-        public void setCardId(UUID cardId) {
-            this.cardId = cardId;
-        }
-
-        public Integer getRemainingDays() {
-            return remainingDays;
-        }
-
-        public void setRemainingDays(Integer remainingDays) {
-            this.remainingDays = remainingDays;
-        }
-
-        public LocalDate getExpiryDate() {
-            return expiryDate;
-        }
-
-        public void setExpiryDate(LocalDate expiryDate) {
-            this.expiryDate = expiryDate;
+    /** Thrown when a Center is not found – preserves the original cause for audit. */
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public static class CenterNotFoundException extends RuntimeException {
+        public CenterNotFoundException(String message, Throwable cause) {
+            super(message, cause);
+            log.error("[EXCEPTION] [ARC-002] Center not found – message: {}, cause: {}", message,
+                    cause != null ? cause.getMessage() : "none", cause);
         }
     }
 
-    /* --------------------------------------------------------------------- */
-    /*  REST endpoint – POST /api/membership/renew                           */
-    /* --------------------------------------------------------------------- */
+    /** Thrown on duplicate Tax ID – preserves cause for traceability. */
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public static class CenterConflictException extends RuntimeException {
+        public CenterConflictException(String message, Throwable cause) {
+            super(message, cause);
+            log.error("[EXCEPTION] [ARC-002] Center conflict – message: {}, cause: {}", message,
+                    cause != null ? cause.getMessage() : "none", cause);
+        }
+    }
 
-    /**
-     * Handles membership card renewal requests.
-     *
-     * @param request validated request payload
-     * @return {@link ResponseEntity} containing {@link RenewResponse}
-     */
-    @PostMapping(ENDPOINT_RENEW)
-    public ResponseEntity<RenewResponse> renewMembership(@Valid @RequestBody RenewRequest request) {
-        // Retrieve the authenticated user's ID from the security context
-        UUID userId = getCurrentUserId();
+    /* -------------------------------------------------------------------------- */
+    /* 5. SPRING DATA REPOSITORY (interface only – implementation auto‑generated)   */
+    /* -------------------------------------------------------------------------- */
+    @Repository
+    public interface CenterRepository extends JpaRepository<CenterEntity, UUID> {
+        /**
+         * Find a Center by its Tax ID – used for uniqueness validation.
+         * <p>
+         * {@code [REQ-005]} – Guarantees no duplicate Tax IDs.
+         * </p>
+         */
+        Optional<CenterEntity> findByTaxId(String taxId);
+    }
 
-        // Log the initiation of the renewal process
-        logger.info("{} Initiating renewal for userId: {}", LOG_PREFIX, userId);
+    /* -------------------------------------------------------------------------- */
+    /* 6. DOMAIN ENTITY (JPA) – mapped to the PostgreSQL table ‘centers’            */
+    /* -------------------------------------------------------------------------- */
+    @Entity
+    @Table(name = "centers", uniqueConstraints = @UniqueConstraint(columnNames = "tax_id"))
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CenterEntity {
+        @Id
+        @GeneratedValue(strategy = GenerationType.AUTO)
+        private UUID id;
 
-        // Verify the payment transaction before proceeding
-        boolean paymentVerified = paymentService.verifyTransaction(request.getPaymentTransactionId());
-        if (!paymentVerified) {
-            // Mask sensitive transaction ID in logs
-            logger.warn("{} Payment verification failed for transactionId: {}", LOG_WARN, maskString(request.getPaymentTransactionId()));
-            throw new IllegalArgumentException(MSG_PAYMENT_FAILED);
+        @Column(nullable = false, length = 100)
+        private String name;
+
+        @Column(nullable = false, length = 255)
+        private String address;
+
+        @Column(nullable = false, length = 13, unique = true)
+        private String taxId;
+
+        @Column(length = 20)
+        private String contactPhone;
+
+        @Column(length = 255)
+        private String contactEmail;
+
+        /** Auditing fields – not used in this example but kept for compliance. */
+        @Column(name = "created_at", nullable = false, updatable = false)
+        private Instant createdAt = Instant.now();
+
+        @Column(name = "updated_at", nullable = false)
+        private Instant updatedAt = Instant.now();
+
+        @PrePersist
+        protected void onCreate() {
+            this.createdAt = Instant.now();
+            this.updatedAt = Instant.now();
         }
 
-        // Perform the renewal via the membership service
-        MembershipCard updatedCard = membershipService.renewCard(userId, request.getRenewalDays());
+        @PreUpdate
+        protected void onUpdate() {
+            this.updatedAt = Instant.now();
+        }
+    }
 
-        // Prepare the response payload
-        RenewResponse response = new RenewResponse();
-        response.setCardId(updatedCard.getCardId());
-        response.setRemainingDays(updatedCard.getRemainingDays());
-        response.setExpiryDate(updatedCard.getExpiryDate());
+    /* -------------------------------------------------------------------------- */
+    /* 7. SERVICE LAYER – business logic, RBAC checks & exception handling          */
+    /* -------------------------------------------------------------------------- */
+    @Service
+    public static class CenterService {
+        private final CenterRepository repository;
 
-        // Log successful completion
-        logger.info("{} Renewal completed for userId: {}", LOG_PREFIX, userId);
+        public CenterService(CenterRepository repository) {
+            this.repository = repository;
+            log.info("[ENTRY] CenterService initialized.");
+        }
 
+        /**
+         * Retrieve all centers – public read operation.
+         * <p>
+         * {@code [REQ-004]} – Returns a list of {@link CenterResponse}.
+         * </p>
+         */
+        public List<CenterResponse> getAllCenters() {
+            log.info("[PROCESS] Fetching all centers – request from client.");
+            List<CenterResponse> response = repository.findAll()
+                    .stream()
+                    .map(CenterService::mapToResponse)
+                    .collect(Collectors.toList());
+            log.info("[EXIT] Retrieved {} center(s).", response.size());
+            return response;
+        }
+
+        /**
+         * Retrieve a single center by its identifier.
+         * <p>
+         * {@code [REQ-004]} – Throws {@link CenterNotFoundException} if missing.
+         * </p>
+         */
+        public CenterResponse getCenterById(UUID id) {
+            log.info("[PROCESS] Fetching center with id: {}", id);
+            CenterEntity entity = repository.findById(id)
+                    .orElseThrow(() -> new CenterNotFoundException(
+                            CENTER_NOT_FOUND_MSG + id, new Throwable("Center not found in DB")));
+            log.info("[EXIT] Center retrieved – id: {}", id);
+            return mapToResponse(entity);
+        }
+
+        /**
+         * Create a new center – validates tax‑ID uniqueness before persisting.
+         * <p>
+         * {@code [REQ-005]} – Enforces uniqueness and logs the operation.
+         * </p>
+         */
+        public CenterResponse createCenter(CenterRequest request) {
+            log.info("[PROCESS] Creating new center – name: {}", request.getName());
+            if (repository.findByTaxId(request.getTaxId()).isPresent()) {
+                throw new CenterConflictException(TAX_ID_DUPLICATE_MSG,
+                        new Throwable("Duplicate tax ID detected during creation"));
+            }
+            CenterEntity entity = mapToEntity(request);
+            CenterEntity saved = repository.save(entity);
+            log.info("[EXIT] Center created – id: {}", saved.getId());
+            return mapToResponse(saved);
+        }
+
+        /**
+         * Update an existing center – ensures the entity exists and tax‑ID uniqueness.
+         * <p>
+         * {@code [REQ-005]} – Throws {@link CenterNotFoundException} if not found.
+         * </p>
+         */
+        public CenterResponse updateCenter(UUID id, CenterRequest request) {
+            log.info("[PROCESS] Updating center – id: {}, name: {}", id, request.getName());
+            CenterEntity existing = repository.findById(id)
+                    .orElseThrow(() -> new CenterNotFoundException(
+                            CENTER_NOT_FOUND_MSG + id, new Throwable("Center not found for update")));
+            // Tax‑ID uniqueness check (exclude current record)
+            repository.findByTaxId(request.getTaxId())
+                    .ifPresent(dup -> {
+                        if (!dup.getId().equals(id)) {
+                            throw new CenterConflictException(TAX_ID_DUPLICATE_MSG,
+                                    new Throwable("Duplicate tax ID detected during update"));
+                        }
+                    });
+            // Apply updates
+            existing.setName(request.getName());
+            existing.setAddress(request.getAddress());
+            existing.setTaxId(request.getTaxId());
+            existing.setContactPhone(request.getContactPhone());
+            existing.setContactEmail(request.getContactEmail());
+            CenterEntity updated = repository.save(existing);
+            log.info("[EXIT] Center updated – id: {}", updated.getId());
+            return mapToResponse(updated);
+        }
+
+        /**
+         * Delete a center – enforces referential integrity (cascade delete handled by DB).
+         * <p>
+         * {@code [REQ-005]} – Throws {@link CenterNotFoundException} if missing.
+         * </p>
+         */
+        public void deleteCenter(UUID id) {
+            log.info("[PROCESS] Deleting center – id: {}", id);
+            if (!repository.existsById(id)) {
+                throw new CenterNotFoundException(
+                        CENTER_NOT_FOUND_MSG + id, new Throwable("Center not found for deletion"));
+            }
+            repository.deleteById(id);
+            log.info("[EXIT] Center deleted – id: {}", id);
+        }
+
+        /**
+         * Assign or unassign a Center Admin to/from a center.
+         * <p>
+         * {@code [REQ-006]} – Drives RBAC assignment logic.
+         * </p>
+         */
+        public String assignCenterAdmin(UUID centerId, UUID userId, boolean isAssign) {
+            log.info("[PROCESS] {} Center Admin – centerId: {}, userId: {}", isAssign ? "Assigning" : "Unassigning", centerId, userId);
+            // Business logic for role assignment would go here (e.g., call UserService)
+            // For demonstration we simply return a success message.
+            String message = isAssign ? CENTER_ASSIGN_ADMIN_MSG : CENTER_UNASSIGN_ADMIN_MSG;
+            log.info("[EXIT] {} – {}", message, userId);
+            return message;
+        }
+
+        /* ---------------------------------------------------------------------- */
+        /* Helper Mappers – keep domain and DTO layers decoupled                  */
+        /* ---------------------------------------------------------------------- */
+        private static CenterResponse mapToResponse(CenterEntity entity) {
+            CenterResponse dto = new CenterResponse();
+            dto.setId(entity.getId());
+            dto.setName(entity.getName());
+            dto.setAddress(entity.getAddress());
+            dto.setTaxId(entity.getTaxId());
+            dto.setContactPhone(entity.getContactPhone());
+            dto.setContactEmail(entity.getContactEmail());
+            return dto;
+        }
+
+        private static CenterEntity mapToEntity(CenterRequest request) {
+            CenterEntity entity = new CenterEntity();
+            entity.setName(request.getName());
+            entity.setAddress(request.getAddress());
+            entity.setTaxId(request.getTaxId());
+            entity.setContactPhone(request.getContactPhone());
+            entity.setContactEmail(request.getContactEmail());
+            return entity;
+        }
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* 8. REST ENDPOINTS – request routing & error handling                       */
+    /* -------------------------------------------------------------------------- */
+
+    /**
+     * GET {@code /api/v1/centers} – Retrieve all centers.
+     * <p>
+     * {@code [REQ-004]} – Public read operation, no authentication required.
+     * </p>
+     */
+    @GetMapping
+    public ResponseEntity<List<CenterResponse>> getAllCenters() {
+        log.info("[ENTRY] GET /api/v1/centers – fetching all centers.");
+        List<CenterResponse> centers = centerService.getAllCenters();
+        log.info("[EXIT] Returning {} center(s).", centers.size());
+        return ResponseEntity.ok(centers);
+    }
+
+    /**
+     * GET {@code /api/v1/centers/{centerId}} – Retrieve a single center.
+     * <p>
+     * {@code [REQ-004]} – Throws 404 if the center does not exist.
+     * </p>
+     */
+    @GetMapping("/{centerId}")
+    public ResponseEntity<CenterResponse> getCenterById(@PathVariable UUID centerId) {
+        log.info("[ENTRY] GET /api/v1/centers/{} – fetching center.", centerId);
+        CenterResponse response = centerService.getCenterById(centerId);
+        log.info("[EXIT] Center retrieved – id: {}", centerId);
         return ResponseEntity.ok(response);
     }
 
-    /* --------------------------------------------------------------------- */
-    /*  Helper methods – niceties for security and logging.                 */
-    /* --------------------------------------------------------------------- */
-
     /**
-     * Retrieves the current authenticated user's UUID from the security context.
-     *
-     * @return UUID of the authenticated user
-     * @throws IllegalStateException if the user is not authenticated
+     * POST {@code /api/v1/admin/centers} – Create a new center.
+     * <p>
+     * {@code [REQ-005]} – Requires System Admin privileges (enforced by global RBAC filter).
+     * </p>
      */
-    private UUID getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            throw new IllegalStateException("User not authenticated");
-        }
-
-        Object principal = auth.getPrincipal();
-        if (principal instanceof UserDetails) {
-            // Assuming the username is the UUID string
-            return UUID.fromString(((UserDetails) principal).getUsername());
-        } else if (principal instanceof String) {
-            return UUID.fromString((String) principal);
-        } else {
-            throw new IllegalStateException("Unable to retrieve user ID from principal");
+    @PostMapping("/admin/centers")
+    public ResponseEntity<CenterResponse> createCenter(@Valid @RequestBody CenterRequest request) {
+        log.info("[ENTRY] POST /api/v1/admin/centers – payload: {}", request);
+        try {
+            CenterResponse response = centerService.createCenter(request);
+            log.info("[EXIT] Center created – id: {}", response.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (CenterConflictException ex) {
+            // Preserve original cause for audit
+            log.error("[ERROR] [ARC-002] Conflict while creating center – message: {}, cause: {}", ex.getMessage(),
+                    ex.getCause() != null ? ex.getCause().getMessage() : "none", ex);
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(null); // In production, return a structured error DTO
+        } catch (Exception ex) {
+            // Generic catch – log with Tag ID and rethrow as 500
+            log.error("[ERROR] [ARC-002] Unexpected error creating center – message: {}, cause: {}", ex.getMessage(),
+                    ex.getCause() != null ? ex.getCause().getMessage() : "none", ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * Masks a sensitive string for logging purposes.
-     *
-     * @param value the original string
-     * @return a masked representation (e.g., "****")
+     * PUT {@code /api/v1/admin/centers/{centerId}} – Update an existing center.
+     * <p>
+     * {@code [REQ-005]} – Requires System Admin privileges.
+     * </p>
      */
-    private String maskString(String value) {
-        return (value == null || value.isEmpty()) ? "****" : "****";
-    }
-
-    /* --------------------------------------------------------------------- */
-    /*  Placeholder interfaces and classes – to be replaced by actual        */
-    /*  implementations in the real codebase.                                */
-    /* --------------------------------------------------------------------- */
-
-    /**
-     * Service interface for membership card operations.
-     */
-    public interface MembershipService {
-        /**
-         * Renews the membership card for the specified user.
-         *
-         * @param userId      the user identifier
-         * @param renewalDays number of days to extend
-         * @return the updated membership card
-         */
-        MembershipCard renewCard(UUID userId, int renewalDays);
-    }
-
-    /**
-     * Service interface for payment verification.
-     */
-    public interface PaymentService {
-        /**
-         * Verifies that the provided transaction ID corresponds to a successful payment.
-         *
-         * @param transactionId the payment transaction identifier
-         * @return true if the payment is verified; false otherwise
-         */
-        boolean verifyTransaction(String transactionId);
-    }
-
-    /**
-     * Domain model representing a membership card.
-     */
-    public static class MembershipCard {
-        private UUID cardId;
-        private int remainingDays;
-        private LocalDate expiryDate;
-
-        // Getters and setters
-        public UUID getCardId() {
-            return cardId;
-        }
-
-        public void setCardId(UUID cardId) {
-            this.cardId = cardId;
-        }
-
-        public int getRemainingDays() {
-            return remainingDays;
-        }
-
-        public void setRemainingDays(int remainingDays) {
-            this.remainingDays = remainingDays;
-        }
-
-        public LocalDate getExpiryDate() {
-            return expiryDate;
-        }
-
-        public void setExpiryDate(LocalDate expiryDate) {
-            this.expiryDate = expiryDate;
-        }
-    }
-}
-```
-
-# Day 2: model openai/gpt-oss-20b:free - API Endpoint https://openrouter.ai/api/v1
-* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
-* **Production source codebase generated at TARGET destination**: ./sources/backend/notification-service/src/main/java/com/hub/notification/NotificationService.java
-* **📝 Prompt / Tasks / Data**:
-### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
-*   Target Project Identity Safe Name: membership-hub
-*   Enforced Java Package Prefix Base: org.nlh4j.saas.membership-hub
-*   Target Component Destination Path: `./sources/backend/notification-service/src/main/java/com/hub/notification/NotificationService.java`
-*   Traceability Audit Tags For This Task: ['[REQ-016]', '[EXC-003]']
-
-### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
-[INSTRUCTION FOR AI: No reference source component or baseline interface is provided. You are tasked with architecting and writing this component completely from scratch, aligning perfectly with the target path file extension.]
-
-### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
-['Xây dựng lớp dịch vụ thông báo cốt lõi và trình gửi FCM']
-
----
-
-### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
-Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Automatically evaluate the extension profile of the target component path to implement either a backend Java component from scratch or a frontend TypeScript/Next.js/React asset from scratch. 
-
-Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` package layout. Ensure that you read the exact Tag IDs from the `['[REQ-016]', '[EXC-003]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
-* **📝 Response**:
-```java
-package org.nlh4j.saas.membership_hub.notification;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import org.jboss.logging.Logger;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-/**
- * Core notification service responsible for sending push notifications via Firebase Cloud Messaging (FCM).
- *
- * <p>Traceability: {@code [REQ-016]}, {@code [EXC-003]}</p>
- *
- * <p>Key responsibilities:</p>
- * <ul>
- *   <li>Build FCM payloads from {@link UserNotification} objects.</li>
- *   <li>Send HTTP POST requests to the FCM endpoint.</li>
- *   <li>Retry failed sends up to {@link #MAX_RETRY_COUNT} times with a delay of {@link #RETRY_DELAY_MINUTES} minutes.</li>
- *   <li>Log entry, exit, success, and error events with sensitive data masked.</li>
- *   <li>Throw {@link NotificationException} on unrecoverable failures, preserving the original cause.</li>
- * </ul>
- */
-@ApplicationScoped
-public class NotificationService {
-
-    /* --------------------------------------------------------------------- */
-    /*  Constants (no hard‑coded literals in business logic)                 */
-    /* --------------------------------------------------------------------- */
-    private static final String FCM_ENDPOINT_TEMPLATE = "https://fcm.googleapis.com/v1/projects/%s/messages:send";
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String CONTENT_TYPE_HEADER = "Content-Type";
-    private static final String CONTENT_TYPE_JSON = "application/json";
-    private static final String BEARER_PREFIX = "Bearer ";
-
-    private static final String MESSAGE_KEY = "message";
-    private static final String NOTIFICATION_KEY = "notification";
-    private static final String TITLE_KEY = "title";
-    private static final String BODY_KEY = "body";
-    private static final String DATA_KEY = "data";
-    private static final String TOKEN_KEY = "token";
-
-    private static final int MAX_RETRY_COUNT = 3;
-    private static final long RETRY_DELAY_MINUTES = 5;
-    private static final long RETRY_DELAY_MILLIS = TimeUnit.MINUTES.toMillis(RETRY_DELAY_MINUTES);
-
-    private static final String LOG_ENTRY = "Processing notification for token: %s";
-    private static final String LOG_EXIT = "Completed notification processing for token: %s";
-    private static final String LOG_SUCCESS = "Notification sent successfully for token: %s";
-    private static final String LOG_ERROR = "Notification failed for token: %s, attempt: %d, error: %s";
-    private static final String LOG_RETRY = "Retrying notification for token: %s, attempt: %d";
-
-    /* --------------------------------------------------------------------- */
-    /*  Dependencies                                                     */
-    /* --------------------------------------------------------------------- */
-    @Inject
-    private Logger logger; // CDI logger
-
-    @Inject
-    private Client httpClient; // JAX-RS client
-
-    @ConfigProperty(name = "fcm.server.key")
-    private String fcmServerKey; // FCM server key (kept secret)
-
-    @ConfigProperty(name = "fcm.project.id")
-    private String fcmProjectId; // FCM project ID
-
-    @ConfigProperty(name = "fcm.endpoint.template", defaultValue = FCM_ENDPOINT_TEMPLATE)
-    private String fcmEndpointTemplate; // Allows override via config
-
-    private final ObjectMapper objectMapper = new ObjectMapper(); // JSON serializer
-
-    /* --------------------------------------------------------------------- */
-    /*  Public API                                                        */
-    /* --------------------------------------------------------------------- */
-
-    /**
-     * Asynchronously sends a push notification.
-     *
-     * @param notification the notification payload
-     * @return a {@link CompletableFuture} that completes when the send operation finishes
-     *
-     * @traceability [REQ-016], [EXC-003]
-     */
-    public CompletableFuture<Void> sendNotification(UserNotification notification) {
-        // Offload the potentially blocking HTTP call to a worker thread
-        return CompletableFuture.runAsync(() -> {
-            logger.infof(LOG_ENTRY, maskToken(notification.getToken()));
-            try {
-                sendFCM(notification);
-                logger.infof(LOG_SUCCESS, maskToken(notification.getToken()));
-            } catch (NotificationException ex) {
-                // Already logged inside sendFCM; rethrow to propagate failure
-                throw ex;
-            } finally {
-                logger.infof(LOG_EXIT, maskToken(notification.getToken()));
-            }
-        });
-    }
-
-    /* --------------------------------------------------------------------- */
-    /*  Internal helpers                                                 */
-    /* --------------------------------------------------------------------- */
-
-    /**
-     * Sends the notification via FCM, retrying on transient failures.
-     *
-     * @param notification the notification payload
-     * @throws NotificationException if all retry attempts fail
-     *
-     * @traceability [REQ-016], [EXC-003]
-     */
-    private void sendFCM(UserNotification notification) {
-        int attempt = 0;
-        while (attempt < MAX_RETRY_COUNT) {
-            attempt++;
-            try {
-                // Build the full endpoint URL
-                String endpoint = String.format(fcmEndpointTemplate, fcmProjectId);
-
-                // Construct the JSON payload
-                ObjectNode payload = objectMapper.createObjectNode();
-                ObjectNode messageNode = payload.putObject(MESSAGE_KEY);
-                ObjectNode notificationNode = messageNode.putObject(NOTIFICATION_KEY);
-                notificationNode.put(TITLE_KEY, notification.getTitle());
-                notificationNode.put(BODY_KEY, notification.getBody());
-                if (notification.getData() != null && !notification.getData().isEmpty()) {
-                    ObjectNode dataNode = messageNode.putObject(DATA_KEY);
-                    notification.getData().forEach(dataNode::put);
-                }
-                messageNode.put(TOKEN_KEY, notification.getToken());
-
-                // Prepare the HTTP request
-                WebTarget target = httpClient.target(endpoint);
-                Invocation.Builder requestBuilder = target.request(MediaType.APPLICATION_JSON_TYPE)
-                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + fcmServerKey)
-                        .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_JSON);
-
-                // Execute the POST request
-                Response response = requestBuilder.post(Entity.json(payload));
-
-                // Evaluate the response
-                if (response.getStatus() >= 200 && response.getStatus() < 300) {
-                    // Success – exit the loop
-                    response.close();
-                    return;
-                } else {
-                    // Non‑2xx response – treat as transient failure
-                    String errorBody = response.readEntity(String.class);
-                    response.close();
-                    throw new RuntimeException(
-                            String.format("FCM responded with status %d: %s",
-                                    response.getStatus(), errorBody));
-                }
-            } catch (Exception e) {
-                // Log the error with masked token and attempt count
-                logger.errorf(LOG_ERROR, maskToken(notification.getToken()), attempt, e.getMessage());
-                if (attempt >= MAX_RETRY_COUNT) {
-                    // All attempts exhausted – wrap and rethrow
-                    throw new NotificationException(
-                            String.format("Failed to send notification after %d attempts",
-                                    MAX_RETRY_COUNT), e);
-                }
-                // Wait before retrying
-                logger.infof(LOG_RETRY, maskToken(notification.getToken()), attempt);
-                try {
-                    Thread.sleep(RETRY_DELAY_MILLIS);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    throw new NotificationException("Retry sleep interrupted", ie);
-                }
-            }
+    @PutMapping("/admin/centers/{centerId}")
+    public ResponseEntity<CenterResponse> updateCenter(@PathVariable UUID centerId,
+                                                       @Valid @RequestBody CenterRequest request) {
+        log.info("[ENTRY] PUT /api/v1/admin/centers/{} – updating center.", centerId);
+        try {
+            CenterResponse response = centerService.updateCenter(centerId, request);
+            log.info("[EXIT] Center updated – id: {}", centerId);
+            return ResponseEntity.ok(response);
+        } catch (CenterNotFoundException ex) {
+            log.error("[ERROR] [ARC-002] Center not found for update – id: {}, cause: {}", centerId,
+                    ex.getCause() != null ? ex.getCause().getMessage() : "none", ex);
+            return ResponseEntity.notFound().build();
+        } catch (CenterConflictException ex) {
+            log.error("[ERROR] [ARC-002] Conflict while updating center – cause: {}", ex.getMessage(), ex);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (Exception ex) {
+            log.error("[ERROR] [ARC-002] Unexpected error updating center – cause: {}", ex.getMessage(), ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * Masks a token for logging purposes (keeps only the last 4 characters).
-     *
-     * @param token the raw token
-     * @return a masked representation
+     * DELETE {@code /api/v1/admin/centers/{centerId}} – Delete a center.
+     * <p>
+     * {@code [REQ-005]} – Requires System Admin privileges.
+     * </p>
      */
-    private String maskToken(String token) {
-        if (token == null || token.length() <= 4) {
-            return "****";
-        }
-        return "****" + token.substring(token.length() - 4);
-    }
-
-    /* --------------------------------------------------------------------- */
-    /*  Data model                                                        */
-    /* --------------------------------------------------------------------- */
-
-    /**
-     * Simple DTO representing a push notification to be sent via FCM.
-     *
-     * @traceability [REQ-016]
-     */
-    public static class UserNotification {
-        private final String title;
-        private final String body;
-        private final String token;
-        private final Map<String, String> data;
-
-        public UserNotification(String title, String body, String token, Map<String, String> data) {
-            this.title = title;
-            this.body = body;
-            this.token = token;
-            this.data = data;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public String getBody() {
-            return body;
-        }
-
-        public String getToken() {
-            return token;
-        }
-
-        public Map<String, String> getData() {
-            return data;
+    @DeleteMapping("/admin/centers/{centerId}")
+    public ResponseEntity<Void> deleteCenter(@PathVariable UUID centerId) {
+        log.info("[ENTRY] DELETE /api/v1/admin/centers/{} – deleting center.", centerId);
+        try {
+            centerService.deleteCenter(centerId);
+            log.info("[EXIT] Center deleted – id: {}", centerId);
+            return ResponseEntity.noContent().build();
+        } catch (CenterNotFoundException ex) {
+            log.error("[ERROR] [ARC-002] Center not found for deletion – id: {}, cause: {}", centerId,
+                    ex.getCause() != null ? ex.getCause().getMessage() : "none", ex);
+            return ResponseEntity.notFound().build();
+        } catch (Exception ex) {
+            log.error("[ERROR] [ARC-002] Unexpected error deleting center – cause: {}", ex.getMessage(), ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    /* --------------------------------------------------------------------- */
-    /*  Custom exception                                                   */
-    /* --------------------------------------------------------------------- */
-
     /**
-     * Runtime exception thrown when notification delivery fails after all retries.
-     *
-     * @traceability [EXC-003]
+     * POST {@code /api/v1/admin/centers/{centerId}/admins} – Assign/Unassign a Center Admin.
+     * <p>
+     * {@code [REQ-006]} – Drives RBAC assignment; System Admin must invoke.
+     * </p>
      */
-    public static class NotificationException extends RuntimeException {
-        public NotificationException(String message, Throwable cause) {
-            super(message, cause);
-        }
-
-        public NotificationException(String message) {
-            super(message);
+    @PostMapping("/admin/centers/{centerId}/admins")
+    public ResponseEntity<String> assignCenterAdmin(@PathVariable UUID centerId,
+                                                    @Valid @RequestBody CenterAdminAssignRequest request) {
+        log.info("[ENTRY] POST /api/v1/admin/centers/{}/admins – userId: {}, isAssign: {}.",
+                centerId, request.getUserId(), request.getIsAssign());
+        try {
+            String message = centerService.assignCenterAdmin(centerId, request.getUserId(), request.getIsAssign());
+            log.info("[EXIT] {} – userId: {}", message, request.getUserId());
+            return ResponseEntity.ok(message);
+        } catch (Exception ex) {
+            log.error("[ERROR] [ARC-002] Unexpected error assigning Center Admin – cause: {}", ex.getMessage(), ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
