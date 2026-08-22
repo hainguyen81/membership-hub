@@ -1,27 +1,4 @@
-# Day 1: model kilo-auto/free - API Endpoint https://api.kilo.ai/api/gateway
-* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
-* **Production source codebase generated at TARGET destination**: ./sources/docs/auth-api-spec.md
-* **📝 Prompt / Tasks / Data**:
-### 🏢 ENTERPRISE SYSTEM DOCUMENT MATRIX INJECTION
-*   Target Project Identity Safe Name: 
-*   Enforced Java Package Prefix Base: org.nlh4j.saas.
-*   Target Documentation Destination Path: `./sources/docs/auth-api-spec.md`
-
-
-*   Documentation Context: Conceptual Init (Synthesize the architecture, guidelines, or specs based purely on the execution sub-tasks blueprint.)
-
-
-### 📋 EXECUTION SUB-TASKS & DOCUMENT CONTENT TO WRITE
-['Viết tài liệu đặc tả API cho luồng xác thực người dùng']
-
----
-
-### ⚙️ TECHNICAL WRITER EXECUTION INSTRUCTION:
-Please read the comprehensive architectural constraints, workspace folder guardrails, and detailed sub-task document specifications provided above. 
-
-Ensure that you read the exact Tag IDs from the `['[REQ-001]', '[REQ-002]', '[ARC-006]']` variable, and permanently burn those codes into the generated documentation layout (inside the table columns or the dedicated Traceability Matrix Reference section). Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.
-* **📝 Response**:
-```markdown
+markdown
 # Authentication API Specification
 ## Document Metadata
 | Field | Value |
@@ -230,5 +207,3 @@ All authentication API implementation files are located under the `org.nlh4j.saa
 4. Refresh tokens are stored encrypted in the PostgreSQL database and are rotated on every refresh request to prevent token reuse.
 5. All authentication-related actions (register, login, logout, role change) are logged to the audit log system with user ID, timestamp, and action details, stored for 1 year per [NFR-006].
 6. Sensitive data (email, password, tokens) is automatically masked in all application logs using PII masking interceptor, per [NFR-003] and [NFR-006].
-```
-
