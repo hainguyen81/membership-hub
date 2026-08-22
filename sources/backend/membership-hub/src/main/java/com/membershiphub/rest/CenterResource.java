@@ -1,27 +1,3 @@
-# Day 2: model cohere/north-mini-code:free - API Endpoint https://openrouter.ai/api/v1
-* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
-* **Production source codebase generated at TARGET destination**: ./sources/backend/membership-hub/src/main/java/com/membershiphub/rest/CenterResource.java
-* **📝 Prompt / Tasks / Data**:
-### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
-*   Target Project Identity Safe Name: membership-hub
-*   Enforced Java Package Prefix Base: org.nlh4j.saas.membership-hub
-*   Target Component Destination Path: `./sources/backend/membership-hub/src/main/java/com/membershiphub/rest/CenterResource.java`
-*   Traceability Audit Tags For This Task: ['[REQ-004]', '[REQ-005]', '[REQ-006]', '[ARC-002]']
-
-### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
-[INSTRUCTION FOR AI: No reference source component or baseline interface is provided. You are tasked with architecting and writing this component completely from scratch, aligning perfectly with the target path file extension.]
-
-### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
-['Triển khai REST API quản lý trung tâm (CRUD và phân quyền)']
-
----
-
-### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
-Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Automatically evaluate the extension profile of the target component path to implement either a backend Java component from scratch or a frontend TypeScript/Next.js/React asset from scratch. 
-
-Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` package layout. Ensure that you read the exact Tag IDs from the `['[REQ-004]', '[REQ-005]', '[REQ-006]', '[ARC-002]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
-* **📝 Response**:
-```java
 package org.nlh4j.saas.membership-hub.rest;
 
 /**
@@ -510,5 +486,3 @@ public class CenterResource {
         }
     }
 }
-```
-
