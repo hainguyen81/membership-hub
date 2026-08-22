@@ -17,6 +17,8 @@ secrets/
 .settings
 .springBeans
 .sts4-cache
+__pycache__/
+**/__pycache__/**
 
 ### IntelliJ IDEA ###
 .idea
