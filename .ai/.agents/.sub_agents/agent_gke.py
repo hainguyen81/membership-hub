@@ -64,7 +64,7 @@ class GkeAgent(GcpAgent):
     
     # @override
     def agent_log_file(self) -> str:
-        return resolve_absolute_path(f".ai/.history/agent-gke-day-{self.day_num}.md")
+        return resolve_absolute_path(f".ai/.history/agent-gke-phase-{self.phase_str}-day-{self.day_num}.md")
     
     # @ override
     def pre_execute(self, **kwargs):
