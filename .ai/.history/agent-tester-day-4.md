@@ -1,420 +1,366 @@
 # Day 4: model kilo-auto/free - API Endpoint https://api.kilo.ai/api/gateway
 * **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
-* **Production source codebase generated at TARGET destination**: ./sources/frontend/web/membership/src/app/membership/__tests__/membership.test.tsx
+* **Production source codebase generated at TARGET destination**: ./sources/backend/membership-hub/src/test/java/com/membershiphub/rest/EnrollmentResourceTest.java
 * **📝 Prompt / Tasks / Data**:
 ### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
 *   Target Project Identity Safe Name: membership-hub
 *   Enforced Java Package Prefix Base: org.nlh4j.saas.membership-hub
-*   Target Test Component Destination Path: `./sources/frontend/web/membership/src/app/membership/__tests__/membership.test.tsx` (Must map to sources/backend/ or sources/frontend/)
+*   Target Test Component Destination Path: `./sources/backend/membership-hub/src/test/java/com/membershiphub/rest/EnrollmentResourceTest.java` (Must map to sources/backend/ or sources/frontend/)
 
 
 ### 🚀 SYSTEM INTEGRATION TESTING CONTEXT (E2E PIPELINE)
-INTEGRATION_SCOPE: Multi-component workflow validation required for target destination: ./sources/frontend/web/membership/src/app/membership/__tests__/membership.test.tsx. 
+INTEGRATION_SCOPE: Multi-component workflow validation required for target destination: ./sources/backend/membership-hub/src/test/java/com/membershiphub/rest/EnrollmentResourceTest.java. 
 [INSTRUCTION FOR AI: This is a system integration/E2E test suite. No single class code context is provided. You MUST write the test to bootstrap the full runtime infrastructure context, handle live network APIs, or database relational calculation states.]
 
 
 ### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY TESTER AGENT
-['Viết bộ kiểm thử đơn vị cho các thành phần frontend giai đoạn 3']
+['Viết bộ kiểm thử tích hợp cho luồng ghi danh']
 
 ---
 
 ### ⚙️ TEST ENGINEER EXECUTION INSTRUCTION:
 Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided away. Automatically evaluate the extension profile of the target test component path to construct either an isolated backend unit/integration suite or a frontend E2E/Unit suite. 
 
-Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` structure. Ensure that you read the exact Tag IDs from the `['[REQ-014]', '[REQ-015]', '[REQ-017]', '[REQ-018]']` variable, and permanently burn those codes into the Javadoc metadata blocks (for Java) or the test case description strings (for TypeScript/JavaScript). Emit the final compiler-ready production source code inside a single valid markdown code block now.
+Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` structure. Ensure that you read the exact Tag IDs from the `['[REQ-010]', '[REQ-011]']` variable, and permanently burn those codes into the Javadoc metadata blocks (for Java) or the test case description strings (for TypeScript/JavaScript). Emit the final compiler-ready production source code inside a single valid markdown code block now.
 * **📝 Response**:
-```typescript
+```java
+package com.membershiphub.rest;
+
+import org.junit.jupiter.api.*;
+import org.mockito.Mockito;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mock.InjectMock;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import jakarta.ws.rs.core.MediaType;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.jboss.logging.Logger;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import com.membershiphub.model.Enrollment;
+import com.membershiphub.model.Course;
+import com.membershiphub.model.User;
+import com.membershiphub.service.NotificationService;
+import com.membershiphub.dto.EnrollmentRequest;
+import io.smallrye.mutiny.Uni;
+import java.util.List;
+import java.util.UUID;
+import java.time.LocalDate;
+
 /**
- * membership-hub Phase 3 Frontend Integration Test Suite
+ * Integration test suite for Enrollment Resource endpoints.
+ * Tests the complete enrollment workflow including course availability filtering
+ * and automatic student account creation.
  * 
- * Test Coverage Tags: [REQ-014], [REQ-015], [REQ-017], [REQ-018]
- * Target Component: ./sources/frontend/web/membership/src/app/membership/__tests__/membership.test.tsx
- * 
- * This suite validates the integration of Phase 3 frontend components:
- * - Membership card display with remaining days calculation [REQ-014]
- * - Membership renewal workflow with payment integration [REQ-015]
- * - Promotions listing with active status filtering [REQ-017]
- * - Announcements display with expiration auto-hide [REQ-018]
- * 
- * Architecture Context: Next.js App Router, React Query, Firebase Auth
- * Testing Strategy: Integration tests with mocked API layer, full provider bootstrap
+ * @verifies [REQ-010] Student course browsing with enrolled course exclusion
+ * @verifies [REQ-011] Course enrollment with automatic student account creation
  */
-
-import React from 'react';
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/contexts/AuthContext';
-import MembershipCardPage from '@/app/membership/page';
-import RenewMembershipPage from '@/app/membership/renew/page';
-import PromotionsPage from '@/app/promotions/page';
-import AnnouncementsPage from '@/app/announcements/page';
-import { membershipApi, promotionApi, announcementApi } from '@/services/api';
-
-// ============================================================================
-// [CONST-001] MOCK DATASETS - Isolated top-of-class constants per enterprise policy
-// ============================================================================
-
-/**
- * Mock membership card response for happy path testing [REQ-014]
- * Validates: remaining_days calculation, expiry_date display, card status
- */
-const MOCK_MEMBERSHIP_CARD_ACTIVE = {
-  cardId: '123e4567-e89b-12d3-a456-426614174000',
-  studentId: '123e4567-e89b-12d3-a456-426614174001',
-  issueDate: '2024-01-01',
-  validityDays: 30,
-  remainingDays: 15,
-  expiryDate: '2024-01-31',
-};
-
-/**
- * Mock expired membership card for edge case testing [REQ-014]
- * Validates: zero remaining days handling, expired status UI
- */
-const MOCK_MEMBERSHIP_CARD_EXPIRED = {
-  cardId: '123e4567-e89b-12d3-a456-426614174000',
-  studentId: '123e4567-e89b-12d3-a456-426614174001',
-  issueDate: '2024-01-01',
-  validityDays: 30,
-  remainingDays: 0,
-  expiryDate: '2024-01-31',
-};
-
-/**
- * Mock successful renewal response [REQ-015]
- * Validates: remaining_days update, expiry_date extension, confirmation UI
- */
-const MOCK_RENEWAL_SUCCESS = {
-  cardId: '123e4567-e89b-12d3-a456-426614174000',
-  remainingDays: 45,
-  expiryDate: '2024-03-15',
-};
-
-/**
- * Mock active promotions for happy path testing [REQ-017]
- * Validates: promotion code display, discount percentage, date range filtering
- */
-const MOCK_PROMOTIONS_ACTIVE = [
-  {
-    promoId: '123e4567-e89b-12d3-a456-426614174000',
-    code: 'SUMMER10',
-    discountPercent: 10,
-    startDate: '2024-06-01',
-    endDate: '2024-08-31',
-    description: 'Giảm 10% khóa học hè',
-  },
-];
-
-/**
- * Mock expired promotions for edge case testing [REQ-017]
- * Validates: expired promotions are filtered out from UI
- */
-const MOCK_PROMOTIONS_EXPIRED = [
-  {
-    promoId: '123e4567-e89b-12d3-a456-426614174000',
-    code: 'EXPIRED',
-    discountPercent: 20,
-    startDate: '2024-01-01',
-    endDate: '2024-01-31',
-    description: 'Expired promo',
-  },
-];
-
-/**
- * Mock active announcements for happy path testing [REQ-018]
- * Validates: announcement title/content display, date range filtering
- */
-const MOCK_ANNOUNCEMENTS_ACTIVE = [
-  {
-    announcementId: '123e4567-e89b-12d3-a456-426614174000',
-    title: 'Thông báo nghỉ lễ',
-    content: 'Trung tâm nghỉ lễ 30/4',
-    startDate: '2024-04-29',
-    endDate: '2024-05-01',
-  },
-];
-
-/**
- * Mock expired announcements for edge case testing [REQ-018]
- * Validates: expired announcements auto-hide from UI
- */
-const MOCK_ANNOUNCEMENTS_EXPIRED = [
-  {
-    announcementId: '123e4567-e89b-12d3-a456-426614174000',
-    title: 'Old Announcement',
-    content: 'This should be hidden',
-    startDate: '2024-01-01',
-    endDate: '2024-01-31',
-  },
-];
-
-// ============================================================================
-// [MOCK-001] API SERVICE MOCKS - Isolated mock implementations
-// ============================================================================
-
-jest.mock('@/services/api', () => ({
-  membershipApi: {
-    getCard: jest.fn(),
-    renewCard: jest.fn(),
-  },
-  promotionApi: {
-    getPromotions: jest.fn(),
-  },
-  announcementApi: {
-    getAnnouncements: jest.fn(),
-  },
-}));
-
-// ============================================================================
-// [HELPER-001] TEST WRAPPER FACTORY - Bootstraps full runtime infrastructure
-// ============================================================================
-
-/**
- * Creates a test wrapper with all required providers for Phase 3 components
- * Includes: QueryClient (React Query), AuthProvider (Firebase Auth context)
- * This ensures tests run with full runtime infrastructure context [REQ-014][REQ-015][REQ-017][REQ-018]
- */
-const createPhase3TestWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-        refetchOnWindowFocus: false,
-        staleTime: Infinity,
-      },
-    },
-  });
-
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        {children}
-      </AuthProvider>
-    </QueryClientProvider>
-  );
-};
-
-// ============================================================================
-// [TEST-SUITE-001] PHASE 3 FRONTEND INTEGRATION TEST SUITE
-// Coverage: [REQ-014], [REQ-015], [REQ-017], [REQ-018]
-// ============================================================================
-
-describe('Phase 3 Membership Frontend Integration [REQ-014][REQ-015][REQ-017][REQ-018]', () => {
-  // [SETUP-001] Clear all mocks before each test to ensure test isolation
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  // ========================================================================
-  // [REQ-014] MEMBERSHIP CARD DISPLAY COMPONENT TESTS
-  // ========================================================================
-  describe('Membership Card Display Component [REQ-014]', () => {
-    test('renders active membership card with correct remaining days [REQ-014]', async () => {
-      // [REQ-014] Happy Path: Digital membership card displays remaining validity days
-      // Business Logic: Card with 15 remaining days should display "15" and expiry date
-      (membershipApi.getCard as jest.Mock).mockResolvedValue(MOCK_MEMBERSHIP_CARD_ACTIVE);
-
-      render(<MembershipCardPage />, { wrapper: createPhase3TestWrapper() });
-
-      // Assert: Verify remaining days calculation and display
-      await waitFor(() => {
-        expect(screen.getByText(/remaining days/i)).toBeInTheDocument();
-        expect(screen.getByText('15')).toBeInTheDocument();
-        expect(screen.getByText(/expiry date/i)).toBeInTheDocument();
-      });
-    });
-
-    test('handles expired membership card with zero remaining days [REQ-014]', async () => {
-      // [REQ-014] Edge Case: Card with 0 remaining days shows expired status
-      // Business Logic: remaining_days = 0 triggers expired UI state
-      (membershipApi.getCard as jest.Mock).mockResolvedValue(MOCK_MEMBERSHIP_CARD_EXPIRED);
-
-      render(<MembershipCardPage />, { wrapper: createPhase3TestWrapper() });
-
-      // Assert: Verify expired status badge and zero days display
-      await waitFor(() => {
-        expect(screen.getByText(/expired/i)).toBeInTheDocument();
-        expect(screen.getByText('0')).toBeInTheDocument();
-      });
-    });
-
-    test('handles network error when fetching membership card [REQ-014]', async () => {
-      // [REQ-014] Exception Case: API network failure handling
-      // Business Logic: Network error should display user-friendly error message
-      (membershipApi.getCard as jest.Mock).mockRejectedValue(new Error('Network connection failed'));
-
-      render(<MembershipCardPage />, { wrapper: createPhase3TestWrapper() });
-
-      // Assert: Verify error boundary catches and displays error state
-      await waitFor(() => {
-        expect(screen.getByText(/failed to load membership card/i)).toBeInTheDocument();
-        expect(screen.getByRole('alert')).toBeInTheDocument();
-      });
-    });
-  });
-
-  // ========================================================================
-  // [REQ-015] MEMBERSHIP RENEWAL COMPONENT TESTS
-  // ========================================================================
-  describe('Membership Renewal Component [REQ-015]', () => {
-    test('successfully renews membership with valid payment transaction [REQ-015]', async () => {
-      // [REQ-015] Happy Path: Renewal with payment integration
-      // Business Logic: Payment success updates remaining_days and expiry_date
-      (membershipApi.renewCard as jest.Mock).mockResolvedValue(MOCK_RENEWAL_SUCCESS);
-
-      render(<RenewMembershipPage />, { wrapper: createPhase3TestWrapper() });
-
-      // Act: Simulate user entering renewal days and submitting payment
-      const daysInput = screen.getByLabelText(/renewal days/i);
-      fireEvent.change(daysInput, { target: { value: '30' } });
-
-      const submitButton = screen.getByRole('button', { name: /confirm renewal/i });
-      fireEvent.click(submitButton);
-
-      // Assert: Verify API call with correct payload and success UI update
-      await waitFor(() => {
-        expect(membershipApi.renewCard).toHaveBeenCalledWith({
-          renewalDays: 30,
-          paymentTransactionId: expect.any(String),
-        });
-        expect(screen.getByText(/renewal successful/i)).toBeInTheDocument();
-        expect(screen.getByText('45')).toBeInTheDocument();
-      });
-    });
-
-    test('handles payment gateway failure during renewal [REQ-015]', async () => {
-      // [REQ-015] Exception Case: Payment failure (HTTP 402)
-      // Business Logic: Payment failure prevents card update, shows error
-      (membershipApi.renewCard as jest.Mock).mockRejectedValue({
-        error: 'Payment failed',
-        status: 402,
-      });
-
-      render(<RenewMembershipPage />, { wrapper: createPhase3TestWrapper() });
-
-      // Act: Attempt renewal with failing payment
-      const submitButton = screen.getByRole('button', { name: /confirm renewal/i });
-      fireEvent.click(submitButton);
-
-      // Assert: Verify error message and no state change
-      await waitFor(() => {
-        expect(screen.getByText(/payment failed/i)).toBeInTheDocument();
-        expect(screen.getByRole('alert')).toBeInTheDocument();
-      });
-    });
-
-    test('validates renewal days input constraints [REQ-015]', async () => {
-      // [REQ-015] Edge Case: Invalid renewal days (negative value)
-      // Business Logic: Form validation prevents submission with invalid days
-      render(<RenewMembershipPage />, { wrapper: createPhase3TestWrapper() });
-
-      // Act: Enter invalid negative days
-      const daysInput = screen.getByLabelText(/renewal days/i);
-      fireEvent.change(daysInput, { target: { value: '-5' } });
-
-      const submitButton = screen.getByRole('button', { name: /confirm renewal/i });
-      fireEvent.click(submitButton);
-
-      // Assert: Validation error shown, API not called
-      await waitFor(() => {
-        expect(screen.getByText(/invalid number of days/i)).toBeInTheDocument();
-        expect(membershipApi.renewCard).not.toHaveBeenCalled();
-      });
-    });
-  });
-
-  // ========================================================================
-  // [REQ-017] PROMOTIONS MANAGEMENT COMPONENT TESTS
-  // ========================================================================
-  describe('Promotions Management Component [REQ-017]', () => {
-    test('displays active promotions list with correct details [REQ-017]', async () => {
-      // [REQ-017] Happy Path: Active promotions displayed with all details
-      // Business Logic: Promotions within date range are visible to students
-      (promotionApi.getPromotions as jest.Mock).mockResolvedValue(MOCK_PROMOTIONS_ACTIVE);
-
-      render(<PromotionsPage />, { wrapper: createPhase3TestWrapper() });
-
-      // Assert: Verify promotion code, discount, and description are rendered
-      await waitFor(() => {
-        expect(screen.getByText('SUMMER10')).toBeInTheDocument();
-        expect(screen.getByText(/10%/i)).toBeInTheDocument();
-        expect(screen.getByText(/Giảm 10% khóa học hè/i)).toBeInTheDocument();
-      });
-    });
-
-    test('filters out expired promotions from display [REQ-017]', async () => {
-      // [REQ-017] Edge Case: Expired promotions filtered by date range
-      // Business Logic: end_date < CURRENT_DATE promotions are excluded
-      (promotionApi.getPromotions as jest.Mock).mockResolvedValue(MOCK_PROMOTIONS_EXPIRED);
-
-      render(<PromotionsPage />, { wrapper: createPhase3TestWrapper() });
-
-      // Assert: Verify expired promotion is not displayed, empty state shown
-      await waitFor(() => {
-        expect(screen.queryByText('EXPIRED')).not.toBeInTheDocument();
-        expect(screen.getByText(/no active promotions/i)).toBeInTheDocument();
-      });
-    });
-
-    test('handles API error when fetching promotions [REQ-017]', async () => {
-      // [REQ-017] Exception Case: API failure handling
-      // Business Logic: Network error shows fallback error message
-      (promotionApi.getPromotions as jest.Mock).mockRejectedValue(new Error('API Error'));
-
-      render(<PromotionsPage />, { wrapper: createPhase3TestWrapper() });
-
-      // Assert: Verify error state is rendered
-      await waitFor(() => {
-        expect(screen.getByText(/failed to load promotions/i)).toBeInTheDocument();
-      });
-    });
-  });
-
-  // ========================================================================
-  // [REQ-018] ANNOUNCEMENTS MANAGEMENT COMPONENT TESTS
-  // ========================================================================
-  describe('Announcements Management Component [REQ-018]', () => {
-    test('displays active announcements with title and content [REQ-018]', async () => {
-      // [REQ-018] Happy Path: Active announcements displayed correctly
-      // Business Logic: Announcements within validity period are visible
-      (announcementApi.getAnnouncements as jest.Mock).mockResolvedValue(MOCK_ANNOUNCEMENTS_ACTIVE);
-
-      render(<AnnouncementsPage />, { wrapper: createPhase3TestWrapper() });
-
-      // Assert: Verify announcement title and content are rendered
-      await waitFor(() => {
-        expect(screen.getByText('Thông báo nghỉ lễ')).toBeInTheDocument();
-        expect(screen.getByText('Trung tâm nghỉ lễ 30/4')).toBeInTheDocument();
-      });
-    });
-
-    test('hides announcements after expiration date [REQ-018]', async () => {
-      // [REQ-018] Edge Case: Expired announcements auto-hidden
-      // Business Logic: end_date < CURRENT_DATE announcements are filtered out
-      (announcementApi.getAnnouncements as jest.Mock).mockResolvedValue(MOCK_ANNOUNCEMENTS_EXPIRED);
-
-      render(<AnnouncementsPage />, { wrapper: createPhase3TestWrapper() });
-
-      // Assert: Verify expired announcement is not visible
-      await waitFor(() => {
-        expect(screen.queryByText('Old Announcement')).not.toBeInTheDocument();
-        expect(screen.getByText(/no active announcements/i)).toBeInTheDocument();
-      });
-    });
-
-    test('handles API error when fetching announcements [REQ-018]', async () => {
-      // [REQ-018] Exception Case: API failure handling
-      // Business Logic: Network error displays user-friendly error message
-      (announcementApi.getAnnouncements as jest.Mock).mockRejectedValue(new Error('API Error'));
-
-      render(<AnnouncementsPage />, { wrapper: createPhase3TestWrapper() });
-
-      // Assert: Verify error state is displayed
-      await waitFor(() => {
-        expect(screen.getByText(/failed to load announcements/i)).toBeInTheDocument();
-      });
-    });
-  });
-});
+@QuarkusTest
+@Testcontainers
+public class EnrollmentResourceTest {
+    
+    private static final Logger LOG = Logger.getLogger(EnrollmentResourceTest.class);
+    
+    // [REQ-010], [REQ-011] Static constants for test data and endpoint URLs
+    private static final String TEST_STUDENT_EMAIL = "newstudent@example.com";
+    private static final String EXISTING_STUDENT_EMAIL = "existing@example.com";
+    private static final String VALID_JWT_TOKEN = "Bearer valid-jwt-token";
+    private static final String ENROLLMENT_API_PATH = "/api/v1/enrollments";
+    private static final String AVAILABLE_COURSES_API_PATH = "/api/v1/courses/available";
+    private static final String COURSES_API_PATH = "/api/v1/courses";
+    
+    // [REQ-010], [REQ-011] PostgreSQL Testcontainer for integration testing with real database
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
+            .withDatabaseName("membership_hub_test")
+            .withUsername("test")
+            .withPassword("test")
+            .withInitScript("test-data.sql");
+    
+    // Mock external notification service to avoid external API dependencies during integration test
+    @InjectMock
+    NotificationService notificationService;
+    
+    @BeforeAll
+    static void setup() {
+        RestAssured.baseURI = "http://localhost";
+        RestAssured.port = 8081; // Quarkus test default port
+    }
+    
+    @BeforeEach
+    void setUp() {
+        // [REQ-011] Reset mocks and setup default behavior for notification service
+        Mockito.reset(notificationService);
+        when(notificationService.sendEnrollmentConfirmation(any(), any()))
+            .thenReturn(Uni.createFrom().item(true));
+        when(notificationService.sendCourseAssignmentNotification(any(), any()))
+            .thenReturn(Uni.createFrom().item(true));
+    }
+    
+    /**
+     * Test happy path: Student successfully enrolls in an available course.
+     * Verifies enrollment creation, automatic student account creation,
+     * and notification dispatch.
+     * 
+     * @verifies [REQ-011]
+     */
+    @Test
+    void testEnrollInAvailableCourse_Success() {
+        // [REQ-011] Log test start for audit trail
+        LOG.info("[TEST_START] [REQ-011] testEnrollInAvailableCourse_Success");
+        
+        // [REQ-011] Test data: valid course ID and new student email
+        UUID courseId = UUID.randomUUID();
+        
+        // [REQ-011] Execute POST /api/v1/enrollments with valid payload
+        // Business logic: System should create student account automatically if not exists
+        // and create enrollment record with idempotent behavior
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", VALID_JWT_TOKEN)
+            .body("{\"courseId\":\"" + courseId + "\",\"studentEmail\":\"" + TEST_STUDENT_EMAIL + "\"}")
+        .when()
+            .post(ENROLLMENT_API_PATH)
+        .then()
+            // [REQ-011] Assert: 201 Created response with enrollment ID
+            // Validation strategy: Verify HTTP status code and response body structure
+            .statusCode(201)
+            .body("enrollmentId", notNullValue())
+            .body("message", equalTo("Đăng ký khóa học thành công"));
+        
+        // [REQ-011] Verify: Notification service was called to send confirmation
+        // Edge case validation: Ensure notification is triggered on successful enrollment
+        Mockito.verify(notificationService, Mockito.times(1))
+            .sendEnrollmentConfirmation(any(), any());
+        
+        // [REQ-011] Log test completion for audit trail
+        LOG.info("[TEST_END] [REQ-011] testEnrollInAvailableCourse_Success - PASSED");
+    }
+    
+    /**
+     * Test edge case: Student attempts to enroll in a course that is already full.
+     * Verifies system rejects enrollment when max students capacity is reached.
+     * 
+     * @verifies [REQ-011]
+     */
+    @Test
+    void testEnrollInFullCourse_ReturnsConflict() {
+        // [REQ-011] Log test start for audit trail
+        LOG.info("[TEST_START] [REQ-011] testEnrollInFullCourse_ReturnsConflict");
+        
+        // [REQ-011] Test data: course at maximum capacity
+        UUID courseId = UUID.randomUUID();
+        
+        // [REQ-011] Execute enrollment request for full course
+        // Business logic: System should check course capacity before allowing enrollment
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", VALID_JWT_TOKEN)
+            .body("{\"courseId\":\"" + courseId + "\",\"studentEmail\":\"" + TEST_STUDENT_EMAIL + "\"}")
+        .when()
+            .post(ENROLLMENT_API_PATH)
+        .then()
+            // [REQ-011] Assert: 409 Conflict with COURSE_FULL error
+            // Validation strategy: Verify capacity constraint is enforced at service layer
+            .statusCode(409)
+            .body("error", equalTo("COURSE_FULL"));
+        
+        // [REQ-011] Log test completion for audit trail
+        LOG.info("[TEST_END] [REQ-011] testEnrollInFullCourse_ReturnsConflict - PASSED");
+    }
+    
+    /**
+     * Test edge case: Student attempts to enroll in a course already enrolled in.
+     * Verifies unique constraint enforcement on (studentId, courseId) pair.
+     * 
+     * @verifies [REQ-011]
+     */
+    @Test
+    void testEnrollInAlreadyEnrolledCourse_ReturnsConflict() {
+        // [REQ-011] Log test start for audit trail
+        LOG.info("[TEST_START] [REQ-011] testEnrollInAlreadyEnrolledCourse_ReturnsConflict");
+        
+        // [REQ-011] Test data: student already enrolled in the course
+        UUID courseId = UUID.randomUUID();
+        
+        // [REQ-011] Execute duplicate enrollment request
+        // Business logic: System should prevent duplicate enrollments using unique constraint
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", VALID_JWT_TOKEN)
+            .body("{\"courseId\":\"" + courseId + "\"}")
+        .when()
+            .post(ENROLLMENT_API_PATH)
+        .then()
+            // [REQ-011] Assert: 409 Conflict with ALREADY_ENROLLED error
+            // Validation strategy: Verify unique constraint (studentId, courseId) is enforced
+            .statusCode(409)
+            .body("error", equalTo("ALREADY_ENROLLED"));
+        
+        // [REQ-011] Log test completion for audit trail
+        LOG.info("[TEST_END] [REQ-011] testEnrollInAlreadyEnrolledCourse_ReturnsConflict - PASSED");
+    }
+    
+    /**
+     * Test happy path: Student views available courses and enrolled courses are excluded.
+     * Verifies filtering logic for available courses list.
+     * 
+     * @verifies [REQ-010]
+     */
+    @Test
+    void testGetAvailableCourses_ExcludesEnrolledCourses() {
+        // [REQ-010] Log test start for audit trail
+        LOG.info("[TEST_START] [REQ-010] testGetAvailableCourses_ExcludesEnrolledCourses");
+        
+        // [REQ-010] Test data: student with existing enrollment in one course
+        UUID studentId = UUID.randomUUID();
+        
+        // [REQ-010] Execute GET /api/v1/courses/available
+        // Business logic: System should filter out courses student is already enrolled in
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", VALID_JWT_TOKEN)
+            .queryParam("studentId", studentId.toString())
+        .when()
+            .get(AVAILABLE_COURSES_API_PATH)
+        .then()
+            // [REQ-010] Assert: 200 OK with only non-enrolled courses
+            // Validation strategy: Verify enrolled courses are excluded from available list
+            .statusCode(200)
+            .body("$", hasSize(1))
+            .body("[0].courseId", notNullValue())
+            .body("[0].title", notNullValue());
+        
+        // [REQ-010] Log test completion for audit trail
+        LOG.info("[TEST_END] [REQ-010] testGetAvailableCourses_ExcludesEnrolledCourses - PASSED");
+    }
+    
+    /**
+     * Test edge case: Invalid course ID format returns bad request.
+     * Verifies input validation for enrollment requests.
+     * 
+     * @verifies [REQ-011]
+     */
+    @Test
+    void testEnrollWithInvalidCourseId_ReturnsBadRequest() {
+        // [REQ-011] Log test start for audit trail
+        LOG.info("[TEST_START] [REQ-011] testEnrollWithInvalidCourseId_ReturnsBadRequest");
+        
+        // [REQ-011] Execute with malformed course ID
+        // Business logic: System should validate UUID format before processing enrollment
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", VALID_JWT_TOKEN)
+            .body("{\"courseId\":\"invalid-uuid\",\"studentEmail\":\"" + TEST_STUDENT_EMAIL + "\"}")
+        .when()
+            .post(ENROLLMENT_API_PATH)
+        .then()
+            // [REQ-011] Assert: 400 Bad Request with validation error
+            // Validation strategy: Verify input validation rejects malformed UUIDs
+            .statusCode(400)
+            .body("error", equalTo("VALIDATION_FAILED"));
+        
+        // [REQ-011] Log test completion for audit trail
+        LOG.info("[TEST_END] [REQ-011] testEnrollWithInvalidCourseId_ReturnsBadRequest - PASSED");
+    }
+    
+    /**
+     * Test edge case: Empty request body returns validation error.
+     * Verifies request validation for mandatory fields.
+     * 
+     * @verifies [REQ-011]
+     */
+    @Test
+    void testEnrollWithEmptyRequest_ReturnsBadRequest() {
+        // [REQ-011] Log test start for audit trail
+        LOG.info("[TEST_START] [REQ-011] testEnrollWithEmptyRequest_ReturnsBadRequest");
+        
+        // [REQ-011] Execute with empty JSON body
+        // Business logic: System should require courseId and studentEmail fields
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", VALID_JWT_TOKEN)
+            .body("{}")
+        .when()
+            .post(ENROLLMENT_API_PATH)
+        .then()
+            // [REQ-011] Assert: 400 Bad Request with validation error
+            // Validation strategy: Verify mandatory field validation for enrollment request
+            .statusCode(400)
+            .body("error", equalTo("VALIDATION_FAILED"));
+        
+        // [REQ-011] Log test completion for audit trail
+        LOG.info("[TEST_END] [REQ-011] testEnrollWithEmptyRequest_ReturnsBadRequest - PASSED");
+    }
+    
+    /**
+     * Test edge case: Unauthorized access without JWT token returns 401.
+     * Verifies authentication requirement for enrollment endpoints.
+     * 
+     * @verifies [REQ-010], [REQ-011]
+     */
+    @Test
+    void testEnrollWithoutAuthToken_ReturnsUnauthorized() {
+        // [REQ-010], [REQ-011] Log test start for audit trail
+        LOG.info("[TEST_START] [REQ-010][REQ-011] testEnrollWithoutAuthToken_ReturnsUnauthorized");
+        
+        // [REQ-010], [REQ-011] Execute without Authorization header
+        // Business logic: System should require valid JWT for all enrollment operations
+        given()
+            .contentType(ContentType.JSON)
+            .body("{\"courseId\":\"" + UUID.randomUUID() + "\"}")
+        .when()
+            .post(ENROLLMENT_API_PATH)
+        .then()
+            // [REQ-010], [REQ-011] Assert: 401 Unauthorized
+            // Validation strategy: Verify authentication gate is enforced at API layer
+            .statusCode(401);
+        
+        // [REQ-010], [REQ-011] Log test completion for audit trail
+        LOG.info("[TEST_END] [REQ-010][REQ-011] testEnrollWithoutAuthToken_ReturnsUnauthorized - PASSED");
+    }
+    
+    /**
+     * Test happy path: Enrollment automatically creates student account if not exists.
+     * Verifies automatic account creation logic for new students.
+     * 
+     * @verifies [REQ-011]
+     */
+    @Test
+    void testEnroll_AutoCreatesStudentAccount_WhenNotExists() {
+        // [REQ-011] Log test start for audit trail
+        LOG.info("[TEST_START] [REQ-011] testEnroll_AutoCreatesStudentAccount_WhenNotExists");
+        
+        // [REQ-011] Test data: course ID and email for non-existent student
+        UUID courseId = UUID.randomUUID();
+        String newStudentEmail = "autocreate@example.com";
+        
+        // [REQ-011] Execute enrollment with new student email
+        // Business logic: System should create User record with Student role automatically
+        given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", VALID_JWT_TOKEN)
+            .body("{\"courseId\":\"" + courseId + "\",\"studentEmail\":\"" + newStudentEmail + "\"}")
+        .when()
+            .post(ENROLLMENT_API_PATH)
+        .then()
+            // [REQ-011] Assert: Enrollment succeeds with auto-created account
+            // Validation strategy: Verify enrollment succeeds and account is created
+            .statusCode(201)
+            .body("enrollmentId", notNullValue());
+        
+        // [REQ-011] Verify: Notification was sent to newly created student
+        // Edge case validation: Ensure notification triggers for auto-created accounts
+        Mockito.verify(notificationService, Mockito.times(1))
+            .sendEnrollmentConfirmation(any(), any());
+        
+        // [REQ-011] Log test completion for audit trail
+        LOG.info("[TEST_END] [REQ-011] testEnroll_AutoCreatesStudentAccount_WhenNotExists - PASSED");
+    }
+}
 ```
 

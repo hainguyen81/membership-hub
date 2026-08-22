@@ -33,7 +33,7 @@ class TesterAgent(AbstractSubAgent):
 
     # @override
     def agent_log_file(self) -> str:
-        return resolve_absolute_path(f".ai/.history/agent-tester-day-{self.day_num}.md")
+        return resolve_absolute_path(f".ai/.history/agent-tester-phase-{self.phase_str}-day-{self.day_num}.md")
     
     # @override
     def system_prompt_template(self) -> str:
