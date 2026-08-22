@@ -1,677 +1,707 @@
 # Day 3: model kilo-auto/free - API Endpoint https://api.kilo.ai/api/gateway
 * **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
-* **Production source codebase generated at TARGET destination**: ./sources/backend/notification-service/src/test/java/com/hub/notification/NotificationIntegrationTest.java
+* **Production source codebase generated at TARGET destination**: ./sources/backend/membership-hub/src/test/java/com/membershiphub/rest/CourseResourceTest.java
 * **📝 Prompt / Tasks / Data**:
 ### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
 *   Target Project Identity Safe Name: membership-hub
 *   Enforced Java Package Prefix Base: org.nlh4j.saas.membership-hub
-*   Target Test Component Destination Path: `./sources/backend/notification-service/src/test/java/com/hub/notification/NotificationIntegrationTest.java` (Must map to sources/backend/ or sources/frontend/)
+*   Target Test Component Destination Path: `./sources/backend/membership-hub/src/test/java/com/membershiphub/rest/CourseResourceTest.java` (Must map to sources/backend/ or sources/frontend/)
 
 
 ### 🚀 SYSTEM INTEGRATION TESTING CONTEXT (E2E PIPELINE)
-INTEGRATION_SCOPE: Multi-component workflow validation required for target destination: ./sources/backend/notification-service/src/test/java/com/hub/notification/NotificationIntegrationTest.java. 
+INTEGRATION_SCOPE: Multi-component workflow validation required for target destination: ./sources/backend/membership-hub/src/test/java/com/membershiphub/rest/CourseResourceTest.java. 
 [INSTRUCTION FOR AI: This is a system integration/E2E test suite. No single class code context is provided. You MUST write the test to bootstrap the full runtime infrastructure context, handle live network APIs, or database relational calculation states.]
 
 
 ### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY TESTER AGENT
-['Viết bộ kiểm thử tích hợp cho luồng gửi thông báo đa kênh']
+['Viết bộ kiểm thử tích hợp cho API quản lý khóa học']
 
 ---
 
 ### ⚙️ TEST ENGINEER EXECUTION INSTRUCTION:
 Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided away. Automatically evaluate the extension profile of the target test component path to construct either an isolated backend unit/integration suite or a frontend E2E/Unit suite. 
 
-Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` structure. Ensure that you read the exact Tag IDs from the `['[REQ-016]', '[EXC-003]']` variable, and permanently burn those codes into the Javadoc metadata blocks (for Java) or the test case description strings (for TypeScript/JavaScript). Emit the final compiler-ready production source code inside a single valid markdown code block now.
+Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` structure. Ensure that you read the exact Tag IDs from the `['[REQ-007]', '[REQ-008]', '[REQ-009]']` variable, and permanently burn those codes into the Javadoc metadata blocks (for Java) or the test case description strings (for TypeScript/JavaScript). Emit the final compiler-ready production source code inside a single valid markdown code block now.
 * **📝 Response**:
 ```java
-package org.nlh4j.saas.membership-hub.notification;
+package org.nlh4j.saas.membership-hub.rest.integration;
 
-// [REQ-016], [EXC-003] Integration test suite for multi-channel notification workflow
-// Verifies: FCM/APNs push notifications, Zalo group messaging, retry mechanism (max 3 retries),
-// database state persistence, and exception handling for failed delivery scenarios.
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-
+// [IMPORT] Core testing and framework dependencies
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.nlh4j.saas.membership-hub.notification.entity.Notification;
-import org.nlh4j.saas.membership-hub.notification.repository.NotificationRepository;
-import org.nlh4j.saas.membership-hub.notification.service.FcmNotificationSender;
-import org.nlh4j.saas.membership-hub.notification.service.NotificationService;
-import org.nlh4j.saas.membership-hub.notification.service.ZaloNotificationSender;
+import org.mindrot.jbcrypt.BCrypt;
+import org.nlh4j.saas.membership-hub.model.Center;
+import org.nlh4j.saas.membership-hub.model.Course;
+import org.nlh4j.saas.membership-hub.model.User;
+import org.nlh4j.saas.membership-hub.repository.CenterRepository;
+import org.nlh4j.saas.membership-hub.repository.CourseRepository;
+import org.nlh4j.saas.membership-hub.repository.UserRepository;
+import org.nlh4j.saas.membership-hub.service.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import io.quarkus.test.Inject;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
-import jakarta.inject.Inject;
-import jakarta.transaction.UserTransaction;
-
-// [NFR-005] Testcontainers for isolated integration testing environment
+import io.quarkus.test.junit.mockito.InjectMock;
+import io.restassured.RestAssured;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
 
 /**
- * Integration test suite for Notification Service multi-channel workflow.
- * 
- * @verifies [REQ-016] Multi-channel notification delivery (FCM/APNs, Zalo group)
- * @verifies [EXC-003] Retry mechanism (max 3 retries) and failure handling
- * @verifies [NFR-006] Audit logging for all notification actions
- * @verifies [DAT-008] Notification entity persistence and state management
+ * Integration test suite for CourseResource REST API endpoints.
+ * Validates all course management operations including CRUD, schedule conflict checking, and teacher assignment.
+ * @verifies [REQ-007], [REQ-008], [REQ-009]
  */
-@QuarkusTest
-@TestProfile(NotificationIntegrationTest.NotificationTestProfile.class)
 @Testcontainers
-public class NotificationIntegrationTest {
-    
-    private static final Logger logger = LoggerFactory.getLogger(NotificationIntegrationTest.class);
-    
-    // [CONST-001] Maximum retry count for failed notifications (business rule: max 3)
-    public static final int MAX_RETRY_COUNT = 3;
-    
-    // [CONST-002] Maximum message length per database schema constraint
-    public static final int MAX_MESSAGE_LENGTH = 2000;
-    
-    // [CONST-003] Retry interval in milliseconds (business rule: 5 minutes)
-    public static final long RETRY_INTERVAL_MS = 300000;
-    
+@QuarkusTest
+public class CourseResourceTest {
+
+    // [CONST] Class-level logger for test execution tracing
+    private static final Logger LOGGER = LoggerFactory.getLogger(CourseResourceTest.class);
+
+    // [CONST] Immutable API endpoint paths (no hardcoded literals in test logic)
+    public static final String COURSE_API_PATH = "/api/v1/courses";
+    public static final String COURSE_BY_ID_API_PATH = "/api/v1/courses/%s";
+    public static final String ASSIGN_TEACHER_API_PATH = "/api/v1/courses/%s/assign-teacher";
+    public static final String AUTH_LOGIN_API_PATH = "/api/v1/auth/login";
+
+    // [CONST] Immutable test data constants (no magic values)
+    public static final String TEST_ADMIN_EMAIL = "admin.course.test@membershiphub.com";
+    public static final String TEST_ADMIN_PASSWORD = "SecureTestPass123!";
+    public static final String TEST_TEACHER_EMAIL = "teacher.course.test@membershiphub.com";
+    public static final String TEST_TEACHER_PASSWORD = "TeacherTestPass123!";
+    public static final String TEST_COURSE_TITLE = "Advanced Java Programming";
+    public static final String TEST_COURSE_DESCRIPTION = "Master Java 21 and Quarkus framework";
+    public static final LocalDate TEST_COURSE_START_DATE = LocalDate.of(2024, 6, 1);
+    public static final LocalDate TEST_COURSE_END_DATE = LocalDate.of(2024, 6, 30);
+    public static final int TEST_MAX_STUDENTS = 25;
+    public static final String TEST_CENTER_NAME = "Test Training Center";
+    public static final String TEST_CENTER_ADDRESS = "456 Tech Street, Hanoi, Vietnam";
+    public static final String TEST_CENTER_TAX_ID = "0123456789";
+    public static final String TEST_CENTER_CONTACT_PHONE = "0987654321";
+    public static final String TEST_CENTER_CONTACT_EMAIL = "center.test@membershiphub.com";
+    public static final short ROLE_SYSTEM_ADMIN_ID = 1;
+    public static final short ROLE_TEACHER_ID = 3;
+    public static final short ROLE_STUDENT_ID = 2;
+
+    // [INFRA] Testcontainers PostgreSQL instance for real database integration testing
     @Container
-    // [NFR-005] Isolated PostgreSQL container for integration testing
-    public static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
-            .withDatabaseName("membership_hub_notification_test")
+    public static PostgreSQLContainer<?> POSTGRES_CONTAINER = new PostgreSQLContainer<>("postgres:15-alpine")
+            .withDatabaseName("membership_hub_course_test")
             .withUsername("test_user")
-            .withPassword("test_password")
-            .withInitScript("db/migration/V5__create_notifications.sql");
-    
+            .withPassword("test_pass");
+
+    // [INFRA] Injected application repositories for database state verification
     @Inject
-    // [REQ-016] Core notification service under test
+    CourseRepository courseRepository;
+
+    @Inject
+    UserRepository userRepository;
+
+    @Inject
+    CenterRepository centerRepository;
+
+    // [MOCK] Mock external notification service to verify trigger without real external calls
+    @InjectMock
     NotificationService notificationService;
-    
-    @Inject
-    // [DAT-008] Real repository for database state verification
-    NotificationRepository notificationRepository;
-    
-    @Inject
-    UserTransaction userTransaction;
-    
-    @Mock
-    // [ARC-008] Mocked FCM sender to avoid real external API calls during integration test
-    FcmNotificationSender fcmNotificationSender;
-    
-    @Mock
-    // [ARC-008] Mocked Zalo sender to avoid real external API calls during integration test
-    ZaloNotificationSender zaloNotificationSender;
-    
-    private UUID testUserId;
-    private String testGroupZalo;
-    
+
+    // [STATE] Test context variables
+    private String adminAccessToken;
+    private User testAdminUser;
+    private User testTeacherUser;
+    private Center testCenter;
+    private Course testCourse;
+
     /**
-     * [SETUP-001] Initialize test data before each test method.
-     * Creates test user ID and Zalo group identifier for notification routing.
+     * Initialize test context with required test data before each test case.
+     * @verifies [REQ-007], [REQ-008], [REQ-009]
      */
     @BeforeEach
     void setUp() {
-        logger.info("[TEST_SETUP] [REQ-016] Initializing integration test context for notification service");
-        testUserId = UUID.randomUUID();
-        testGroupZalo = "test_center_group_zalo_001";
-        
-        // [SETUP-002] Reset mock behaviors to default state
-        reset(fcmNotificationSender, zaloNotificationSender);
+        LOGGER.info("[TEST_SETUP] [REQ-007][REQ-008][REQ-009] Initializing integration test context for CourseResource");
+
+        // [ARRANGE] Create test center
+        testCenter = new Center();
+        testCenter.setName(TEST_CENTER_NAME);
+        testCenter.setAddress(TEST_CENTER_ADDRESS);
+        testCenter.setTaxId(TEST_CENTER_TAX_ID);
+        testCenter.setContactPhone(TEST_CENTER_CONTACT_PHONE);
+        testCenter.setContactEmail(TEST_CENTER_CONTACT_EMAIL);
+        centerRepository.persist(testCenter);
+
+        // [ARRANGE] Create test System Admin user
+        testAdminUser = new User();
+        testAdminUser.setEmail(TEST_ADMIN_EMAIL);
+        testAdminUser.setPasswordHash(BCrypt.hashpw(TEST_ADMIN_PASSWORD, BCrypt.gensalt()));
+        testAdminUser.setFullName("Test System Admin");
+        testAdminUser.setRoleId(ROLE_SYSTEM_ADMIN_ID);
+        testAdminUser.setProvider("local");
+        userRepository.persist(testAdminUser);
+
+        // [ARRANGE] Create test Teacher user
+        testTeacherUser = new User();
+        testTeacherUser.setEmail(TEST_TEACHER_EMAIL);
+        testTeacherUser.setPasswordHash(BCrypt.hashpw(TEST_TEACHER_PASSWORD, BCrypt.gensalt()));
+        testTeacherUser.setFullName("Test Teacher");
+        testTeacherUser.setRoleId(ROLE_TEACHER_ID);
+        testTeacherUser.setProvider("local");
+        userRepository.persist(testTeacherUser);
+
+        // [ARRANGE] Login as admin to obtain valid JWT access token
+        Response loginResponse = RestAssured.given()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(String.format("{\"email\":\"%s\",\"password\":\"%s\"}", TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD))
+                .when()
+                .post(AUTH_LOGIN_API_PATH)
+                .then()
+                .statusCode(200)
+                .extract()
+                .response();
+        adminAccessToken = loginResponse.jsonPath().getString("accessToken");
+
+        // [ARRANGE] Create base test course for reuse in test cases
+        testCourse = new Course();
+        testCourse.setTitle(TEST_COURSE_TITLE);
+        testCourse.setDescription(TEST_COURSE_DESCRIPTION);
+        testCourse.setStartDate(TEST_COURSE_START_DATE);
+        testCourse.setEndDate(TEST_COURSE_END_DATE);
+        testCourse.setTeacherId(testTeacherUser.getUserId());
+        testCourse.setMaxStudents(TEST_MAX_STUDENTS);
+        courseRepository.persist(testCourse);
+
+        // [ARRANGE] Reset mock notification service state before each test
+        org.mockito.Mockito.reset(notificationService);
+
+        LOGGER.info("[TEST_SETUP] [REQ-007][REQ-008][REQ-009] Test context initialized successfully");
     }
-    
+
     /**
-     * [HAPPY-001] Verify successful FCM push notification delivery.
-     * Tests the complete workflow: service receives request -> sends via FCM ->
-     * persists notification record with delivered=true -> returns success response.
-     * 
-     * @verifies [REQ-016] FCM/APNs push notification delivery
-     * @verifies [NFR-006] Audit logging of successful notification
+     * Test retrieving paginated list of all courses with optional centerId filter.
+     * Validates happy path for course list retrieval endpoint.
+     * @verifies [REQ-007]
      */
     @Test
-    void testSendFcmNotification_Success() throws Exception {
-        logger.info("[TEST_START] [REQ-016] Testing successful FCM notification delivery");
-        
-        // [ARRANGE-001] Prepare test payload
-        String testMessage = "Test FCM notification message";
-        String deviceToken = "mock_fcm_device_token_123";
-        
-        // [ARRANGE-002] Mock successful FCM delivery
-        when(fcmNotificationSender.sendPushNotification(eq(deviceToken), anyString()))
-            .thenReturn(true);
-        
-        // [ACT-001] Execute notification sending
-        Notification result = notificationService.sendPushNotification(
-            testUserId, 
-            deviceToken, 
-            testMessage
-        );
-        
-        // [ASSERT-001] Verify notification entity was persisted correctly
-        assertNotNull(result, "Notification entity should not be null after successful send");
-        assertEquals(testUserId, result.getUserId(), "User ID should match request");
-        assertEquals(testMessage, result.getMessage(), "Message should match request");
-        assertTrue(result.getDelivered(), "Notification should be marked as delivered");
-        assertEquals(0, result.getRetryCount(), "Retry count should be 0 for successful send");
-        assertNotNull(result.getSentAt(), "Sent timestamp should be recorded");
-        
-        // [ASSERT-002] Verify database state via repository query
-        List<Notification> dbNotifications = notificationRepository.findByUserId(testUserId);
-        assertFalse(dbNotifications.isEmpty(), "Notification should be persisted in database");
-        assertEquals(1, dbNotifications.size(), "Exactly one notification should exist");
-        
-        // [ASSERT-003] Verify FCM sender was called exactly once
-        verify(fcmNotificationSender, times(1))
-            .sendPushNotification(eq(deviceToken), eq(testMessage));
-        
-        logger.info("[TEST_END] [REQ-016] FCM notification delivery test completed successfully");
-    }
-    
-    /**
-     * [HAPPY-002] Verify successful Zalo group message delivery.
-     * Tests the complete workflow for Zalo group notifications including
-     * group routing and message formatting.
-     * 
-     * @verifies [REQ-016] Zalo group notification delivery
-     * @verifies [ARC-008] Multi-channel notification architecture
-     */
-    @Test
-    void testSendZaloGroupMessage_Success() throws Exception {
-        logger.info("[TEST_START] [REQ-016] Testing successful Zalo group notification delivery");
-        
-        // [ARRANGE-001] Prepare test payload for Zalo group
-        String testMessage = "Test Zalo group notification for center activities";
-        
-        // [ARRANGE-002] Mock successful Zalo API response
-        when(zaloNotificationSender.sendGroupMessage(eq(testGroupZalo), anyString()))
-            .thenReturn(true);
-        
-        // [ACT-001] Execute Zalo group notification
-        Notification result = notificationService.sendZaloGroupNotification(
-            testGroupZalo,
-            testMessage
-        );
-        
-        // [ASSERT-001] Verify notification entity state
-        assertNotNull(result, "Notification entity should not be null");
-        assertEquals(testGroupZalo, result.getGroupZalo(), "Group Zalo ID should match");
-        assertEquals(testMessage, result.getMessage(), "Message content should match");
-        assertTrue(result.getDelivered(), "Notification should be marked as delivered");
-        assertEquals(0, result.getRetryCount(), "Retry count should be 0");
-        assertNull(result.getUserId(), "User ID should be null for group notifications");
-        
-        // [ASSERT-002] Verify database persistence
-        List<Notification> dbNotifications = notificationRepository.findByGroupZalo(testGroupZalo);
-        assertFalse(dbNotifications.isEmpty(), "Group notification should be persisted");
-        assertEquals(1, dbNotifications.size(), "Exactly one group notification should exist");
-        
-        // [ASSERT-003] Verify Zalo sender interaction
-        verify(zaloNotificationSender, times(1))
-            .sendGroupMessage(eq(testGroupZalo), eq(testMessage));
-        
-        logger.info("[TEST_END] [REQ-016] Zalo group notification delivery test completed successfully");
-    }
-    
-    /**
-     * [EDGE-001] Verify retry mechanism when FCM delivery fails temporarily.
-     * Simulates transient network error on first attempt, success on retry.
-     * Validates that retry count increments correctly and notification is eventually delivered.
-     * 
-     * @verifies [EXC-003] Retry mechanism with max 3 retries
-     * @verifies [REQ-016] Resilient notification delivery
-     */
-    @Test
-    void testSendNotification_RetryOnTransientFailure() throws Exception {
-        logger.info("[TEST_START] [EXC-003] Testing retry mechanism for transient FCM failure");
-        
-        // [ARRANGE-001] Mock FCM to fail twice then succeed
-        when(fcmNotificationSender.sendPushNotification(anyString(), anyString()))
-            .thenThrow(new RuntimeException("Network timeout"))
-            .thenThrow(new RuntimeException("Service unavailable"))
-            .thenReturn(true);
-        
-        String deviceToken = "mock_fcm_token_retry_test";
-        String testMessage = "Test retry notification";
-        
-        // [ACT-001] Execute notification with retry logic
-        Notification result = notificationService.sendPushNotificationWithRetry(
-            testUserId,
-            deviceToken,
-            testMessage,
-            MAX_RETRY_COUNT
-        );
-        
-        // [ASSERT-001] Verify eventual success after retries
-        assertNotNull(result, "Notification should succeed after retries");
-        assertTrue(result.getDelivered(), "Notification should be marked as delivered after retry");
-        assertEquals(2, result.getRetryCount(), "Retry count should be 2 (2 failures before success)");
-        
-        // [ASSERT-002] Verify FCM sender called exactly 3 times (2 failures + 1 success)
-        verify(fcmNotificationSender, times(3))
-            .sendPushNotification(eq(deviceToken), eq(testMessage));
-        
-        // [ASSERT-003] Verify database state reflects retry history
-        List<Notification> dbNotifications = notificationRepository.findByUserId(testUserId);
-        assertFalse(dbNotifications.isEmpty(), "Notification should be persisted");
-        Notification persisted = dbNotifications.get(0);
-        assertEquals(2, persisted.getRetryCount(), "Database should reflect actual retry count");
-        assertTrue(persisted.getDelivered(), "Database should show final delivered status");
-        
-        logger.info("[TEST_END] [EXC-003] Retry mechanism test completed - delivered after {} retries", 
-            result.getRetryCount());
-    }
-    
-    /**
-     * [EXCEPTION-001] Verify max retry exceeded scenario for permanent FCM failure.
-     * Tests that after 3 failed attempts, notification is marked as failed,
-     * retry count reaches maximum, and alert is triggered for admin.
-     * 
-     * @verifies [EXC-003] Max retry exceeded handling
-     * @verifies [NFR-006] Audit logging for failed notifications
-     */
-    @Test
-    void testSendNotification_MaxRetryExceeded_FcmFailure() throws Exception {
-        logger.info("[TEST_START] [EXC-003] Testing max retry exceeded scenario for FCM");
-        
-        // [ARRANGE-001] Mock FCM to always fail with permanent error
-        when(fcmNotificationSender.sendPushNotification(anyString(), anyString()))
-            .thenThrow(new RuntimeException("Invalid device token - permanent failure"));
-        
-        String deviceToken = "invalid_fcm_token_123";
-        String testMessage = "Test notification that will fail permanently";
-        
-        // [ACT-001] Execute notification with retry logic
-        Notification result = notificationService.sendPushNotificationWithRetry(
-            testUserId,
-            deviceToken,
-            testMessage,
-            MAX_RETRY_COUNT
-        );
-        
-        // [ASSERT-001] Verify notification marked as failed after max retries
-        assertNotNull(result, "Notification entity should exist even after failure");
-        assertFalse(result.getDelivered(), "Notification should be marked as not delivered");
-        assertEquals(MAX_RETRY_COUNT, result.getRetryCount(), 
-            "Retry count should reach maximum: " + MAX_RETRY_COUNT);
-        
-        // [ASSERT-002] Verify FCM sender called exactly max retry + 1 times (initial + 3 retries)
-        verify(fcmNotificationSender, times(MAX_RETRY_COUNT + 1))
-            .sendPushNotification(eq(deviceToken), eq(testMessage));
-        
-        // [ASSERT-003] Verify database state for failed notification
-        List<Notification> dbNotifications = notificationRepository.findByUserId(testUserId);
-        assertFalse(dbNotifications.isEmpty(), "Failed notification should still be persisted");
-        Notification persisted = dbNotifications.get(0);
-        assertFalse(persisted.getDelivered(), "Database should reflect failed delivery status");
-        assertEquals(MAX_RETRY_COUNT, persisted.getRetryCount(), 
-            "Database should store max retry count");
-        
-        // [ASSERT-004] Verify error logging was triggered (via log capture or audit trail)
-        // In real implementation, this would verify an admin alert was queued
-        assertTrue(result.getRetryCount() >= MAX_RETRY_COUNT, 
-            "System should have attempted maximum allowed retries");
-        
-        logger.info("[TEST_END] [EXC-003] Max retry exceeded test completed - notification marked as failed");
-    }
-    
-    /**
-     * [EXCEPTION-002] Verify max retry exceeded for Zalo API failure.
-     * Tests permanent Zalo API failure scenario with rate limiting.
-     * 
-     * @verifies [EXC-003] Zalo API failure handling and retry exhaustion
-     */
-    @Test
-    void testSendZaloNotification_MaxRetryExceeded() throws Exception {
-        logger.info("[TEST_START] [EXC-003] Testing max retry exceeded for Zalo API failure");
-        
-        // [ARRANGE-001] Mock Zalo API to fail with rate limit error
-        when(zaloNotificationSender.sendGroupMessage(anyString(), anyString()))
-            .thenThrow(new RuntimeException("Zalo API rate limit exceeded - 429"));
-        
-        String testMessage = "Test Zalo notification that will fail";
-        
-        // [ACT-001] Execute Zalo notification with retry
-        Notification result = notificationService.sendZaloGroupNotificationWithRetry(
-            testGroupZalo,
-            testMessage,
-            MAX_RETRY_COUNT
-        );
-        
-        // [ASSERT-001] Verify failure state
-        assertNotNull(result, "Notification entity should exist");
-        assertFalse(result.getDelivered(), "Should be marked as not delivered");
-        assertEquals(MAX_RETRY_COUNT, result.getRetryCount(), 
-            "Should reach max retry count: " + MAX_RETRY_COUNT);
-        assertEquals(testGroupZalo, result.getGroupZalo(), "Group Zalo ID should be preserved");
-        
-        // [ASSERT-002] Verify retry attempts
-        verify(zaloNotificationSender, times(MAX_RETRY_COUNT + 1))
-            .sendGroupMessage(eq(testGroupZalo), eq(testMessage));
-        
-        logger.info("[TEST_END] [EXC-003] Zalo max retry test completed");
-    }
-    
-    /**
-     * [EDGE-002] Verify message length validation against database constraint.
-     * Tests that messages exceeding 2000 characters are rejected or truncated
-     * according to database schema CHECK constraint.
-     * 
-     * @verifies [DAT-008] Message length constraint enforcement
-     * @verifies [REQ-016] Input validation for notification content
-     */
-    @Test
-    void testSendNotification_MessageLengthValidation() throws Exception {
-        logger.info("[TEST_START] [REQ-016] Testing message length validation");
-        
-        // [ARRANGE-001] Create message exceeding maximum length
-        String longMessage = "A".repeat(MAX_MESSAGE_LENGTH + 1);
-        
-        // [ACT-001] Attempt to send notification with oversized message
-        // [ASSERT-001] Expect validation exception or truncation behavior
+    void testGetCourses_ReturnsPaginatedCourseList() {
+        LOGGER.info("[TEST_START] [REQ-007] Testing GET {} endpoint for course list retrieval", COURSE_API_PATH);
+
         try {
-            notificationService.sendPushNotification(testUserId, "token", longMessage);
-            fail("Should throw validation exception for message exceeding max length");
-        } catch (IllegalArgumentException e) {
-            // [ASSERT-002] Verify proper error message
-            assertTrue(e.getMessage().contains("length") || e.getMessage().contains("2000"),
-                "Error message should mention length constraint");
-            logger.info("[TEST_VALIDATION] [REQ-016] Correctly rejected oversized message");
+            // [ACT] Call GET /api/v1/courses without filter
+            Response unfilteredResponse = RestAssured.given()
+                    .header("Authorization", "Bearer " + adminAccessToken)
+                    .when()
+                    .get(COURSE_API_PATH)
+                    .then()
+                    .extract()
+                    .response();
+
+            // [ASSERT] Verify unfiltered response status and content
+            assertEquals(200, unfilteredResponse.getStatus(), "Expected HTTP 200 OK for unfiltered request");
+            List<Course> unfilteredCourses = unfilteredResponse.readEntity(new GenericType<List<Course>>() {});
+            assertNotNull(unfilteredCourses, "Expected non-null course list");
+            assertTrue(unfilteredCourses.size() >= 1, "Expected at least 1 course in list");
+            assertTrue(unfilteredCourses.stream().anyMatch(c -> c.getTitle().equals(TEST_COURSE_TITLE)),
+                    "Expected test course to be present in unfiltered list");
+
+            // [ACT] Call GET with centerId filter
+            Response filteredResponse = RestAssured.given()
+                    .header("Authorization", "Bearer " + adminAccessToken)
+                    .queryParam("centerId", testCenter.getCenterId())
+                    .when()
+                    .get(COURSE_API_PATH)
+                    .then()
+                    .extract()
+                    .response();
+
+            // [ASSERT] Verify filtered response returns only courses for specified center
+            assertEquals(200, filteredResponse.getStatus(), "Expected HTTP 200 OK for filtered request");
+            List<Course> filteredCourses = filteredResponse.readEntity(new GenericType<List<Course>>() {});
+            assertEquals(1, filteredCourses.size(), "Expected 1 course for test center, got " + filteredCourses.size());
+            assertEquals(TEST_COURSE_TITLE, filteredCourses.get(0).getTitle(),
+                    "Expected test course to be present in filtered list");
+
+            LOGGER.info("[TEST_END] [REQ-007] GET courses list test passed successfully");
+        } catch (Exception e) {
+            LOGGER.error("[TEST_FAILED] [REQ-007] Get courses list test failed. Raw error: {}", e.getMessage());
+            throw e;
         }
-        
-        // [ARRANGE-002] Test boundary condition: exactly max length
-        String exactLengthMessage = "B".repeat(MAX_MESSAGE_LENGTH);
-        
-        // [ACT-002] Send notification with exact max length message
-        when(fcmNotificationSender.sendPushNotification(anyString(), anyString()))
-            .thenReturn(true);
-        
-        Notification result = notificationService.sendPushNotification(
-            testUserId, 
-            "token", 
-            exactLengthMessage
-        );
-        
-        // [ASSERT-003] Verify exact length message is accepted
-        assertNotNull(result, "Exact length message should be accepted");
-        assertEquals(MAX_MESSAGE_LENGTH, result.getMessage().length(), 
-            "Message length should be exactly at maximum");
-        
-        logger.info("[TEST_END] [REQ-016] Message length validation test completed");
     }
-    
+
     /**
-     * [EDGE-003] Verify concurrent notification requests handling.
-     * Tests thread-safety and database constraint handling under concurrent load.
-     * 
-     * @verifies [REQ-016] Concurrent notification processing
-     * @verifies [DAT-008] Database constraint enforcement under concurrency
+     * Test creating a new course with valid input.
+     * Validates happy path for course creation endpoint.
+     * @verifies [REQ-008]
      */
     @Test
-    void testSendNotification_ConcurrentRequests() throws Exception {
-        logger.info("[TEST_START] [REQ-016] Testing concurrent notification requests");
-        
-        int concurrentRequests = 10;
-        String deviceToken = "concurrent_test_token";
-        String testMessage = "Concurrent test notification";
-        
-        // [ARRANGE-001] Mock FCM to always succeed
-        when(fcmNotificationSender.sendPushNotification(anyString(), anyString()))
-            .thenReturn(true);
-        
-        // [ACT-001] Send multiple notifications concurrently
-        // [ASSERT-001] Verify all requests are processed without data corruption
-        for (int i = 0; i < concurrentRequests; i++) {
-            Notification result = notificationService.sendPushNotification(
-                testUserId,
-                deviceToken,
-                testMessage + "_" + i
-            );
-            assertNotNull(result, "Concurrent request " + i + " should succeed");
-            assertTrue(result.getDelivered(), "Notification " + i + " should be delivered");
-        }
-        
-        // [ASSERT-002] Verify all notifications persisted in database
-        List<Notification> dbNotifications = notificationRepository.findByUserId(testUserId);
-        assertEquals(concurrentRequests, dbNotifications.size(), 
-            "All concurrent notifications should be persisted");
-        
-        // [ASSERT-003] Verify FCM sender called correct number of times
-        verify(fcmNotificationSender, times(concurrentRequests))
-            .sendPushNotification(eq(deviceToken), anyString());
-        
-        logger.info("[TEST_END] [REQ-016] Concurrent notification test completed - {} requests processed", 
-            concurrentRequests);
-    }
-    
-    /**
-     * [EDGE-004] Verify notification with null/empty user ID (group notification only).
-     * Tests that group notifications can be sent without user association.
-     * 
-     * @verifies [REQ-016] Group notification without user context
-     * @verifies [DAT-008] Nullable user_id constraint handling
-     */
-    @Test
-    void testSendGroupNotification_NullUserId() throws Exception {
-        logger.info("[TEST_START] [REQ-016] Testing group notification with null user ID");
-        
-        // [ARRANGE-001] Mock Zalo success
-        when(zaloNotificationSender.sendGroupMessage(anyString(), anyString()))
-            .thenReturn(true);
-        
-        // [ACT-001] Send group notification without user ID
-        Notification result = notificationService.sendZaloGroupNotification(
-            testGroupZalo,
-            "Group notification without user context"
-        );
-        
-        // [ASSERT-001] Verify notification created with null user ID
-        assertNotNull(result, "Group notification should be created");
-        assertNull(result.getUserId(), "User ID should be null for group notifications");
-        assertNotNull(result.getGroupZalo(), "Group Zalo ID should be set");
-        assertTrue(result.getDelivered(), "Group notification should be marked as delivered");
-        
-        logger.info("[TEST_END] [REQ-016] Group notification with null user ID test completed");
-    }
-    
-    /**
-     * [EXCEPTION-003] Verify database constraint violation handling.
-     * Tests that duplicate notification attempts are handled gracefully
-     * and database unique constraints are not violated.
-     * 
-     * @verifies [DAT-008] Database unique constraint enforcement
-     * @verifies [REQ-016] Idempotent notification handling
-     */
-    @Test
-    void testSendNotification_DatabaseConstraintViolation() throws Exception {
-        logger.info("[TEST_START] [EXC-003] Testing database constraint violation handling");
-        
-        // [ARRANGE-001] Mock successful FCM delivery
-        when(fcmNotificationSender.sendPushNotification(anyString(), anyString()))
-            .thenReturn(true);
-        
-        String testMessage = "Test constraint violation notification";
-        
-        // [ACT-001] Send first notification
-        Notification first = notificationService.sendPushNotification(
-            testUserId,
-            "token_1",
-            testMessage
-        );
-        
-        // [ASSERT-001] Verify first notification persisted
-        assertNotNull(first, "First notification should be created");
-        assertTrue(first.getDelivered(), "First notification should be delivered");
-        
-        // [ACT-002] Attempt to send duplicate notification (same user + same content within short time)
-        // This should either be deduplicated or create a new record depending on business logic
-        Notification second = notificationService.sendPushNotification(
-            testUserId,
-            "token_2",
-            testMessage
-        );
-        
-        // [ASSERT-002] Verify second notification handling
-        assertNotNull(second, "Second notification should be processed");
-        // Depending on business rules, this could be a new record or idempotent response
-        
-        // [ASSERT-003] Verify database state
-        List<Notification> dbNotifications = notificationRepository.findByUserId(testUserId);
-        assertFalse(dbNotifications.isEmpty(), "Notifications should be persisted");
-        
-        logger.info("[TEST_END] [EXC-003] Database constraint violation test completed");
-    }
-    
-    /**
-     * [EXCEPTION-004] Verify notification sending with null message payload.
-     * Tests proper validation and error handling for invalid input.
-     * 
-     * @verifies [REQ-016] Input validation for notification payload
-     * @verifies [EXC-003] Invalid input error handling
-     */
-    @Test
-    void testSendNotification_NullMessagePayload() throws Exception {
-        logger.info("[TEST_START] [EXC-003] Testing null message payload handling");
-        
-        // [ACT-001] Attempt to send notification with null message
+    void testCreateCourse_ReturnsCreatedCourse_WhenInputIsValid() {
+        LOGGER.info("[TEST_START] [REQ-008] Testing POST {} endpoint for valid course creation", COURSE_API_PATH);
+
         try {
-            notificationService.sendPushNotification(testUserId, "token", null);
-            fail("Should throw IllegalArgumentException for null message");
-        } catch (IllegalArgumentException e) {
-            // [ASSERT-001] Verify proper validation error
-            assertNotNull(e.getMessage(), "Error message should not be null");
-            logger.info("[TEST_VALIDATION] [EXC-003] Correctly rejected null message: {}", 
-                e.getMessage());
+            // [ARRANGE] Prepare valid course request payload
+            String requestBody = String.format("""
+                    {
+                        "title": "New Test Course",
+                        "description": "New course description for testing",
+                        "startDate": "%s",
+                        "endDate": "%s",
+                        "teacherId": "%s",
+                        "maxStudents": 20
+                    }
+                    """, TEST_COURSE_START_DATE.plusDays(15), TEST_COURSE_END_DATE.plusDays(15), testTeacherUser.getUserId());
+
+            // [ACT] Call POST /api/v1/courses
+            Response createResponse = RestAssured.given()
+                    .header("Authorization", "Bearer " + adminAccessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(requestBody)
+                    .when()
+                    .post(COURSE_API_PATH)
+                    .then()
+                    .extract()
+                    .response();
+
+            // [ASSERT] Verify response status and payload
+            assertEquals(201, createResponse.getStatus(), "Expected HTTP 201 Created for valid request");
+            Course createdCourse = createResponse.readEntity(Course.class);
+            assertNotNull(createdCourse, "Expected non-null created course response");
+            assertNotNull(createdCourse.getCourseId(), "Expected generated course ID in response");
+            assertEquals("New Test Course", createdCourse.getTitle(), "Expected course title to match request");
+            assertEquals(testTeacherUser.getUserId(), createdCourse.getTeacherId(), "Expected teacher ID to match request");
+
+            // [ASSERT] Verify course is persisted in database
+            Course persistedCourse = courseRepository.findById(createdCourse.getCourseId());
+            assertNotNull(persistedCourse, "Expected course to be persisted in database");
+            assertEquals("New Test Course", persistedCourse.getTitle(), "Expected persisted course title to match");
+
+            LOGGER.info("[TEST_END] [REQ-008] Valid course creation test passed successfully");
+        } catch (Exception e) {
+            LOGGER.error("[TEST_FAILED] [REQ-008] Valid course creation test failed. Raw error: {}", e.getMessage());
+            throw e;
         }
-        
-        // [ACT-002] Attempt to send notification with empty message
+    }
+
+    /**
+     * Test creating a course returns conflict when teacher has overlapping schedule.
+     * Validates schedule conflict business rule enforcement.
+     * @verifies [REQ-008]
+     */
+    @Test
+    void testCreateCourse_ReturnsConflict_WhenTeacherHasScheduleOverlap() {
+        LOGGER.info("[TEST_START] [REQ-008] Testing schedule conflict validation for course creation");
+
         try {
-            notificationService.sendPushNotification(testUserId, "token", "");
-            fail("Should throw IllegalArgumentException for empty message");
-        } catch (IllegalArgumentException e) {
-            // [ASSERT-002] Verify empty message rejection
-            assertNotNull(e.getMessage(), "Error message should not be null");
-            logger.info("[TEST_VALIDATION] [EXC-003] Correctly rejected empty message");
+            // [ARRANGE] Prepare course request with overlapping dates for existing teacher schedule
+            String requestBody = String.format("""
+                    {
+                        "title": "Conflicting Course",
+                        "description": "Course with overlapping teacher schedule",
+                        "startDate": "%s",
+                        "endDate": "%s",
+                        "teacherId": "%s",
+                        "maxStudents": 20
+                    }
+                    """, TEST_COURSE_START_DATE.plusDays(5), TEST_COURSE_END_DATE.minusDays(5), testTeacherUser.getUserId());
+
+            // [ACT] Call POST /api/v1/courses
+            Response conflictResponse = RestAssured.given()
+                    .header("Authorization", "Bearer " + adminAccessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(requestBody)
+                    .when()
+                    .post(COURSE_API_PATH)
+                    .then()
+                    .extract()
+                    .response();
+
+            // [ASSERT] Verify conflict response
+            assertEquals(409, conflictResponse.getStatus(), "Expected HTTP 409 Conflict for overlapping schedule");
+            String responseBody = conflictResponse.readEntity(String.class);
+            assertTrue(responseBody.contains("CONFLICT"), "Expected CONFLICT error code in response");
+            assertTrue(responseBody.contains("schedule") || responseBody.contains("trùng lịch"),
+                    "Expected schedule conflict error message in response");
+
+            // [ASSERT] Verify no new course was persisted
+            List<Course> allCourses = courseRepository.listAll();
+            assertEquals(1, allCourses.size(), "Expected no new course to be created on conflict");
+
+            LOGGER.info("[TEST_END] [REQ-008] Schedule conflict validation test passed successfully");
+        } catch (Exception e) {
+            LOGGER.error("[TEST_FAILED] [REQ-008] Schedule conflict test failed. Raw error: {}", e.getMessage());
+            throw e;
         }
-        
-        logger.info("[TEST_END] [EXC-003] Null/empty message payload test completed");
     }
-    
+
     /**
-     * [EXCEPTION-005] Verify notification service behavior when external API is unavailable.
-     * Tests circuit breaker pattern and graceful degradation.
-     * 
-     * @verifies [EXC-003] External API unavailability handling
-     * @verifies [NFR-002] System resilience and fault tolerance
+     * Test creating a course returns validation error when end date is before start date.
+     * Validates date range business rule enforcement.
+     * @verifies [REQ-008]
      */
     @Test
-    void testSendNotification_ExternalApiUnavailable() throws Exception {
-        logger.info("[TEST_START] [EXC-003] Testing external API unavailability handling");
-        
-        // [ARRANGE-001] Mock FCM to throw connection exception
-        when(fcmNotificationSender.sendPushNotification(anyString(), anyString()))
-            .thenThrow(new java.net.ConnectException("Connection refused: FCM API unavailable"));
-        
-        String deviceToken = "test_token_api_unavailable";
-        String testMessage = "Test notification during API outage";
-        
-        // [ACT-001] Execute notification with retry during API outage
-        Notification result = notificationService.sendPushNotificationWithRetry(
-            testUserId,
-            deviceToken,
-            testMessage,
-            MAX_RETRY_COUNT
-        );
-        
-        // [ASSERT-001] Verify failure after max retries
-        assertNotNull(result, "Notification entity should exist");
-        assertFalse(result.getDelivered(), "Should be marked as not delivered");
-        assertEquals(MAX_RETRY_COUNT, result.getRetryCount(), 
-            "Should reach max retry count due to API unavailability");
-        
-        // [ASSERT-002] Verify all retry attempts were made
-        verify(fcmNotificationSender, times(MAX_RETRY_COUNT + 1))
-            .sendPushNotification(eq(deviceToken), eq(testMessage));
-        
-        logger.info("[TEST_END] [EXC-003] External API unavailability test completed");
+    void testCreateCourse_ReturnsBadRequest_WhenEndDateBeforeStartDate() {
+        LOGGER.info("[TEST_START] [REQ-008] Testing date range validation for course creation");
+
+        try {
+            // [ARRANGE] Prepare invalid course request (end date before start date)
+            String requestBody = String.format("""
+                    {
+                        "title": "Invalid Date Course",
+                        "description": "Course with invalid date range",
+                        "startDate": "%s",
+                        "endDate": "%s",
+                        "teacherId": "%s",
+                        "maxStudents": 20
+                    }
+                    """, TEST_COURSE_END_DATE, TEST_COURSE_START_DATE, testTeacherUser.getUserId());
+
+            // [ACT] Call POST /api/v1/courses
+            Response validationResponse = RestAssured.given()
+                    .header("Authorization", "Bearer " + adminAccessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(requestBody)
+                    .when()
+                    .post(COURSE_API_PATH)
+                    .then()
+                    .extract()
+                    .response();
+
+            // [ASSERT] Verify validation error response
+            assertEquals(400, validationResponse.getStatus(), "Expected HTTP 400 Bad Request for invalid dates");
+            String responseBody = validationResponse.readEntity(String.class);
+            assertTrue(responseBody.contains("VALIDATION_FAILED"), "Expected VALIDATION_FAILED error code in response");
+
+            LOGGER.info("[TEST_END] [REQ-008] Date range validation test passed successfully");
+        } catch (Exception e) {
+            LOGGER.error("[TEST_FAILED] [REQ-008] Date range validation test failed. Raw error: {}", e.getMessage());
+            throw e;
+        }
     }
-    
+
     /**
-     * [AUDIT-001] Verify audit logging for all notification actions.
-     * Ensures that all notification attempts (success/failure) are properly logged
-     * with required context keys for compliance.
-     * 
-     * @verifies [NFR-006] Comprehensive audit logging
-     * @verifies [REQ-016] Notification action traceability
+     * Test updating an existing course with valid input.
+     * Validates happy path for course update endpoint.
+     * @verifies [REQ-008]
      */
     @Test
-    void testNotificationAuditLogging() throws Exception {
-        logger.info("[TEST_START] [NFR-006] Testing audit logging for notification actions");
-        
-        // [ARRANGE-001] Mock successful delivery
-        when(fcmNotificationSender.sendPushNotification(anyString(), anyString()))
-            .thenReturn(true);
-        
-        String testMessage = "Audit test notification";
-        
-        // [ACT-001] Send notification and verify logging occurs
-        Notification result = notificationService.sendPushNotification(
-            testUserId,
-            "audit_test_token",
-            testMessage
-        );
-        
-        // [ASSERT-001] Verify notification was created and logged
-        assertNotNull(result, "Notification should be created");
-        assertTrue(result.getDelivered(), "Notification should be delivered");
-        
-        // [ASSERT-002] Verify database record contains audit fields
-        List<Notification> dbNotifications = notificationRepository.findByUserId(testUserId);
-        assertFalse(dbNotifications.isEmpty(), "Notification should be persisted for audit");
-        Notification persisted = dbNotifications.get(0);
-        assertNotNull(persisted.getSentAt(), "Sent timestamp should be recorded for audit");
-        assertEquals(0, persisted.getRetryCount(), "Retry count should be recorded");
-        
-        // Note: In a full integration test with log capture, we would verify:
-        // 1. Log entry contains module name: "NotificationService"
-        // 2. Log entry contains raw error message (if any)
-        // 3. Log entry contains tracking Tag ID: [REQ-016] or [EXC-003]
-        // 4. Sensitive data (device tokens) are masked in logs
-        
-        logger.info("[TEST_END] [NFR-006] Audit logging verification completed");
-    }
-    
-    /**
-     * Quarkus test profile for integration testing.
-     * Configures application properties for test environment.
-     */
-    public static class NotificationTestProfile implements io.quarkus.test.junit.QuarkusTestProfile {
-        @Override
-        public String getConfigProfile() {
-            return "test";
+    void testUpdateCourse_ReturnsUpdatedCourse_WhenInputIsValid() {
+        LOGGER.info("[TEST_START] [REQ-008] Testing PUT {} endpoint for course update", COURSE_BY_ID_API_PATH);
+
+        try {
+            // [ARRANGE] Prepare update request payload
+            String updatedTitle = "Updated Advanced Java Programming";
+            String requestBody = String.format("""
+                    {
+                        "title": "%s",
+                        "description": "Updated course description",
+                        "startDate": "%s",
+                        "endDate": "%s",
+                        "teacherId": "%s",
+                        "maxStudents": 30
+                    }
+                    """, updatedTitle, TEST_COURSE_START_DATE, TEST_COURSE_END_DATE, testTeacherUser.getUserId());
+
+            // [ACT] Call PUT /api/v1/courses/{courseId}
+            Response updateResponse = RestAssured.given()
+                    .header("Authorization", "Bearer " + adminAccessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(requestBody)
+                    .when()
+                    .put(COURSE_BY_ID_API_PATH, testCourse.getCourseId())
+                    .then()
+                    .extract()
+                    .response();
+
+            // [ASSERT] Verify response status and payload
+            assertEquals(200, updateResponse.getStatus(), "Expected HTTP 200 OK for valid update");
+            Course updatedCourse = updateResponse.readEntity(Course.class);
+            assertEquals(updatedTitle, updatedCourse.getTitle(), "Expected updated course title to match request");
+
+            // [ASSERT] Verify update is persisted in database
+            Course persistedCourse = courseRepository.findById(testCourse.getCourseId());
+            assertEquals(updatedTitle, persistedCourse.getTitle(), "Expected persisted course title to be updated");
+
+            LOGGER.info("[TEST_END] [REQ-008] Course update test passed successfully");
+        } catch (Exception e) {
+            LOGGER.error("[TEST_FAILED] [REQ-008] Course update test failed. Raw error: {}", e.getMessage());
+            throw e;
         }
-        
-        @Override
-        public java.util.Map<String, String> getConfigOverrides() {
-            return java.util.Map.of(
-                "quarkus.datasource.jdbc.url", postgres.getJdbcUrl(),
-                "quarkus.datasource.username", postgres.getUsername(),
-                "quarkus.datasource.password", postgres.getPassword(),
-                "quarkus.hibernate-orm.database.generation", "drop-and-create",
-                "notification.max-retry-count", String.valueOf(MAX_RETRY_COUNT),
-                "notification.retry-interval-ms", String.valueOf(RETRY_INTERVAL_MS),
-                "mp.messaging.outgoing.notification-send.connector", "smallrye-kafka",
-                "kafka.bootstrap.servers", "localhost:9092"
-            );
+    }
+
+    /**
+     * Test deleting an existing course.
+     * Validates happy path for course deletion endpoint.
+     * @verifies [REQ-008]
+     */
+    @Test
+    void testDeleteCourse_ReturnsNoContent_WhenCourseExists() {
+        LOGGER.info("[TEST_START] [REQ-008] Testing DELETE {} endpoint for course deletion", COURSE_BY_ID_API_PATH);
+
+        try {
+            // [ACT] Call DELETE /api/v1/courses/{courseId}
+            Response deleteResponse = RestAssured.given()
+                    .header("Authorization", "Bearer " + adminAccessToken)
+                    .when()
+                    .delete(COURSE_BY_ID_API_PATH, testCourse.getCourseId())
+                    .then()
+                    .extract()
+                    .response();
+
+            // [ASSERT] Verify response status
+            assertEquals(204, deleteResponse.getStatus(), "Expected HTTP 204 No Content for successful deletion");
+
+            // [ASSERT] Verify course is removed from database
+            Course deletedCourse = courseRepository.findById(testCourse.getCourseId());
+            assertTrue(deletedCourse == null, "Expected course to be deleted from database");
+
+            LOGGER.info("[TEST_END] [REQ-008] Course deletion test passed successfully");
+        } catch (Exception e) {
+            LOGGER.error("[TEST_FAILED] [REQ-008] Course deletion test failed. Raw error: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Test assigning a teacher to a course successfully triggers notification.
+     * Validates happy path for teacher assignment endpoint and side effect notification.
+     * @verifies [REQ-009]
+     */
+    @Test
+    void testAssignTeacherToCourse_ReturnsSuccess_AndTriggersNotification() {
+        LOGGER.info("[TEST_START] [REQ-009] Testing POST {} endpoint for teacher assignment", ASSIGN_TEACHER_API_PATH);
+
+        try {
+            // [ARRANGE] Create a course without assigned teacher
+            Course courseWithoutTeacher = new Course();
+            courseWithoutTeacher.setTitle("Course Without Teacher");
+            courseWithoutTeacher.setDescription("Test course for teacher assignment flow");
+            courseWithoutTeacher.setStartDate(TEST_COURSE_START_DATE.plusDays(20));
+            courseWithoutTeacher.setEndDate(TEST_COURSE_END_DATE.plusDays(20));
+            courseWithoutTeacher.setMaxStudents(TEST_MAX_STUDENTS);
+            courseRepository.persist(courseWithoutTeacher);
+
+            // [ARRANGE] Prepare assign teacher request payload
+            String requestBody = String.format("{\"teacherId\":\"%s\"}", testTeacherUser.getUserId());
+
+            // [ACT] Call POST /api/v1/courses/{courseId}/assign-teacher
+            Response assignResponse = RestAssured.given()
+                    .header("Authorization", "Bearer " + adminAccessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(requestBody)
+                    .when()
+                    .post(ASSIGN_TEACHER_API_PATH, courseWithoutTeacher.getCourseId())
+                    .then()
+                    .extract()
+                    .response();
+
+            // [ASSERT] Verify response status and message
+            assertEquals(200, assignResponse.getStatus(), "Expected HTTP 200 OK for successful teacher assignment");
+            String responseBody = assignResponse.readEntity(String.class);
+            assertTrue(responseBody.contains("Phân công giáo viên thành công"),
+                    "Expected success message in response");
+
+            // [ASSERT] Verify teacher is assigned in database
+            Course updatedCourse = courseRepository.findById(courseWithoutTeacher.getCourseId());
+            assertEquals(testTeacherUser.getUserId(), updatedCourse.getTeacherId(),
+                    "Expected teacher to be assigned to course");
+
+            // [ASSERT] Verify notification service is triggered exactly once
+            verify(notificationService, org.mockito.Mockito.times(1))
+                    .sendCourseAssignmentNotification(testTeacherUser.getUserId(), courseWithoutTeacher.getCourseId());
+
+            LOGGER.info("[TEST_END] [REQ-009] Teacher assignment test passed successfully");
+        } catch (Exception e) {
+            LOGGER.error("[TEST_FAILED] [REQ-009] Teacher assignment test failed. Raw error: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Test assigning a teacher to a course returns conflict when teacher has schedule overlap.
+     * Validates schedule conflict rule for teacher assignment flow.
+     * @verifies [REQ-009]
+     */
+    @Test
+    void testAssignTeacherToCourse_ReturnsConflict_WhenTeacherHasScheduleOverlap() {
+        LOGGER.info("[TEST_START] [REQ-009] Testing schedule conflict validation for teacher assignment");
+
+        try {
+            // [ARRANGE] Create a course with dates overlapping existing teacher course
+            Course conflictingCourse = new Course();
+            conflictingCourse.setTitle("Conflicting Course For Teacher");
+            conflictingCourse.setDescription("Course with overlapping dates for teacher");
+            conflictingCourse.setStartDate(TEST_COURSE_START_DATE.plusDays(5));
+            conflictingCourse.setEndDate(TEST_COURSE_END_DATE.minusDays(5));
+            conflictingCourse.setMaxStudents(TEST_MAX_STUDENTS);
+            courseRepository.persist(conflictingCourse);
+
+            // [ARRANGE] Prepare assign teacher request
+            String requestBody = String.format("{\"teacherId\":\"%s\"}", testTeacherUser.getUserId());
+
+            // [ACT] Call assign teacher endpoint
+            Response assignResponse = RestAssured.given()
+                    .header("Authorization", "Bearer " + adminAccessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(requestBody)
+                    .when()
+                    .post(ASSIGN_TEACHER_API_PATH, conflictingCourse.getCourseId())
+                    .then()
+                    .extract()
+                    .response();
+
+            // [ASSERT] Verify conflict response
+            assertEquals(409, assignResponse.getStatus(), "Expected HTTP 409 Conflict for overlapping schedule");
+            String responseBody = assignResponse.readEntity(String.class);
+            assertTrue(responseBody.contains("CONFLICT"), "Expected CONFLICT error code in response");
+            assertTrue(responseBody.contains("schedule") || responseBody.contains("trùng lịch"),
+                    "Expected schedule conflict error message in response");
+
+            // [ASSERT] Verify teacher was not assigned
+            Course unassignedCourse = courseRepository.findById(conflictingCourse.getCourseId());
+            assertTrue(unassignedCourse.getTeacherId() == null, "Expected teacher to not be assigned on conflict");
+
+            LOGGER.info("[TEST_END] [REQ-009] Teacher assignment conflict test passed successfully");
+        } catch (Exception e) {
+            LOGGER.error("[TEST_FAILED] [REQ-009] Teacher assignment conflict test failed. Raw error: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Test retrieving a course by valid ID.
+     * Validates happy path for single course retrieval endpoint.
+     * @verifies [REQ-007]
+     */
+    @Test
+    void testGetCourseById_ReturnsCourse_WhenCourseExists() {
+        LOGGER.info("[TEST_START] [REQ-007] Testing GET {} endpoint for single course retrieval", COURSE_BY_ID_API_PATH);
+
+        try {
+            // [ACT] Call GET /api/v1/courses/{courseId}
+            Response response = RestAssured.given()
+                    .header("Authorization", "Bearer " + adminAccessToken)
+                    .when()
+                    .get(COURSE_BY_ID_API_PATH, testCourse.getCourseId())
+                    .then()
+                    .extract()
+                    .response();
+
+            // [ASSERT] Verify response status and content
+            assertEquals(200, response.getStatus(), "Expected HTTP 200 OK for existing course");
+            Course retrievedCourse = response.readEntity(Course.class);
+            assertNotNull(retrievedCourse, "Expected non-null course response");
+            assertEquals(testCourse.getCourseId(), retrievedCourse.getCourseId(), "Expected course ID to match");
+            assertEquals(TEST_COURSE_TITLE, retrievedCourse.getTitle(), "Expected course title to match");
+
+            LOGGER.info("[TEST_END] [REQ-007] Get course by ID test passed successfully");
+        } catch (Exception e) {
+            LOGGER.error("[TEST_FAILED] [REQ-007] Get course by ID test failed. Raw error: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Test retrieving a course by invalid ID returns 404 Not Found.
+     * Validates error handling for non-existent resource.
+     * @verifies [REQ-007]
+     */
+    @Test
+    void testGetCourseById_ReturnsNotFound_WhenCourseDoesNotExist() {
+        LOGGER.info("[TEST_START] [REQ-007] Testing GET {} endpoint for non-existent course", COURSE_BY_ID_API_PATH);
+
+        try {
+            // [ACT] Call GET with non-existent UUID
+            UUID nonExistentId = UUID.randomUUID();
+            Response response = RestAssured.given()
+                    .header("Authorization", "Bearer " + adminAccessToken)
+                    .when()
+                    .get(COURSE_BY_ID_API_PATH, nonExistentId)
+                    .then()
+                    .extract()
+                    .response();
+
+            // [ASSERT] Verify 404 response
+            assertEquals(404, response.getStatus(), "Expected HTTP 404 Not Found for non-existent course");
+
+            LOGGER.info("[TEST_END] [REQ-007] Get non-existent course test passed successfully");
+        } catch (Exception e) {
+            LOGGER.error("[TEST_FAILED] [REQ-007] Get non-existent course test failed. Raw error: {}", e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Test creating a course returns 403 Forbidden when user has Student role.
+     * Validates RBAC enforcement for course creation endpoint.
+     * @verifies [REQ-008]
+     */
+    @Test
+    void testCreateCourse_ReturnsForbidden_WhenUserIsStudent() {
+        LOGGER.info("[TEST_START] [REQ-008] Testing RBAC enforcement for course creation endpoint");
+
+        try {
+            // [ARRANGE] Create test student user and obtain access token
+            User studentUser = new User();
+            studentUser.setEmail("student.course.rbac@membershiphub.com");
+            studentUser.setPasswordHash(BCrypt.hashpw("StudentTestPass123!", BCrypt.gensalt()));
+            studentUser.setFullName("Test RBAC Student");
+            studentUser.setRoleId(ROLE_STUDENT_ID);
+            studentUser.setProvider("local");
+            userRepository.persist(studentUser);
+
+            Response studentLoginResponse = RestAssured.given()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(String.format("{\"email\":\"%s\",\"password\":\"%s\"}", studentUser.getEmail(), "StudentTestPass123!"))
+                    .when()
+                    .post(AUTH_LOGIN_API_PATH)
+                    .then()
+                    .statusCode(200)
+                    .extract()
+                    .response();
+            String studentAccessToken = studentLoginResponse.jsonPath().getString("accessToken");
+
+            // [ARRANGE] Prepare valid course request
+            String requestBody = String.format("""
+                    {
+                        "title": "Student Unauthorized Course",
+                        "description": "This should be rejected",
+                        "startDate": "%s",
+                        "endDate": "%s",
+                        "teacherId": "%s",
+                        "maxStudents": 20
+                    }
+                    """, TEST_COURSE_START_DATE.plusDays(15), TEST_COURSE_END_DATE.plusDays(15), testTeacherUser.getUserId());
+
+            // [ACT] Call POST /api/v1/courses as student user
+            Response response = RestAssured.given()
+                    .header("Authorization", "Bearer " + studentAccessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(requestBody)
+                    .when()
+                    .post(COURSE_API_PATH)
+                    .then()
+                    .extract()
+                    .response();
+
+            // [ASSERT] Verify 403 Forbidden response
+            assertEquals(403, response.getStatus(), "Expected HTTP 403 Forbidden for student user");
+            String responseBody = response.readEntity(String.class);
+            assertTrue(responseBody.contains("FORBIDDEN") || responseBody.contains("không có quyền"),
+                    "Expected permission denied error message in response");
+
+            LOGGER.info("[TEST_END] [REQ-008] RBAC enforcement test passed successfully");
+        } catch (Exception e) {
+            LOGGER.error("[TEST_FAILED] [REQ-008] RBAC enforcement test failed. Raw error: {}", e.getMessage());
+            throw e;
         }
     }
 }
