@@ -37,7 +37,7 @@ class CoderAgent(AbstractSubAgent):
 
     # @override
     def agent_log_file(self) -> str:
-        return resolve_absolute_path(f".ai/.history/agent-coder-day-{self.day_num}.md")
+        return resolve_absolute_path(f".ai/.history/agent-coder-phase-{self.phase_str}-day-{self.day_num}.md")
     
     # @override
     def system_prompt_template(self) -> str:
