@@ -1,27 +1,4 @@
-# Day 1: model kilo-auto/free - API Endpoint https://api.kilo.ai/api/gateway
-* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
-* **Production source codebase generated at TARGET destination**: ./sources/docs/data-dictionary/promotions-announcements.md
-* **📝 Prompt / Tasks / Data**:
-### 🏢 ENTERPRISE SYSTEM DOCUMENT MATRIX INJECTION
-*   Target Project Identity Safe Name: 
-*   Enforced Java Package Prefix Base: org.nlh4j.saas.
-*   Target Documentation Destination Path: `./sources/docs/data-dictionary/promotions-announcements.md`
-
-
-*   Documentation Context: Conceptual Init (Synthesize the architecture, guidelines, or specs based purely on the execution sub-tasks blueprint.)
-
-
-### 📋 EXECUTION SUB-TASKS & DOCUMENT CONTENT TO WRITE
-['Biên soạn tài liệu từ điển dữ liệu chuẩn doanh nghiệp cho hai bảng promotions và announcements. Tài liệu phải bao gồm: (1) Mô tả chi tiết từng trường dữ liệu bao gồm tên trường, kiểu dữ liệu, ràng buộc NOT NULL/UNIQUE/CHECK, mô tả nghiệp vụ; (2) Sơ đồ ERD mô tả cấu trúc bảng và mối quan hệ (nếu có); (3) Danh sách chỉ mục (index) được tạo trên từng bảng cùng mục đích tối ưu truy vấn; (4) Các ràng buộc toàn vẹn dữ liệu và cách xử lý vi phạm. Định dạng tài liệu theo chuẩn Markdown với cấu trúc rõ ràng, dễ đọc và dễ bảo trì cho cả đội phát triển và quản trị cơ sở dữ liệu.']
-
----
-
-### ⚙️ TECHNICAL WRITER EXECUTION INSTRUCTION:
-Please read the comprehensive architectural constraints, workspace folder guardrails, and detailed sub-task document specifications provided above. 
-
-Ensure that you read the exact Tag IDs from the `['[DAT-009]']` variable, and permanently burn those codes into the generated documentation layout (inside the table columns or the dedicated Traceability Matrix Reference section). Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.
-* **📝 Response**:
-```markdown
+markdown
 # Từ điển dữ liệu: Bảng Khuyến mãi & Thông báo hệ thống
 ## 📋 Thông tin kiểm soát tài liệu
 | Mục | Chi tiết |
@@ -71,7 +48,7 @@ Lưu trữ thông tin các thông báo hệ thống, hiển thị cho người d
 
 ## 3. Sơ đồ thực thể - liên kết (ERD)
 Hai bảng `promotions` và `announcements` độc lập với nhau, không có ràng buộc khóa ngoại, được quản lý bởi các quản trị viên trung tâm hoặc hệ thống.
-```mermaid
+mermaid
 erDiagram
     promotions {
         UUID promo_id PK "NOT NULL, DEFAULT gen_random_uuid()"
@@ -88,7 +65,7 @@ erDiagram
         DATE start_date "NULLABLE"
         DATE end_date "NULLABLE, CHECK >= start_date"
     }
-```
+
 
 ---
 
@@ -148,5 +125,3 @@ Hai bảng này không có ràng buộc khóa ngoại đến các bảng khác t
 | Đặc tả API quản lý khuyến mãi & thông báo | `./sources/docs/api/promotion-announcement-api.md` | [REQ-017], [REQ-018] |
 | Đặc tả kiến trúc dịch vụ promotion-service | `./sources/docs/architecture/promotion-service-architecture.md` | [ARC-007], [ARC-008] |
 | Hướng dẫn vận hành quản lý khuyến mãi & thông báo | `./sources/docs/operations/promotion-announcement-guide.md` | [REQ-017], [REQ-018] |
-```
-
