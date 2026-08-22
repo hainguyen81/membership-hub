@@ -12,6 +12,7 @@ import os
 import re
 import sys
 import traceback
+from collections.abc import Generator
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, meta
@@ -351,10 +352,28 @@ def parseAIResponseData(response):
     # Safe fallback if choice format changes or breaks unexpectedly
     return str(first_choice).strip()
 
+def __normalize_raw_data__(raw_data):
+    # normalize raw data by detecting the raw string type dynamically
+    if isinstance(raw_data, (str, bytes)):
+        raw_data = str(raw_data)
+    elif hasattr(raw_data, "raw"):
+        # Catches the standard static CrewOutput object
+        raw_data = raw_data.raw
+    elif isinstance(raw_data, (Generator, list)) or hasattr(raw_data, "__iter__"):
+        # Catches CrewStream / Generator loops and aggregates tokens into a flat string
+        raw_data = "".join(str(chunk) for chunk in raw_data)
+    else:
+        # Safe final boundary fallback
+        raw_data = str(raw_data)
+    return raw_data
+
 def splitAIResponseData(raw_data):
     if not raw_data:
         return None
-
+    
+    # normalize raw data
+    raw_data = __normalize_raw_data__(raw_data=raw_data)
+    
     # extract by regex
     match = re.search(
         r"```(?:text|json|xml|mermaid|sql|python|code)?\s*(.*?)\s*```",
@@ -367,7 +386,8 @@ def splitAIResponseJsonData(raw_data):
     if not raw_data:
         return None
 
-    clean_json_str = raw_data.strip()
+    # normalize raw data
+    raw_data = __normalize_raw_data__(raw_data=raw_data)
     clean_json_str = raw_data.strip()
     
     # 💡 Use find() to split json block
