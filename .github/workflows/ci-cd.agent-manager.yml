@@ -444,6 +444,8 @@ jobs:
           GH_TOKEN: ${{ secrets.PAT_SECRETS_MANAGER }}
           SOURCE_BRANCH: 'features/development-phase-${{ needs.state_resolver_job.outputs.run_phase }}-day-${{ needs.state_resolver_job.outputs.run_day }}'
           TARGET_BRANCH: 'features/development'
+          RUN_DAY: ${{ needs.state_resolver_job.outputs.run_day }}
+          RUN_PHASE: ${{ needs.state_resolver_job.outputs.run_phase }}
         run: |
           echo "📣 Checking for existing Pull Requests from [ $SOURCE_BRANCH ] to [ $TARGET_BRANCH ]..."
           
@@ -460,10 +462,10 @@ jobs:
             gh pr create \
               --head "$SOURCE_BRANCH" \
               --base "$TARGET_BRANCH" \
-              --title "chore(pipeline): merge integration for Phase ${{ steps.resolver.outputs.run_phase }} Day ${{ steps.resolver.outputs.run_day }} [AI Loop]" \
+              --title "chore(pipeline): merge integration for Phase $RUN_PHASE Day $RUN_DAY [AI Loop]" \
               --body "### 🤖 Automated Development Cycle Pull Request
-              * **Origin Phase**: ${{ needs.state_resolver_job.outputs.run_phase }}
-              * **Origin Day**: ${{ needs.state_resolver_job.outputs.run_day }}
+              * **Origin Phase**: $RUN_PHASE
+              * **Origin Day**: $RUN_DAY
               * **Target Core Trunk**: $TARGET_BRANCH
               
               This PR was automatically provisioned by the AI pipeline workspace loop to synchronize daily code increments back into the stable mainline trunk." \
