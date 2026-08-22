@@ -6,13 +6,9 @@
 # search path array. This completely unlocks importing 'agent_helper.py'.
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
-from _0d_ai._0d_agents.agent_0u_helper import (
-    resolve_absolute_path,
-    parse_args
-)
-
 # super agent
 from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
+from _0d_ai._0d_agents.agent_0u_helper import parse_args, resolve_absolute_path
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
