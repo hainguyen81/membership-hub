@@ -17,15 +17,35 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.SecurityContext;
+import org.jboss.resteasy.reactive.RestResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.nlh4j.saas.membership-hub.membership.service.MembershipService;
+import org.nlh4j.saas.membership-hub.membership.exception.MembershipCardNotFoundException;
+import org.nlh4j.saas.membership-hub.membership.exception.MembershipServiceException;
+
 /**
- * REST controller responsible for handling membership card renewal requests.
+ * REST controller responsible for handling membership card operations.
  *
  * <p>All business logic for renewing a membership card is delegated to {@link MembershipService}.
  * Payment verification is performed via {@link PaymentService}. The controller ensures that
  * the authenticated user is identified, the payment transaction is validated, and the
- * membership card is updated accordingly.</p>
+ * membership card is updated accordingly.
+ * </p>
+ * <p>
+ * Provides endpoints for retrieving membership card details including remaining validity period for authenticated users.
+ * <p>Complies with enterprise RBAC policies, audit logging requirements, and OWASP security standards.</p>
+ * </p>
  *
- * @traceability [REQ-015]
+ * @traceability [REQ-015], [REQ-014], [DAT-007]
  */
 @RestController
 @RequestMapping(MembershipController.BASE_PATH)
@@ -54,6 +74,17 @@ public class MembershipController {
     /** Log message prefix for warnings. */
     public static final String LOG_WARN = "[WARN]";
 
+    // [REQ-014] API endpoint path configuration
+    public static final String API_MEMBERSHIP_CARD_PATH = "/card";
+    // [DAT-007] Standardized error message constants
+    public static final String ERROR_USER_NOT_AUTHENTICATED = "User is not authenticated or JWT token is invalid";
+    public static final String ERROR_MEMBERSHIP_CARD_NOT_FOUND = "No active membership card found for the authenticated user";
+    public static final String ERROR_INTERNAL_SERVER = "Internal server error occurred while processing membership card request";
+    // [NFR-006] Audit log message templates
+    public static final String LOG_ENTRY_GET_CARD = "Entering GET {} endpoint | Authenticated User ID: {}";
+    public static final String LOG_EXIT_GET_CARD_SUCCESS = "Exiting GET {} endpoint | Successfully retrieved membership card for User ID: {}";
+    public static final String LOG_ERROR_GET_CARD = "[CRITICAL FAIL] [REQ-014] [DAT-007] Error in GET {} endpoint | User ID: {} | Raw Error: {}";
+
     /* --------------------------------------------------------------------- */
     /*  Logger – used for audit trail and debugging.                         */
     /* --------------------------------------------------------------------- */
@@ -69,6 +100,9 @@ public class MembershipController {
 
     @Autowired
     private PaymentService paymentService;
+
+    @Inject
+    private MembershipService membershipService;
 
     /* --------------------------------------------------------------------- */
     /*  DTOs – request and response payloads.                               */
@@ -289,56 +323,7 @@ public class MembershipController {
             this.expiryDate = expiryDate;
         }
     }
-package org.nlh4j.saas.membership-hub.membership;
 
-// ====================== ENTERPRISE IMPORTS ======================
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.SecurityContext;
-import org.jboss.resteasy.reactive.RestResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.nlh4j.saas.membership-hub.membership.service.MembershipService;
-import org.nlh4j.saas.membership-hub.membership.exception.MembershipCardNotFoundException;
-import org.nlh4j.saas.membership-hub.membership.exception.MembershipServiceException;
-
-/**
- * REST Controller for digital membership card operations.
- * Provides endpoints for retrieving membership card details including remaining validity period for authenticated users.
- * 
- * <p>Complies with enterprise RBAC policies, audit logging requirements, and OWASP security standards.</p>
- * 
- * @traceability [REQ-014], [DAT-007]
- * @since 1.0
- */
-@Path("/api/membership")
-public class MembershipController {
-
-    // ====================== TOP-OF-CLASS ENTERPRISE CONSTANTS (NO MAGIC NUMBERS/STRINGS) ======================
-    // [REQ-014] API endpoint path configuration
-    public static final String API_MEMBERSHIP_CARD_PATH = "/card";
-    // [DAT-007] Standardized error message constants
-    public static final String ERROR_USER_NOT_AUTHENTICATED = "User is not authenticated or JWT token is invalid";
-    public static final String ERROR_MEMBERSHIP_CARD_NOT_FOUND = "No active membership card found for the authenticated user";
-    public static final String ERROR_INTERNAL_SERVER = "Internal server error occurred while processing membership card request";
-    // [NFR-006] Audit log message templates
-    public static final String LOG_ENTRY_GET_CARD = "Entering GET {} endpoint | Authenticated User ID: {}";
-    public static final String LOG_EXIT_GET_CARD_SUCCESS = "Exiting GET {} endpoint | Successfully retrieved membership card for User ID: {}";
-    public static final String LOG_ERROR_GET_CARD = "[CRITICAL FAIL] [REQ-014] [DAT-007] Error in GET {} endpoint | User ID: {} | Raw Error: {}";
-
-    // ====================== ENTERPRISE LOGGING FRAMEWORK (Slf4j/Logback) ======================
-    private static final Logger logger = LoggerFactory.getLogger(MembershipController.class);
-
-    // ====================== DEPENDENCY INJECTION (SOLID SRP COMPLIANCE) ======================
-    @Inject
-    MembershipService membershipService;
-
-    // ====================== REST API ENDPOINTS ======================
     /**
      * Retrieves the digital membership card details for the currently authenticated user.
      * Returns card validity information including total validity days, remaining days, and expiry date.
