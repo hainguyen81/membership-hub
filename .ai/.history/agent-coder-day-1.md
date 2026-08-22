@@ -1,523 +1,853 @@
+# Day 1: model openai/gpt-oss-20b:free - API Endpoint https://openrouter.ai/api/v1
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/backend/membership-service/src/main/java/com/hub/membership/MembershipService.java
 # Day 1: model cohere/north-mini-code:free - API Endpoint https://openrouter.ai/api/v1
 * **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
-* **Production source codebase generated at TARGET destination**: ./sources/backend/promotion-service/src/main/java/org/nlh4j/membership_hub/promotion/PromotionService.java
+* **Production source codebase generated at TARGET destination**: ./sources/backend/migrations/V1__init_user_center_schema.sql
 * **📝 Prompt / Tasks / Data**:
 ### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
 *   Target Project Identity Safe Name: membership-hub
 *   Enforced Java Package Prefix Base: org.nlh4j.saas.membership-hub
-*   Target Component Destination Path: `./sources/backend/promotion-service/src/main/java/org/nlh4j/membership_hub/promotion/PromotionService.java`
-*   Traceability Audit Tags For This Task: ['[REQ-017]', '[REQ-018]', '[DAT-009]']
+*   Target Component Destination Path: `./sources/backend/membership-service/src/main/java/com/hub/membership/MembershipService.java`
+*   Traceability Audit Tags For This Task: ['[REQ-014]', '[DAT-007]']
+*   Target Component Destination Path: `./sources/backend/migrations/V1__init_user_center_schema.sql`
+*   Traceability Audit Tags For This Task: ['[DAT-001]', '[DAT-003]']
 
 ### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
 [INSTRUCTION FOR AI: No reference source component or baseline interface is provided. You are tasked with architecting and writing this component completely from scratch, aligning perfectly with the target path file extension.]
 
 ### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
-['Triển khai toàn bộ logic nghiệp vụ cho module quản lý khuyến mãi và thông báo hệ thống. Đối với khuyến mãi, xây dựng các phương thức CRUD với kiểm tra xác thực đầu vào nghiêm ngặt: phần trăm giảm giá phải nằm trong khoảng 0-100, ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu, mã khuyến mãi phải duy nhất. Đối với thông báo, triển khai logic lọc thông báo đang hoạt động dựa trên ngày hiện tại và cơ chế tự động ẩn thông báo sau ngày kết thúc thông qua scheduled job chạy hàng ngày. Tất cả các endpoint phải được bảo vệ bằng bộ lọc RBAC, chỉ cho phép Center Admin và Manager truy cập. Sử dụng prepared statements của Hibernate ORM để ngăn chặn SQL injection. Áp dụng làm sạch dữ liệu đầu vào để chống XSS.']
+['Triển khai logic tính toán số ngày còn lại hiệu lực của thẻ hội viên dựa trên issue_date và validity_days, đảm bảo giá trị remaining_days được cập nhật tự động mỗi ngày qua scheduled job, tuân thủ các ràng buộc NOT NULL và CHECK cho các trường dữ liệu.']
+['Viết script migration ANSI SQL chuẩn để tạo 3 bảng: roles, users, centers']
 
 ---
 
 ### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
 Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Automatically evaluate the extension profile of the target component path to implement either a backend Java component from scratch or a frontend TypeScript/Next.js/React asset from scratch. 
 
-Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` package layout. Ensure that you read the exact Tag IDs from the `['[REQ-017]', '[REQ-018]', '[DAT-009]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` package layout. Ensure that you read the exact Tag IDs from the `['[REQ-014]', '[DAT-007]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
 * **📝 Response**:
 ```java
+package org.nlh4j.saas.membership-hub.membership;
+
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.UUID;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
+import javax.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import io.quarkus.scheduler.Scheduled;
+
 /**
- * 🚀  ENTERPRISE SYSTEM DATA LAYER INJECTION - PROMOTION SERVICE MODULE
+ * Service responsible for managing membership cards.
  *
- * 📋  Traceability Tags: [REQ-017], [REQ-018], [DAT-009
+ * <p>This service calculates the remaining validity days for each membership card
+ * based on {@code issueDate} and {@code validityDays}. A scheduled job runs
+ * daily to update the {@code remainingDays} field automatically.</p>
+ *
+ * @traceability [REQ-014], [DAT-007]
+ */
+@ApplicationScoped
+public class MembershipService {
+
+    /* --------------------------------------------------------------------- */
+    /*  Constants (no hard‑coded literals in business logic)                 */
+    /* --------------------------------------------------------------------- */
+    /** Cron expression for the daily scheduled job (02:00 UTC). */
+    private static final String DAILY_CRON = "0 0 2 * * ?";
+
+    /** Default timezone used for date calculations. */
+    private static final ZoneId DEFAULT_ZONE = ZoneId.of("UTC");
+
+    /** Minimum remaining days allowed (non‑negative). */
+    private static final int MIN_REMAINING_DAYS = 0;
+
+    /* --------------------------------------------------------------------- */
+    /*  Dependencies                                                        */
+    /* --------------------------------------------------------------------- */
+    @Inject
+    Logger logger; // injected via CDI
+
+    @Inject
+    EntityManager em; // JPA EntityManager for persistence operations
+
+    /* --------------------------------------------------------------------- */
+    /*  Public API                                                          */
+    /* --------------------------------------------------------------------- */
+
+    /**
+     * Calculates and returns the remaining validity days for a specific card.
+     *
+     * @param cardId the unique identifier of the membership card
+     * @return the number of days remaining, never negative
+     * @throws IllegalArgumentException if the card does not exist
+     */
+    @Transactional
+    public int getRemainingDays(UUID cardId) {
+        logger.debug("[PROCESS] Calculating remaining days for card: {}", cardId);
+
+        StudentCard card = em.find(StudentCard.class, cardId);
+        if (card == null) {
+            logger.error("[ERROR] Card not found: {}", cardId);
+            throw new IllegalArgumentException("Card not found: " + cardId);
+        }
+
+        int remaining = computeRemainingDays(card.getIssueDate(), card.getValidityDays());
+        logger.debug("[RESULT] Remaining days for card {}: {}", cardId, remaining);
+        return remaining;
+    }
+
+    /**
+     * Updates the {@code remainingDays} field for all membership cards.
+     *
+     * <p>This method is invoked by the scheduled job defined by {@link #DAILY_CRON}.</p>
+     */
+    @Transactional
+    @Scheduled(cron = DAILY_CRON)
+    public void updateAllRemainingDays() {
+        logger.info("[SCHEDULED] Updating remaining days for all cards at {}", LocalDate.now(DEFAULT_ZONE));
+
+        try {
+            List<StudentCard> cards = em.createQuery(
+                    "SELECT c FROM StudentCard c", StudentCard.class)
+                    .getResultList();
+
+            for (StudentCard card : cards) {
+                int newRemaining = computeRemainingDays(card.getIssueDate(), card.getValidityDays());
+                card.setRemainingDays(newRemaining);
+                em.merge(card);
+                logger.debug("[UPDATE] Card {}: remainingDays set to {}", card.getCardId(), newRemaining);
+            }
+        } catch (PersistenceException e) {
+            logger.error("[CRITICAL FAIL] [ARC-014] Failed to update remaining days: {}", e.getMessage(), e);
+            // Rethrow to let the scheduler handle retry if configured
+            throw e;
+        }
+
+        logger.info("[SCHEDULED] Completed updating remaining days for all cards");
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*  Helper Methods                                                      */
+    /* --------------------------------------------------------------------- */
+
+    /**
+     * Computes the remaining days given the issue date and validity period.
+     *
+     * @param issueDate    the date the card was issued
+     * @param validityDays the total number of days the card is valid
+     * @return the remaining days, never negative
+     */
+    private int computeRemainingDays(LocalDate issueDate, int validityDays) {
+        // Guard against null dates
+        if (issueDate == null) {
+            logger.warn("[WARN] Issue date is null; defaulting remaining days to {}", MIN_REMAINING_DAYS);
+            return MIN_REMAINING_DAYS;
+        }
+
+        LocalDate today = LocalDate.now(DEFAULT_ZONE);
+        Period period = Period.between(issueDate, today);
+        int daysElapsed = period.getDays() + period.getMonths() * 30 + period.getYears() * 365;
+
+        int remaining = validityDays - daysElapsed;
+        return Math.max(remaining, MIN_REMAINING_DAYS);
+    }
+}
+
+/* --------------------------------------------------------------------- */
+/*  Entity definition (simplified for illustration)                      */
+/* --------------------------------------------------------------------- */
+import java.time.LocalDate;
+import java.util.UUID;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+/**
+ * JPA entity representing a membership card.
+ *
+ * @traceability [DAT-007]
+ */
+@Entity
+@Table(name = "student_cards")
+class StudentCard {
+
+    @Id
+    @Column(name = "card_id", nullable = false, updatable = false)
+    private UUID cardId;
+
+    @Column(name = "student_id", nullable = false)
+    private UUID studentId;
+
+    @Column(name = "issue_date", nullable = false)
+    private LocalDate issueDate;
+
+    @Column(name = "validity_days", nullable = false)
+    private int validityDays;
+
+    @Column(name = "remaining_days", nullable = false)
+    private int remainingDays;
+
+    // Getters and setters omitted for brevity
+
+    public UUID getCardId() { return cardId; }
+    public void setCardId(UUID cardId) { this.cardId = cardId; }
+
+    public UUID getStudentId() { return studentId; }
+    public void setStudentId(UUID studentId) { this.studentId = studentId; }
+
+    public LocalDate getIssueDate() { return issueDate; }
+    public void setIssueDate(LocalDate issueDate) { this.issueDate = issueDate; }
+
+    public int getValidityDays() { return validityDays; }
+    public void setValidityDays(int validityDays) { this.validityDays = validityDays; }
+
+    public int getRemainingDays() { return remainingDays; }
+    public void setRemainingDays(int remainingDays) { this.remainingDays = remainingDays; }
+Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` package layout. Ensure that you read the exact Tag IDs from the `['[DAT-001]', '[DAT-003]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```sql
+-- [DAT-001] [DAT-003] Enterprise traceability tags for initial user and center schema migration
+-- This migration script creates the foundational relational schema for the membership-hub system.
+-- It defines three core tables: roles, users, and centers, with appropriate constraints, indexes, and data validation rules.
+-- All constraints enforce data integrity, security, and business rules as per the architectural specification.
+
+-- ------------------------------------------------------------
+-- Table: roles
+-- Purpose: Stores system roles used for RBAC (Role-Based Access Control).
+-- ------------------------------------------------------------
+CREATE TABLE roles (
+    role_id SMALLINT PRIMARY KEY,                     -- Unique identifier for the role (e.g., 1=System Admin)
+    name VARCHAR(30) NOT NULL UNIQUE,                -- Role name (e.g., 'System Admin', 'Center Admin')
+    description VARCHAR(200)                         -- Optional description of the role's responsibilities
+);
+
+-- ------------------------------------------------------------
+-- Table: users
+-- Purpose: Stores user account information, authentication details, and role assignments.
+-- ------------------------------------------------------------
+CREATE TABLE users (
+    user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Globally unique identifier for the user
+    email VARCHAR(255) NOT NULL UNIQUE,               -- User's email address (must be unique)
+    password_hash CHAR(60) NOT NULL,                 -- Hashed password using bcrypt (60-char output)
+    full_name VARCHAR(100) NOT NULL,                 -- Full name of the user
+    role_id SMALLINT NOT NULL REFERENCES roles(role_id), -- Foreign key to roles.role_id (enforces referential integrity)
+    provider VARCHAR(20) NOT NULL DEFAULT 'local',   -- Authentication provider: 'local', 'firebase', 'google', or 'facebook'
+    CHECK (provider IN ('local', 'firebase', 'google', 'facebook')), -- Validate allowed provider values
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Record creation timestamp
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP  -- Record last modification timestamp
+);
+
+-- Indexes for the users table to optimize frequent query patterns
+CREATE INDEX idx_users_email ON users(email);       -- Fast lookup by email (e.g., login, duplicate check)
+CREATE INDEX idx_users_role_id ON users(role_id);    -- Fast lookup by role for RBAC queries
+
+-- ------------------------------------------------------------
+-- Table: centers
+-- Purpose: Stores information about each service center (tenant) in the multi‑center deployment.
+-- ------------------------------------------------------------
+CREATE TABLE centers (
+    center_id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Unique identifier for the center
+    name VARCHAR(100) NOT NULL,                         -- Center name
+    address VARCHAR(255) NOT NULL,                      -- Physical address of the center
+    tax_id VARCHAR(13) NOT NULL UNIQUE,                 -- Tax identification number (must be unique across centers)
+    CHECK (tax_id ~ '^[0-9]{10,13}$'),                  -- Validate tax_id contains only digits and length 10‑13
+    contact_phone VARCHAR(20),                          -- Optional contact phone number
+    contact_email VARCHAR(255),                         -- Optional contact email (basic format validation)
+    CHECK (contact_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$') -- Simple email format check
+);
+
+-- Index for the centers table to accelerate tax_id lookups (e.g., validation, reporting)
+CREATE INDEX idx_centers_tax_id ON centers(tax_id);
+```
 
 # Day 1: model cohere/north-mini-code:free - API Endpoint https://openrouter.ai/api/v1
 * **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
-* **Production source codebase generated at TARGET destination**: ./sources/backend/promotion-service/src/main/java/org/nlh4j/membership_hub/promotion/PromotionController.java
+* **Production source codebase generated at TARGET destination**: ./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthService.java
 * **📝 Prompt / Tasks / Data**:
 ### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
 *   Target Project Identity Safe Name: membership-hub
 *   Enforced Java Package Prefix Base: org.nlh4j.saas.membership-hub
-*   Target Component Destination Path: `./sources/backend/promotion-service/src/main/java/org/nlh4j/membership_hub/promotion/PromotionController.java`
-*   Traceability Audit Tags For This Task: ['[REQ-017]', '[REQ-018]', '[DAT-009]']
+*   Target Component Destination Path: `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthService.java`
+*   Traceability Audit Tags For This Task: ['[REQ-001]', '[ARC-006]']
 
 ### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
 [INSTRUCTION FOR AI: No reference source component or baseline interface is provided. You are tasked with architecting and writing this component completely from scratch, aligning perfectly with the target path file extension.]
 
 ### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
-['Triển khai toàn bộ logic nghiệp vụ cho module quản lý khuyến mãi và thông báo hệ thống. Đối với khuyến mãi, xây dựng các phương thức CRUD với kiểm tra xác thực đầu vào nghiêm ngặt: phần trăm giảm giá phải nằm trong khoảng 0-100, ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu, mã khuyến mãi phải duy nhất. Đối với thông báo, triển khai logic lọc thông báo đang hoạt động dựa trên ngày hiện tại và cơ chế tự động ẩn thông báo sau ngày kết thúc thông qua scheduled job chạy hàng ngày. Tất cả các endpoint phải được bảo vệ bằng bộ lọc RBAC, chỉ cho phép Center Admin và Manager truy cập. Sử dụng prepared statements của Hibernate ORM để ngăn chặn SQL injection. Áp dụng làm sạch dữ liệu đầu vào để chống XSS.']
+['Triển khai logic xác thực email/mật khẩu và cấp phát JWT token']
 
 ---
 
 ### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
 Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Automatically evaluate the extension profile of the target component path to implement either a backend Java component from scratch or a frontend TypeScript/Next.js/React asset from scratch. 
 
-Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` package layout. Ensure that you read the exact Tag IDs from the `['[REQ-017]', '[REQ-018]', '[DAT-009]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+Verify that any Java file generated strictly begins with the required `org.nlh4j.saas.membership-hub` package layout. Ensure that you read the exact Tag IDs from the `['[REQ-001]', '[ARC-006]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
 * **📝 Response**:
 ```java
-package org.nlh4j.saas.membership_hub.promotion;
+package org.nlh4j.saas.membership_hub.auth;
 
-/**
- * Controller for managing promotions and announcements.
- * Traceability Tags: [REQ-017], [REQ-018], [DAT-009]
- */
-@Traceable(tags = {"[REQ-017]", "[REQ-018]", "[DAT-009]"}) // giả định annotation tùy chỉnh cho traceability
-@RestController
-@RequestMapping("/api/promotions")
-@RequiredArgsConstructor
-@Slf4j
-public class PromotionController {
+// Traceability Tags: [REQ-001], [ARC-006]
+// Additional Tags: [EXC-004], [NFR-003], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]
 
-    /* ==================== CONSTANTS (Top‑of‑Class) ==================== */
-    // Validation & error codes – anti‑magic‑numbers enforcement
-    public static final String ERR_PROMO_CODE_DUPLICATE = "PROMOTION_CODE_DUPLICATE";
-    public static final String ERR_PROMO_DISCOUNT_OUT_OF_RANGE = "PROMOTION_DISCOUNT_OUT_OF_RANGE";
-    public static final String ERR_PROMO_DATE_INVALID = "PROMOTION_DATE_INVALID";
-    public static final String ERR_ANNOUNCE_NOT_FOUND = "ANNOUNCEMENT_NOT_FOUND";
-    public static final String ERR_ANNOUNCE_DATE_INVALID = "ANNOUNCEMENT_DATE_INVALID";
-    public static final String ERR_RBAC_FORBIDDEN = "RBAC_FORBIDDEN";
+import org.springframework.security.authentication.Authentication;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    /* ==================== REPOSITORIES ==================== */
-    private final PromotionRepository promotionRepo;
-    private final AnnouncementRepository announcementRepo;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
-    /* ==================== ENDPOINTS – PROMOTIONS ==================== */
+// Constants for JWT token configuration
+public class JwtTokenConstants {
+    // JWT token constants
+    public static final String ACCESS_TOKEN_TYPE = "Bearer";
+    public static final long ACCESS_TOKEN_EXPIRATION_MS = 15 * 60 * 1000; // 15 minutes
+    public static final long REFRESH_TOKEN_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+    
+    // Security constants
+    public static final int PASSWORD_MIN_LENGTH = 8;
+    public static final String PASSWORD_REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$";
+    
+    // Error codes
+    public static final String ERROR_CODE_INVALID_CREDENTIALS = "INVALID_CREDENTIALS";
+    public static final String ERROR_CODE_USER_DISABLED = "USER_DISABLED";
+    public static final String ERROR_CODE_TOKEN_EXPIRED = "TOKEN_EXPIRED";
+    public static final String ERROR_CODE_TOKEN_INVALID = "TOKEN_INVALID";
+    
+    // Log messages
+    public static final String LOG_AUTH_SUCCESS = "Authentication successful for user: {}";
+    public static final String LOG_AUTH_FAILURE = "Authentication failed for user: {}";
+    public static final String LOG_TOKEN_ISSUED = "JWT token issued for user: {}";
+    public static final String LOG_TOKEN_REFRESHED = "JWT token refreshed for user: {}";
+    public static final String LOG_USER_REGISTERED = "New user registered: {}";
+}
 
-    /**
-     * Tạo mới một khuyến mãi.
-     * Traceability Tags: [REQ-017]
-     */
-    @PostMapping
-    public ResponseEntity<Promotion> createPromotion(@Valid @RequestBody PromotionDto dto) {
-        log.info("[ENTRY] createPromotion – dto: {}", dto);
-        try {
-            // Input sanitization – basic example (escape HTML entities)
-            String sanitizedCode = sanitizeHtml(dto.getCode());
-            if (promotionRepo.existsByCode(sanitizedCode)) {
-                log.warn("[VALIDATION] Duplicate promotion code – code: {}", sanitizedCode);
-                throw new IllegalArgumentException(ERR_PROMO_CODE_DUPLICATE);
-            }
-            if (dto.getDiscountPercent() < 0 || dto.getDiscountPercent() > 100) {
-                log.warn("[VALIDATION] Discount percent out of range – value: {}", dto.getDiscountPercent());
-                throw new IllegalArgumentException(ERR_PROMO_DISCOUNT_OUT_OF_RANGE);
-            }
-            if (dto.getEndDate() != null && dto.getStartDate() != null &&
-                dto.getEndDate().isBefore(dto.getStartDate())) {
-                log.warn("[VALIDATION] End date before start date – start: {}, end: {}", dto.getStartDate(), dto.getEndDate());
-                throw new IllegalArgumentException(ERR_PROMO_DATE_INVALID);
-            }
-
-            Promotion promo = Promotion.builder()
-                .code(sanitizedCode)
-                .discountPercent(dto.getDiscountPercent())
-                .startDate(dto.getStartDate())
-                .endDate(dto.getEndDate())
-                .description(sanitizeHtml(dto.getDescription()))
-                .build();
-
-            Promotion saved = promotionRepo.save(promo); // Prepared‑statement usage via JPA
-            log.info("[EXIT] createPromotion – created id: {}", saved.getId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-        } catch (IllegalArgumentException iae) {
-            log.error("[CRITICAL FAIL] [REQ-017] Promotion validation failed – raw error: {}", iae.getMessage());
-            return ResponseEntity.badRequest().body(null);
-        } catch (Exception e) {
-            log.error("[CRITICAL FAIL] [REQ-017] Promotion processing failed due to unexpected error – raw error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+// AuthService implementation
+@Service
+@Transactional
+public class AuthService implements UserDetailsService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+    
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtEncoder jwtEncoder;
+    private final FirebaseAuthService firebaseAuthService;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final IdempotencyKeyService idempotencyKeyService;
+    
+    // Constructor injection for all dependencies
+    public AuthService(UserRepository userRepository,
+                      PasswordEncoder passwordEncoder,
+                      AuthenticationManager authenticationManager,
+                      JwtEncoder jwtEncoder,
+                      FirebaseAuthService firebaseAuthService,
+                      TokenBlacklistService tokenBlacklistService,
+                      IdempotencyKeyService idempotencyKeyService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtEncoder = jwtEncoder;
+        this.firebaseAuthService = firebaseAuthService;
+        this.tokenBlacklistService = tokenBlacklistService;
+        this.idempotencyKeyService = idempotencyKeyService;
     }
-
+    
     /**
-     * Lấy danh sách tất cả khuyến mãi.
-     * Traceability Tags: [REQ-017]
+     * Load user details by username for Spring Security authentication
+     * @param username the user's email address
+     * @return UserDetails object containing user information
+     * @throws UsernameNotFoundException if user not found
      */
-    @GetMapping
-    public ResponseEntity<List<Promotion>> getAllPromotions() {
-        log.info("[ENTRY] getAllPromotions");
-        try {
-            List<Promotion> list = promotionRepo.findAll();
-            log.info("[EXIT] getAllPromotions – returned {} records", list.size());
-            return ResponseEntity.ok(list);
-        } catch (Exception e) {
-            log.error("[CRITICAL FAIL] [REQ-017] Failed to retrieve promotions – raw error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    /**
-     * Lấy thông tin khuyến mãi theo ID.
-     * Traceability Tags: [REQ-017]
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<Promotion> getPromotionById(@PathVariable UUID id) {
-        log.info("[ENTRY] getPromotionById – id: {}", id);
-        try {
-            return promotionRepo.findById(id)
-                .map(p -> {
-                    log.info("[EXIT] getPromotionById – found");
-                    return ResponseEntity.ok(p);
-                })
-                .orElseGet(() -> {
-                    log.warn("[WARN] Promotion not found – id: {}", id);
-                    return ResponseEntity.notFound().build();
-                });
-        } catch (Exception e) {
-            log.error("[CRITICAL FAIL] [REQ-017] Failed to retrieve promotion by id – raw error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    /**
-     * Cập nhật khuyến mãi.
-     * Traceability Tags: [REQ-017]
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<Promotion> updatePromotion(@PathVariable UUID id, @Valid @RequestBody PromotionDto dto) {
-        log.info("[ENTRY] updatePromotion – id: {}, dto: {}", id, dto);
-        try {
-            return promotionRepo.findById(id).map(existing -> {
-                // Validate discount range
-                if (dto.getDiscountPercent() < 0 || dto.getDiscountPercent() > 100) {
-                    throw new IllegalArgumentException(ERR_PROMO_DISCOUNT_OUT_OF_RANGE);
-                }
-                // Validate date logic if provided
-                if (dto.getStartDate() != null && dto.getEndDate() != null &&
-                    dto.getEndDate().isBefore(dto.getStartDate())) {
-                    throw new IllegalArgumentException(ERR_PROMO_DATE_INVALID);
-                }
-                // Ensure code uniqueness if changed
-                String newCode = sanitizeHtml(dto.getCode());
-                if (!newCode.equals(existing.getCode()) && promotionRepo.existsByCode(newCode)) {
-                    throw new IllegalArgumentException(ERR_PROMO_CODE_DUPLICATE);
-                }
-
-                // Apply updates
-                existing.setCode(newCode);
-                existing.setDiscountPercent(dto.getDiscountPercent());
-                existing.setStartDate(dto.getStartDate());
-                existing.setEndDate(dto.getEndDate());
-                existing.setDescription(sanitizeHtml(dto.getDescription()));
-                Promotion updated = promotionRepo.save(existing);
-                log.info("[EXIT] updatePromotion – updated id: {}", updated.getId());
-                return ResponseEntity.ok(updated);
-            }).orElseGet(() -> {
-                log.warn("[WARN] Promotion not found for update – id: {}", id);
-                return ResponseEntity.notFound().build();
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        logger.debug("[REQ-001] Loading user details for username: {}", username);
+        
+        Users user = userRepository.findByEmail(username)
+            .orElseThrow(() -> {
+                logger.error("[REQ-001] User not found with email: {}", username);
+                return new UsernameNotFoundException("User not found with email: " + username);
             });
-        } catch (IllegalArgumentException iae) {
-            log.error("[CRITICAL FAIL] [REQ-017] Promotion update validation failed – raw error: {}", iae.getMessage());
-            return ResponseEntity.badRequest().body(null);
-        } catch (Exception e) {
-            log.error("[CRITICAL FAIL] [REQ-017] Promotion update processing failed – raw error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+            
+        logger.debug("[REQ-001] User found: {}", user.getEmail());
+        return new org.springframework.security.core.userdetails.User(
+            user.getEmail(),
+            user.getPasswordHash(),
+            user.isEnabled(),
+            true, // accountNonExpired
+            true, // credentialsNonExpired
+            true, // accountNonLocked
+            getAuthorities(user.getRoles())
+        );
     }
-
+    
     /**
-     * Xóa khuyến mãi.
-     * Traceability Tags: [REQ-017]
+     * Authenticate user with email and password
+     * @param request authentication request containing email and password
+     * @return AuthenticationResponse with tokens
+     * @throws AuthenticationException if authentication fails
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePromotion(@PathVariable UUID id) {
-        log.info("[ENTRY] deletePromotion – id: {}", id);
+    @Transactional(readOnly = true)
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        String email = request.getEmail();
+        String password = request.getPassword();
+        
+        logger.info("[REQ-001] Attempting authentication for user: {}", email);
+        
         try {
-            if (!promotionRepo.existsById(id)) {
-                log.warn("[WARN] Promotion not found for deletion – id: {}", id);
-                return ResponseEntity.notFound().build();
-            }
-            promotionRepo.deleteById(id);
-            log.info("[EXIT] deletePromotion – deleted id: {}", id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            log.error("[CRITICAL FAIL] [REQ-017] Promotion deletion failed – raw error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    /* ==================== ENDPOINTS – ANNOUNCEMENTS ==================== */
-
-    /**
-     * Tạo mới một thông báo hệ thống.
-     * Traceability Tags: [REQ-018]
-     */
-    @PostMapping("/announcements")
-    public ResponseEntity<Announcement> createAnnouncement(@Valid @RequestBody AnnouncementDto dto) {
-        log.info("[ENTRY] createAnnouncement – dto: {}", dto);
-        try {
-            if (dto.getStartDate() != null && dto.getEndDate() != null &&
-                dto.getEndDate().isBefore(dto.getStartDate())) {
-                throw new IllegalArgumentException(ERR_ANNOUNCE_DATE_INVALID);
-            }
-
-            Announcement ann = Announcement.builder()
-                .title(sanitizeHtml(dto.getTitle()))
-                .content(sanitizeHtml(dto.getContent()))
-                .startDate(dto.getStartDate())
-                .endDate(dto.getEndDate())
-                .hidden(false)
+            // Authenticate using Spring Security
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, password)
+            );
+            
+            // Generate tokens
+            String accessToken = generateAccessToken(authentication);
+            String refreshToken = generateRefreshToken(authentication);
+            
+            // Log successful authentication
+            logger.info(JwtTokenConstants.LOG_AUTH_SUCCESS, email);
+            
+            return AuthenticationResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .tokenType(JwtTokenConstants.ACCESS_TOKEN_TYPE)
+                .expiresIn(JwtTokenConstants.ACCESS_TOKEN_EXPIRATION_MS / 1000)
+                .userId(getUserIdFromEmail(email))
                 .build();
-
-            Announcement saved = announcementRepo.save(ann);
-            log.info("[EXIT] createAnnouncement – created id: {}", saved.getId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-        } catch (IllegalArgumentException iae) {
-            log.error("[CRITICAL FAIL] [REQ-018] Announcement validation failed – raw error: {}", iae.getMessage());
-            return ResponseEntity.badRequest().body(null);
-        } catch (Exception e) {
-            log.error("[CRITICAL FAIL] [REQ-018] Announcement processing failed – raw error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    /**
-     * Lấy danh sách thông báo đang hoạt động (không bị ẩn và trong khoảng thời gian hiệu lực).
-     * Traceability Tags: [REQ-018]
-     */
-    @GetMapping("/announcements/active")
-    public ResponseEntity<List<Announcement>> getActiveAnnouncements() {
-        log.info("[ENTRY] getActiveAnnouncements");
-        try {
-            LocalDate now = LocalDate.now();
-            List<Announcement> active = announcementRepo.findByHiddenFalseAndStartDateLessThanEqualAndEndDateGreaterThanEqual(now, now);
-            log.info("[EXIT] getActiveAnnouncements – returned {} records", active.size());
-            return ResponseEntity.ok(active);
-        } catch (Exception e) {
-            log.error("[CRITICAL FAIL] [REQ-018] Failed to retrieve active announcements – raw error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    /**
-     * Lấy tất cả thông báo (dành cho quản trị viên).
-     * Traceability Tags: [REQ-018]
-     */
-    @GetMapping("/announcements")
-    public ResponseEntity<List<Announcement>> getAllAnnouncements() {
-        log.info("[ENTRY] getAllAnnouncements");
-        try {
-            List<Announcement> list = announcementRepo.findAll();
-            log.info("[EXIT] getAllAnnouncements – returned {} records", list.size());
-            return ResponseEntity.ok(list);
-        } catch (Exception e) {
-            log.error("[CRITICAL FAIL] [REQ-018] Failed to retrieve all announcements – raw error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    /**
-     * Lấy thông báo theo ID.
-     * Traceability Tags: [REQ-018]
-     */
-    @GetMapping("/announcements/{id}")
-    public ResponseEntity<Announcement> getAnnouncementById(@PathVariable UUID id) {
-        log.info("[ENTRY] getAnnouncementById – id: {}", id);
-        try {
-            return announcementRepo.findById(id)
-                .map(a -> {
-                    log.info("[EXIT] getAnnouncementById – found");
-                    return ResponseEntity.ok(a);
-                })
-                .orElseGet(() -> {
-                    log.warn("[WARN] Announcement not found – id: {}", id);
-                    return ResponseEntity.notFound().build();
-                });
-        } catch (Exception e) {
-            log.error("[CRITICAL FAIL] [REQ-018] Failed to retrieve announcement by id – raw error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    /**
-     * Cập nhật thông báo.
-     * Traceability Tags: [REQ-018]
-     */
-    @PutMapping("/announcements/{id}")
-    public ResponseEntity<Announcement> updateAnnouncement(@PathVariable UUID id, @Valid @RequestBody AnnouncementDto dto) {
-        log.info("[ENTRY] updateAnnouncement – id: {}, dto: {}", id, dto);
-        try {
-            return announcementRepo.findById(id).map(existing -> {
-                if (dto.getStartDate() != null && dto.getEndDate() != null &&
-                    dto.getEndDate().isBefore(dto.getStartDate())) {
-                    throw new IllegalArgumentException(ERR_ANNOUNCE_DATE_INVALID);
+                
+        } catch (BadCredentialsException e) {
+            logger.error("[REQ-001] Bad credentials for user: {}", email);
+            throw new AuthenticationException("Invalid email or password") {
+                @Override
+                public String getMessage() {
+                    return JwtTokenConstants.ERROR_CODE_INVALID_CREDENTIALS;
                 }
-
-                existing.setTitle(sanitizeHtml(dto.getTitle()));
-                existing.setContent(sanitizeHtml(dto.getContent()));
-                existing.setStartDate(dto.getStartDate());
-                existing.setEndDate(dto.getEndDate());
-                // hidden flag can be updated by admin if needed
-                Announcement updated = announcementRepo.save(existing);
-                log.info("[EXIT] updateAnnouncement – updated id: {}", updated.getId());
-                return ResponseEntity.ok(updated);
-            }).orElseGet(() -> {
-                log.warn("[WARN] Announcement not found for update – id: {}", id);
-                return ResponseEntity.notFound().build();
-            });
-        } catch (IllegalArgumentException iae) {
-            log.error("[CRITICAL FAIL] [REQ-018] Announcement update validation failed – raw error: {}", iae.getMessage());
-            return ResponseEntity.badRequest().body(null);
-        } catch (Exception e) {
-            log.error("[CRITICAL FAIL] [REQ-018] Announcement update processing failed – raw error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            };
+        } catch (AuthenticationException e) {
+            logger.error("[REQ-001] Authentication failed for user: {}", email, e);
+            throw e;
         }
     }
-
+    
     /**
-     * Xóa thông báo.
-     * Traceability Tags: [REQ-018]
+     * Register new user with email and password
+     * @param request registration request containing user details
+     * @return AuthenticationResponse with tokens for newly registered user
      */
-    @DeleteMapping("/announcements/{id}")
-    public ResponseEntity<Void> deleteAnnouncement(@PathVariable UUID id) {
-        log.info("[ENTRY] deleteAnnouncement – id: {}", id);
+    @Transactional
+    public AuthenticationResponse register(AuthenticationRequest request) {
+        String email = request.getEmail();
+        String password = request.getPassword();
+        String fullName = request.getFullName();
+        
+        logger.info("[REQ-001] Registering new user: {}", email);
+        
+        // Validate input
+        validateRegistrationRequest(email, password, fullName);
+        
+        // Check if email already exists
+        if (userRepository.existsByEmail(email)) {
+            logger.error("[REQ-001] Email already registered: {}", email);
+            throw new IllegalArgumentException("Email already registered");
+        }
+        
+        // Create new user
+        Users user = Users.builder()
+            .email(email)
+            .passwordHash(passwordEncoder.encode(password))
+            .fullName(fullName)
+            .roleId(Role.STUDENT.getId()) // Default role
+            .provider(Provider.LOCAL)
+            .enabled(true)
+            .build();
+            
+        // Save user to database
+        Users savedUser = userRepository.save(user);
+        
+        // Register user with Firebase if needed
         try {
-            if (!announcementRepo.existsById(id)) {
-                log.warn("[WARN] Announcement not found for deletion – id: {}", id);
-                return ResponseEntity.notFound().build();
-            }
-            announcementRepo.deleteById(id);
-            log.info("[EXIT] deleteAnnouncement – deleted id: {}", id);
-            return ResponseEntity.noContent().build();
+            firebaseAuthService.registerUser(savedUser);
         } catch (Exception e) {
-            log.error("[CRITICAL FAIL] [REQ-018] Announcement deletion failed – raw error: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            logger.error("[REQ-001] Failed to register user with Firebase: {}", email, e);
+            // Rollback user creation if Firebase registration fails
+            userRepository.delete(savedUser);
+            throw new RuntimeException("Failed to register user with external service");
+        }
+        
+        // Generate authentication for new user
+        UsernamePasswordAuthenticationToken authentication = 
+            new UsernamePasswordAuthenticationToken(email, password);
+            
+        String accessToken = generateAccessToken(authentication);
+        String refreshToken = generateRefreshToken(authentication);
+        
+        logger.info(JwtTokenConstants.LOG_USER_REGISTERED, email);
+        
+        return AuthenticationResponse.builder()
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .tokenType(JwtTokenConstants.ACCESS_TOKEN_TYPE)
+            .expiresIn(JwtTokenConstants.ACCESS_TOKEN_EXPIRATION_MS / 1000)
+            .userId(savedUser.getUserId())
+            .build();
+    }
+    
+    /**
+     * Refresh access token using valid refresh token
+     * @param request refresh token request
+     * @return AuthenticationResponse with new access token
+     */
+    @Transactional(readOnly = true)
+    public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+        
+        logger.info("[REQ-001] Attempting to refresh token");
+        
+        // Validate refresh token
+        if (!tokenBlacklistService.isTokenBlacklisted(refreshToken)) {
+            logger.error("[REQ-001] Refresh token is blacklisted or invalid");
+            throw new AuthenticationException("Invalid refresh token") {
+                @Override
+                public String getMessage() {
+                    return JwtTokenConstants.ERROR_CODE_TOKEN_INVALID;
+                }
+            };
+        }
+        
+        // Decode and validate refresh token
+        String email = jwtEncoder.decode(refreshToken).getSubject();
+        
+        // Load user details
+        UserDetails userDetails = loadUserByUsername(email);
+        
+        // Generate new access token
+        UsernamePasswordAuthenticationToken authentication = 
+            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            
+        String newAccessToken = generateAccessToken(authentication);
+        String newRefreshToken = generateRefreshToken(authentication);
+        
+        // Blacklist old refresh token
+        tokenBlacklistService.blacklistToken(refreshToken);
+        
+        logger.info(JwtTokenConstants.LOG_TOKEN_REFRESHED, email);
+        
+        return AuthenticationResponse.builder()
+            .accessToken(newAccessToken)
+            .refreshToken(newRefreshToken)
+            .tokenType(JwtTokenConstants.ACCESS_TOKEN_TYPE)
+            .expiresIn(JwtTokenConstants.ACCESS_TOKEN_EXPIRATION_MS / 1000)
+            .userId(getUserIdFromEmail(email))
+            .build();
+    }
+    
+    /**
+     * Validate authentication request
+     * @param email user's email
+     * @param password user's password
+     * @param fullName user's full name
+     */
+    private void validateRegistrationRequest(String email, String password, String fullName) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be empty");
+        }
+        
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
+        
+        if (password == null || password.length() < JwtTokenConstants.PASSWORD_MIN_LENGTH) {
+            throw new IllegalArgumentException("Password must be at least " + 
+                JwtTokenConstants.PASSWORD_MIN_LENGTH + " characters long");
+        }
+        
+        if (!password.matches(JwtTokenConstants.PASSWORD_REGEX)) {
+            throw new IllegalArgumentException("Password must contain at least one uppercase letter, " +
+                "one lowercase letter, one number, and one special character");
+        }
+        
+        if (fullName == null || fullName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Full name cannot be empty");
         }
     }
-
-    /* ==================== SCHEDULED JOB – AUTO‑HIDE EXPIRED ANNOUNCEMENTS ==================== */
-
+    
     /**
-     * Job chạy hàng ngày để tự động ẩn các thông báo đã hết hạn (endDate < today).
-     * Traceability Tags: [REQ-018]
+     * Generate JWT access token
+     * @param authentication authentication object
+     * @return JWT access token
      */
-    @Scheduled(cron = "0 0 2 * * ?") // hàng ngày lúc 02:00 sáng
-    public void autoHideExpiredAnnouncements() {
-        log.info("[SCHEDULED] autoHideExpiredAnnouncements – starting");
-        try {
-            LocalDate today = LocalDate.now();
-            List<Announcement> expired = announcementRepo.findByHiddenFalseAndEndDateBefore(today);
-            if (!expired.isEmpty()) {
-                expired.forEach(a -> a.setHidden(true));
-                announcementRepo.saveAll(expired);
-                log.info("[SCHEDULED] autoHideExpiredAnnouncements – hidden {} announcements", expired.size());
-            } else {
-                log.info("[SCHEDULED] autoHideExpiredAnnouncements – no announcements to hide");
-            }
-        } catch (Exception e) {
-            log.error("[CRITICAL FAIL] [REQ-018] Scheduled auto‑hide announcements failed – raw error: {}", e.getMessage(), e);
-        }
+    private String generateAccessToken(Authentication authentication) {
+        Instant now = Instant.now();
+        String email = authentication.getName();
+        
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+            .issuer("membership-hub")
+            .issuedAt(now)
+            .expiresAt(now.plus(JwtTokenConstants.ACCESS_TOKEN_EXPIRATION_MS, ChronoUnit.MILLIS))
+            .subject(email)
+            .claim("scope", "READ_WRITE")
+            .claim("email", email)
+            .build();
+            
+        String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        
+        logger.debug(JwtTokenConstants.LOG_TOKEN_ISSUED, email);
+        
+        return token;
     }
-
-    /* ==================== UTILITY METHODS ==================== */
-
+    
     /**
-     * Làm sạch dữ liệu đầu vào đơn giản để chống XSS (sử dụng HtmlUtils).
+     * Generate JWT refresh token
+     * @param authentication authentication object
+     * @return JWT refresh token
      */
-    private String sanitizeHtml(String input) {
-        if (input == null) return null;
-        return org.springframework.web.util.HtmlUtils.htmlEscape(input);
+    private String generateRefreshToken(Authentication authentication) {
+        Instant now = Instant.now();
+        String email = authentication.getName();
+        
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+            .issuer("membership-hub")
+            .issuedAt(now)
+            .expiresAt(now.plus(JwtTokenConstants.REFRESH_TOKEN_EXPIRATION_MS, ChronoUnit.MILLIS))
+            .subject(email)
+            .claim("scope", "REFRESH_TOKEN")
+            .claim("email", email)
+            .build();
+            
+        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
-
-    /* ==================== INNER ENTITY DEFINITIONS (for brevity) ==================== */
-
-    @Entity
-    @Table(name = "promotions")
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-    @Builder
-    public static class Promotion {
-        @Id
-        @GeneratedValue(strategy = GenerationType.AUTO)
-        private UUID id;
-
-        @Column(nullable = false, unique = true)
-        private String code;
-
-        @Column(nullable = false)
-        private Integer discountPercent;
-
-        private LocalDate startDate;
-        private LocalDate endDate;
-
-        @Column(columnDefinition = "TEXT")
-        private String description;
-
-        @CreationTimestamp
-        private Timestamp createdAt;
-
-        @UpdateTimestamp
-        private Timestamp updatedAt;
+    
+    /**
+     * Convert user roles to Spring Security authorities
+     * @param roles collection of user roles
+     * @return collection of granted authorities
+     */
+    private Collection<? extends GrantedAuthority> getAuthorities(Collection<Roles> roles) {
+        return roles.stream()
+            .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+            .collect(Collectors.toList());
     }
-
-    @Entity
-    @Table(name = "announcements")
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-    @Builder
-    public static class Announcement {
-        @Id
-        @GeneratedValue(strategy = GenerationType.AUTO)
-        private UUID id;
-
-        @Column(nullable = false)
-        private String title;
-
-        @Column(columnDefinition = "TEXT", nullable = false)
-        private String content;
-
-        private LocalDate startDate;
-        private LocalDate endDate;
-
-        @Column(nullable = false)
-        private Boolean hidden = false;
-
-        @CreationTimestamp
-        private Timestamp createdAt;
-
-        @UpdateTimestamp
-        private Timestamp updatedAt;
+    
+    /**
+     * Get user ID from email
+     * @param email user's email
+     * @return user ID
+     */
+    private UUID getUserIdFromEmail(String email) {
+        return userRepository.findByEmail(email)
+            .map(Users::getUserId)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
-
-    /* ==================== REPOSITORY INTERFACES ==================== */
-
-    interface PromotionRepository extends JpaRepository<Promotion, UUID> {
-        boolean existsByCode(String code);
+    
+    /**
+     * Check if idempotency key is valid
+     * @param key idempotency key
+     * @return true if key is valid
+     */
+    public boolean isIdempotent(String key) {
+        return idempotencyKeyService.isValid(key);
     }
-
-    interface AnnouncementRepository extends JpaRepository<Announcement, UUID> {
-        List<Announcement> findByHiddenFalseAndStartDateLessThanEqualAndEndDateGreaterThanEqual(LocalDate start, LocalDate end);
-        List<Announcement> findByHiddenFalseAndEndDateBefore(LocalDate date);
+    
+    /**
+     * Mark request as processed for idempotency
+     * @param key idempotency key
+     */
+    public void markAsProcessed(String key) {
+        idempotencyKeyService.markAsProcessed(key);
     }
+}
 
-    /* ==================== DTO CLASSES ==================== */
+// Supporting classes and interfaces
+interface FirebaseAuthService {
+    void registerUser(Users user);
+    void authenticateUser(String email, String password);
+    void logoutUser(String userId);
+}
 
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-    public static class PromotionDto {
-        private String code;
-        private Integer discountPercent;
-        private LocalDate startDate;
-        private LocalDate endDate;
-        private String description;
+interface TokenBlacklistService {
+    boolean isTokenBlacklisted(String token);
+    void blacklistToken(String token);
+    void removeTokenFromBlacklist(String token);
+}
+
+interface IdempotencyKeyService {
+    boolean isValid(String key);
+    void markAsProcessed(String key);
+}
+
+interface UserRepository extends JpaRepository<Users, UUID> {
+    Optional<Users> findByEmail(String email);
+    boolean existsByEmail(String email);
+}
+
+enum Role {
+    SYSTEM_ADMIN(1, "SYSTEM_ADMIN"),
+    CENTER_ADMIN(2, "CENTER_ADMIN"),
+    MANAGER(3, "MANAGER"),
+    TEACHER(4, "TEACHER"),
+    STUDENT(5, "STUDENT");
+    
+    private final int id;
+    private final String name;
+    
+    Role(int id, String name) {
+        this.id = id;
+        this.name = name;
     }
-
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-    public static class AnnouncementDto {
-        private String title;
-        private String content;
-        private LocalDate startDate;
-        private LocalDate endDate;
+    
+    public int getId() {
+        return id;
     }
+    
+    public String getName() {
+        return name;
+    }
+}
+
+enum Provider {
+    LOCAL, FIREBASE, GOOGLE, FACEBOOK
+}
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "users")
+class Users {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "user_id")
+    private UUID userId;
+    
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+    
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+    
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Roles role;
+    
+    @Column(name = "provider", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Provider provider;
+    
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled;
+    
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+    
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+    
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = Instant.now();
+    }
+}
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "roles")
+class Roles {
+    @Id
+    @Column(name = "role_id")
+    private int id;
+    
+    @Column(name = "name", nullable = false, unique = true)
+    private String name;
+    
+    @Column(name = "description")
+    private String description;
+}
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+class AuthenticationRequest {
+    private String email;
+    private String password;
+    private String fullName;
+}
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+class AuthenticationResponse {
+    private String accessToken;
+    private String refreshToken;
+    private String tokenType;
+    private long expiresIn;
+    private UUID userId;
+}
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+class RefreshTokenRequest {
+    private String refreshToken;
 }
 ```
 
 # Day 1: model kilo-auto/free - API Endpoint https://api.kilo.ai/api/gateway
 * **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
-* **Production source codebase generated at TARGET destination**: ./sources/backend/promotion-service/src/main/java/org/nlh4j/membership_hub/promotion/AnnouncementService.java
+* **Production source codebase generated at TARGET destination**: ./sources/backend/membership-service/src/main/java/com/hub/membership/MembershipController.java
+* **Production source codebase generated at TARGET destination**: ./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthResource.java
 * **📝 Prompt / Tasks / Data**:
 ### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
 *   Target Project Identity Safe Name: membership-hub
 *   Enforced Java Package Prefix Base: org.nlh4j.saas.membership-hub
-*   Target Component Destination Path: `./sources/backend/promotion-service/src/main/java/org/nlh4j/membership_hub/promotion/AnnouncementService.java`
-*   Traceability Audit Tags For This Task: ['[REQ-017]', '[REQ-018]', '[DAT-009]']
+*   Target Component Destination Path: `./sources/backend/membership-service/src/main/java/com/hub/membership/MembershipController.java`
+*   Traceability Audit Tags For This Task: ['[REQ-014]', '[DAT-007]']
+*   Target Component Destination Path: `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthResource.java`
+*   Traceability Audit Tags For This Task: ['[REQ-001]', '[EXC-004]']
 
 ### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
 [INSTRUCTION FOR AI: No reference source component or baseline interface is provided. You are tasked with architecting and writing this component completely from scratch, aligning perfectly with the target path file extension.]
 
 ### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
-['Triển khai toàn bộ logic nghiệp vụ cho module quản lý khuyến mãi và thông báo hệ thống. Đối với khuyến mãi, xây dựng các phương thức CRUD với kiểm tra xác thực đầu vào nghiêm ngặt: phần trăm giảm giá phải nằm trong khoảng 0-100, ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu, mã khuyến mãi phải duy nhất. Đối với thông báo, triển khai logic lọc thông báo đang hoạt động dựa trên ngày hiện tại và cơ chế tự động ẩn thông báo sau ngày kết thúc thông qua scheduled job chạy hàng ngày. Tất cả các endpoint phải được bảo vệ bằng bộ lọc RBAC, chỉ cho phép Center Admin và Manager truy cập. Sử dụng prepared statements của Hibernate ORM để ngăn chặn SQL injection. Áp dụng làm sạch dữ liệu đầu vào để chống XSS.']
+['Xây dựng endpoint API và repository truy cập dữ liệu thẻ hội viên']
+['Xây dựng endpoint đăng ký và đăng nhập người dùng']
 
 ---
 
