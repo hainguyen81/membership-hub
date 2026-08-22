@@ -1,125 +1,234 @@
-# Day 1: model cohere/north-mini-code:free - API Endpoint https://openrouter.ai/api/v1
+# Day 1: model kilo-auto/free - API Endpoint https://api.kilo.ai/api/gateway
 * **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
-* **Production source codebase generated at TARGET destination**: ./sources/docs/data-dictionary/student-cards.md
+* **Production source codebase generated at TARGET destination**: ./sources/docs/auth-api-spec.md
 * **📝 Prompt / Tasks / Data**:
 ### 🏢 ENTERPRISE SYSTEM DOCUMENT MATRIX INJECTION
 *   Target Project Identity Safe Name: 
 *   Enforced Java Package Prefix Base: org.nlh4j.saas.
-*   Target Documentation Destination Path: `./sources/docs/data-dictionary/student-cards.md`
+*   Target Documentation Destination Path: `./sources/docs/auth-api-spec.md`
 
 
 *   Documentation Context: Conceptual Init (Synthesize the architecture, guidelines, or specs based purely on the execution sub-tasks blueprint.)
 
 
 ### 📋 EXECUTION SUB-TASKS & DOCUMENT CONTENT TO WRITE
-['Khởi tạo tài liệu kiến trúc và từ điển dữ liệu cho module thẻ hội viên']
+['Viết tài liệu đặc tả API cho luồng xác thực người dùng']
 
 ---
 
 ### ⚙️ TECHNICAL WRITER EXECUTION INSTRUCTION:
 Please read the comprehensive architectural constraints, workspace folder guardrails, and detailed sub-task document specifications provided above. 
 
-Ensure that you read the exact Tag IDs from the `['[DAT-007]']` variable, and permanently burn those codes into the generated documentation layout (inside the table columns or the dedicated Traceability Matrix Reference section). Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.
+Ensure that you read the exact Tag IDs from the `['[REQ-001]', '[REQ-002]', '[ARC-006]']` variable, and permanently burn those codes into the generated documentation layout (inside the table columns or the dedicated Traceability Matrix Reference section). Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.
 * **📝 Response**:
 ```markdown
-# Data Dictionary: Student Cards (STUDENTCARDS)
-*File Path:* `./sources/docs/data-dictionary/student-cards.md`
-
-## Overview
-The **Student Cards** module manages digital membership cards for learners, tracking card issuance, validity period, remaining days, and renewal actions. It supports core business functions such as displaying card status, calculating expiration dates, and processing renewals with integrated payment gateways. This module is a critical component of the membership‑hub platform, enabling learners to verify their active status and facilitating automated renewal workflows.
-
-## Table Definition: STUDENTCARDS
-
-| Column | Data Type | Nullable | Default | Constraints | Description | Business Rule |
-|--------|-----------|---------|---------|-------------|-------------|----------------|
-| **card_id** | `UUID` | **No** | `gen_random_uuid()` | `PRIMARY KEY` | Unique identifier for the student card | System‑generated, immutable |
-| **student_id** | `UUID` | **No** | — | `FOREIGN KEY` → `users(user_id)` `ON DELETE CASCADE` | Reference to the owning learner | Enforces one card per student; cascading delete on user removal |
-| **issue_date** | `DATE` | **No** | `CURRENT_DATE` | — | Date when the card was issued | Used as baseline for validity calculations |
-| **validity_days** | `INT` | **No** | — | `CHECK (validity_days > 0)` | Total number of days the card is valid from issue date | Determines card lifespan |
-| **remaining_days** | `INT` | **No** | — | `CHECK (remaining_days >= 0)` | Days of validity remaining as of current date | Updated dynamically; reflects elapsed time |
-| **created_at** | `TIMESTAMP` | **No** | `CURRENT_TIMESTAMP` | — | Record creation timestamp | Audit trail for card issuance |
-| **updated_at** | `TIMESTAMP` | **No** | `CURRENT_TIMESTAMP` | — | Last modification timestamp | Tracks renewals and status changes |
-
-## Indexes
-
-| Index Name | Columns | Type | Purpose |
-|------------|---------|------|---------|
-| `idx_student_cards_student_id` | `student_id` | `B-Tree` | Accelerates lookups for a specific learner’s card; enforces uniqueness via table constraint |
-
-## Foreign Keys
-
-| Constraint | Referenced Table | On Update | On Delete | Remarks |
-|------------|------------------|-----------|-----------|---------|
-| `student_id` | `users(user_id)` | `CASCADE` | `CASCADE` | Guarantees referential integrity; removes card when user account is deleted |
-
-## Business Logic
-
-### 1. Card Issuance & Initial State
-- When a learner is registered or a card is manually created, `issue_date` defaults to `CURRENT_DATE`.
-- `validity_days` is set by the renewal service (e.g., 30 days). `remaining_days` is initialized to the same value as `validity_days`.
-
-### 2. Daily Remaining‑Days Calculation
-- A scheduled job (or application logic) updates `remaining_days` each day:
-  ```sql
-  UPDATE student_cards
-  SET remaining_days = GREATEST(0, validity_days - EXTRACT(DAY FROM (CURRENT_DATE - issue_date))),
-      updated_at   = CURRENT_TIMESTAMP;
-  ```
-- The `CHECK (remaining_days >= 0)` guarantees the field never goes negative.
-
-### 3. Expiration Detection
-- Cards with `remaining_days = 0` are considered expired. Queries filter via `WHERE remaining_days <= 0`.
-
-### 4. Renewal Process
-- The **MembershipCardService** (`org.nlh4j.saas.membership.MembershipCardService`) receives a renewal request:
-  - Validates payment transaction ID.
-  - Calculates new `validity_days` (e.g., add 30 days).
-  - Updates `issue_date` to `CURRENT_DATE` (or extends based on business policy).
-  - Recomputes `remaining_days` as the new `validity_days`.
-  - Persists changes and triggers a **notification** (`[REQ-016]`) to the learner.
-
-### 5. Audit & Logging
-- All CRUD actions on `student_cards` are logged in the `audit_log` table (`[DAT-011]`) with user context, timestamp, and operation type, satisfying `[NFR-006]` (audit logging).
-
-## DDL Script (Flyway Migration V4)
-
-```sql
--- V4__create_student_cards.sql
-CREATE TABLE student_cards (
-    card_id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    student_id     UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    issue_date     DATE NOT NULL DEFAULT CURRENT_DATE,
-    validity_days  INT NOT NULL CHECK (validity_days > 0),
-    remaining_days INT NOT NULL CHECK (remaining_days >= 0),
-    created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_student_cards_student_id ON student_cards(student_id);
-```
-
-## Traceability Matrix
-
-| Documentation Section | Tag IDs |
-|-----------------------|---------|
-| Module Overview & Purpose | `[DAT-007]` |
-| Table Definition & Columns | `[DAT-007]` |
-| Indexes & Foreign Keys | `[DAT-007]` |
-| Business Logic (Calculation, Renewal, Expiration) | `[REQ-014]`, `[REQ-015]` |
-| DDL Script (Migration V4) | `[DAT-007]` |
-| Integration with Notification Service | `[REQ-016]`, `[ARC-008]` |
-| Caching & Offline Support (Redis) | `[ARC-009]` |
-| Security & Data Masking (PII) | `[NFR-003]` |
-| Audit Logging (Retention 1 Year) | `[NFR-006]` |
-
-## Additional Notes
-
-- **Multi‑Tenant Isolation:** The `student_id` foreign key implicitly enforces tenant isolation because the `users` table contains a `center_id` field (`[ARC-002]`), ensuring cards belong to learners within a specific center.
-- **Idempotency:** Renewal requests are deduplicated using an `idempotency_key` pattern (`[REQ-015]`) to prevent duplicate charges or double‑validity extensions.
-- **Performance:** The `idx_student_cards_student_id` index ensures O(log N) lookups for card retrieval, critical for high‑throughput mobile APIs.
-- **Compliance:** All personal data (student_id, issue_date, remaining_days) is masked in logs (`***MASKED***`) per `[NFR-003]` and `[NFR-006]`.
-- **Future Extensions:** The schema supports optional fields such as `card_type` (physical/digital) and `qr_code_url` without breaking existing constraints.
+# Authentication API Specification
+## Document Metadata
+| Field | Value |
+|-------|-------|
+| Document ID | AUTH-API-SPEC-001 |
+| Project Name | membership-hub |
+| Version | 1.0 (Base) |
+| Last Updated | 2026-08-18 |
+| Owner | Senior Backend Architect |
+| Status | Approved for Development |
+| Target File Path | ./sources/docs/auth-api-spec.md |
 
 ---
-*End of Data Dictionary – Student Cards Module*
+
+## 1. Traceability Matrix Reference
+This document is strictly mapped to the following enterprise requirement and architecture tags, with 100% coverage of all specified authentication functionality:
+| Tag ID | Requirement/Architecture Description | Mapped Scope in This Document |
+|--------|---------------------------------------|-------------------------------|
+| [REQ-001] | User registration with email/password and JWT token issuance | Local authentication endpoints (register, login, token refresh, logout) and password security constraints |
+| [REQ-002] | OAuth2 integration (Firebase, Google, Facebook) | OAuth2 authentication flow, provider validation, and error handling for third-party auth |
+| [ARC-006] | Centralized authentication system with JWT (15min access token, 7day refresh token) and Firebase Auth integration | All authentication flows, token management logic, security constraints, and integration with Firebase Auth |
+
+---
+
+## 2. Constants & Configuration Reference
+All fixed configuration values used across the authentication API are defined below to adhere to enterprise anti-magic-number and clean code policies:
+| Constant Name | Value | Description | Mapped Tag |
+|---------------|-------|-------------|------------|
+| `ACCESS_TOKEN_EXPIRY_MS` | 900000 | JWT access token expiration time (15 minutes) | [ARC-006] |
+| `REFRESH_TOKEN_EXPIRY_MS` | 604800000 | JWT refresh token expiration time (7 days) | [ARC-006] |
+| `MIN_PASSWORD_LENGTH` | 8 | Minimum required length for user passwords | [REQ-001] |
+| `PASSWORD_COMPLEXITY_REGEX` | `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$` | Regex pattern for valid passwords (requires 1 lowercase, 1 uppercase, 1 number, 1 special character) | [REQ-001] |
+| `ALLOWED_OAUTH_PROVIDERS` | `local, firebase, google, facebook` | Valid values for authentication provider field | [REQ-001], [REQ-002] |
+| `MAX_EMAIL_LENGTH` | 255 | Maximum allowed length for user email addresses | [REQ-001] |
+| `MAX_FULL_NAME_LENGTH` | 100 | Maximum allowed length for user full names | [REQ-001] |
+| `BCRYPT_ROUNDS` | 12 | Number of hashing rounds for password encryption | [REQ-001], [NFR-003] |
+| `JWT_SIGNING_ALGORITHM` | RS256 | Algorithm used to sign JWT tokens | [ARC-006], [NFR-003] |
+
+---
+
+## 3. API Endpoint Specifications
+All endpoints require TLS 1.3 encryption for all requests. All request/response payloads use JSON format.
+
+### 3.1 Register New User (Local Authentication)
+| Field | Specification |
+|-------|---------------|
+| **HTTP Method** | POST |
+| **Full Endpoint** | `/api/v1/auth/register` |
+| **Targeted Tag IDs** | [REQ-001], [ARC-006] |
+| **Request Headers** | `Content-Type: application/json` |
+| **Request Payload Schema** | <pre>{
+  "email": "string (required, valid email format, max 255 characters)",
+  "password": "string (required, min 8 characters, matches PASSWORD_COMPLEXITY_REGEX)",
+  "fullName": "string (required, max 100 characters)",
+  "provider": "string (optional, default: 'local', allowed values: local, firebase, google, facebook)"
+}</pre> |
+| **Success Response (201 Created)** | <pre>{
+  "userId": "uuid (unique user identifier)",
+  "email": "string (registered user email)",
+  "role": "string (default: 'Student', assigned user role)",
+  "accessToken": "string (JWT access token, expires in 15 minutes)",
+  "refreshToken": "string (JWT refresh token, expires in 7 days)"
+}</pre> |
+| **Error Response (400 Bad Request)** | <pre>{
+  "error": "VALIDATION_INPUT_INVALID",
+  "message": "List of invalid input fields",
+  "details": {
+    "email": "Invalid email format",
+    "password": "Password does not meet complexity requirements"
+  }
+}</pre> |
+| **Error Response (409 Conflict)** | <pre>{
+  "error": "EMAIL_ALREADY_EXISTS",
+  "message": "Email is already registered in the system"
+}</pre> |
+
+---
+
+### 3.2 User Login (Local Authentication)
+| Field | Specification |
+|-------|---------------|
+| **HTTP Method** | POST |
+| **Full Endpoint** | `/api/v1/auth/login` |
+| **Targeted Tag IDs** | [REQ-001], [ARC-006] |
+| **Request Headers** | `Content-Type: application/json` |
+| **Request Payload Schema** | <pre>{
+  "email": "string (required, registered user email)",
+  "password": "string (required, user password)"
+}</pre> |
+| **Success Response (200 OK)** | Same as 3.1 Success Response |
+| **Error Response (400 Bad Request)** | <pre>{
+  "error": "VALIDATION_INPUT_INVALID",
+  "message": "Missing required fields: email, password"
+}</pre> |
+| **Error Response (401 Unauthorized)** | <pre>{
+  "error": "INVALID_CREDENTIALS",
+  "message": "Invalid email or password"
+}</pre> |
+
+---
+
+### 3.3 OAuth2 Authentication (Third-Party Providers)
+| Field | Specification |
+|-------|---------------|
+| **HTTP Method** | POST |
+| **Full Endpoint** | `/api/v1/auth/oauth2/{provider}` |
+| **Targeted Tag IDs** | [REQ-002], [ARC-006] |
+| **Path Parameters** | `provider` (string, required, allowed values: firebase, google, facebook) |
+| **Request Headers** | `Content-Type: application/json` |
+| **Request Payload Schema** | <pre>{
+  "authCode": "string (required, OAuth2 authorization code from the third-party provider)"
+}</pre> |
+| **Success Response (200 OK)** | Same as 3.1 Success Response |
+| **Error Response (400 Bad Request)** | <pre>{
+  "error": "VALIDATION_INPUT_INVALID",
+  "message": "Missing required field: authCode"
+}</pre> |
+| **Error Response (401 Unauthorized)** | <pre>{
+  "error": "OAUTH2_AUTH_FAILED",
+  "message": "Failed to authenticate with {provider}: invalid authorization code"
+}</pre> |
+| **Error Response (404 Not Found)** | <pre>{
+  "error": "PROVIDER_NOT_SUPPORTED",
+  "message": "OAuth provider {provider} is not supported"
+}</pre> |
+
+---
+
+### 3.4 Refresh Access Token
+| Field | Specification |
+|-------|---------------|
+| **HTTP Method** | POST |
+| **Full Endpoint** | `/api/v1/auth/refresh` |
+| **Targeted Tag IDs** | [ARC-006] |
+| **Request Headers** | `Content-Type: application/json` |
+| **Request Payload Schema** | <pre>{
+  "refreshToken": "string (required, valid unexpired refresh token)"
+}</pre> |
+| **Success Response (200 OK)** | <pre>{
+  "accessToken": "string (new JWT access token, expires in 15 minutes)",
+  "refreshToken": "string (rotated refresh token, expires in 7 days)",
+  "expiresIn": 900
+}</pre> |
+| **Error Response (401 Unauthorized)** | <pre>{
+  "error": "INVALID_REFRESH_TOKEN",
+  "message": "Invalid or expired refresh token"
+}</pre> |
+| **Error Response (401 Unauthorized)** | <pre>{
+  "error": "TOKEN_REVOKED",
+  "message": "Refresh token has been revoked by user logout"
+}</pre> |
+
+---
+
+### 3.5 User Logout
+| Field | Specification |
+|-------|---------------|
+| **HTTP Method** | POST |
+| **Full Endpoint** | `/api/v1/auth/logout` |
+| **Targeted Tag IDs** | [ARC-006] |
+| **Request Headers** | `Authorization: Bearer <valid_access_token>`<br>`Content-Type: application/json` |
+| **Request Payload Schema** | <pre>{
+  "refreshToken": "string (required, refresh token to revoke)"
+}</pre> |
+| **Success Response (200 OK)** | <pre>{
+  "message": "Logout successful, refresh token revoked"
+}</pre> |
+| **Error Response (401 Unauthorized)** | <pre>{
+  "error": "UNAUTHORIZED",
+  "message": "Invalid or missing access token"
+}</pre> |
+
+---
+
+## 4. Error Code Reference
+All authentication-specific error codes are listed below, with their corresponding HTTP status codes and mapped requirement tags:
+| Error Code | HTTP Status | Description | Mapped Tag |
+|------------|-------------|-------------|------------|
+| `VALIDATION_INPUT_INVALID` | 400 | One or more request fields fail validation (invalid format, missing required field, etc.) | [REQ-001], [REQ-002] |
+| `EMAIL_ALREADY_EXISTS` | 409 | User with the provided email is already registered | [REQ-001] |
+| `INVALID_CREDENTIALS` | 401 | Provided email/password combination is incorrect | [REQ-001] |
+| `OAUTH2_AUTH_FAILED` | 401 | Failed to exchange OAuth2 authorization code with the third-party provider | [REQ-002] |
+| `PROVIDER_NOT_SUPPORTED` | 404 | Requested OAuth2 provider is not enabled in the system | [REQ-002] |
+| `INVALID_REFRESH_TOKEN` | 401 | Provided refresh token is invalid, expired, or malformed | [ARC-006] |
+| `TOKEN_REVOKED` | 401 | Refresh token has been revoked via logout or admin action | [ARC-006] |
+| `UNAUTHORIZED` | 401 | Missing or invalid access token in request headers | [ARC-006] |
+
+---
+
+## 5. Implementation Reference
+All authentication API implementation files are located under the `org.nlh4j.saas.auth` Java package, per project naming conventions:
+| Component | File Path | Mapped Tag |
+|-----------|-----------|------------|
+| Authentication REST Resource | `./sources/backend/auth-service/src/main/java/com/hub/auth/AuthResource.java` | [REQ-001], [REQ-002], [ARC-006] |
+| Authentication Business Service | `./sources/backend/auth-service/src/main/java/com/hub/auth/AuthService.java` | [REQ-001], [ARC-006] |
+| OAuth2 Integration Service | `./sources/backend/auth-service/src/main/java/com/hub/auth/OAuth2Service.java` | [REQ-002], [EXC-004] |
+| JWT Token Management Service | `./sources/backend/auth-service/src/main/java/com/hub/auth/TokenService.java` | [ARC-006] |
+| RBAC Access Filter | `./sources/backend/auth-service/src/main/java/com/hub/auth/RbacFilter.java` | [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005] |
+
+---
+
+## 6. Security & Compliance Notes
+1. All authentication requests must be sent over TLS 1.3 encrypted connections; plaintext HTTP requests are rejected.
+2. User passwords are hashed using BCrypt with 12 hashing rounds before storage; plaintext passwords are never stored or logged.
+3. JWT access tokens are signed with RS256 algorithm and contain minimal user claims (userId, role, provider) to reduce token size.
+4. Refresh tokens are stored encrypted in the PostgreSQL database and are rotated on every refresh request to prevent token reuse.
+5. All authentication-related actions (register, login, logout, role change) are logged to the audit log system with user ID, timestamp, and action details, stored for 1 year per [NFR-006].
+6. Sensitive data (email, password, tokens) is automatically masked in all application logs using PII masking interceptor, per [NFR-003] and [NFR-006].
+```
 
