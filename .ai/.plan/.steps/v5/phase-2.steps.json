@@ -1,0 +1,273 @@
+{
+    "phase_id": 2,
+    "phase_name": "Triển khai quản lý trung tâm, khóa học và đăng ký học viên",
+    "phase_description": "Giai đoạn này tập trung vào việc triển khai toàn bộ chức năng quản lý khóa học (CRUD, kiểm tra xung đột lịch trình giáo viên/địa điểm, phân công giáo viên), chức năng duyệt và đăng ký khóa học cho học viên (tự động tạo tài khoản Student nếu chưa tồn tại), tích hợp quét mã QR điểm danh có tính chất idempotent đảm bảo chỉ ghi nhận 1 bản ghi điểm danh mỗi học viên/khóa học/ngày, xử lý các ngoại lệ liên quan đến mất kết nối mạng và gửi điểm danh trùng lặp, bao phủ toàn bộ yêu cầu chức năng từ REQ-007 đến REQ-013 cùng các thẻ dữ liệu, ngoại lệ và kiến trúc liên quan.",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "Khởi tạo lược đồ cơ sở dữ liệu cho trung tâm, khóa học và ghi danh",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Triển khai migration Flyway tạo bảng CENTERS, COURSES, ENROLLMENTS",
+                    "targeted_tags": [
+                        "[DAT-003]",
+                        "[DAT-004]",
+                        "[DAT-005]",
+                        "[ARC-010]",
+                        "[REQ-008]"
+                    ],
+                    "components": [
+                        "./sources/backend/membership-hub/src/main/resources/db/migration/V2__create_centers_courses_enrollments.sql"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử tích hợp cho lược đồ cơ sở dữ liệu",
+                    "targeted_tags": [
+                        "[REQ-008]"
+                    ],
+                    "components": [
+                        "./sources/backend/membership-hub/src/test/java/com/membershiphub/integration/CourseSchemaIntegrationTest.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Doc",
+                    "desc": "Cập nhật từ điển dữ liệu cho các bảng trung tâm, khóa học và ghi danh",
+                    "targeted_tags": [
+                        "[DAT-003]",
+                        "[DAT-004]",
+                        "[DAT-005]"
+                    ],
+                    "components": [
+                        "./sources/docs/data-dictionary/centers-courses-enrollments.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "Triển khai API quản lý trung tâm và phân quyền quản trị",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Coder",
+                    "desc": "Triển khai REST API quản lý trung tâm (CRUD và phân quyền)",
+                    "targeted_tags": [
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[REQ-006]",
+                        "[ARC-002]"
+                    ],
+                    "components": [
+                        "./sources/backend/membership-hub/src/main/java/com/membershiphub/rest/CenterResource.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST2",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử đơn vị và tích hợp cho API quản lý trung tâm",
+                    "targeted_tags": [
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[REQ-006]"
+                    ],
+                    "components": [
+                        "./sources/backend/membership-hub/src/test/java/com/membershiphub/rest/CenterResourceTest.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST3",
+                    "agent": "Doc",
+                    "desc": "Viết tài liệu đặc tả API cho quản lý trung tâm",
+                    "targeted_tags": [
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[REQ-006]"
+                    ],
+                    "components": [
+                        "./sources/docs/api/center-api.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "Triển khai API quản lý khóa học và kiểm tra xung đột lịch trình",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "Coder",
+                    "desc": "Triển khai REST API quản lý khóa học và phân công giáo viên",
+                    "targeted_tags": [
+                        "[REQ-007]",
+                        "[REQ-008]",
+                        "[REQ-009]",
+                        "[ARC-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/membership-hub/src/main/java/com/membershiphub/rest/CourseResource.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST2",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử tích hợp cho API quản lý khóa học",
+                    "targeted_tags": [
+                        "[REQ-007]",
+                        "[REQ-008]",
+                        "[REQ-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/membership-hub/src/test/java/com/membershiphub/rest/CourseResourceTest.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Rà soát logic nghiệp vụ và tối ưu truy vấn dịch vụ khóa học",
+                    "targeted_tags": [
+                        "[REQ-008]"
+                    ],
+                    "components": [
+                        "./sources/backend/membership-hub/src/main/java/com/membershiphub/service/CourseService.java"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 4,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "Triển khai API ghi danh học viên và tự động tạo tài khoản",
+            "sub_tasks": [
+                {
+                    "id": "D4_ST1",
+                    "agent": "Coder",
+                    "desc": "Triển khai REST API ghi danh học viên",
+                    "targeted_tags": [
+                        "[REQ-010]",
+                        "[REQ-011]"
+                    ],
+                    "components": [
+                        "./sources/backend/membership-hub/src/main/java/com/membershiphub/rest/EnrollmentResource.java"
+                    ]
+                },
+                {
+                    "id": "D4_ST2",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử tích hợp cho luồng ghi danh",
+                    "targeted_tags": [
+                        "[REQ-010]",
+                        "[REQ-011]"
+                    ],
+                    "components": [
+                        "./sources/backend/membership-hub/src/test/java/com/membershiphub/rest/EnrollmentResourceTest.java"
+                    ]
+                },
+                {
+                    "id": "D4_ST3",
+                    "agent": "Doc",
+                    "desc": "Cập nhật tài liệu API cho endpoint ghi danh",
+                    "targeted_tags": [
+                        "[REQ-010]",
+                        "[REQ-011]"
+                    ],
+                    "components": [
+                        "./sources/docs/api/enrollment-api.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 5,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "Phát triển giao diện frontend, kiểm tra E2E và hoàn thiện tài liệu",
+            "sub_tasks": [
+                {
+                    "id": "D5_ST1",
+                    "agent": "Coder",
+                    "desc": "Phát triển các thành phần frontend cho danh sách khóa học, đăng ký và quét QR",
+                    "targeted_tags": [
+                        "[REQ-007]",
+                        "[REQ-010]",
+                        "[REQ-011]",
+                        "[REQ-012]",
+                        "[REQ-013]"
+                    ],
+                    "components": [
+                        "./sources/frontend/web/course/src/components/CourseList.tsx",
+                        "./sources/frontend/web/course/src/components/CourseDetail.tsx",
+                        "./sources/frontend/web/course/src/components/EnrollmentForm.tsx",
+                        "./sources/frontend/web/course/src/components/QRScanner.tsx"
+                    ]
+                },
+                {
+                    "id": "D5_ST2",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử end-to-end cho luồng đăng ký và điểm danh QR",
+                    "targeted_tags": [
+                        "[REQ-007]",
+                        "[REQ-010]",
+                        "[REQ-011]",
+                        "[REQ-012]",
+                        "[REQ-013]"
+                    ],
+                    "components": [
+                        "INTEGRATION_SCOPE;./sources/frontend/web/course/src/test/e2e/CourseEnrollmentE2ETest.java",
+                        "INTEGRATION_SCOPE;./sources/frontend/web/course/src/test/e2e/AttendanceQRScanE2ETest.java"
+                    ]
+                },
+                {
+                    "id": "D5_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Rà soát toàn bộ mã nguồn giai đoạn 2 và xác nhận tuân thủ",
+                    "targeted_tags": [
+                        "[REQ-007]",
+                        "[REQ-008]",
+                        "[REQ-009]",
+                        "[REQ-010]",
+                        "[REQ-011]",
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[EXC-001]",
+                        "[EXC-002]"
+                    ],
+                    "components": [
+                        "./sources/backend/course-service/*",
+                        "./sources/backend/enrollment-service/*",
+                        "./sources/backend/attendance-service/*",
+                        "./sources/frontend/web/course/*"
+                    ]
+                },
+                {
+                    "id": "D5_ST4",
+                    "agent": "Doc",
+                    "desc": "Tổng hợp tài liệu kiến trúc và hướng dẫn vận hành module",
+                    "targeted_tags": [
+                        "[REQ-007]",
+                        "[REQ-008]",
+                        "[REQ-009]",
+                        "[REQ-010]",
+                        "[REQ-011]",
+                        "[REQ-012]",
+                        "[REQ-013]",
+                        "[ARC-007]"
+                    ],
+                    "components": [
+                        "./sources/docs/course-module-architecture.md",
+                        "./sources/docs/operations-guide.md"
+                    ]
+                }
+            ]
+        }
+    ]
+}

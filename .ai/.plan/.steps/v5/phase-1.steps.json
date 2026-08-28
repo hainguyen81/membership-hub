@@ -1,0 +1,267 @@
+{
+    "phase_id": 1,
+    "phase_name": "Thiết lập hạ tầng cơ sở và xác thực cốt lõi",
+    "phase_description": "Giai đoạn này tập trung vào việc xây dựng nền tảng cơ sở của hệ thống quản lý hội viên, bao gồm khởi tạo lược đồ cơ sở dữ liệu PostgreSQL cho các thực thể người dùng, vai trò và trung tâm; triển khai toàn bộ luồng xác thực người dùng (email/mật khẩu, OAuth2 Firebase/Google/Facebook); cấp phát JWT access token (hết hạn 15 phút) và refresh token (hết hạn 7 ngày); triển khai cơ chế phân quyền RBAC với 5 vai trò được định nghĩa; xây dựng API CRUD quản lý trung tâm với kiểm tra trùng lặp mã số thuế; đảm bảo tất cả thành phần tuân thủ các yêu cầu bảo mật cốt lõi, bao gồm biện pháp chống OWASP Top 10, mã hóa dữ liệu và kiểm soát truy cập nghiêm ngặt. Tất cả tệp được tạo trong giai đoạn này nằm trong phạm vi thư mục backend cốt lõi và tài liệu kỹ thuật, không can thiệp vào các module chức năng khác của hệ thống.",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "Khởi tạo schema cơ sở dữ liệu và dịch vụ xác thực cốt lõi",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Viết script migration ANSI SQL chuẩn để tạo 3 bảng: roles, users, centers",
+                    "targeted_tags": [
+                        "[DAT-001]",
+                        "[DAT-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/migrations/V1__init_user_center_schema.sql"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Coder",
+                    "desc": "Triển khai logic xác thực email/mật khẩu và cấp phát JWT token",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[ARC-006]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthService.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Coder",
+                    "desc": "Xây dựng endpoint đăng ký và đăng nhập người dùng",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[EXC-004]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthResource.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST4",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử đơn vị cho dịch vụ xác thực và endpoint đăng ký",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[EXC-004]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthService.java;./sources/backend/auth-service/src/test/java/org/nlh4j/membership_hub/auth/AuthServiceTest.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST5",
+                    "agent": "Doc",
+                    "desc": "Viết tài liệu đặc tả API cho luồng xác thực người dùng",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[REQ-002]",
+                        "[ARC-006]"
+                    ],
+                    "components": [
+                        "./sources/docs/auth-api-spec.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "Triển khai xác thực OAuth2 và cơ chế phân quyền RBAC",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Coder",
+                    "desc": "Tích hợp luồng xác thực OAuth2 với Firebase, Google và Facebook",
+                    "targeted_tags": [
+                        "[REQ-002]",
+                        "[EXC-004]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/OAuth2Service.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST2",
+                    "agent": "Coder",
+                    "desc": "Xây dựng endpoint quản lý vai trò người dùng (RBAC)",
+                    "targeted_tags": [
+                        "[REQ-003]",
+                        "[ARC-001]"
+                    ],
+                    "components": [
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membership_hub/user/RoleService.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST3",
+                    "agent": "Coder",
+                    "desc": "Xây dựng endpoint lấy danh sách người dùng và quản lý vai trò",
+                    "targeted_tags": [
+                        "[REQ-003]",
+                        "[ARC-001]"
+                    ],
+                    "components": [
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membership_hub/user/UserResource.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST4",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử đơn vị cho luồng OAuth2 và RBAC",
+                    "targeted_tags": [
+                        "[REQ-002]",
+                        "[REQ-003]",
+                        "[EXC-004]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/OAuth2Service.java;./sources/backend/auth-service/src/test/java/org/nlh4j/membership_hub/auth/OAuth2ServiceTest.java"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "Triển khai quản lý trung tâm và phân quyền quản trị trung tâm",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "Coder",
+                    "desc": "Xây dựng dịch vụ quản lý trung tâm (CRUD)",
+                    "targeted_tags": [
+                        "[REQ-005]",
+                        "[ARC-002]"
+                    ],
+                    "components": [
+                        "./sources/backend/center-service/src/main/java/org/nlh4j/membership_hub/center/CenterService.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST2",
+                    "agent": "Coder",
+                    "desc": "Xây dựng API CRUD quản lý trung tâm",
+                    "targeted_tags": [
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[ARC-002]"
+                    ],
+                    "components": [
+                        "./sources/backend/center-service/src/main/java/org/nlh4j/membership_hub/center/CenterResource.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST3",
+                    "agent": "Coder",
+                    "desc": "Triển khai chức năng gán/huỷ gán quản trị viên trung tâm",
+                    "targeted_tags": [
+                        "[REQ-006]",
+                        "[ARC-002]"
+                    ],
+                    "components": [
+                        "./sources/backend/center-service/src/main/java/org/nlh4j/membership_hub/center/CenterAdminService.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST4",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử tích hợp cho API quản lý trung tâm",
+                    "targeted_tags": [
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[REQ-006]"
+                    ],
+                    "components": [
+                        "INTEGRATION_SCOPE;./sources/backend/center-service/src/test/java/org/nlh4j/membership_hub/center/CenterIntegrationTest.java"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 4,
+            "context_file": ".ai/.plan/.context/phase-1.context.blueprint.md",
+            "context_section": "Hoàn thiện phân quyền RBAC và kiểm thử toàn diện giai đoạn",
+            "sub_tasks": [
+                {
+                    "id": "D4_ST1",
+                    "agent": "Coder",
+                    "desc": "Triển khai bộ lọc phân quyền RBAC toàn cục cho tất cả endpoint",
+                    "targeted_tags": [
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/RbacFilter.java"
+                    ]
+                },
+                {
+                    "id": "D4_ST2",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử đơn vị cho bộ lọc RBAC",
+                    "targeted_tags": [
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/RbacFilter.java;./sources/backend/auth-service/src/test/java/org/nlh4j/membership_hub/auth/RbacFilterTest.java"
+                    ]
+                },
+                {
+                    "id": "D4_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Rà soát mã nguồn và sửa lỗi cho các thành phần giai đoạn 1",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[REQ-002]",
+                        "[REQ-003]",
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[REQ-006]",
+                        "[EXC-004]",
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-006]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthResource.java;./sources/backend/user-service/src/main/java/org/nlh4j/membership_hub/user/UserResource.java;./sources/backend/center-service/src/main/java/org/nlh4j/membership_hub/center/CenterResource.java"
+                    ]
+                },
+                {
+                    "id": "D4_ST4",
+                    "agent": "Doc",
+                    "desc": "Hoàn thiện tài liệu kỹ thuật cho giai đoạn 1",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[REQ-002]",
+                        "[REQ-003]",
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[REQ-006]",
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-006]"
+                    ],
+                    "components": [
+                        "./sources/docs/rbac-policy.md;./sources/docs/center-management-spec.md"
+                    ]
+                }
+            ]
+        }
+    ]
+}

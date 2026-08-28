@@ -278,6 +278,14 @@ def render_prompt(template: str, context: dict) -> str:
 def render_kwargs_prompt(template: str, **kwargs) -> str:
     return render_prompt(template=template, context={ **kwargs })
 
+
+def custom_jinja_tojson_filter(*args, **kwargs):
+    # Jinja2 có thể truyền EvalContext hoặc Environment làm tham số đầu tiên tùy cấu hình template
+    # Chúng ta bốc phần tử cuối cùng trong args hoặc lọc ra đối tượng không phải là Context/Environment
+    target_obj = args[0] if len(args) == 1 else args[1]
+    return json.dumps(target_obj, ensure_ascii=False)
+
+
 def regex_extract(pattern, data):
     if not pattern or not data:
         return (0, [])
@@ -288,6 +296,7 @@ def regex_extract(pattern, data):
     )
     extracted_data = reg_pattern.findall(data)
     return (len(extracted_data) if extracted_data else 0, extracted_data)
+
 
 def regex_extract_by_pair_tags(tag_start: str, tag_end: str, data):
     if not tag_start and tag_end:
@@ -300,8 +309,54 @@ def regex_extract_by_pair_tags(tag_start: str, tag_end: str, data):
         )
     return (0, [])
 
+
 def regex_extract_by_tag(tag: str, data):
     return regex_extract_by_pair_tags(tag_start=tag, tag_end=None, data=data)
+
+
+def regex_remove(pattern, data):
+    if not pattern or not data:
+        return data
+
+    # remove by regex pattern
+    return re.sub(pattern, "", str(data), flags=re.DOTALL)
+
+
+def regex_remove_hidden_tag(data, tag: str, emptyToRemAll: bool = False):
+    if not data:
+        return data
+    return (
+        regex_remove(rf"<!--.*?{tag}.*?-->", data)
+        if tag
+        else regex_remove(r"<!--.*?-->", data)
+        if emptyToRemAll
+        else data
+    )
+
+
+def regex_remove_hidden_tags(
+    data, tags: list[str] | None = None, emptyToRemAll: bool = False
+):
+    if not data:
+        return data
+
+    # not tags
+    if emptyToRemAll and (not tags or len(tags) <= 0):
+        return regex_remove(r"<!--.*?-->", data)
+    elif not tags or len(tags) <= 0:
+        return data
+
+    # loop tag
+    cleaned_data = str(data)
+    for tag in tags:
+        cleaned_data = regex_remove_hidden_tag(
+            data=cleaned_data, tag=tag, emptyToRemAll=emptyToRemAll
+        )
+    return cleaned_data
+
+
+def regex_remove_all_hidden_tags(data):
+    return regex_remove_hidden_tags(data=data)
 
 def validateAIResponse(response):
     if not response or not hasattr(response, 'choices') or not response.choices:
@@ -376,7 +431,7 @@ def splitAIResponseData(raw_data):
     
     # extract by regex
     match = re.search(
-        r"```(?:text|json|xml|mermaid|sql|python|code)?\s*(.*?)\s*```",
+        r"```(?:text|json|xml|mermaid|sql|python|code|yaml|properties)?\s*(.*?)\s*```",
         raw_data,
         re.DOTALL,
     )

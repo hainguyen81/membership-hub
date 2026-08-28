@@ -1,432 +1,502 @@
-# Giai đoạn 2: <!--PHASE_NAME_START-->Triển khai quản lý trung tâm, khóa học và đăng ký học viên<!--PHASE_NAME_END-->
+# Giai đoạn 2: <!--PHASE_NAME_START-->Xây Dựng Module Xác Thực, Phân Quyền Người Dùng Và Quản Lý Trung Tâm<!--PHASE_NAME_END-->
 
-## 📊 Bảng kiểm soát tài liệu
+## 📊 Kiểm Soát Tài Liệu
 
 | Mục | Chi tiết |
 | :--- | :--- |
-| **ID Bản thiết kế** | ARCH-20260818163158 |
+| **Mã bản thiết kế** | ARCH-20260828112120 |
 | **Tên dự án** | membership-hub |
 | **Giai đoạn** | 2 |
-| **Tên giai đoạn** | <!--PHASE_NAME_START-->Triển khai quản lý trung tâm, khóa học và đăng ký học viên<!--PHASE_NAME_END--> |
-| **Mô tả** | <!--PHASE_DESC_START-->Giai đoạn này tập trung vào việc triển khai toàn bộ chức năng quản lý khóa học (CRUD, kiểm tra xung đột lịch trình giáo viên/địa điểm, phân công giáo viên), chức năng duyệt và đăng ký khóa học cho học viên (tự động tạo tài khoản Student nếu chưa tồn tại), tích hợp quét mã QR điểm danh có tính chất idempotent đảm bảo chỉ ghi nhận 1 bản ghi điểm danh mỗi học viên/khóa học/ngày, xử lý các ngoại lệ liên quan đến mất kết nối mạng và gửi điểm danh trùng lặp, bao phủ toàn bộ yêu cầu chức năng từ [REQ-007] đến [REQ-013] cùng các thẻ dữ liệu, ngoại lệ và kiến trúc liên quan.<!--PHASE_DESC_END--> |
-| **Phiên bản** | 1.0 (Cơ sở) |
-| **Ngày.Giờ** | 2026/08/18 16:31:58 |
-| **Tác giả** | Kiến trúc sư hệ thống doanh nghiệp (Đặc vụ SA) |
-| **Phê duyệt** | Đang chờ xem xét quản trị kỹ thuật |
+| **Tên giai đoạn** | <!--PHASE_NAME_START-->Xây Dựng Module Xác Thực, Phân Quyền Người Dùng Và Quản Lý Trung Tâm<!--PHASE_NAME_END--> |
+| **Mô tả** | <!--PHASE_DESC_START-->Giai đoạn 2 tập trung hiện thực hóa hai microservices trọng yếu gồm user-service và center-service trong hệ thống Quarkus. Giai đoạn này xây dựng luồng đăng ký tài khoản cục bộ với mã hóa bcrypt, tích hợp OAuth2 cho các nhà cung cấp Firebase, Google, Facebook, thiết lập cơ chế RBAC với bảng Roles và audit log, đồng thời triển khai đầy đủ CRUD cho thực thể Center cùng với khả năng phân công Center Admin. Toàn bộ logic nghiệp vụ phải tuân thủ nguyên tắc bảo mật OWASP, xác thực đầu vào nghiêm ngặt và ghi log kiểm toán cho mọi thao tác thay đổi quyền hạn.<!--PHASE_DESC_END--> |
+| **Phiên bản** | 1.0 (Đường cơ sở) |
+| **Ngày giờ** | 2026/08/28 11:21:20 |
+| **Tác giả** | Kiến trúc sư hệ thống doanh nghiệp (SA Agent) |
+| **Phê duyệt** | Đang chờ đánh giá quản trị kỹ thuật |
 
-## 1. Phạm vi hoạt động và mục tiêu của giai đoạn
-Giai đoạn 2 là giai đoạn triển khai các module nghiệp vụ cốt lõi cho quản lý đa trung tâm và đào tạo. Giai đoạn này xây dựng nền tảng dữ liệu cho 3 thực thể chính: trung tâm (centers), khóa học (courses) và ghi danh (enrollments), bao gồm các ràng buộc khóa ngoại, chỉ mục tối ưu và ràng buộc CHECK đảm bảo tính toàn vẹn. Tiếp theo, giai đoạn triển khai API REST CRUD cho quản lý trung tâm với kiểm tra trùng lặp mã số thuế và phân quyền Center Admin; API quản lý khóa học với logic phát hiện xung đột lịch trình giáo viên/phòng học và phân công giáo viên; API đăng ký khóa học cho học viên với cơ chế tự động tạo tài khoản Student nếu chưa tồn tại. Giai đoạn cũng bao gồm phát triển giao diện frontend cho danh sách khóa học, form đăng ký và trình quét QR điểm danh, cùng toàn bộ bộ kiểm thử tích hợp và end-to-end. Tất cả thành phần tuân thủ kiến trúc RBAC đã triển khai ở giai đoạn 1 và các yêu cầu bảo mật OWASP Top 10.
+## 1. Phạm Vi Hoạt Động & Mục Tiêu Của Giai Đoạn
 
-## 2. Phạm vi kỹ thuật được phép và ranh giới thư mục
-- **Thư mục backend:** `./sources/backend/membership-hub/src/main/java/com/membershiphub/rest/`, `./sources/backend/membership-hub/src/main/java/com/membershiphub/service/`, `./sources/backend/membership-hub/src/main/resources/db/migration/`
-- **Thư mục frontend:** `./sources/frontend/web/course/src/components/`
-- **Thư mục tài liệu:** `./sources/docs/api/`, `./sources/docs/data-dictionary/`
-- **Endpoint API được phép triển khai:**
-  - `GET /api/v1/centers`, `GET /api/v1/centers/{centerId}`
-  - `POST /api/v1/admin/centers`, `PUT /api/v1/admin/centers/{centerId}`, `DELETE /api/v1/admin/centers/{centerId}`
-  - `POST /api/v1/admin/centers/{centerId}/admins`, `DELETE /api/v1/admin/centers/{centerId}/admins/{userId}`
-  - `GET /api/v1/courses`, `POST /api/v1/courses`, `PUT /api/v1/courses/{courseId}`, `DELETE /api/v1/courses/{courseId}`
-  - `POST /api/v1/courses/{courseId}/assign-teacher`, `DELETE /api/v1/courses/{courseId}/assign-teacher/{teacherId}`
-  - `GET /api/v1/courses/available`, `POST /api/v1/enrollments`
+Giai đoạn 2 thuộc dự án membership-hub tập trung xây dựng hai microservices nền tảng gồm `user-service` và `center-service` nhằm hiện thực hóa toàn bộ luồng xác thực, phân quyền và quản lý trung tâm đa chi nhánh. Phạm vi hoạt động cốt lõi của giai đoạn này bao gồm năm trụ cột chính: (1) Triển khai endpoint POST `/api/v1/auth/register` trong user-service với mã hóa mật khẩu bcrypt cost factor 12, kiểm tra tính duy nhất email, tạo bản ghi User với vai trò mặc định `Student` và phát hành JWT access token 15 phút kèm refresh token 7 ngày; (2) Tích hợp OAuth2 cho ba nhà cung cấp Firebase, Google, Facebook thông qua authorization code grant, ánh xạ thông tin provider về bản ghi User cục bộ, tự động tạo tài khoản mới nếu email chưa tồn tại; (3) Thiết lập cơ chế RBAC với endpoint PUT `/api/v1/users/{id}/role` chỉ dành cho System Admin, bổ sung bảng `user_audit_log` ghi lại toàn bộ thay đổi quyền hạn với retention 1 năm theo [NFR-006]; (4) Triển khai center-service với endpoint GET `/api/v1/centers` phân trang, CRUD POST/PUT/DELETE với ràng buộc UNIQUE TaxID và validation regex theo chuẩn OWASP; (5) Xây dựng cơ chế phân công Center Admin thông qua bảng trung gian `center_admins` với quan hệ composite primary key, tự động chuyển đổi vai trò người dùng sang Center Admin và ghi log kiểm toán trong cùng transaction.
 
-## 3. Chỉ thị chức năng cho đại lý phụ chuyên biệt
-*   **Coder**: Đóng vai trò là Nhà phát triển ứng dụng cấp Cao/Chính. Chịu trách nhiệm triển khai mã nguồn ứng dụng thuần túy trên lớp dịch vụ backend (REST controllers, services, repositories) và ứng dụng khách frontend (React components). Bị cấm viết bộ kiểm thử hoặc manifest hạ tầng.
-*   **Tester**: Đóng vai trò là Kiểm soát chất lượng (QC/QA) cấp Lead/Chính. Chuyên về kỹ thuật bộ kiểm thử, xác thực và cổng chất lượng. Chịu trách nhiệm tạo các bộ kiểm thử tích hợp và end-to-end, kịch bản xác thực luồng chức năng. Bị cấm sửa mã nguồn ứng dụng sản xuất. Nếu phạm vi kiểm thử tích hợp hoặc end-to-end không thể cô lập thành một tệp mã ứng dụng cụ thể, phải sử dụng literal token `INTEGRATION_SCOPE` làm tham số đầu tiên của cặp dấu chấm phẩy.
-*   **Doc**: Hoạt động như là Nhà viết kỹ thuật chính và Kiến trúc sư hệ thống doanh nghiệp. Chuyên về biên soạn tài liệu đặc tả kỹ thuật toàn diện, tài liệu tham chiếu schema, bản vẽ hệ thống và danh mục kiến trúc doanh nghiệp. Mỗi tệp tài liệu kỹ thuật được tạo phải có phần mở rộng `.md` và nằm nghiêm ngặt trong `./sources/docs/`.
-*   **Reviewer**: Chịu trách nhiệm xác minh trình biên dịch, cổng phân tích tĩnh và vá lỗi phòng thủ. Chuyên về kiểm toán chất lượng mã nguồn, giải quyết lỗi biên dịch, sửa lỗ hổng bảo mật OWASP và đề xuất tối ưu truy vấn.
+Mục tiêu kỹ thuật cụ thể bao gồm việc tuân thủ nghiêm ngặt quy ước đặt tên package `org.nlh4j.membershiphub.userservice` và `org.nlh4j.membershiphub.centerservice` cho toàn bộ mã nguồn Java, áp dụng nguyên tắc PreparedStatement thông qua Hibernate ORM Panache để loại bỏ tuyệt đối SQL injection, đảm bảo mọi endpoint nhạy cảm đều yêu cầu JWT hợp lệ thông qua filter chain đã thiết lập ở Giai đoạn 1, sử dụng Bean Validation với các ràng buộc `@NotNull`, `@Email`, `@Pattern` và `@Size` cho mọi DTO đầu vào, đồng thời xây dựng bộ exception mapper chuyển đổi mã lỗi nghiệp vụ sang HTTP status code chuẩn (409 cho xung đột dữ liệu, 400 cho validation, 404 cho không tìm thấy, 403 cho không đủ quyền).
 
-## 4. Định nghĩa hoàn thành giai đoạn (DoD)
-1. Hoàn thành 100% các thẻ theo dõi yêu cầu được phân bổ cho Giai đoạn 2: [REQ-004] đến [REQ-013], [EXC-001], [EXC-002], [DAT-003] đến [DAT-006], [ARC-002], [ARC-003], [ARC-007], không có thẻ nào bị bỏ sót.
-2. Tất cả bộ kiểm thử đơn vị, tích hợp và end-to-end đạt độ bao phủ mã nguồn tối thiểu 85%, không có lỗi nghiêm trọng nào còn tồn tại sau khi rà soát.
-3. Tất cả endpoint API được triển khai đầy đủ theo hợp đồng định tuyến đã định nghĩa, tuân thủ các tiêu chuẩn bảo mật OWASP Top 10 (chống SQL injection, XSS, CSRF, xác thực đầu vào nghiêm ngặt).
-4. Lược đồ cơ sở dữ liệu được triển khai chính xác với tất cả ràng buộc khóa ngoại, chỉ mục và ràng buộc CHECK, đảm bảo tính toàn vẹn dữ liệu và hiệu suất truy vấn tối ưu.
-5. Cơ chế kiểm tra xung đột lịch trình giáo viên hoạt động chính xác, trả về lỗi 409 khi phát hiện trùng lặp.
-6. Cơ chế điểm danh idempotent được triển khai đầy đủ ở backend và frontend, đảm bảo chỉ 1 bản ghi mỗi học viên/khóa học/ngày, xử lý đúng trường hợp mất kết nối và trùng lặp.
-7. Tất cả tài liệu kỹ thuật (đặc tả API, từ điển dữ liệu, kiến trúc module) được hoàn thiện, rõ ràng và đồng bộ với phiên bản triển khai thực tế.
+## 2. Phạm Vi Kỹ Thuật Được Phép & Ranh Giới Thư Mục
 
-## 5. Nhật ký thực hiện kiến trúc theo ngày
+Danh sách kiểm tra kỹ thuật dưới đây định nghĩa 100% các tệp vật lý được phép khởi tạo trong phạm vi giai đoạn này, mỗi mục đại diện cho một tệp cụ thể kèm Tag ID truy vết:
 
-### 🌤️ NGÀY 1: <!--DAY_HEADER_START-->Khởi tạo lược đồ cơ sở dữ liệu cho trung tâm, khóa học và ghi danh<!--DAY_HEADER_END-->
+* `./sources/backend/user-service/pom.xml` — [ARC-000], [ARC-006]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/AuthController.java` — [REQ-001], [REQ-002], [ARC-006]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/AuthService.java` — [REQ-001], [REQ-002], [EXC-004]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/OAuth2Service.java` — [REQ-002], [ARC-006]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/UserService.java` — [REQ-003], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/RoleService.java` — [REQ-003], [NFR-006]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/AuditLogger.java` — [REQ-003], [NFR-006]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/JwtTokenProvider.java` — [ARC-006]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/dto/RegisterRequest.java` — [REQ-001], [EXC-004]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/dto/SocialLoginRequest.java` — [REQ-002]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/dto/RoleUpdateRequest.java` — [REQ-003]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/exception/EmailAlreadyExistsException.java` — [EXC-004]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/exception/InvalidPasswordException.java` — [EXC-004]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/exception/RoleUpdateForbiddenException.java` — [REQ-003]
+* `./sources/backend/user-service/src/main/resources/application.properties` — [ARC-006]
+* `./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/AuthControllerTest.java` — [REQ-001], [EXC-004]
+* `./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/OAuth2ServiceTest.java` — [REQ-002]
+* `./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/UserServiceTest.java` — [REQ-003]
+* `./sources/backend/center-service/pom.xml` — [ARC-000]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/CenterController.java` — [REQ-004], [REQ-005], [REQ-006]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/CenterService.java` — [REQ-004], [REQ-005], [EXC-004]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/CenterAdminService.java` — [REQ-006]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/dto/CenterRequest.java` — [REQ-005], [EXC-004]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/dto/CenterAdminRequest.java` — [REQ-006]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/exception/DuplicateTaxIdException.java` — [EXC-004]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/exception/CenterNotFoundException.java` — [REQ-005]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/exception/CenterAdminAlreadyAssignedException.java` — [REQ-006]
+* `./sources/backend/center-service/src/main/resources/db/migration/V2__phase2_center_admin_relationship.sql` — [REQ-006], [NFR-006]
+* `./sources/backend/center-service/src/main/resources/application.properties` — [ARC-006]
+* `./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/CenterControllerTest.java` — [REQ-004], [REQ-005]
+* `./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/CenterAdminServiceTest.java` — [REQ-006]
+* `./sources/docs/architecture/UserServiceArchitecture.md` — [DOC-001], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]
+* `./sources/docs/api/UserServiceApiContract.md` — [DOC-001], [REQ-001], [REQ-002], [REQ-003]
+* `./sources/docs/api/CenterServiceApiContract.md` — [DOC-001], [REQ-004], [REQ-005], [REQ-006]
 
-#### 📝 Công việc phụ 1.1: Triển khai migration Flyway tạo bảng CENTERS, COURSES, ENROLLMENTS
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/membership-hub/src/main/resources/db/migration/V2__create_centers_courses_enrollments.sql`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[DAT-003], [DAT-004], [DAT-005], [ARC-010], [REQ-008]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết script migration ANSI SQL chuẩn để tạo 3 bảng: `centers` (centerId PK UUID DEFAULT gen_random_uuid(), name VARCHAR 100 NOT NULL, address VARCHAR 255 NOT NULL, taxId VARCHAR 13 NOT NULL UNIQUE với ràng buộc CHECK chỉ chấp nhận 10-13 chữ số, contactPhone VARCHAR 20, contactEmail VARCHAR 255 với ràng buộc CHECK đúng định dạng email), `courses` (courseId PK UUID DEFAULT gen_random_uuid(), title VARCHAR 150 NOT NULL, description TEXT, startDate DATE NOT NULL, endDate DATE NOT NULL với ràng buộc CHECK (startDate < endDate), teacherId UUID NOT NULL tham chiếu users(userId) ON DELETE CASCADE, maxStudents INT NOT NULL DEFAULT 30), `enrollments` (enrollmentId PK UUID DEFAULT gen_random_uuid(), studentId UUID NOT NULL tham chiếu users(userId) ON DELETE CASCADE, courseId UUID NOT NULL tham chiếu courses(courseId) ON DELETE CASCADE, enrollmentDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, ràng buộc UNIQUE (studentId, courseId)). Tạo chỉ mục cho các trường thường xuyên truy vấn: idx_courses_dates trên courses(startDate, endDate), idx_enrollments_student trên enrollments(studentId), idx_enrollments_course trên enrollments(courseId). Đảm bảo tất cả ràng buộc khóa ngoại và CHECK được định nghĩa chính xác theo chuẩn PostgreSQL.
+* **BẮT BUỘC VỀ BỘ KHUNG NỀN TẢNG**: Khi khởi tạo blueprint vòng đời hoạt động (giới hạn cụ thể trong Giai đoạn 2 - NGÀY 1), cần phải tiêm và khai báo rõ ràng các bộ mô tả cấu trúc hạ tầng kho lưu trữ chính trước khi tạo bất kỳ thành phần mã nguồn nghiệp vụ nào. Đối với kiến trúc backend Microservices, phải thực thi định nghĩa đường dẫn bắt buộc của bộ mô tả dự án cha `./sources/backend/pom.xml` và các bộ mô tả module con riêng biệt `./sources/backend/<tên-dịch-vụ>/pom.xml`. Toàn bộ tài sản khung được tạo ra phải ánh xạ chặt chẽ tới mã theo dõi kiến trúc hệ thống `[ARC-000]`.
 
-<!--START_DDL_MIGRATION-->
+## 3. Chỉ Thị Chức Năng Chuyên Biệt Cho Các Sub-Agent
+
+*   **Coder**: Đóng vai trò Nhà phát triển ứng dụng cao cấp. Chịu trách nhiệm triển khai mã nguồn nghiệp vụ thuần túy trên dịch vụ backend user-service và center-service. Bị cấm viết bộ kiểm thử hoặc bản kê khai hạ tầng.
+* **Tester**: Đóng vai trò Trưởng phòng QC/QA. Chuyên về kỹ thuật bộ kiểm thử, xác nhận hợp lệ và cổng gác chất lượng. Chịu trách nhiệm tạo JUnit, kiểm thử tích hợp sử dụng Testcontainers PostgreSQL và REST Assured. Bị cấm sửa đổi mã sản phẩm. Nếu nhiệm vụ phụ liên quan đến phạm vi tích hợp, phải xuất chính xác chuỗi ký tự `INTEGRATION_SCOPE` làm tham số đầu tiên của cặp dấu chấm phẩy.
+* **Doc**: Đóng vai trò Technical Writer chính và Kiến trúc sư hệ thống doanh nghiệp. Chuyên biên soạn tài liệu đặc tả kỹ thuật toàn diện, tài liệu tham chiếu API, bản thiết kế kiến trúc dịch vụ và danh mục RBAC doanh nghiệp. Mọi tệp tài liệu kỹ thuật được tạo ra phải được liệt kê dưới dạng thực thể đường dẫn tệp rõ ràng kết thúc bằng phần mở rộng `.md` và nằm hoàn toàn trong bố cục lưu trữ tập trung `./sources/docs/`.
+*   **Reviewer**: Chịu trách nhiệm xác minh trình biên dịch, cổng gác phân tích tĩnh và vá lỗi phòng thủ. Chuyên về kiểm toán chất lượng mã, giải quyết lỗi biên dịch, sửa lỗ hổng bảo mật OWASP và xử lý các blocker cổng chất lượng SonarQube.
+
+## 4. Định Nghĩa Hoàn Thành Giai Đoạn (DoD)
+
+Giai đoạn 2 được coi là hoàn thành khi đáp ứng đồng thời các tiêu chí định lượng sau: (1) Endpoint POST `/api/v1/auth/register` xử lý thành công 100% test case bao gồm đăng ký hợp lệ trả về HTTP 201 kèm JWT, đăng ký trùng email trả về HTTP 409 với mã `EMAIL_ALREADY_EXISTS`, mật khẩu yếu trả về HTTP 400 với mã `INVALID_PASSWORD_FORMAT`, không đồng ý điều khoản trả về HTTP 400 với mã `TERMS_NOT_AGREED`. (2) Endpoint POST `/api/v1/auth/social` xử lý thành công authorization code từ ba provider Firebase, Google, Facebook, tự động tạo bản ghi User mới nếu email chưa tồn tại, cập nhật `provider` cho user hiện tại nếu email đã tồn tại. (3) Endpoint PUT `/api/v1/users/{id}/role` chỉ chấp nhận JWT của System Admin, từ chối các vai trò khác với HTTP 403 mã `ROLE_UPDATE_FORBIDDEN`, đồng thời ghi bản ghi audit vào bảng `user_audit_log` với `action_type='ROLE_CHANGED'` trong cùng transaction. (4) Bảng `user_audit_log` được tạo thành công với đầy đủ ràng buộc FOREIGN KEY, CHECK constraint cho `action_type` và INDEX trên `user_id`, `performed_at`. (5) Endpoint GET `/api/v1/centers` trả về danh sách phân trang với `page` và `size` query parameter, đảm bảo thời gian phản hồi dưới 200ms. (6) Endpoint POST `/api/v1/centers` kiểm tra trùng `tax_id` trả về HTTP 409 mã `DUPLICATE_TAX_ID`, validation sai định dạng email hoặc số điện thoại trả về HTTP 400. (7) Endpoint POST `/api/v1/centers/{id}/admins` cập nhật vai trò user sang `Center Admin`, tạo bản ghi trong bảng `center_admins` với `is_active=true`, ghi log audit `CENTER_ASSIGNED` trong cùng transaction. (8) 100% Tag ID của giai đoạn (gồm [REQ-001] đến [REQ-006], [ARC-001] đến [ARC-006], [EXC-004], [NFR-006], [DOC-001]) được ánh xạ đầy đủ trong mã nguồn và tài liệu. (9) Mọi mã nguồn Java tuân thủ package convention `org.nlh4j.membershiphub.userservice` và `org.nlh4j.membershiphub.centerservice`. (10) Mật khẩu được mã hóa bằng bcrypt cost factor 12, không bao giờ lưu trữ plaintext hoặc log ra console theo [NFR-003].
+
+## 5. NHẬT KÝ THỰC THI KIẾN TRÚC THEO NGÀY
+
+### 🌤️ NGÀY 1: <!--DAY_HEADER_START-->Khởi Tạo User-Service Và Triển Khai Đăng Ký/Đăng Nhập Tài Khoản Cục Bộ<!--DAY_HEADER_END-->
+
+#### 📝 Nhiệm vụ phụ 1.1: Khởi tạo pom.xml cho user-service với đầy đủ dependency bảo mật
+##### Sub-Agent được phân công: Coder
+##### Thành phần mục tiêu & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu:** `./sources/backend/user-service/pom.xml`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000], [ARC-006]<!--END_TAGS-->
+* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Cập nhật tệp pom.xml cho module `user-service` tại đường dẫn `./sources/backend/user-service/pom.xml` kế thừa từ `./sources/backend/pom.xml` thông qua khối `<parent>` với `<groupId>org.nlh4j.membershiphub</groupId>`, `<artifactId>membershiphub-backend</artifactId>`, `<version>1.0.0-SNAPSHOT</version>`. Khai báo `<artifactId>user-service</artifactId>`. Bổ sung đầy đủ các dependency Quarkus cần thiết cho chức năng xác thực và quản lý người dùng: `quarkus-resteasy-reactive-jackson` cho REST endpoint, `quarkus-hibernate-orm-panache` cho ORM, `quarkus-jdbc-postgresql` cho kết nối database, `quarkus-flyway` cho migration, `quarkus-smallrye-jwt` và `quarkus-smallrye-jwt-build` cho phát hành và xác minh JWT, `quarkus-rest-client-reactive-jackson` cho HTTP client gọi OAuth2 provider, `quarkus-hibernate-validator` cho Bean Validation, `quarkus-arc` cho CDI. Thiết lập `<java.version>21</java.version>`, `<maven.compiler.source>21</maven.compiler.source>`, `<maven.compiler.target>21</maven.compiler.target>`. Đảm bảo tệp XML hợp lệ, biên dịch thành công thông qua `mvn -f ./sources/backend/user-service/pom.xml compile`.
+
+#### 📝 Nhiệm vụ phụ 1.2: Triển khai AuthController và AuthService xử lý đăng ký tài khoản
+##### Sub-Agent được phân công: Coder
+##### Thành phần mục tiêu & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu:** `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/AuthController.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-001], [REQ-002], [ARC-006], [EXC-004]<!--END_TAGS-->
+* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo lớp `AuthController` tại đường dẫn `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/AuthController.java` thuộc package `org.nlh4j.membershiphub.userservice`. Class chú thích `@Path("/api/v1/auth")` sử dụng JAX-RS, đăng ký hai endpoint: `POST /register` và `POST /social`. Endpoint đăng ký nhận `RegisterRequest` được xác thực bằng `@Valid`, ủy quyền xử lý cho `AuthService.register()`. Trước khi gọi service, kiểm tra `agreeTerms` phải là `true`, nếu không ném ngoại lệ với mã `TERMS_NOT_AGREED` và HTTP 400. Trả về `Response.status(Response.Status.CREATED).entity(authResponse).build()` cho đăng ký thành công với HTTP 201, `Response.status(Response.Status.CONFLICT)` cho email trùng, `Response.status(Response.Status.BAD_REQUEST)` cho validation fail. Endpoint social nhận `SocialLoginRequest`, ủy quyền cho `OAuth2Service.handleSocialLogin()`. Đồng thời tạo lớp `AuthService` tại đường dẫn `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/AuthService.java` thực thi logic nghiệp vụ: inject `UserRepository`, `RoleRepository`, `BCryptPasswordEncoder` (cost factor 12), `JwtTokenProvider`. Phương thức `register(RegisterRequest req)` thực hiện kiểm tra email tồn tại qua `userRepository.findByEmail()`, nếu tồn tại ném `EmailAlreadyExistsException`. Validate mật khẩu mạnh bằng regex `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,128}$`, nếu không thỏa ném `InvalidPasswordException`. Tạo bản ghi User mới với `role_id=5` (Student), `provider='local'`, mã hóa mật khẩu qua BCrypt. Phát hành JWT access token 15 phút và refresh token 7 ngày thông qua `JwtTokenProvider`. Trả về `AuthResponse` chứa `userId`, `accessToken`, `refreshToken`, `role`. Toàn bộ thao tác phải bọc trong annotation `@Transactional`.
+
+* **Hợp đồng định tuyến API và sự kiện [REQ-001], [REQ-002], [ARC-006]:** <!--START_API_CONTRACT-->
+```json
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Membership Hub - User Service Authentication API",
+    "version": "2.0.0"
+  },
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Đăng ký tài khoản cục bộ bằng email và mật khẩu",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegisterRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Tạo tài khoản thành công, trả về JWT" },
+          "400": { "description": "Dữ liệu không hợp lệ" },
+          "409": { "description": "Email đã tồn tại" }
+        }
+      }
+    },
+    "/api/v1/auth/social": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Đăng nhập hoặc đăng ký qua OAuth2 (Firebase, Google, Facebook)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SocialLoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Xác thực thành công" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RegisterRequest": {
+        "type": "object",
+        "required": ["email", "password", "agreeTerms"],
+        "properties": {
+          "email":       { "type": "string", "format": "email", "maxLength": 255 },
+          "password":    { "type": "string", "minLength": 8, "maxLength": 128 },
+          "fullName":    { "type": "string", "maxLength": 100 },
+          "agreeTerms":  { "type": "boolean" }
+        }
+      },
+      "SocialLoginRequest": {
+        "type": "object",
+        "required": ["provider", "authorizationCode"],
+        "properties": {
+          "provider":           { "type": "string", "enum": ["firebase", "google", "facebook"] },
+          "authorizationCode":  { "type": "string" },
+          "profilePicture":     { "type": "string", "format": "uri" }
+        }
+      }
+    }
+  }
+}
+```
+<!--END_API_CONTRACT-->
+
+* **Bộ xử lý ngoại lệ cục bộ hóa của giai đoạn [EXC-004]:** <!--START_EXC_HANDLER-->
+```java
+package org.nlh4j.membershiphub.userservice.exception;
+
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+
+/**
+ * Bắt ngoại lệ EmailAlreadyExistsException và trả về HTTP 409 với mã lỗi EMAIL_ALREADY_EXISTS.
+ * Áp dụng cho endpoint POST /api/v1/auth/register và POST /api/v1/auth/social.
+ */
+@Provider
+public class EmailAlreadyExistsExceptionMapper implements ExceptionMapper<EmailAlreadyExistsException> {
+
+    @Override
+    public Response toResponse(EmailAlreadyExistsException ex) {
+        return Response.status(Response.Status.CONFLICT)
+                .entity(new ErrorResponse("EMAIL_ALREADY_EXISTS", ex.getMessage()))
+                .type("application/json; charset=utf-8")
+                .build();
+    }
+}
+
+/**
+ * Bắt ngoại lệ InvalidPasswordException và trả về HTTP 400 với mã lỗi INVALID_PASSWORD_FORMAT.
+ */
+@Provider
+public class InvalidPasswordExceptionMapper implements ExceptionMapper<InvalidPasswordException> {
+
+    @Override
+    public Response toResponse(InvalidPasswordException ex) {
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity(new ErrorResponse("INVALID_PASSWORD_FORMAT", ex.getMessage()))
+                .type("application/json; charset=utf-8")
+                .build();
+    }
+}
+
+/**
+ * Bắt ngoại lệ TermsNotAgreedException và trả về HTTP 400 với mã lỗi TERMS_NOT_AGREED.
+ */
+@Provider
+public class TermsNotAgreedExceptionMapper implements ExceptionMapper<TermsNotAgreedException> {
+
+    @Override
+    public Response toResponse(TermsNotAgreedException ex) {
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity(new ErrorResponse("TERMS_NOT_AGREED", ex.getMessage()))
+                .type("application/json; charset=utf-8")
+                .build();
+    }
+}
+```
+<!--END_EXC_HANDLER-->
+
+#### 📝 Nhiệm vụ phụ 1.3: Kiểm thử endpoint đăng ký tài khoản
+##### Sub-Agent được phân công: Tester
+##### Thành phần mục tiêu & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu:** INTEGRATION_SCOPE;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/AuthControllerTest.java
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-001], [EXC-004]<!--END_TAGS-->
+* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tệp kiểm thử tích hợp tại đường dẫn `./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/AuthControllerTest.java` thuộc package `org.nlh4j.membershiphub.userservice`. Sử dụng annotation `@QuarkusTest` kết hợp `@TestHTTPResource` để khởi tạo context Quarkus. Sử dụng `@QuarkusTestResource` với Testcontainers PostgreSQL 16-alpine để mô phỏng cơ sở dữ liệu, đảm bảo mỗi test chạy trên schema sạch. Sử dụng `RestAssured` để thực hiện HTTP request. Test case 1 (`testRegisterSuccess`): gửi POST `/api/v1/auth/register` với body `{"email":"newuser@example.com","password":"Strong@123","fullName":"Nguyen Van A","agreeTerms":true}`, kỳ vọng HTTP 201, response chứa `userId` định dạng UUID, `accessToken` chứa JWT hợp lệ với claim `sub` và `groups` chứa `Student`, `role` trả về là `STUDENT`. Test case 2 (`testRegisterDuplicateEmail`): đăng ký hai lần với cùng email, kỳ vọng request thứ hai trả về HTTP 409 và body chứa `code` là `EMAIL_ALREADY_EXISTS`. Test case 3 (`testRegisterWeakPassword`): gửi mật khẩu `weak`, kỳ vọng HTTP 400 với `code` là `INVALID_PASSWORD_FORMAT`. Test case 4 (`testRegisterTermsNotAgreed`): gửi `agreeTerms: false`, kỳ vọng HTTP 400 với `code` là `TERMS_NOT_AGREED`. Test case 5 (`testRegisterPasswordHashed`): verify bản ghi User trong database có `password_hash` khác plaintext và tuân thủ định dạng BCrypt (bắt đầu bằng `$2a$12$`).
+
+#### 📝 Nhiệm vụ phụ 1.4: Biên soạn tài liệu kiến trúc user-service
+##### Sub-Agent được phân công: Doc
+##### Thành phần mục tiêu & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu:** `./sources/docs/architecture/UserServiceArchitecture.md`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[DOC-001], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]<!--END_TAGS-->
+* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tài liệu Markdown tại đường dẫn `./sources/docs/architecture/UserServiceArchitecture.md` mô tả kiến trúc chi tiết của user-service. Nội dung bắt buộc gồm: (1) Mục lục rõ ràng; (2) Sơ đồ Mermaid `graph TD` thể hiện cấu trúc thành phần gồm `AuthController`, `OAuth2Service`, `UserService`, `RoleService`, `AuditLogger`, `JwtTokenProvider` cùng các repository tương ứng; (3) Sơ đồ Mermaid `sequenceDiagram` mô tả luồng đăng ký từ client gửi request đến khi nhận JWT; (4) Bảng mô tả năm vai trò RBAC theo Tag ID từ [ARC-001] đến [ARC-005] với cột `Role Name`, `Role ID`, `Quyền hạn`, `Endpoint được phép`; (5) Phần mô tả cơ chế bảo mật gồm BCrypt cost 12, JWT 15 phút, refresh token 7 ngày, rotation key thông qua Keycloak; (6) Bảng đối chiếu Tag ID với thành phần mã nguồn tương ứng. Tài liệu viết bằng tiếng Việt, mục lục rõ ràng, sơ đồ Mermaid hợp lệ.
+
+### 🌤️ NGÀY 2: <!--DAY_HEADER_START-->Tích Hợp OAuth2 Và Triển Khai Phân Quyền RBAC Với Audit Log<!--DAY_HEADER_END-->
+
+#### 📝 Nhiệm vụ phụ 2.1: Triển khai OAuth2Service và JwtTokenProvider
+##### Sub-Agent được phân công: Coder
+##### Thành phần mục tiêu & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu:** `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/OAuth2Service.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-002], [ARC-006]<!--END_TAGS-->
+* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo lớp `OAuth2Service` tại đường dẫn `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/OAuth2Service.java` thuộc package `org.nlh4j.membershiphub.userservice`. Sử dụng annotation `@ApplicationScoped` để đăng ký CDI bean. Inject `Vertx WebClient` cho HTTP client bất đồng bộ, `UserRepository` và `JwtTokenProvider`. Phương thức `handleSocialLogin(SocialLoginRequest request)` thực hiện: (1) Dựa vào `request.getProvider()` lấy cấu hình `tokenEndpoint` và `userInfoEndpoint` tương ứng (Firebase: `https://securetoken.googleapis.com/v1/token`, Google: `https://oauth2.googleapis.com/token`, Facebook: `https://graph.facebook.com/v18.0/oauth/access_token`); (2) Gọi HTTP POST đến `tokenEndpoint` với grant_type `authorization_code`, `code`, `client_id`, `client_secret`, `redirect_uri` để trao đổi lấy `access_token`; (3) Gọi HTTP GET đến `userInfoEndpoint` với Bearer token nhận được để lấy email, name, picture; (4) Tìm user qua `userRepository.findByEmail(providerEmail)`. Nếu chưa tồn tại, tạo bản ghi mới với `role_id=5` (Student), `provider` tương ứng, `password_hash` là chuỗi UUID ngẫu nhiên (không dùng để đăng nhập). Nếu đã tồn tại, cập nhật `provider` nếu thay đổi. (5) Phát hành JWT thông qua `JwtTokenProvider`. Bắt tất cả ngoại lệ từ provider (timeout, 4xx, 5xx) và ném `OAuth2ProviderException` với mã lỗi `OAUTH2_PROVIDER_ERROR`. Đồng thời tạo lớp `JwtTokenProvider` tại đường dẫn `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/JwtTokenProvider.java` sử dụng `SmallRye JWT Build` để phát hành JWT với thuật toán RS256, claim `sub` chứa userId, claim `groups` chứa role name, claim `upn` chứa email, `exp` là `now + 15 phút` cho access token và `now + 7 ngày` cho refresh token. Inject khóa bí mật từ `@ConfigProperty(name="jwt.private.key.location")` và `jwt.public.key.location`.
+
+* **Hợp đồng định tuyến API và sự kiện [REQ-002], [ARC-006]:** <!--START_API_CONTRACT-->
+```json
+{
+  "endpoint": "POST /api/v1/auth/social",
+  "provider_flow": {
+    "firebase":  { "tokenEndpoint": "https://securetoken.googleapis.com/v1/token", "userInfoEndpoint": "https://identitytoolkit.googleapis.com/v1/accounts:lookup" },
+    "google":    { "tokenEndpoint": "https://oauth2.googleapis.com/token",        "userInfoEndpoint": "https://openidconnect.googleapis.com/v1/userinfo" },
+    "facebook":  { "tokenEndpoint": "https://graph.facebook.com/v18.0/oauth/access_token", "userInfoEndpoint": "https://graph.facebook.com/me?fields=id,name,email,picture" }
+  }
+}
+```
+<!--END_API_CONTRACT-->
+
+* **Bộ xử lý ngoại lệ cục bộ hóa của giai đoạn [EXC-004]:** <!--START_EXC_HANDLER-->
+```java
+package org.nlh4j.membershiphub.userservice.exception;
+
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+
+/**
+ * Bắt ngoại lệ OAuth2ProviderException khi không trao đổi được token hoặc không lấy được
+ * thông tin người dùng từ provider, trả về HTTP 502 với mã lỗi OAUTH2_PROVIDER_ERROR.
+ */
+@Provider
+public class OAuth2ProviderExceptionMapper implements ExceptionMapper<OAuth2ProviderException> {
+
+    @Override
+    public Response toResponse(OAuth2ProviderException ex) {
+        return Response.status(Response.Status.BAD_GATEWAY)
+                .entity(new ErrorResponse("OAUTH2_PROVIDER_ERROR", ex.getMessage()))
+                .type("application/json; charset=utf-8")
+                .build();
+    }
+}
+```
+<!--END_EXC_HANDLER-->
+
+#### 📝 Nhiệm vụ phụ 2.2: Tạo migration bảng user_audit_log và UserService, RoleService, AuditLogger
+##### Sub-Agent được phân công: Coder
+##### Thành phần mục tiêu & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu:** `./sources/backend/center-service/src/main/resources/db/migration/V2__phase2_center_admin_relationship.sql`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-003], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [NFR-006]<!--END_TAGS-->
+* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tệp migration tại đường dẫn `./sources/backend/center-service/src/main/resources/db/migration/V2__phase2_center_admin_relationship.sql` chứa DDL tạo bảng `user_audit_log` gồm `audit_id UUID NOT NULL PRIMARY KEY`, `user_id UUID NOT NULL` với FOREIGN KEY tham chiếu `users(user_id)`, `action_type VARCHAR(50) NOT NULL` với CHECK constraint `IN ('ROLE_CHANGED', 'CENTER_ASSIGNED', 'CENTER_UNASSIGNED', 'PASSWORD_RESET', 'ACCOUNT_LOCKED')`, `performed_by UUID NOT NULL` với FOREIGN KEY tham chiếu `users(user_id)`, `old_value TEXT NULL`, `new_value TEXT NULL`, `performed_at TIMESTAMP NOT NULL DEFAULT now()`. Bổ sung INDEX `idx_user_audit_user_id` trên cột `user_id` và INDEX `idx_user_audit_performed_at` trên cột `performed_at` để tối ưu truy vấn audit log. Đồng thời tạo tệp migration bổ sung `V20250102100001__phase2_user_audit_log.sql` trong cùng thư mục chứa DDL tương tự để đảm bảo tính tương thích ngược (lưu ý: tệp này sẽ được merge vào tệp V2 chính, xem chi tiết tại tệp V2). Đồng thời tạo lớp `UserService` tại đường dẫn `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/UserService.java` thực thi phương thức `changeRole(UUID userId, int newRoleId, UUID performedBy)` với annotation `@Transactional(REQUIRES_NEW)`. Phương thức này gọi `roleService.findById(newRoleId)` kiểm tra vai trò hợp lệ, cập nhật `users.role_id = newRoleId`, gọi `auditLogger.log("ROLE_CHANGED", userId, performedBy, oldRoleName, newRoleName)` để ghi log trong cùng transaction. Lớp `RoleService` tại đường dẫn `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/RoleService.java` chứa phương thức `findById(int roleId)` trả về Optional<Role> và `validateRoleTransition(int oldRoleId, int newRoleId)` kiểm tra quy tắc chuyển đổi (ví dụ: cấm chuyển System Admin sang Student). Lớp `AuditLogger` tại đường dẫn `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/AuditLogger.java` chứa phương thức `log(String actionType, UUID userId, UUID performedBy, String oldValue, String newValue)` insert vào bảng `user_audit_log`. Endpoint `PUT /api/v1/users/{id}/role` chú thích `@RolesAllowed("SYSTEM_ADMIN")` để chỉ System Admin mới có quyền truy cập.
+
+* **Đặc tả DDL SQL lược đồ cơ sở dữ liệu [REQ-003], [NFR-006]:** <!--START_DDL_MIGRATION-->
 ```sql
--- Triển khai schema cho các bảng liên quan đến trung tâm, khóa học và đăng ký trong giai đoạn 2
--- Bảng trung tâm [DAT-003]
-CREATE TABLE centers (
-    centerId UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(100) NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    taxId VARCHAR(13) NOT NULL UNIQUE CHECK (taxId ~ '^[0-9]{10,13}$'),
-    contactPhone VARCHAR(20),
-    contactEmail VARCHAR(255) CHECK (contactEmail ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+-- ============================================================
+-- MIGRATION: V2__phase2_center_admin_relationship.sql  (center-service shared schema)
+-- Tag ID: [REQ-003], [REQ-006], [NFR-006]
+-- ============================================================
+
+-- Bảng ghi log kiểm toán cho các hành động thay đổi vai trò và quyền
+CREATE TABLE user_audit_log (
+    audit_id          UUID           PRIMARY KEY,
+    user_id           UUID           NOT NULL,
+    action_type       VARCHAR(50)    NOT NULL,
+    performed_by      UUID           NOT NULL,
+    old_value         TEXT,
+    new_value         TEXT,
+    performed_at      TIMESTAMP      NOT NULL DEFAULT now(),
+    CONSTRAINT fk_user_audit_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id),
+    CONSTRAINT fk_user_audit_performer
+        FOREIGN KEY (performed_by) REFERENCES users(user_id),
+    CONSTRAINT chk_audit_action
+        CHECK (action_type IN ('ROLE_CHANGED', 'CENTER_ASSIGNED', 'CENTER_UNASSIGNED', 'PASSWORD_RESET', 'ACCOUNT_LOCKED'))
 );
 
--- Bảng khóa học [DAT-004]
-CREATE TABLE courses (
-    courseId UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title VARCHAR(150) NOT NULL,
-    description TEXT,
-    startDate DATE NOT NULL,
-    endDate DATE NOT NULL,
-    teacherId UUID NOT NULL REFERENCES users(userId) ON DELETE CASCADE,
-    maxStudents INT NOT NULL DEFAULT 30,
-    CONSTRAINT chk_course_dates CHECK (startDate < endDate)
+CREATE INDEX idx_user_audit_user_id      ON user_audit_log(user_id);
+CREATE INDEX idx_user_audit_performed_at ON user_audit_log(performed_at);
+
+-- Bảng quan hệ User-Center dùng cho việc phân công Center Admin
+CREATE TABLE center_admins (
+    center_id     UUID        NOT NULL,
+    user_id       UUID        NOT NULL,
+    assigned_at   TIMESTAMP   NOT NULL DEFAULT now(),
+    assigned_by   UUID        NOT NULL,
+    is_active     BOOLEAN     NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (center_id, user_id),
+    CONSTRAINT fk_center_admin_center FOREIGN KEY (center_id) REFERENCES centers(center_id),
+    CONSTRAINT fk_center_admin_user   FOREIGN KEY (user_id)   REFERENCES users(user_id),
+    CONSTRAINT fk_center_admin_by     FOREIGN KEY (assigned_by) REFERENCES users(user_id)
 );
 
--- Bảng đăng ký [DAT-005]
-CREATE TABLE enrollments (
-    enrollmentId UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    studentId UUID NOT NULL REFERENCES users(userId) ON DELETE CASCADE,
-    courseId UUID NOT NULL REFERENCES courses(courseId) ON DELETE CASCADE,
-    enrollmentDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uk_enrollment_student_course UNIQUE (studentId, courseId)
-);
-
--- Tạo index cho các truy vấn thường dùng
-CREATE INDEX idx_courses_dates ON courses(startDate, endDate);
-CREATE INDEX idx_enrollments_student ON enrollments(studentId);
-CREATE INDEX idx_enrollments_course ON enrollments(courseId);
+CREATE INDEX idx_center_admins_user_id   ON center_admins(user_id);
+CREATE INDEX idx_center_admins_is_active ON center_admins(is_active);
 ```
 <!--END_DDL_MIGRATION-->
 
-#### 📝 Công việc phụ 1.2: Viết bộ kiểm thử tích hợp cho lược đồ cơ sở dữ liệu
-##### Đại lý phụ được phân công: [Tester]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/membership-hub/src/test/java/com/membershiphub/integration/CourseSchemaIntegrationTest.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-008]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết bộ kiểm thử tích hợp sử dụng Testcontainers hoặc embedded PostgreSQL để xác minh lược đồ cơ sở dữ liệu vừa tạo. Kiểm tra tính toàn vẹn khóa ngoại giữa các bảng centers, courses, enrollments với users; kiểm tra ràng buộc duy nhất trên taxId của centers và cặp (studentId, courseId) của enrollments; kiểm tra ràng buộc CHECK cho startDate < endDate và định dạng taxId; kiểm tra chỉ mục được tạo đúng và truy vấn với điều kiện lọc trả về kết quả chính xác. Đảm bảo các test case bao phủ cả trường hợp dữ liệu hợp lệ và vi phạm ràng buộc.
-
-#### 📝 Công việc phụ 1.3: Cập nhật từ điển dữ liệu cho các bảng trung tâm, khóa học và ghi danh
-##### Đại lý phụ được phân công: [Doc]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/docs/data-dictionary/centers-courses-enrollments.md`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[DAT-003], [DAT-004], [DAT-005]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Biên soạn tài liệu từ điển dữ liệu chi tiết cho 3 bảng: centers, courses, enrollments. Mô tả đầy đủ từng trường (tên, kiểu dữ liệu, ràng buộc, mô tả nghiệp vụ), sơ đồ ERD mô tả mối quan hệ giữa các bảng và với bảng users, các chỉ mục được tạo và mục đích sử dụng, các ràng buộc toàn vẹn dữ liệu. Tài liệu phải được định dạng Markdown chuẩn, dễ đọc cho cả đội phát triển và quản trị cơ sở dữ liệu.
-
-### 🌤️ NGÀY 2: <!--DAY_HEADER_START-->Triển khai API quản lý trung tâm và phân quyền quản trị<!--DAY_HEADER_END-->
-
-#### 📝 Công việc phụ 2.1: Triển khai REST API quản lý trung tâm (CRUD và phân quyền)
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/membership-hub/src/main/java/com/membershiphub/rest/CenterResource.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-004], [REQ-005], [REQ-006], [ARC-002]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Triển khai các endpoint REST cho quản lý trung tâm: `GET /api/v1/centers` (lấy danh sách, hỗ trợ phân trang, trả về name, address, taxId, contactPhone, contactEmail), `GET /api/v1/centers/{centerId}` (chi tiết), `POST /api/v1/admin/centers` (tạo mới, kiểm tra trùng taxId trả về 409), `PUT /api/v1/admin/centers/{centerId}` (cập nhật), `DELETE /api/v1/admin/centers/{centerId}` (xóa, kiểm tra không có khóa học hoặc học viên đang hoạt động). Triển khai endpoint `POST /api/v1/admin/centers/{centerId}/admins` (gán Center Admin) và `DELETE /api/v1/admin/centers/{centerId}/admins/{userId}` (huỷ gán). Áp dụng bộ lọc RBAC cho tất cả endpoint, chỉ System Admin được phép thực hiện các thao tác tạo/sửa/xóa/phân quyền. Đảm bảo tất cả đầu vào được làm sạch, sử dụng prepared statements để ngăn SQL injection.
-
-<!--START_API_CONTRACT>
-```json
-[
-  {
-    "endpoint": "/api/v1/centers",
-    "method": "GET",
-    "description": "Lấy danh sách tất cả trung tâm (công khai cho người dùng đã xác thực)",
-    "request": {
-      "queryParams": {
-        "page": "INT (tùy chọn, mặc định 1)",
-        "size": "INT (tùy chọn, mặc định 20)"
-      }
-    },
-    "response": {
-      "status": 200,
-      "body": [
-        {
-          "centerId": "uuid",
-          "name": "string",
-          "address": "string",
-          "taxId": "string",
-          "contactPhone": "string",
-          "contactEmail": "string"
-        }
-      ]
-    }
-  },
-  {
-    "endpoint": "/api/v1/admin/centers/{centerId}",
-    "method": "PUT",
-    "description": "Cập nhật thông tin trung tâm (chỉ System Admin)",
-    "request": {
-      "body": {
-        "name": "string (required)",
-        "address": "string (required)",
-        "contactPhone": "string (tùy chọn)",
-        "contactEmail": "string (tùy chọn)"
-      }
-    },
-    "response": {
-      "status": 200,
-      "body": "Object trung tâm đã cập nhật"
-    },
-    "error": {
-      "status": 409,
-      "body": { "error": "TAX_ID_CONFLICT", "message": "Mã số thuế đã tồn tại" }
-    }
-  },
-  {
-    "endpoint": "/api/v1/admin/centers/{centerId}/admins/{userId}",
-    "method": "DELETE",
-    "description": "Huỷ gán quyền Center Admin cho người dùng",
-    "response": {
-      "status": 200,
-      "body": { "message": "Thao tác phân quyền trung tâm thành công" }
-    },
-    "error": {
-      "status": 403,
-      "body": { "error": "FORBIDDEN", "message": "Không có quyền thực hiện thao tác này" }
-    }
-  }
-]
-```
-<!--END_API_CONTRACT>
-
-#### 📝 Công việc phụ 2.2: Viết bộ kiểm thử đơn vị và tích hợp cho API quản lý trung tâm
-##### Đại lý phụ được phân công: [Tester]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/membership-hub/src/test/java/com/membershiphub/rest/CenterResourceTest.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-004], [REQ-005], [REQ-006]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết bộ kiểm thử tích hợp sử dụng Quarkus test framework và REST assured để kiểm tra toàn bộ API quản lý trung tâm. Các kịch bản bao gồm: (1) Lấy danh sách trung tâm trả về đúng định dạng và phân trang; (2) Tạo trung tâm thành công với thông tin hợp lệ; (3) Tạo trung tâm với taxId trùng lặp trả về 409; (4) Cập nhật trung tâm thành công; (5) Xóa trung tâm thành công khi không có ràng buộc; (6) Gán Center Admin thành công; (7) Huỷ gán Center Admin thành công; (8) Từ chối truy cập khi không có quyền System Admin. Đảm bảo độ bao phủ mã đạt trên 90%.
-
-#### 📝 Công việc phụ 2.3: Viết tài liệu đặc tả API cho quản lý trung tâm
-##### Đại lý phụ được phân công: [Doc]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/docs/api/center-api.md`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-004], [REQ-005], [REQ-006]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Biên soạn tài liệu đặc tả API Markdown cho tất cả endpoint quản lý trung tâm. Mô tả chi tiết từng endpoint: phương thức HTTP, đường dẫn, tham số yêu cầu (path, query, body), schema phản hồi thành công, mã lỗi (400, 403, 409), ví dụ payload JSON. Bao gồm hướng dẫn xác thực (JWT token), phân quyền truy cập (chỉ System Admin), và xử lý lỗi trùng lặp mã số thuế. Đảm bảo tài liệu tuân thủ chuẩn OpenAPI/Markdown của dự án.
-
-### 🌤️ NGÀY 3: <!--DAY_HEADER_START-->Triển khai API quản lý khóa học và kiểm tra xung đột lịch trình<!--DAY_HEADER_END-->
-
-#### 📝 Công việc phụ 3.1: Triển khai REST API quản lý khóa học và phân công giáo viên
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/membership-hub/src/main/java/com/membershiphub/rest/CourseResource.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-007], [REQ-008], [REQ-009], [ARC-003]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Triển khai các endpoint REST cho quản lý khóa học: `GET /api/v1/courses` (lấy danh sách với thông tin giáo viên, lịch trình, sĩ số, hỗ trợ lọc theo centerId và phân trang), `POST /api/v1/courses` (tạo mới, kiểm tra xung đột lịch trình giáo viên trước khi lưu, trả về 409 nếu trùng), `PUT /api/v1/courses/{courseId}` (cập nhật, kiểm tra xung đột lịch trình khi thay đổi giáo viên hoặc thời gian), `DELETE /api/v1/courses/{courseId}` (xóa). Triển khai endpoint `POST /api/v1/courses/{courseId}/assign-teacher` (phân công giáo viên, kiểm tra xung đột lịch, gửi thông báo) và `DELETE /api/v1/courses/{courseId}/assign-teacher/{teacherId}` (huỷ phân công). Áp dụng kiểm tra quyền RBAC: System Admin và Center Admin được phép quản lý khóa học. Đảm bảo tất cả truy vấn sử dụng prepared statements, đầu vào được làm sạch để ngăn SQL injection và XSS.
-
-<!--START_API_CONTRACT>
-```json
-[
-  {
-    "endpoint": "/api/v1/courses",
-    "method": "GET",
-    "description": "Lấy danh sách tất cả khóa học với thông tin giáo viên và lịch trình",
-    "request": {
-      "queryParams": {
-        "centerId": "UUID (tùy chọn, lọc theo trung tâm)",
-        "page": "INT (tùy chọn, mặc định 1)",
-        "size": "INT (tùy chọn, mặc định 20)"
-      }
-    },
-    "response": {
-      "status": 200,
-      "body": [
-        {
-          "courseId": "UUID",
-          "title": "STRING",
-          "description": "STRING",
-          "startDate": "DATE (YYYY-MM-DD)",
-          "endDate": "DATE (YYYY-MM-DD)",
-          "teacherId": "UUID",
-          "teacherName": "STRING",
-          "maxStudents": "INT",
-          "enrolledCount": "INT"
-        }
-      ]
-    }
-  },
-  {
-    "endpoint": "/api/v1/courses",
-    "method": "POST",
-    "description": "Tạo mới khóa học (chỉ System Admin/Center Admin)",
-    "request": {
-      "body": {
-        "title": "STRING (bắt buộc, max 150 ký tự)",
-        "description": "STRING (tùy chọn)",
-        "startDate": "DATE (bắt buộc, YYYY-MM-DD)",
-        "endDate": "DATE (bắt buộc, YYYY-MM-DD)",
-        "teacherId": "UUID (bắt buộc)",
-        "maxStudents": "INT (tùy chọn, mặc định 30)"
-      }
-    },
-    "response": {
-      "status": 201,
-      "body": {
-        "courseId": "UUID",
-        "message": "Tạo khóa học thành công"
-      }
-    },
-    "error": {
-      "status": 409,
-      "body": {
-        "error": "CONFLICT",
-        "message": "Giáo viên có lịch trình trùng lặp trong khoảng thời gian khóa học"
-      }
-    }
-  },
-  {
-    "endpoint": "/api/v1/courses/{courseId}/assign-teacher",
-    "method": "POST",
-    "description": "Phân công giáo viên vào khóa học và gửi thông báo",
-    "request": {
-      "body": {
-        "teacherId": "UUID (bắt buộc)"
-      }
-    },
-    "response": {
-      "status": 200,
-      "body": {
-        "message": "Phân công giáo viên thành công, thông báo đã được xếp hàng"
-      }
-    }
-  }
-]
-```
-<!--END_API_CONTRACT>
-
-#### 📝 Công việc phụ 3.2: Viết bộ kiểm thử tích hợp cho API quản lý khóa học
-##### Đại lý phụ được phân công: [Tester]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/membership-hub/src/test/java/com/membershiphub/rest/CourseResourceTest.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-007], [REQ-008], [REQ-009]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết bộ kiểm thử tích hợp sử dụng Quarkus test framework và REST assured. Các kịch bản: (1) Lấy danh sách khóa học trả về đúng định dạng và phân trang; (2) Tạo khóa học thành công với thông tin hợp lệ; (3) Tạo khóa học trùng lịch giáo viên trả về lỗi 409; (4) Cập nhật khóa học thành công; (5) Xóa khóa học thành công; (6) Phân công giáo viên thành công và kiểm tra thông báo được xếp hàng; (7) Huỷ phân công giáo viên thành công; (8) Từ chối truy cập khi không có quyền. Đảm bảo độ bao phủ mã đạt trên 90%, kiểm tra cả trường hợp dữ liệu biên và lỗi.
-
-#### 📝 Công việc phụ 3.3: Rà soát logic nghiệp vụ và tối ưu truy vấn dịch vụ khóa học
-##### Đại lý phụ được phân công: [Reviewer]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/membership-hub/src/main/java/com/membershiphub/service/CourseService.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-008]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Rà soát toàn bộ logic nghiệp vụ trong CourseService, tập trung vào cơ chế kiểm tra xung đột lịch trình giáo viên. Phát hiện và sửa các lỗ hổng bảo mật (SQL injection, thiếu kiểm tra quyền), tối ưu truy vấn kiểm tra trùng lặp lịch (sử dụng chỉ mục phù hợp, tránh full table scan), đảm bảo logic xung đột tính cả các trường hợp cạnh nhau (startDate nằm trong khoảng khóa học khác, endDate nằm trong khoảng, hoặc bao phủ toàn bộ). Đề xuất và triển khai các cải tiến về cấu trúc mã nguồn, đảm bảo tuân thủ OWASP Top 10.
-
-### 🌤️ NGÀY 4: <!--DAY_HEADER_START-->Triển khai API ghi danh học viên và tự động tạo tài khoản<!--DAY_HEADER_END-->
-
-#### 📝 Công việc phụ 4.1: Triển khai REST API ghi danh học viên
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/membership-hub/src/main/java/com/membershiphub/rest/EnrollmentResource.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-010], [REQ-011]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Triển khai endpoint `GET /api/v1/courses/available` để lấy danh sách khóa học có sẵn cho học viên, lọc ra các khóa học học viên đã đăng ký, trả về thông tin courseId, title, startDate, endDate, teacherName, maxStudents, remainingSlots. Triển khai endpoint `POST /api/v1/enrollments` để đăng ký khóa học: kiểm tra khóa học còn chỗ, kiểm tra học viên chưa đăng ký, nếu học viên chưa có tài khoản local thì tự động tạo tài khoản Student với email được cung cấp, tạo bản ghi enrollment, xếp hàng thông báo cho học viên và nhóm Zalo của trung tâm. Áp dụng kiểm tra quyền RBAC, chỉ Student mới được đăng ký. Đảm bảo tất cả thao tác có kiểm tra đầu vào nghiêm ngặt.
-
-<!--START_API_CONTRACT>
-```json
-[
-  {
-    "endpoint": "/api/v1/courses/available",
-    "method": "GET",
-    "description": "Lấy danh sách khóa học có sẵn cho học viên (loại trừ khóa đã đăng ký)",
-    "request": {
-      "headers": {
-        "Authorization": "Bearer <JWT token>"
-      },
-      "queryParams": {
-        "page": "INT (tùy chọn)",
-        "size": "INT (tùy chọn)"
-      }
-    },
-    "response": {
-      "status": 200,
-      "body": [
-        {
-          "courseId": "UUID",
-          "title": "STRING",
-          "startDate": "DATE",
-          "endDate": "DATE",
-          "teacherName": "STRING",
-          "maxStudents": "INT",
-          "remainingSlots": "INT"
-        }
-      ]
-    }
-  },
-  {
-    "endpoint": "/api/v1/enrollments",
-    "method": "POST",
-    "description": "Đăng ký khóa học cho học viên, tự động tạo tài khoản nếu chưa tồn tại",
-    "request": {
-      "headers": {
-        "Authorization": "Bearer <JWT token>"
-      },
-      "body": {
-        "courseId": "UUID (bắt buộc)",
-        "studentEmail": "STRING (tùy chọn, dùng để tạo tài khoản mới nếu học viên chưa có tài khoản)"
-      }
-    },
-    "response": {
-      "status": 201,
-      "body": {
-        "enrollmentId": "UUID",
-        "message": "Đăng ký khóa học thành công"
-      }
-    }
-  }
-]
-```
-<!--END_API_CONTRACT>
-
-#### 📝 Công việc phụ 4.2: Viết bộ kiểm thử tích hợp cho luồng ghi danh
-##### Đại lý phụ được phân công: [Tester]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/membership-hub/src/test/java/com/membershiphub/rest/EnrollmentResourceTest.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-010], [REQ-011]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết bộ kiểm thử tích hợp sử dụng Quarkus test framework và REST assured. Các kịch bản: (1) Lấy danh sách khóa học có sẵn trả về đúng danh sách đã loại trừ khóa đã đăng ký; (2) Đăng ký khóa học thành công với học viên đã có tài khoản; (3) Đăng ký khóa học thành công và tự động tạo tài khoản Student khi cung cấp email mới; (4) Từ chối đăng ký khi khóa học đã đủ sĩ số; (5) Từ chối đăng ký khi học viên đã đăng ký khóa học đó; (6) Kiểm tra thông báo được gửi đến học viên và nhóm Zalo sau khi đăng ký thành công; (7) Từ chối truy cập khi không có quyền Student. Đảm bảo độ bao phủ mã đạt trên 90%.
-
-#### 📝 Công việc phụ 4.3: Cập nhật tài liệu API cho endpoint ghi danh
-##### Đại lý phụ được phân công: [Doc]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/docs/api/enrollment-api.md`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-010], [REQ-011]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Biên soạn tài liệu đặc tả API cho các endpoint ghi danh: lấy danh sách khóa học có sẵn và đăng ký khóa học. Mô tả chi tiết tham số yêu cầu (header Authorization, query params, body), phản hồi thành công, mã lỗi (400, 401, 403, 409), quy tắc tự động tạo tài khoản Student, quy tắc kiểm tra sĩ số và trùng lặp đăng ký. Bao gồm ví dụ payload JSON và hướng dẫn xử lý lỗi cho frontend.
-
-### 🌤️ NGÀY 5: <!--DAY_HEADER_START-->Phát triển giao diện frontend, kiểm tra E2E và hoàn thiện tài liệu<!--DAY_HEADER_END-->
-
-#### 📝 Công việc phụ 5.1: Phát triển các thành phần frontend cho danh sách khóa học, đăng ký và quét QR
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/frontend/web/course/src/components/CourseList.tsx;./sources/frontend/web/course/src/components/CourseDetail.tsx;./sources/frontend/web/course/src/components/EnrollmentForm.tsx;./sources/frontend/web/course/src/components/QRScanner.tsx`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-007], [REQ-010], [REQ-011], [REQ-012], [REQ-013]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Xây dựng 4 thành phần React/Next.js: (1) `CourseList.tsx`: hiển thị danh sách khóa học dạng lưới, bao gồm tiêu đề, lịch trình, giáo viên, sĩ số còn lại, hỗ trợ lọc và phân trang; (2) `CourseDetail.tsx`: hiển thị chi tiết khóa học, mô tả, lịch trình, nút đăng ký; (3) `EnrollmentForm.tsx`: form xác nhận đăng ký khóa học, tích hợp gọi API đăng ký, xử lý trạng thái tải và lỗi; (4) `QRScanner.tsx`: tích hợp trình quét QR (sử dụng thư viện như react-qr-reader), xử lý payload từ mã QR, gọi API điểm danh, hiển thị trạng thái điểm danh (thành công, trùng lặp, lỗi mạng). Tất cả thành phần phải responsive, tích hợp với Redux/React Query để quản lý state, xử lý đa ngôn ngữ thông qua i18n. Đảm bảo giao diện phù hợp với cả web và di động.
-
-#### 📝 Công việc phụ 5.2: Viết bộ kiểm thử end-to-end cho luồng đăng ký và điểm danh QR
-##### Đại lý phụ được phân công: [Tester]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `INTEGRATION_SCOPE;./sources/frontend/web/course/src/test/e2e/CourseEnrollmentE2ETest.java;INTEGRATION_SCOPE;./sources/frontend/web/course/src/test/e2e/AttendanceQRScanE2ETest.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-007], [REQ-010], [REQ-011], [REQ-012], [REQ-013]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết bộ kiểm thử E2E sử dụng Cypress hoặc Playwright để kiểm tra toàn bộ luồng người dùng: (1) Học viên duyệt danh sách khóa học và đăng ký thành công; (2) Học viên đăng ký khóa học đã đăng ký trước đó nhận lỗi; (3) Học viên quét QR điểm danh thành công; (4) Học viên quét QR trùng lặp nhận thông báo đã ghi nhận; (5) Học viên quét QR khi mất kết nối mạng, điểm danh được ghi nhận sau khi khôi phục kết nối; (6) Kiểm tra thông báo được gửi đến học viên sau khi đăng ký. Đảm bảo các test case chạy ổn định trên môi trường CI/CD, có cơ chế chờ và retry cho các yếu tố bất đồng bộ.
-
-#### 📝 Công việc phụ 5.3: Rà soát toàn bộ mã nguồn giai đoạn 2 và xác nhận tuân thủ
-##### Đại lý phụ được phân công: [Reviewer]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/course-service/*;./sources/backend/enrollment-service/*;./sources/backend/attendance-service/*;./sources/frontend/web/course/*`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-007], [REQ-008], [REQ-009], [REQ-010], [REQ-011], [REQ-012], [REQ-013], [EXC-001], [EXC-002]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Rà soát toàn bộ mã nguồn backend và frontend của giai đoạn 2 để đảm bảo 100% yêu cầu chức năng được triển khai đầy đủ. Kiểm tra cơ chế idempotent của điểm danh hoạt động đúng ở cả backend và frontend; xử lý ngoại lệ mất kết nối mạng và điểm danh trùng lặp đúng theo yêu cầu; kiểm tra logic xung đột lịch trình giáo viên chính xác; phát hiện và sửa lỗ hổng bảo mật (SQL injection, XSS, thiếu kiểm tra quyền); đảm bảo mã nguồn tuân thủ tiêu chuẩn mã hóa doanh nghiệp và OWASP Top 10. Ghi nhận tất cả lỗi nghiêm trọng và đề xuất giải pháp sửa chữa.
-
-#### 📝 Công việc phụ 5.4: Tổng hợp tài liệu kiến trúc và hướng dẫn vận hành module
-##### Đại lý phụ được phân công: [Doc]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/docs/course-module-architecture.md;./sources/docs/operations-guide.md`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-007], [REQ-008], [REQ-009], [REQ-010], [REQ-011], [REQ-012], [REQ-013], [ARC-007]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Biên soạn tài liệu kiến trúc module khóa học, đăng ký và điểm danh, mô tả cấu trúc các service, luồng dữ liệu chính, sơ đồ tương tác giữa các thành phần. Cập nhật hướng dẫn vận hành với các kịch bản xử lý sự cố thường gặp: mất kết nối khi quét QR, xung đột lịch trình giáo viên, lỗi đăng ký khóa học đã đủ sĩ số. Đảm bảo tài liệu đầy đủ cho đội vận hành và hỗ trợ người dùng, bao gồm các bước kiểm tra và khắc phục sự cố.
-
-<!--START_EXC_HANDLER>
+* **Hợp đồng định tuyến API và sự kiện [REQ-003], [ARC-006]:** <!--START_API_CONTRACT-->
 ```json
 {
-  "exception_handlers": [
-    {
-      "error_code": "ATTENDANCE_NETWORK_ERROR",
-      "http_status": 503,
-      "trigger_condition": "Mất kết nối mạng trong quá trình quét mã QR điểm danh",
-      "behavior": "Ứng dụng di động lưu tạm yêu cầu điểm danh vào hàng đợi ngoại tuyến, tự động gửi lại khi kết nối mạng được khôi phục. Hệ thống backend xử lý các yêu cầu pending theo thứ tự FIFO, đảm bảo không bỏ sót bản ghi điểm danh."
-    },
-    {
-      "error_code": "ATTENDANCE_DUPLICATE",
-      "http_status": 200,
-      "trigger_condition": "Gửi điểm danh trùng lặp trong cùng ngày cho cùng học viên và khóa học",
-      "behavior": "Hệ thống kiểm tra ràng buộc duy nhất trên cặp (studentId, courseId, attendanceDate) ở tầng cơ sở dữ liệu. Nếu phát hiện yêu cầu trùng lặp, trả về mã trạng thái 200 với cờ status: DUPLICATE và thông báo 'Đã ghi nhận điểm danh cho buổi học này trước đó'. Không tạo bản ghi mới, không ghi log lỗi nghiêm trọng."
+  "endpoint": "PUT /api/v1/users/{id}/role",
+  "request":  { "roleId": "integer (1=SYSTEM_ADMIN, 2=CENTER_ADMIN, 3=MANAGER, 4=TEACHER, 5=STUDENT)" },
+  "response_200": { "userId": "uuid", "newRole": "string", "updatedAt": "timestamp" },
+  "response_403": { "code": "ROLE_UPDATE_FORBIDDEN" }
+}
+```
+<!--END_API_CONTRACT-->
+
+* **Bộ xử lý ngoại lệ cục bộ hóa của giai đoạn [REQ-003]:** <!--START_EXC_HANDLER-->
+```java
+package org.nlh4j.membershiphub.userservice.exception;
+
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+
+/**
+ * Bắt ngoại lệ RoleUpdateForbiddenException khi người thực hiện không có quyền SYSTEM_ADMIN,
+ * trả về HTTP 403 với mã lỗi ROLE_UPDATE_FORBIDDEN.
+ */
+@Provider
+public class RoleUpdateForbiddenExceptionMapper implements ExceptionMapper<RoleUpdateForbiddenException> {
+
+    @Override
+    public Response toResponse(RoleUpdateForbiddenException ex) {
+        return Response.status(Response.Status.FORBIDDEN)
+                .entity(new ErrorResponse("ROLE_UPDATE_FORBIDDEN", ex.getMessage()))
+                .type("application/json; charset=utf-8")
+                .build();
     }
+}
+
+/**
+ * Bắt ngoại lệ InvalidRoleTransitionException khi vi phạm quy tắc chuyển đổi vai trò,
+ * trả về HTTP 400 với mã lỗi INVALID_ROLE_TRANSITION.
+ */
+@Provider
+public class InvalidRoleTransitionExceptionMapper implements ExceptionMapper<InvalidRoleTransitionException> {
+
+    @Override
+    public Response toResponse(InvalidRoleTransitionException ex) {
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity(new ErrorResponse("INVALID_ROLE_TRANSITION", ex.getMessage()))
+                .type("application/json; charset=utf-8")
+                .build();
+    }
+}
+```
+<!--END_EXC_HANDLER-->
+
+#### 📝 Nhiệm vụ phụ 2.3: Kiểm thử luồng OAuth2 và phân quyền
+##### Sub-Agent được phân công: Tester
+##### Thành phần mục tiêu & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu:** INTEGRATION_SCOPE;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/OAuth2ServiceTest.java
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-002], [REQ-003], [ARC-006]<!--END_TAGS-->
+* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tệp kiểm thử tại đường dẫn `./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/OAuth2ServiceTest.java` thuộc package `org.nlh4j.membershiphub.userservice`. Sử dụng `@QuarkusTest` kết hợp `@InjectMock` để mock `Vertx WebClient` nhằm giả lập HTTP call tới provider OAuth2. Test case 1 (`testGoogleSocialLoginSuccess`): mock HTTP response từ Google token endpoint trả về `access_token`, mock userInfo endpoint trả về JSON chứa `email: "newgoogle@example.com"`, `name: "Google User"`. Gọi `oauth2Service.handleSocialLogin()` với provider=google, kỳ vọng trả về `AuthResponse` chứa `accessToken` và `role` là `STUDENT`, bản ghi User mới được tạo trong database với `provider='google'`. Test case 2 (`testOAuth2ProviderError`): mock HTTP response trả về lỗi 400 từ token endpoint, kỳ vọng ném `OAuth2ProviderException` và exception mapper trả về HTTP 502. Test case 3 (`testChangeRoleAsSystemAdmin`): tạo user với role SYSTEM_ADMIN, gọi PUT `/api/v1/users/{otherUserId}/role` với body `{"roleId": 2}`, kỳ vọng HTTP 200 và bản ghi audit được ghi vào `user_audit_log` với `action_type='ROLE_CHANGED'`. Test case 4 (`testChangeRoleAsStudentForbidden`): gọi cùng endpoint nhưng với JWT của Student, kỳ vọng HTTP 403 với mã `ROLE_UPDATE_FORBIDDEN`.
+
+#### 📝 Nhiệm vụ phụ 2.4: Tài liệu hóa API user-service
+##### Sub-Agent được phân công: Doc
+##### Thành phần mục tiêu & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu:** `./sources/docs/api/UserServiceApiContract.md`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[DOC-001], [REQ-001], [REQ-002], [REQ-003]<!--END_TAGS-->
+* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tài liệu Markdown tại đường dẫn `./sources/docs/api/UserServiceApiContract.md` mô tả chi tiết toàn bộ API của user-service. Nội dung bắt buộc gồm: (1) Mục lục rõ ràng; (2) Bảng danh sách endpoint gồm `POST /api/v1/auth/register`, `POST /api/v1/auth/social`, `PUT /api/v1/users/{id}/role` với cột Method, Path, Mô tả, Authentication, Request Schema, Response Schema, Error Codes; (3) Mô tả chi tiết luồng OAuth2 cho cả ba provider Firebase, Google, Facebook với sơ đồ Mermaid sequence diagram; (4) Bảng mã lỗi HTTP 400, 403, 409 với giải thích nguyên nhân và cách khắc phục; (5) Ví dụ curl command cho từng endpoint kèm JSON request/response mẫu. Tài liệu viết bằng tiếng Việt, tham chiếu chính xác các Tag ID [REQ-001] đến [REQ-003] và [ARC-006].
+
+### 🌤️ NGÀY 3: <!--DAY_HEADER_START-->Triển Khai Center-Service Và Phân Công Center Admin Với Audit Log<!--DAY_HEADER_END-->
+
+#### 📝 Nhiệm vụ phụ 3.1: Khởi tạo pom.xml và triển khai CenterController
+##### Sub-Agent được phân công: Coder
+##### Thành phần mục tiêu & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu:** `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/CenterController.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000], [REQ-004], [REQ-005], [REQ-006]<!--END_TAGS-->
+* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tệp `pom.xml` cho `center-service` tại đường dẫn `./sources/backend/center-service/pom.xml` với cấu trúc parent-child POM tương tự user-service nhưng chỉ giữ các dependency thiết yếu: `quarkus-resteasy-reactive-jackson`, `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, `quarkus-flyway`, `quarkus-smallrye-jwt`, `quarkus-hibernate-validator`, `quarkus-arc`. Tạo lớp `CenterController` tại đường dẫn `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/CenterController.java` thuộc package `org.nlh4j.membershiphub.centerservice`. Class chú thích `@Path("/api/v1/centers")` sử dụng JAX-RS. Đăng ký sáu endpoint: `GET /` với `@RolesAllowed({"SYSTEM_ADMIN", "CENTER_ADMIN", "MANAGER", "TEACHER", "STUDENT"})` trả về danh sách phân trang, `POST /` với `@RolesAllowed("SYSTEM_ADMIN")` tạo mới, `PUT /{id}` cập nhật, `DELETE /{id}` soft delete, `POST /{id}/admins` phân công Center Admin, `DELETE /{id}/admins` hủy phân công. Inject `CenterService` và `CenterAdminService` thông qua CDI. Tất cả DTO đầu vào phải sử dụng Bean Validation với các ràng buộc `@NotNull`, `@Size(max=100)` cho name, `@Size(max=255)` cho address, `@Pattern(regexp="^[0-9]{10,13}$")` cho taxId, `@Pattern(regexp="^[+0-9 ()\\-]{0,20}$")` cho contactPhone, `@Email` cho contactEmail. Trả về HTTP 409 khi trùng TaxID, HTTP 400 khi validation fail, HTTP 404 khi không tìm thấy trung tâm.
+
+* **Hợp đồng định tuyến API và sự kiện [REQ-004], [REQ-005], [REQ-006]:** <!--START_API_CONTRACT-->
+```json
+{
+  "endpoints": [
+    "GET    /api/v1/centers?page=&size=",
+    "POST   /api/v1/centers (SYSTEM_ADMIN)",
+    "PUT    /api/v1/centers/{id} (SYSTEM_ADMIN)",
+    "DELETE /api/v1/centers/{id} (SYSTEM_ADMIN, soft delete)",
+    "POST   /api/v1/centers/{id}/admins (SYSTEM_ADMIN)",
+    "DELETE /api/v1/centers/{id}/admins?userId= (SYSTEM_ADMIN)"
   ]
 }
 ```
-<!--END_EXC_HANDLER>
+<!--END_API_CONTRACT-->
+
+* **Bộ xử lý ngoại lệ cục bộ hóa của giai đoạn [EXC-004]:** <!--START_EXC_HANDLER-->
+```java
+package org.nlh4j.membershiphub.centerservice.exception;
+
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+
+/**
+ * Bắt ngoại lệ DuplicateTaxIdException khi TaxID đã tồn tại, trả về HTTP 409 với mã DUPLICATE_TAX_ID.
+ */
+@Provider
+public class DuplicateTaxIdExceptionMapper implements ExceptionMapper<DuplicateTaxIdException> {
+
+    @Override
+    public Response toResponse(DuplicateTaxIdException ex) {
+        return Response.status(Response.Status.CONFLICT)
+                .entity(new ErrorResponse("DUPLICATE_TAX_ID", ex.getMessage()))
+                .type("application/json; charset=utf-8")
+                .build();
+    }
+}
+
+/**
+ * Bắt ngoại lệ CenterNotFoundException khi không tìm thấy trung tâm, trả về HTTP 404.
+ */
+@Provider
+public class CenterNotFoundExceptionMapper implements ExceptionMapper<CenterNotFoundException> {
+
+    @Override
+    public Response toResponse(CenterNotFoundException ex) {
+        return Response.status(Response.Status.NOT_FOUND)
+                .entity(new ErrorResponse("CENTER_NOT_FOUND", ex.getMessage()))
+                .type("application/json; charset=utf-8")
+                .build();
+    }
+}
+
+/**
+ * Bắt ngoại lệ CenterAdminAlreadyAssignedException khi người dùng đã là admin,
+ * trả về HTTP 409 với mã CENTER_ADMIN_ALREADY_ASSIGNED.
+ */
+@Provider
+public class CenterAdminAlreadyAssignedExceptionMapper implements ExceptionMapper<CenterAdminAlreadyAssignedException> {
+
+    @Override
+    public Response toResponse(CenterAdminAlreadyAssignedException ex) {
+        return Response.status(Response.Status.CONFLICT)
+                .entity(new ErrorResponse("CENTER_ADMIN_ALREADY_ASSIGNED", ex.getMessage()))
+                .type("application/json; charset=utf-8")
+                .build();
+    }
+}
+```
+<!--END_EXC_HANDLER-->
+
+#### 📝 Nhiệm vụ phụ 3.2: Triển khai CenterService và CenterAdminService
+##### Sub-Agent được phân công: Coder
+##### Thành phần mục tiêu & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu:** `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/CenterService.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-004], [REQ-005], [REQ-006], [EXC-004]<!--END_TAGS-->
+* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo lớp `CenterService` tại đường dẫn `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/CenterService.java` thuộc package `org.nlh4j.membershiphub.centerservice`. Sử dụng annotation `@ApplicationScoped`. Inject `CenterRepository` và `EntityManager`. Phương thức `listCenters(int page, int size)` sử dụng Panache với phân trang, trả về `PanacheQuery<Center>` với `page(page).size(size)`. Phương thức `createCenter(CenterRequest req)` thực hiện: kiểm tra `centerRepository.findByTaxId(req.getTaxId())`, nếu đã tồn tại ném `DuplicateTaxIdException`. Tạo bản ghi Center mới với UUID ngẫu nhiên, persist qua `entityManager.persist()`. Phương thức `updateCenter(UUID id, CenterRequest req)` tìm center qua id, nếu không tồn tại ném `CenterNotFoundException`, cập nhật các trường name, address, contactPhone, contactEmail. Phương thức `softDeleteCenter(UUID id)` thực hiện soft delete bằng cách cập nhật cờ `is_active=false` (cột bổ sung trong schema, migration được thực hiện thông qua `ALTER TABLE centers ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE`). Tạo lớp `CenterAdminService` tại đường dẫn `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/CenterAdminService.java` thực thi phương thức `assignAdmin(UUID centerId, UUID userId, UUID assignedBy)` với annotation `@Transactional`. Phương thức kiểm tra center tồn tại, kiểm tra user tồn tại, kiểm tra quan hệ admin đã tồn tại (ném `CenterAdminAlreadyAssignedException` nếu có). Cập nhật `users.role_id=2` (CENTER_ADMIN), insert bản ghi vào bảng `center_admins` với `is_active=true`, gọi `auditLogger.log("CENTER_ASSIGNED", userId, assignedBy, null, centerId.toString())` trong cùng transaction. Phương thức `unassignAdmin()` đặt `is_active=false` và ghi log `CENTER_UNASSIGNED`.
+
+#### 📝 Nhiệm vụ phụ 3.3: Kiểm thử center-service và phân công admin
+##### Sub-Agent được phân công: Tester
+##### Thành phần mục tiêu & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu:** INTEGRATION_SCOPE;./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/CenterControllerTest.java
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-004], [REQ-005], [REQ-006], [EXC-004]<!--END_TAGS-->
+* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tệp kiểm thử tại đường dẫn `./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/CenterControllerTest.java` thuộc package `org.nlh4j.membershiphub.centerservice`. Sử dụng `@QuarkusTest` kết hợp Testcontainers PostgreSQL 16. Test case 1 (`testListCentersPagination`): tạo 25 bản ghi Center, gọi GET `/api/v1/centers?page=0&size=10`, kỳ vọng HTTP 200, response chứa 10 phần tử, tổng số bản ghi 25. Test case 2 (`testCreateCenterDuplicateTaxId`): tạo center với taxId `1234567890`, tạo lần hai với cùng taxId, kỳ vọng HTTP 409 với mã `DUPLICATE_TAX_ID`. Test case 3 (`testCreateCenterInvalidTaxIdFormat`): gửi taxId `invalid123`, kỳ vọng HTTP 400 với mã validation. Test case 4 (`testAssignAdminSuccess`): tạo user và center, gọi POST `/api/v1/centers/{centerId}/admins` với body `{"userId":"..."}`, kỳ vọng HTTP 201, bản ghi `center_admins` được tạo với `is_active=true`, `users.role_id` được cập nhật thành 2, bản ghi audit `CENTER_ASSIGNED` được ghi. Test case 5 (`testAssignAdminDuplicate`): gọi endpoint phân công hai lần cho cùng user và center, kỳ vọng lần thứ hai trả về HTTP 409 với mã `CENTER_ADMIN_ALREADY_ASSIGNED`.
+
+#### 📝 Nhiệm vụ phụ 3.4: Tài liệu hóa API center-service
+##### Sub-Agent được phân công: Doc
+##### Thành phần mục tiêu & yêu cầu kỹ thuật:
+* **Đường dẫn mục tiêu:** `./sources/docs/api/CenterServiceApiContract.md`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[DOC-001], [REQ-004], [REQ-005], [REQ-006]<!--END_TAGS-->
+* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tài liệu Markdown tại đường dẫn `./sources/docs/api/CenterServiceApiContract.md` mô tả chi tiết toàn bộ API của center-service. Nội dung bắt buộc gồm: (1) Mục lục rõ ràng; (2) Bảng danh sách sáu endpoint với Method, Path, Mô tả, Authentication Required, Request Schema, Response Schema, Error Codes; (3) Sơ đồ Mermaid sequence diagram mô tả luồng phân công Center Admin từ khi System Admin gửi request đến khi ghi log audit; (4) Bảng mã lỗi HTTP 400, 404, 409 với giải thích chi tiết; (5) Ví dụ curl command cho từng endpoint kèm JSON request/response mẫu; (6) Phần giải thích cơ chế soft delete và cách truy vấn các trung tâm đã xóa. Tài liệu viết bằng tiếng Việt, tham chiếu chính xác các Tag ID [REQ-004] đến [REQ-006] và [EXC-004].
