@@ -1,3 +1,39 @@
+# Day 1: model models/gemini-flash-latest - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/backend/pom.xml
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Component Destination Path: `./sources/backend/pom.xml` (Must map to sources/backend/ or sources/frontend/)
+*   Context Module Context Reference Path: `INTEGRATION_SCOPE`
+
+### SOURCE CODE UNDER AUDIT (VERIFICATION TARGET)
+* **Target Code Component Payload For Comprehensive Review:**
+<EXISTING_CODE_UNDER_AUDIT>
+
+</EXISTING_CODE_UNDER_AUDIT>
+
+
+### ❌ REAL RAW COMPILER ERROR LOGS (CRITICAL FIX TARGET)
+The codebase above triggered the following compiler or runtime exceptions. You MUST analyze this stack trace or log error text to pinpoint and auto-patch the root cause:
+```text
+True
+```
+*   Operational Modality Activated: COMPILER_FIXER_MODE
+
+
+### 📋 EXECUTION SUB-TASKS TO ENFORCE
+['Thực hiện đánh giá mã tĩnh (code review) cho descriptor ./sources/backend/pom.xml và toàn bộ 6 descriptor vi dịch vụ con. Xác minh: (1) tất cả groupId phải tuân thủ quy ước org.nlh4j.membershiphub.<servicename> không chứa ký tự - hoặc _; (2) tất cả artifactId đều ở dạng chữ thường alphanumeric; (3) mọi tham chiếu <parent> đều trỏ về membershiphub gốc phiên bản 1.0.0-SNAPSHOT; (4) phiên bản Quarkus BOM 3.15.1 được nhập đúng trong dependencyManagement; (5) plugin quarkus-maven-plugin được khai báo trong từng vi dịch vụ. Sinh báo cáo đánh giá với điểm số tuân thủ và đề xuất sửa lỗi nếu phát hiện bất thường.']
+
+---
+
+### ⚙️ LEAD REVIEWER/FIXER EXECUTION INSTRUCTION:
+Please read the comprehensive architectural constraints, workspace folder routing rules, sub-task specifications, and potential compiler log streams provided above. Automatically evaluate the error signatures or static code anomalies to construct either a fully patched backend Java component or a frontend TypeScript/Next.js asset. 
+
+Ensure that you read the exact Tag IDs from the `['[ARC-000]']` variable, merge them seamlessly with any pre-existing tags inside the source payload, and permanently inject/preserve those exact Tag IDs within the generated code's Javadoc documentation or file header comments. The final code must be completely self-contained and compiler-ready. Emit the production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Target Component Path: ./sources/backend/pom.xml
@@ -97,3 +133,5 @@
         </pluginManagement>
     </build>
 </project>
+```
+
