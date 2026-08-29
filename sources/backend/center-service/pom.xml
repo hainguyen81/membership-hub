@@ -1,0 +1,135 @@
+<!-- =====================================================================
+  center-service/pom.xml - Maven descriptor cho vi dịch vụ Center Service
+  Dự án: membership-hub (Membership Hub)
+  Mã bản thiết kế: ARCH-20260829122721
+  Phiên bản: 1.0.0-SNAPSHOT
+  Tác giả: Principal Software Engineer (Coder Agent)
+  Thời gian: 2026-08-29
+  Mục đích: Khởi tạo descriptor Maven cho module center-service, kế thừa
+             từ parent pom.xml gốc, khai báo đầy đủ dependency Quarkus 3.15.1
+             và cấu hình plugin build theo chuẩn doanh nghiệp.
+  Traceability Tags: [ARC-000]
+  Ràng buộc tuân thủ:
+    - Tuân thủ quy ước package org.nlh4j.membershiphub.centerservice
+    - Sử dụng Quarkus BOM 3.15.1 để quản lý phiên bản dependency
+    - Cấu hình quarkus-maven-plugin với execution build, generate-code, generate-code-tests
+    - Không chứa ký tự gạch ngang '-' hoặc gạch dưới '_' trong định danh kỹ thuật
+  ===================================================================== -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- =====================================================================
+         Phần tử modelVersion: phiên bản đối tượng POM theo chuẩn Maven 4.0.0
+         ===================================================================== -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =====================================================================
+         Phần tử parent: kế thừa từ descriptor cha membershiphub gốc
+         - groupId: org.nlh4j (tổ chức gốc)
+         - artifactId: membershiphub (artifact cha)
+         - version: 1.0.0-SNAPSHOT (phiên bản đường cơ sở)
+         ===================================================================== -->
+    <parent>
+        <groupId>org.nlh4j</groupId>
+        <artifactId>membershiphub</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <!-- =====================================================================
+         Phần tử artifactId và groupId: định danh duy nhất cho vi dịch vụ này
+         - groupId: org.nlh4j.membershiphub.centerservice (tuân thủ quy ước)
+         - artifactId: center-service (tên vi dịch vụ)
+         - name: tên hiển thị cho module
+         ===================================================================== -->
+    <artifactId>center-service</artifactId>
+    <groupId>org.nlh4j.membershiphub.centerservice</groupId>
+    <name>Center Service</name>
+
+    <!-- =====================================================================
+         Phần tử dependencies: khai báo tất cả dependency cần thiết cho
+         center-service theo stack công nghệ đã định nghĩa trong kiến trúc.
+         Tất cả phiên bản được quản lý tập trung qua Quarkus BOM 3.15.1
+         từ parent pom.xml, do đó không cần khai báo <version> ở đây.
+         ===================================================================== -->
+    <dependencies>
+        <!-- Dependency: Quarkus REST (JAX-RS implementation cho REST endpoint) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+
+        <!-- Dependency: Quarkus REST Jackson (JSON serialization/deserialization) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-jackson</artifactId>
+        </dependency>
+
+        <!-- Dependency: Quarkus Hibernate ORM Panache (JPA abstraction layer) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+
+        <!-- Dependency: Quarkus JDBC PostgreSQL Driver (kết nối cơ sở dữ liệu) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+
+        <!-- Dependency: Quarkus Flyway (database migration và versioning) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+
+        <!-- Dependency: Quarkus SmallRye JWT (xác thực và phân quyền JWT) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+
+        <!-- Dependency: Quarkus SmallRye Health (health check và readiness probe) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+    </dependencies>
+
+    <!-- =====================================================================
+         Phần tử build: cấu hình plugin Maven và Quarkus build lifecycle
+         - quarkus-maven-plugin: xử lý code generation, build native/image
+         - maven-surefire-plugin: chạy unit test (đã được cấu hình ở parent)
+         ===================================================================== -->
+    <build>
+        <plugins>
+            <!-- =====================================================================
+                 Plugin: quarkus-maven-plugin
+                 - Mục đích: Tích hợp Quarkus build lifecycle vào Maven
+                 - Version: lấy từ property ${quarkus.platform.version} (3.15.1)
+                 - Extensions: true (kích hoạt Quarkus Maven extension)
+                 - Executions: định nghĩa các mục tiêu build bắt buộc
+                   + build: xây dựng ứng dụng Quarkus
+                   + generate-code: sinh code từ các annotation processor
+                   + generate-code-tests: sinh test code từ các annotation processor
+                 ===================================================================== -->
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <!-- Mục tiêu build: biên dịch và đóng gói ứng dụng -->
+                            <goal>build</goal>
+                            <!-- Mục tiêu generate-code: sinh entity, DTO, mapper classes -->
+                            <goal>generate-code</goal>
+                            <!-- Mục tiêu generate-code-tests: sinh test class tương ứng -->
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

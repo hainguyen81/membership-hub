@@ -1,0 +1,125 @@
+<!-- =====================================================================
+     membership-hub :: course-service :: pom.xml
+     =====================================================================
+     Module: course-service
+     Purpose: Maven project descriptor for the Course Service microservice.
+              Manages course lifecycle, teacher assignment, schedule overlap
+              validation, and enrollment event publishing.
+     Traceability Tags: [ARC-000]
+     Architecture Reference: Phase 1 - Multi-module Maven initialization
+     ===================================================================== -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =====================================================================
+         PARENT COORDINATES
+         Inherits dependency management, plugin versions, and build defaults
+         from the root multi-module descriptor (membershiphub).
+         ===================================================================== -->
+    <parent>
+        <groupId>org.nlh4j</groupId>
+        <artifactId>membershiphub</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <!-- =====================================================================
+         MODULE COORDINATES
+         Enforces enterprise package naming convention:
+         org.nlh4j.membershiphub.<service-name>
+         ===================================================================== -->
+    <groupId>org.nlh4j.membershiphub.courseservice</groupId>
+    <artifactId>course-service</artifactId>
+    <name>Course Service</name>
+    <description>
+        Microservice responsible for course CRUD operations, teacher assignment
+        with schedule overlap validation, and enrollment management.
+        Traceability: [ARC-000]
+    </description>
+
+    <!-- =====================================================================
+         DEPENDENCY MANAGEMENT
+         Declares runtime and compile-time dependencies required for the
+         Course Service business logic layer.
+         ===================================================================== -->
+    <dependencies>
+        <!-- RESTEasy Reactive: Core REST framework for building HTTP endpoints -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+
+        <!-- Jackson: JSON serialization/deserialization for REST request/response bodies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-jackson</artifactId>
+        </dependency>
+
+        <!-- Hibernate ORM Panache: Active Record pattern for simplified data access -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+
+        <!-- PostgreSQL JDBC: Database driver for connecting to Cloud SQL PostgreSQL -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+
+        <!-- Flyway: Database schema migration and version control tool -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+
+        <!-- SmallRye JWT: JSON Web Token processing for authentication and authorization -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+
+        <!-- SmallRye Reactive Messaging Kafka: Event-driven messaging for
+             publishing course assignment and enrollment events to the notification service -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-messaging-kafka</artifactId>
+        </dependency>
+
+        <!-- SmallRye Health: Health check endpoints for Kubernetes probes and monitoring -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+    </dependencies>
+
+    <!-- =====================================================================
+         BUILD CONFIGURATION
+         Configures the Quarkus Maven Plugin for code generation, build,
+         and test generation.
+         ===================================================================== -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <!-- Version inherited from parent BOM (quarkus.platform.version) -->
+                <version>${quarkus.platform.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <!-- Builds the application artifact (JAR or native image) -->
+                            <goal>build</goal>
+                            <!-- Generates source code from configuration properties -->
+                            <goal>generate-code</goal>
+                            <!-- Generates test skeletons and configuration -->
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

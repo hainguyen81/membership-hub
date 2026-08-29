@@ -1,0 +1,80 @@
+// ============================================================================
+// Traceability Audit Metadata
+// ============================================================================
+// Project: membership-hub
+// Component Path: ./sources/frontend/web-app/tsconfig.json
+// Traceability Tags: [ARC-000]
+// Description: TypeScript compiler configuration for Next.js 14 web application
+// Architecture Layer: Frontend / Web Application
+// ============================================================================
+
+{
+  "compilerOptions": {
+    // Target modern ECMAScript 2022 for optimal runtime performance and browser compatibility
+    "target": "ES2022",
+
+    // Use ESNext module system to enable tree-shaking, dynamic imports, and modern syntax
+    "module": "ESNext",
+
+    // Bundler resolution strategy aligns with Next.js internal webpack/turbopack bundler
+    "moduleResolution": "Bundler",
+
+    // Include DOM and ES2022 library definitions for browser APIs and modern JS features
+    "lib": ["dom", "es2022"],
+
+    // Enable strict type checking to catch potential null/undefined and type errors at compile time
+    "strict": true,
+
+    // Disable file emission since Next.js handles transpilation via SWC/Babel pipeline
+    "noEmit": true,
+
+    // Enable esModuleInterop for seamless interoperability with CommonJS npm packages
+    "esModuleInterop": true,
+
+    // Skip type checking of declaration files (.d.ts) to accelerate build performance
+    "skipLibCheck": true,
+
+    // Enforce consistent casing in file names to prevent cross-platform (Windows/Linux) resolution errors
+    "forceConsistentCasingInFileNames": true,
+
+    // Allow importing JSON files as modules (e.g., package.json, i18n translation dictionaries)
+    "resolveJsonModule": true,
+
+    // Ensure isolated modules for full compatibility with transpilers like SWC used by Next.js
+    "isolatedModules": true,
+
+    // Preserve JSX syntax for Next.js to process during compilation rather than transforming here
+    "jsx": "preserve",
+
+    // Base URL for resolving non-relative module imports within the project structure
+    "baseUrl": ".",
+
+    // Path alias mapping: @/* resolves to ./src/* for cleaner absolute import statements
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    // Enable incremental compilation to cache build state and speed up subsequent builds
+    "incremental": true,
+
+    // Next.js plugin integration for type-safe routing, image handling, and configuration
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+
+  // Include all TypeScript, JavaScript, and Next.js type definition files within scope
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+
+  // Exclude node_modules to prevent type checking of third-party dependencies
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Membership Hub - Attendance Service Maven Descriptor
+  ~ Traceability Tags: [ARC-000]
+  ~ Phase 1: Multi-module Maven initialization and build template generation
+  ~ Purpose: Defines the build configuration for the attendance-service microservice,
+  ~          inheriting from the root parent POM and declaring Quarkus 3.15.1 dependencies.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Parent POM reference to the root multi-module project -->
+    <parent>
+        <groupId>org.nlh4j</groupId>
+        <artifactId>membershiphub</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <!-- Module coordinates enforcing the enterprise naming convention -->
+    <groupId>org.nlh4j.membershiphub.attendanceservice</groupId>
+    <artifactId>attendance-service</artifactId>
+    <name>Attendance Service</name>
+
+    <!-- Dependencies section declaring all required Quarkus extensions -->
+    <dependencies>
+        <!-- RESTEasy Reactive for building RESTful APIs [ARC-000] -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+
+        <!-- Jackson JSON serialization support for REST endpoints [ARC-000] -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-jackson</artifactId>
+        </dependency>
+
+        <!-- Hibernate ORM with Panache for simplified data persistence [ARC-000] -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+
+        <!-- PostgreSQL JDBC driver for database connectivity [ARC-000] -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+
+        <!-- Flyway for version-controlled database schema migrations [ARC-000] -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+
+        <!-- SmallRye JWT for OAuth2 and JWT token processing [ARC-000] -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+
+        <!-- SmallRye Health for Kubernetes liveness and readiness probes [ARC-000] -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+    </dependencies>
+
+    <!-- Build configuration section for Quarkus Maven Plugin -->
+    <build>
+        <plugins>
+            <!-- Quarkus Maven Plugin for build, code generation, and test generation -->
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <!-- Build the native image or JAR -->
+                            <goal>build</goal>
+                            <!-- Generate entity classes and REST clients -->
+                            <goal>generate-code</goal>
+                            <!-- Generate test scaffolding -->
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
