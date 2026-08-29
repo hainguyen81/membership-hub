@@ -1,469 +1,1653 @@
-# Giai đoạn 1: <!--PHASE_NAME_START-->Thiết lập hạ tầng cơ sở và xác thực cốt lõi<!--PHASE_NAME_END-->
+# Giai đoạn 1: <!--PHASE_NAME_START-->Khởi Tạo Nền Tảng Đa Vi Dịch Vụ Và Di Trú Cơ Sở Dữ Liệu<!--PHASE_NAME_END-->
 
-## 📊 Bảng kiểm soát tài liệu
+## 📊 Kiểm Soát Tài Liệu
 
-| Mục | Chi tiết |
+| Hạng mục | Chi tiết |
 | :--- | :--- |
-| **ID Bản thiết kế** | ARCH-20260818163158 |
-| **Tên dự án** | membership-hub |
-| **Giai đoạn** | 1 |
-| **Tên giai đoạn** | <!--PHASE_NAME_START-->Thiết lập hạ tầng cơ sở và xác thực cốt lõi<!--PHASE_NAME_END--> |
-| **Mô tả** | <!--PHASE_DESC_START-->Giai đoạn này tập trung vào việc xây dựng nền tảng cơ sở của hệ thống quản lý hội viên, bao gồm khởi tạo lược đồ cơ sở dữ liệu PostgreSQL cho các thực thể người dùng, vai trò và trung tâm; triển khai toàn bộ luồng xác thực người dùng (email/mật khẩu, OAuth2 Firebase/Google/Facebook); cấp phát JWT access token (hết hạn 15 phút) và refresh token (hết hạn 7 ngày); triển khai cơ chế phân quyền RBAC với 5 vai trò được định nghĩa; xây dựng API CRUD quản lý trung tâm với kiểm tra trùng lặp mã số thuế; đảm bảo tất cả thành phần tuân thủ các yêu cầu bảo mật cốt lõi, bao gồm biện pháp chống OWASP Top 10, mã hóa dữ liệu và kiểm soát truy cập nghiêm ngặt. Tất cả tệp được tạo trong giai đoạn này nằm trong phạm vi thư mục backend cốt lõi và tài liệu kỹ thuật, không can thiệp vào các module chức năng khác của hệ thống.<!--PHASE_DESC_END--> |
-| **Phiên bản** | 1.0 (Cơ sở) |
-| **Ngày.Giờ** | 2026/08/18 16:31:58 |
-| **Tác giả** | Kiến trúc sư hệ thống doanh nghiệp (Đặc vụ SA) |
-| **Phê duyệt** | Đang chờ xem xét quản trị kỹ thuật |
+| **Mã Bản Thiết Kế** | ARCH-20260829125322 |
+| **Tên Dự Án** | membership-hub |
+| **Giai Đoạn** | 1 |
+| **Tên Giai Đoạn** | <!--PHASE_NAME_START-->Khởi Tạo Nền Tảng Đa Vi Dịch Vụ Và Di Trú Cơ Sở Dữ Liệu<!--PHASE_NAME_END--> |
+| **Mô Tả** | <!--PHASE_DESC_START-->Giai đoạn này thiết lập toàn bộ khung xương kiến trúc cho hệ thống Membership Hub, bao gồm khởi tạo descriptor Maven đa mô-đun cho sáu vi dịch vụ Quarkus, biểu mẫu gốc Next.js, di trú toàn bộ mười một bảng cơ sở dữ liệu quan hệ thông qua tập lệnh Flyway, đặc tả hợp đồng OpenAPI và sơ đồ Mermaid cho bốn luồng nghiệp vụ cốt lõi. Tất cả tài sản được theo dõi bằng hệ thống thẻ TagID chuẩn doanh nghiệp, đảm bảo tính nhất quán cho các giai đoạn phát triển tiếp theo. Phạm vi tập trung tuyệt đối vào hạ tầng nền tảng, không triển khai xử lý ngoại lệ nghiệp vụ hay luồng nghiệp vụ chi tiết.<!--PHASE_DESC_END--> |
+| **Phiên Bản** | 1.0 (Đường Cơ Sở) |
+| **Thời Gian** | 2026/08/29 12:53:22 |
+| **Tác Giả** | Kiến Trúc Sư Hệ Thống Doanh Nghiệp (SA Agent) |
+| **Phê Duyệt** | Đang Chờ Đánh Giá Quản Trị Kỹ Thuật |
 
-## 1. Phạm vi hoạt động và mục tiêu của giai đoạn
-Giai đoạn 1 là giai đoạn khởi tạo cơ sở của toàn bộ hệ thống membership-hub, tập trung vào 4 mục tiêu chính:
-1. Khởi tạo schema cơ sở dữ liệu PostgreSQL cho 3 thực thể cốt lõi: vai trò (roles), người dùng (users) và trung tâm (centers), bao gồm tất cả ràng buộc khóa ngoại, chỉ mục tối ưu truy vấn và ràng buộc CHECK đảm bảo tính toàn vẹn dữ liệu.
-2. Triển khai toàn bộ luồng xác thực người dùng: đăng ký/đăng nhập email/mật khẩu, xác thực OAuth2 với Firebase/Google/Facebook, cấp phát JWT access token (hết hạn 15 phút) và refresh token (hết hạn 7 ngày), tích hợp Firebase Admin SDK để xác thực thông tin người dùng từ nhà cung cấp OAuth2.
-3. Triển khai cơ chế phân quyền RBAC với 5 vai trò được định nghĩa (System Admin, Center Admin, Manager, Teacher, Student), đảm bảo quyền truy cập được cách ly theo trung tâm, áp dụng kiểm tra quyền ở tầng API cho tất cả endpoint.
-4. Xây dựng API CRUD quản lý trung tâm cho System Admin, bao gồm kiểm tra trùng lặp mã số thuế, phân quyền quản trị trung tâm cho người dùng, đảm bảo tất cả thao tác đều tuân thủ chính sách bảo mật và kiểm soát truy cập.
+## 1. Phạm Vi Hoạt Động & Mục Tiêu Giai Đoạn
 
-## 2. Phạm vi kỹ thuật được phép và ranh giới thư mục
-Tất cả tệp và đường dẫn được tạo/xử lý trong giai đoạn này phải nằm trong các ranh giới thư mục sau, tuân thủ cấu trúc phân lớp doanh nghiệp:
-### Thư mục backend cốt lõi
-- `./sources/backend/migrations/`: Lưu trữ script migration Flyway cho cơ sở dữ liệu
-- `./sources/backend/auth-service/`: Dịch vụ xác thực và quản lý token
-- `./sources/backend/user-service/`: Dịch vụ quản lý người dùng và vai trò
-- `./sources/backend/center-service/`: Dịch vụ quản lý trung tâm
-### Thư mục tài liệu
-- `./sources/docs/`: Lưu trữ tất cả tài liệu kỹ thuật, đặc tả API, từ điển dữ liệu
-### Danh sách tệp cụ thể được phép tạo
-1. `./sources/backend/migrations/V1__init_user_center_schema.sql` [DAT-001], [DAT-003]
-2. `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthResource.java` [REQ-001], [REQ-002], [ARC-006]
-3. `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthService.java` [REQ-001], [REQ-002]
-4. `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/TokenService.java` [REQ-001], [ARC-006]
-5. `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/OAuth2Service.java` [REQ-002], [EXC-004]
-6. `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/RbacFilter.java` [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]
-7. `./sources/backend/user-service/src/main/java/org/nlh4j/membership_hub/user/UserResource.java` [REQ-003], [REQ-004], [ARC-001]
-8. `./sources/backend/user-service/src/main/java/org/nlh4j/membership_hub/user/UserService.java` [REQ-003], [ARC-001]
-9. `./sources/backend/user-service/src/main/java/org/nlh4j/membership_hub/user/RoleService.java` [REQ-003], [ARC-001]
-10. `./sources/backend/center-service/src/main/java/org/nlh4j/membership_hub/center/CenterResource.java` [REQ-004], [REQ-005], [REQ-006], [ARC-002]
-11. `./sources/backend/center-service/src/main/java/org/nlh4j/membership_hub/center/CenterService.java` [REQ-005], [ARC-002]
-12. `./sources/backend/center-service/src/main/java/org/nlh4j/membership_hub/center/CenterAdminService.java` [REQ-006], [ARC-002]
-13. `./sources/docs/auth-api-spec.md` [REQ-001], [REQ-002], [ARC-006]
-14. `./sources/docs/rbac-policy.md` [REQ-003], [ARC-001], [ARC-002]
-15. `./sources/docs/center-management-spec.md` [REQ-004], [REQ-005], [REQ-006]
-### Đường dẫn endpoint API được phép triển khai
-- `POST /api/v1/auth/register`
-- `POST /api/v1/auth/login`
-- `POST /api/v1/auth/oauth2/{provider}`
-- `POST /api/v1/admin/users/{userId}/role`
-- `GET /api/v1/centers`
-- `GET /api/v1/centers/{centerId}`
-- `POST /api/v1/admin/centers`
-- `PUT /api/v1/admin/centers/{centerId}`
-- `DELETE /api/v1/admin/centers/{centerId}`
-- `POST /api/v1/admin/centers/{centerId}/admins`
-- `DELETE /api/v1/admin/centers/{centerId}/admins/{userId}`
+Giai đoạn 1 đóng vai trò nền tảng khởi tạo cho toàn bộ dự án Membership Hub, thực hiện ba nhiệm vụ cốt lõi được phân bổ theo bảng tóm tắt đa giai đoạn: Nhiệm vụ 1 (khởi tạo dự án đa dịch vụ và biểu mẫu xây dựng gốc), Nhiệm vụ 16 (khởi tạo hạ tầng cơ sở dữ liệu và di trú schema), và Nhiệm vụ 18 (hợp đồng tích hợp hệ thống và API Gateway). Phạm vi kéo dài từ Ngày 1 đến Ngày 4 với tổng cộng hai mươi chín nhiệm vụ phụ được phân bổ cho bốn tác nhân chuyên biệt: Coder chịu trách nhiệm sinh descriptor Maven cho từng vi dịch vụ và tập lệnh di trú Flyway DDL; Tester xây dựng kịch bản kiểm thử tích hợp xác minh tính hợp lệ của schema và hợp đồng OpenAPI; Reviewer thực hiện đánh giá mã tĩnh và kiểm định cấu trúc descriptor; Doc soạn thảo tài liệu blueprint kiến trúc, sơ đồ quan hệ thực thể, và đặc tả Mermaid cho bốn luồng nghiệp vụ cốt lõi.
 
-## 3. Chỉ thị chức năng cho đại lý phụ chuyên biệt
-*   **Coder**: Đóng vai trò là Nhà phát triển ứng dụng cấp Cao/Chính. Chịu trách nhiệm triển khai mã nguồn ứng dụng thuần túy trên cả lớp dịch vụ backend và ứng dụng khách frontend/di động. Bị cấm viết bộ kiểm thử hoặc manifest hạ tầng.
-*   **Tester**: Đóng vai trò là Kiểm soát chất lượng (QC/QA) cấp Lead/Chính. Chuyên về kỹ thuật bộ kiểm thử, xác thực và cổng chất lượng. Chịu trách nhiệm tạo các bộ kiểm thử JUnit, kiểm thử tích hợp, tự động hóa kiểm thử E2E và kịch bản xác thực hiệu suất. Bị cấm sửa mã nguồn ứng dụng sản xuất. Nếu mục tiêu nhiệm vụ liên quan đến phạm vi kiểm thử tích hợp hoặc end-to-end mà không có tệp mã ứng dụng cụ thể nào có thể cô lập, bạn PHẢI xuất ra literal token `INTEGRATION_SCOPE` là tham số đầu tiên của cặp dấu chấm phẩy (ví dụ: `INTEGRATION_SCOPE;./sources/backend/tests/integration/WorkflowTest.java`).
-*   **Doc**: Hoạt động như là Nhà viết kỹ thuật chính và Kiến trúc sư hệ thống doanh nghiệp. Chuyên về biên soạn tài liệu đặc tả kỹ thuật toàn diện, tài liệu tham chiếu schema, bản vẽ hệ thống và danh mục kiến trúc doanh nghiệp phù hợp với các lớp ngăn xếp kiến trúc đang hoạt động của dự án. Mỗi tệp tài liệu kỹ thuật được tạo PHẢI được liệt kê là thực thể đường dẫn tệp cụ thể có phần mở rộng `.md` và nằm nghiêm ngặt trong bố cục lưu trữ tập trung: `./sources/docs/`.
-*   **Reviewer**: Chịu trách nhiệm xác minh trình biên dịch, cổng phân tích tĩnh và vá lỗi phòng thủ. Chuyên về kiểm toán chất lượng mã nguồn, giải quyết lỗi biên dịch, sửa lỗ hổng bảo mật OWASP và giải quyết các chặn cổng chất lượng SonarQube.
-*   **Docker**: Chuyên nghiệp nghiêm ngặt về đóng gói container, kỹ thuật Dockerfile đa giai đoạn, tối ưu gói và đẩy tài sản hình ảnh ứng dụng đã xác minh lên DockerHub.
-*   **GCP**: Chuyên nghiệp về tự động hóa đám mây trong Google Cloud Platform. Chịu trách nhiệm xây dựng và đẩy hình ảnh lên Google Cloud Artifact Registry (GCR), và điều phối môi trường container một cách tự nhiên trên Google Cloud Run.
-*   **GKE**: Chuyên nghiệp về điều phối container sản xuất bên trong Google Kubernetes Engine. Chịu trách nhiệm xây dựng manifest triển khai Kubernetes, điều khiển định tuyến, cấu hình HPA, biểu đồ Helm và triển khai khối lượng công việc microservices vào cụm GKE đang hoạt động.
+Các tài sản kỹ thuật bắt buộc phải sinh ra bao gồm: descriptor gốc `./sources/backend/pom.xml` khai báo Quarkus BOM 3.15.1 và Java 21, sáu descriptor vi dịch vụ (`user-service`, `center-service`, `course-service`, `attendance-service`, `notification-service`, `reporting-service`), biểu mẫu Next.js (`./sources/frontend/web-app/package.json` và `tsconfig.json`), mười một tập lệnh di trú SQL cho mười một bảng dữ liệu (Roles, Users, Centers, Courses, Enrollments, Attendance, StudentCards, Notifications, Promotions, Announcements, SystemSettings), tệp OpenAPI 3.0.3 đặc tả hợp đồng cho bốn luồng nghiệp vụ (Xác thực, Điểm danh, Thông báo, Tích hợp di động), tài liệu blueprint kiến trúc tại `./sources/docs/architecture/blueprint.md`, và kịch bản bash kiểm thử tích hợp Maven build. Toàn bộ tài sản phải được gắn thẻ truy xuất theo hệ thống TagID `[ARC-000]`, `[ARC-006]` đến `[ARC-009]`, `[DAT-001]` đến `[DAT-011]` để đảm bảo khả năng truy vết đầy đủ trong các giai đoạn tiếp theo.
 
-## 4. Định nghĩa hoàn thành giai đoạn (DoD)
-Giai đoạn 1 được đánh giá là hoàn thành thành công khi đáp ứng tất cả các mốc định lượng sau:
-1. Hoàn thành 100% các thẻ theo dõi yêu cầu được phân bổ cho Giai đoạn 1: [REQ-001], [REQ-002], [REQ-003], [REQ-004], [REQ-005], [REQ-006], [EXC-004], [DAT-001], [DAT-003], [ARC-001], [ARC-002], [ARC-006], không có thẻ nào bị bỏ sót.
-2. Tất cả bộ kiểm thử đơn vị và tích hợp đạt độ bao phủ mã nguồn tối thiểu 90%, không có lỗi nghiêm trọng nào còn tồn tại sau khi rà soát.
-3. Tất cả endpoint API được triển khai đầy đủ theo hợp đồng định tuyến đã định nghĩa, tuân thủ các tiêu chuẩn bảo mật OWASP Top 10 (chống SQL injection, XSS, CSRF, xác thực đầu vào nghiêm ngặt).
-4. Lược đồ cơ sở dữ liệu được triển khai chính xác với tất cả ràng buộc khóa ngoại, chỉ mục và ràng buộc CHECK, đảm bảo tính toàn vẹn dữ liệu và hiệu suất truy vấn tối ưu.
-5. Cơ chế RBAC hoạt động chính xác, ngăn chặn mọi truy cập trái phép, quyền truy cập được áp dụng ngay lập tức sau khi thay đổi vai trò người dùng, không có lỗ hổng bypass quyền.
-6. Tất cả tài liệu kỹ thuật (đặc tả API, chính sách RBAC, đặc tả quản lý trung tâm) được hoàn thiện, rõ ràng và đồng bộ với phiên bản triển khai thực tế.
+## 2. Phạm Vi Kỹ Thuật Cho Phép & Ranh Giới Thư Mục
 
-## 5. Nhật ký thực hiện kiến trúc theo ngày
+Danh sách tệp vật lý và điểm cuối được phép sinh ra trong giai đoạn này:
 
-### 🌤️ NGÀY 1: <!--DAY_HEADER_START-->Khởi tạo schema cơ sở dữ liệu và dịch vụ xác thực cốt lõi<!--DAY_HEADER_END-->
+* `./sources/backend/pom.xml` [ARC-000]
+* `./sources/backend/user-service/pom.xml` [ARC-000]
+* `./sources/backend/center-service/pom.xml` [ARC-000]
+* `./sources/backend/course-service/pom.xml` [ARC-000]
+* `./sources/backend/attendance-service/pom.xml` [ARC-000]
+* `./sources/backend/notification-service/pom.xml` [ARC-000]
+* `./sources/backend/reporting-service/pom.xml` [ARC-000]
+* `./sources/backend/user-service/src/main/resources/db/migration/V1__init_roles_and_users.sql` [DAT-001], [DAT-002]
+* `./sources/backend/user-service/src/main/resources/db/migration/V2__init_student_cards.sql` [DAT-007]
+* `./sources/backend/center-service/src/main/resources/db/migration/V1__init_centers.sql` [DAT-003]
+* `./sources/backend/center-service/src/main/resources/db/migration/V2__init_promotions_announcements.sql` [DAT-009], [DAT-010]
+* `./sources/backend/center-service/src/main/resources/db/migration/V3__init_system_settings.sql` [DAT-011]
+* `./sources/backend/course-service/src/main/resources/db/migration/V1__init_courses.sql` [DAT-004]
+* `./sources/backend/course-service/src/main/resources/db/migration/V2__init_enrollments.sql` [DAT-005]
+* `./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_attendance.sql` [DAT-006]
+* `./sources/backend/notification-service/src/main/resources/db/migration/V1__init_notifications.sql` [DAT-008]
+* `./sources/frontend/web-app/package.json` [ARC-000]
+* `./sources/frontend/web-app/tsconfig.json` [ARC-000]
+* `./sources/docs/architecture/blueprint.md` [ARC-006], [ARC-007], [ARC-008], [ARC-009]
+* `./sources/docs/api/openapi-spec.yaml` [ARC-006], [ARC-007], [ARC-008], [ARC-009]
+* `./sources/infra/test/maven-build-integration.sh` [ARC-000]
+* `./sources/infra/test/openapi-spec-validation.sh` [ARC-006], [ARC-007], [ARC-008], [ARC-009]
+* `./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/UserSchemaMigrationIT.java` [DAT-001], [DAT-002]
+* `./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/AttendanceSchemaMigrationIT.java` [DAT-004], [DAT-005], [DAT-006], [DAT-007]
+* `./sources/backend/notification-service/src/test/java/org/nlh4j/membershiphub/notificationservice/NotificationSchemaMigrationIT.java` [DAT-008], [DAT-009], [DAT-010], [DAT-011]
 
-#### 📝 Công việc phụ 1.1: Triển khai migration khởi tạo schema bảng người dùng, vai trò và trung tâm
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/migrations/V1__init_user_center_schema.sql`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[DAT-001], [DAT-003]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết script migration ANSI SQL chuẩn để tạo 3 bảng: `roles` (role_id PK kiểu SMALLINT, name VARCHAR 30 NOT NULL UNIQUE, description VARCHAR 200), `users` (user_id PK kiểu UUID mặc định `gen_random_uuid()`, email VARCHAR 255 NOT NULL UNIQUE, password_hash CHAR 60 NOT NULL, full_name VARCHAR 100 NOT NULL, role_id SMALLINT NOT NULL tham chiếu đến `roles(role_id)`, provider VARCHAR 20 NOT NULL mặc định 'local' với ràng buộc CHECK chỉ chấp nhận các giá trị 'local', 'firebase', 'google', 'facebook', created_at và updated_at TIMESTAMP NOT NULL mặc định CURRENT_TIMESTAMP), `centers` (center_id PK UUID mặc định `gen_random_uuid()`, name VARCHAR 100 NOT NULL, address VARCHAR 255 NOT NULL, tax_id VARCHAR 13 NOT NULL UNIQUE với ràng buộc CHECK chỉ chấp nhận 10-13 chữ số, contact_phone VARCHAR 20, contact_email VARCHAR 255 với ràng buộc CHECK đúng định dạng email). Tạo chỉ mục cho các trường thường xuyên truy vấn: `idx_users_email` trên `users(email)`, `idx_users_role_id` trên `users(role_id)`, `idx_centers_tax_id` trên `centers(tax_id)`. Đảm bảo tất cả ràng buộc khóa ngoại được định nghĩa chính xác với hành động ON DELETE CASCADE phù hợp, ngăn chặn dữ liệu rác khi xóa bản ghi cha.
+* **RÀNG BUỘC BẮT BUỘC VỀ BIỂU MẪU NỀN TẢNG**:
+  - Khi khởi tạo blueprint vòng đời hoạt động (giới hạn trong Giai đoạn 1 - NGÀY 1), phải chèn và khai báo descriptor xây dựng hạ tầng kho lưu trữ chính trước khi phát sinh bất kỳ thành phần mã nguồn ứng dụng nào.
+  - Đối với kiến trúc backend Microservices, phải thực thi định nghĩa đường dẫn bắt buộc của descriptor dự án cha `./sources/backend/pom.xml` và các biểu mẫu mô-đun con `./sources/backend/<service-name>/pom.xml`.
+  - Đối với lớp giao diện Frontend, phải thực thi đăng ký đường dẫn cấu hình rõ ràng `./sources/frontend/package.json` và `./sources/frontend/tsconfig.json`. Tất cả tài sản khung được sinh ra phải ánh xạ chính xác tới mã kiến trúc hệ thống `[ARC-000]`.
 
-<!--START_DDL_MIGRATION-->
+## 3. Chỉ Thị Chức Năng Chuyên Biệt Cho Tác Nhân Phụ
+
+*   **Coder**: Đóng vai trò Nhà Phát Triển Ứng Dụng Cao Cấp. Chịu trách nhiệm triển khai mã nguồn ứng dụng thuần túy trên cả dịch vụ backend và ứng dụng frontend/mobile. Bị cấm viết bộ kiểm thử hoặc biểu mẫu hạ tầng.
+
+* **Tester**: Đóng vai trò Trưởng Nhóm Kiểm Thử/Đảm Bảo Chất Lượng. Chuyên về kỹ thuật bộ kiểm thử, xác thực và cổng chất lượng. Chịu trách nhiệm sinh JUnit, kiểm thử tích hợp, kiểm thử tự động đầu-cuối và kịch bản xác thực hiệu năng. Bị cấm sửa đổi mã nguồn sản phẩm. Nếu nhiệm vụ phụ liên quan đến phạm vi tích hợp tổng thể hoặc đầu-cuối mà không thể khoanh vùng một tệp mã nguồn cụ thể, phải xuất chính xác chuỗi ký tự `INTEGRATION_SCOPE` làm tham số đầu tiên của cặp phân tách bằng dấu chấm phẩy (ví dụ: `INTEGRATION_SCOPE;./sources/backend/tests/integration/WorkflowTest.java`).
+
+* **Doc**: Đóng vai trò Chuyên Viên Viết Tài Liệu Kỹ Thuật và Kiến Trúc Sư Hệ Thống Doanh Nghiệp. Chuyên về biên soạn tài liệu đặc tả kỹ thuật toàn diện, tài liệu tham chiếu schema, blueprint hệ thống và danh mục kiến trúc doanh nghiệp phù hợp với các lớp topology dự án đang hoạt động. Mỗi tệp tài liệu kỹ thuật được sinh ra phải được liệt kê dưới dạng thực thể đường dẫn tệp rõ ràng kết thúc bằng phần mở rộng `.md` và nằm hoàn toàn trong sơ đồ lưu trữ tập trung: `./sources/docs/`.
+
+*   **Reviewer**: Chịu trách nhiệm xác minh trình biên dịch, cổng phân tích tĩnh và vá lỗi phòng thủ. Chuyên về đánh giá chất lượng mã, giải quyết lỗi biên dịch, sửa lỗ hổng bảo mật OWASP và xử lý các blocker cổng chất lượng SonarQube.
+
+*   **Docker**: Chuyên biệt về container hóa, kỹ thuật Dockerfile đa giai đoạn, tối ưu gói và đẩy tài sản ảnh ứng dụng đã xác minh lên DockerHub.
+
+*   **GCP**: Chuyên về tự động hóa đám mây trong Google Cloud Platform. Chịu trách nhiệm xây dựng và đẩy ảnh lên Google Cloud Artifact Registry (GCR), điều phối môi trường container nguyên bản trên Google Cloud Run.
+
+*   **GKE**: Chuyên về điều phối container sản xuất bên trong Google Kubernetes Engine. Chịu trách nhiệm xây dựng manifest triển khai Kubernetes, điều khiển định tuyến, cấu hình HPA, biểu đồ Helm và triển khai tải công việc microservice vào cụm GKE đang hoạt động.
+
+## 4. Định Nghĩa Hoàn Thành Giai Đoạn
+
+Giai đoạn 1 được coi là hoàn thành khi đáp ứng đồng thời các tiêu chí định lượng sau: một trăm phần trăm mười một bảng cơ sở dữ liệu đã được sinh ra với ràng buộc khóa chính, khóa ngoại, kiểm tra CHECK và chỉ mục tối ưu thông qua tập lệnh Flyway versioned; toàn bộ bảy descriptor Maven (một cha và sáu vi dịch vụ con) biên dịch sạch với Quarkus BOM 3.15.1 và Java 21 LTS; biểu mẫu gốc Next.js 14.2.15 hoàn chỉnh với mọi phụ thuộc được khai báo đúng phiên bản; hợp đồng OpenAPI 3.0.3 cho bốn luồng nghiệp vụ cốt lõi (Xác thực, Điểm danh, Thông báo, Tích hợp di động) được xác minh tính hợp lệ qua công cụ redocly/cli; kịch bản kiểm thử tích hợp Maven build xác nhận tất cả sáu vi dịch vụ tải và phân giải đúng dependency; tài liệu blueprint kiến trúc tại `./sources/docs/architecture/blueprint.md` chứa sơ đồ quan hệ thực thể đầy đủ cho mười một bảng và bốn sơ đồ Mermaid sequenceDiagram; một trăm phần trăm mã TagID `[ARC-000]`, `[ARC-006]`, `[ARC-007]`, `[ARC-008]`, `[ARC-009]`, `[DAT-001]` đến `[DAT-011]` được ánh xạ chính xác trong báo cáo đánh giá cuối giai đoạn. Mọi vi phạm chuẩn OWASP Top 10 (SQL injection, XSS, CSRF) phải được phát hiện và khắc phục trong quá trình review.
+
+## 5. NHẬT KÝ THỰC THI KIẾN TRÚC THEO NGÀY
+
+### 🌤️ NGÀY 1: <!--DAY_HEADER_START-->KHỞI TẠO DESCRIPTOR DỰ ÁN ĐA MÔ-ĐUN VÀ BIỂU MẪU XÂY DỰNG GỐC<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 1.1: Sinh descriptor pom.xml gốc và cấu hình đa vi dịch vụ
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/pom.xml
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/pom.xml` với packaging `pom` làm descriptor cha, khai báo `modules` chứa 6 vi dịch vụ (`user-service`, `center-service`, `course-service`, `attendance-service`, `notification-service`, `reporting-service`). Cấu hình `parent` tham chiếu Quarkus BOM phiên bản 3.15.1, thiết lập `properties` cho Java 21, định nghĩa `dependencyManagement` quản lý phiên bản chuẩn: `quarkus-rest`, `quarkus-rest-jackson`, `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, `quarkus-flyway`, `quarkus-smallrye-jwt`, `quarkus-smallrye-jwt-build`, `quarkus-smallrye-health`, `quarkus-micrometer-registry-prometheus`, `quarkus-arc`, `quarkus-test-junit5`. Đảm bảo không chứa ký tự gạch ngang `-` hoặc gạch dưới `_` trong bất kỳ định danh kỹ thuật nào, chỉ sử dụng chữ thường alphanumeric.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.nlh4j</groupId>
+    <artifactId>membershiphub</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Membership Hub Root</name>
+
+    <parent>
+        <groupId>io.quarkus.platform</groupId>
+        <artifactId>quarkus-bom</artifactId>
+        <version>3.15.1</version>
+        <relativePath/>
+    </parent>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <quarkus.platform.version>3.15.1</quarkus.platform.version>
+        <surefire-plugin.version>3.2.5</surefire-plugin.version>
+    </properties>
+
+    <modules>
+        <module>user-service</module>
+        <module>center-service</module>
+        <module>course-service</module>
+        <module>attendance-service</module>
+        <module>notification-service</module>
+        <module>reporting-service</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-bom</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${surefire-plugin.version}</version>
+                    <configuration>
+                        <systemPropertyVariables>
+                            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                            <maven.home>${maven.home}</maven.home>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
+```
+
+#### 📝 NHIỆM VỤ PHỤ 1.2: Sinh descriptor pom.xml cho user-service
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/user-service/pom.xml
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/user-service/pom.xml` kế thừa từ descriptor cha, định nghĩa `artifactId` là `user-service`. Khai báo các dependency thiết yếu: `quarkus-rest`, `quarkus-rest-jackson`, `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, `quarkus-flyway`, `quarkus-smallrye-jwt`, `quarkus-smallrye-jwt-build`, `quarkus-smallrye-health`. Cấu hình plugin `quarkus-maven-plugin` với phiên bản tương thích BOM. Đảm bảo `groupId` là `org.nlh4j.membershiphub.userservice`.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.nlh4j</groupId>
+        <artifactId>membershiphub</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>user-service</artifactId>
+    <groupId>org.nlh4j.membershiphub.userservice</groupId>
+    <name>User Service</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt-build</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+#### 📝 NHIỆM VỤ PHỤ 1.3: Sinh descriptor pom.xml cho center-service
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/center-service/pom.xml
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/center-service/pom.xml` với `groupId` `org.nlh4j.membershiphub.centerservice`, `artifactId` `center-service`, kế thừa từ descriptor cha. Bao gồm các dependency: `quarkus-rest`, `quarkus-rest-jackson`, `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, `quarkus-flyway`, `quarkus-smallrye-jwt`, `quarkus-smallrye-health`. Cấu hình plugin `quarkus-maven-plugin` chuẩn với execution `build`, `generate-code`, `generate-code-tests`.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.nlh4j</groupId>
+        <artifactId>membershiphub</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>center-service</artifactId>
+    <groupId>org.nlh4j.membershiphub.centerservice</groupId>
+    <name>Center Service</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+#### 📝 NHIỆM VỤ PHỤ 1.4: Sinh descriptor pom.xml cho course-service
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/course-service/pom.xml
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/course-service/pom.xml` với `groupId` `org.nlh4j.membershiphub.courseservice`, `artifactId` `course-service`. Khai báo dependency: `quarkus-rest`, `quarkus-rest-jackson`, `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, `quarkus-flyway`, `quarkus-smallrye-jwt`, `quarkus-messaging-kafka` (cho sự kiện thông báo), `quarkus-smallrye-health`. Tích hợp plugin `quarkus-maven-plugin` chuẩn.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.nlh4j</groupId>
+        <artifactId>membershiphub</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>course-service</artifactId>
+    <groupId>org.nlh4j.membershiphub.courseservice</groupId>
+    <name>Course Service</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-messaging-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+#### 📝 NHIỆM VỤ PHỤ 1.5: Sinh descriptor pom.xml cho attendance-service
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/attendance-service/pom.xml
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/attendance-service/pom.xml` với `groupId` `org.nlh4j.membershiphub.attendanceservice`, `artifactId` `attendance-service`. Bao gồm dependency: `quarkus-rest`, `quarkus-rest-jackson`, `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, `quarkus-flyway`, `quarkus-smallrye-jwt`, `quarkus-smallrye-health`. Cấu hình plugin `quarkus-maven-plugin` chuẩn cho build và code generation.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.nlh4j</groupId>
+        <artifactId>membershiphub</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>attendance-service</artifactId>
+    <groupId>org.nlh4j.membershiphub.attendanceservice</groupId>
+    <name>Attendance Service</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+#### 📝 NHIỆM VỤ PHỤ 1.6: Sinh descriptor pom.xml cho notification-service
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/notification-service/pom.xml
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/notification-service/pom.xml` với `groupId` `org.nlh4j.membershiphub.notificationservice`, `artifactId` `notification-service`. Khai báo dependency: `quarkus-rest`, `quarkus-rest-jackson`, `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, `quarkus-flyway`, `quarkus-smallrye-jwt`, `quarkus-messaging-kafka` (cho sự kiện), `quarkus-rest-client` (cho FCM/APNs/Zalo API), `quarkus-smallrye-health`. Tích hợp `quarkus-maven-plugin` chuẩn.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.nlh4j</groupId>
+        <artifactId>membershiphub</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>notification-service</artifactId>
+    <groupId>org.nlh4j.membershiphub.notificationservice</groupId>
+    <name>Notification Service</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-messaging-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+#### 📝 NHIỆM VỤ PHỤ 1.7: Sinh descriptor pom.xml cho reporting-service
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/reporting-service/pom.xml
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/reporting-service/pom.xml` với `groupId` `org.nlh4j.membershiphub.reportingservice`, `artifactId` `reporting-service`. Bao gồm dependency: `quarkus-rest`, `quarkus-rest-jackson`, `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, `quarkus-flyway`, `quarkus-smallrye-jwt`, `quarkus-scheduler` (cho refresh dashboard), `quarkus-smallrye-health`. Cấu hình plugin `quarkus-maven-plugin` chuẩn.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.nlh4j</groupId>
+        <artifactId>membershiphub</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>reporting-service</artifactId>
+    <groupId>org.nlh4j.membershiphub.reportingservice</groupId>
+    <name>Reporting Service</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-scheduler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+#### 📝 NHIỆM VỤ PHỤ 1.8: Sinh biểu mẫu gốc Next.js
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/frontend/web-app/package.json
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/frontend/web-app/package.json` cho ứng dụng web Next.js, khai báo `name` là `membershiphub-webapp`, phiên bản `1.0.0`. Liệt kê `scripts`: `dev` (next dev), `build` (next build), `start` (next start), `lint` (next lint), `test` (jest). Khai báo `dependencies`: `next@14.2.15`, `react@18.3.1`, `react-dom@18.3.1`, `axios@1.7.7`, `next-i18next@15.3.1`, `firebase@10.14.1`, `firebase-admin@12.6.0`, `@react-oauth/google@0.12.1`, `react-facebook-login@4.1.1`, `qrcode-reader@1.0.4`, `react-qr-scanner@1.0.0-alpha.11`, `recharts@2.13.0`. Khai báo `devDependencies`: `typescript@5.6.3`, `@types/react@18.3.11`, `@types/node@22.7.5`, `jest@29.7.0`, `jest-environment-jsdom@29.7.0`, `@testing-library/react@16.0.1`, `eslint@8.57.1`, `eslint-config-next@14.2.15`.
+
+```json
+{
+  "name": "membershiphub-webapp",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest"
+  },
+  "dependencies": {
+    "next": "14.2.15",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "axios": "1.7.7",
+    "next-i18next": "15.3.1",
+    "firebase": "10.14.1",
+    "firebase-admin": "12.6.0",
+    "@react-oauth/google": "0.12.1",
+    "react-facebook-login": "4.1.1",
+    "qrcode-reader": "1.0.4",
+    "react-qr-scanner": "1.0.0-alpha.11",
+    "recharts": "2.13.0"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3",
+    "@types/react": "18.3.11",
+    "@types/node": "22.7.5",
+    "jest": "29.7.0",
+    "jest-environment-jsdom": "29.7.0",
+    "@testing-library/react": "16.0.1",
+    "eslint": "8.57.1",
+    "eslint-config-next": "14.2.15"
+  }
+}
+```
+
+#### 📝 NHIỆM VỤ PHỤ 1.9: Sinh cấu hình tsconfig.json
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/frontend/web-app/tsconfig.json
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/frontend/web-app/tsconfig.json` cấu hình biên dịch TypeScript cho Next.js 14. Thiết lập `target` ES2022, `module` ESNext, `moduleResolution` Bundler, `lib` DOM/ES2022. Kích hoạt `strict`, `noEmit`, `esModuleInterop`, `skipLibCheck`, `forceConsistentCasingInFileNames`, `resolveJsonModule`, `isolatedModules`, `jsx` preserve. Bao gồm `baseUrl` là `.` và `paths` ánh xạ `@/*` tới `./src/*`.
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "forceConsistentCasingInFileNames": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+```
+
+#### 📝 NHIỆM VỤ PHỤ 1.10: Kiểm thử tích hợp xây dựng đa mô-đun
+##### Tác Nhân Được Phân Công: Tester
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/infra/test/maven-build-integration.sh
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/infra/test/maven-build-integration.sh` chứa kịch bản bash kiểm thử tích hợp. Kịch bản phải thực hiện `mvn clean validate` tại thư mục `./sources/backend/` để xác nhận tất cả 6 descriptor `pom.xml` vi dịch vụ tải và phân giải đúng các dependency từ BOM Quarkus 3.15.1. Thoát với mã 0 nếu thành công, mã khác 0 nếu thất bại. In log rõ ràng cho mỗi vi dịch vụ.
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+BACKEND_ROOT="./sources/backend"
+SERVICES=("user-service" "center-service" "course-service" "attendance-service" "notification-service" "reporting-service")
+
+echo "============================================================"
+echo "  TÍCH HỢP XÂY DỰNG ĐA MÔ-ĐUN - MEMBERSHIP HUB"
+echo "============================================================"
+
+if [ ! -d "${BACKEND_ROOT}" ]; then
+    echo "[LỖI] Không tìm thấy thư mục backend gốc: ${BACKEND_ROOT}"
+    exit 1
+fi
+
+cd "${BACKEND_ROOT}"
+echo "[INFO] Đang chạy 'mvn clean validate' tại ${BACKEND_ROOT}"
+mvn clean validate -B -q
+
+for SERVICE in "${SERVICES[@]}"; do
+    if [ -f "${SERVICE}/pom.xml" ]; then
+        echo "[OK] Descriptor pom.xml tồn tại cho vi dịch vụ: ${SERVICE}"
+    else
+        echo "[LỖI] Thiếu descriptor pom.xml cho vi dịch vụ: ${SERVICE}"
+        exit 2
+    fi
+done
+
+echo "============================================================"
+echo "  TẤT CẢ DESCRIPTOR ĐÃ ĐƯỢC XÁC MINH THÀNH CÔNG"
+echo "============================================================"
+exit 0
+```
+
+#### 📝 NHIỆM VỤ PHỤ 1.11: Đánh giá mã và kiểm định cấu trúc descriptor
+##### Tác Nhân Được Phân Công: Reviewer
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/pom.xml
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Thực hiện đánh giá mã tĩnh (code review) cho descriptor `./sources/backend/pom.xml` và toàn bộ 6 descriptor vi dịch vụ con. Xác minh: (1) tất cả `groupId` phải tuân thủ quy ước `org.nlh4j.membershiphub.<servicename>` không chứa ký tự `-` hoặc `_`; (2) tất cả `artifactId` đều ở dạng chữ thường alphanumeric; (3) mọi tham chiếu `<parent>` đều trỏ về `membershiphub` gốc phiên bản `1.0.0-SNAPSHOT`; (4) phiên bản Quarkus BOM `3.15.1` được nhập đúng trong `dependencyManagement`; (5) plugin `quarkus-maven-plugin` được khai báo trong từng vi dịch vụ. Sinh báo cáo đánh giá với điểm số tuân thủ và đề xuất sửa lỗi nếu phát hiện bất thường.
+
+#### 📝 NHIỆM VỤ PHỤ 1.12: Soạn thảo tài liệu biên bản khởi tạo dự án
+##### Tác Nhân Được Phân Công: Doc
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/docs/architecture/blueprint.md
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Soạn thảo biên bản khởi tạo dự án tại `./sources/docs/architecture/blueprint.md` mô tả tổng quan cấu trúc monorepo, sơ đồ quan hệ cha-con giữa `membershiphub` gốc và 6 vi dịch vụ, bản đồ thư mục vật lý (theo chuẩn Unix), quy ước đặt tên package Java (`org.nlh4j.membershiphub.<servicename>`), quy ước cấu hình Maven (Java 21, Quarkus BOM 3.15.1), cùng danh sách plugin tích hợp bắt buộc. Tài liệu phải ở định dạng Markdown tiêu chuẩn với các tiêu đề phân cấp rõ ràng.
+
+### 🌤️ NGÀY 2: <!--DAY_HEADER_START-->DI TRÚ SCHEMA CƠ SỞ DỮ LIỆU BẰNG FLYWAY DDL - PHẦN 1 (USERS, ROLES, CENTERS)<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 2.1: Tạo tập lệnh di trú V1 - bảng Roles và Users
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/user-service/src/main/resources/db/migration/V1__init_roles_and_users.sql
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-001], [DAT-002]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/user-service/src/main/resources/db/migration/V1__init_roles_and_users.sql` chứa DDL SQL chuẩn ANSI. Bảng `roles` (`role_id` SMALLINT PRIMARY KEY, `name` VARCHAR(30) UNIQUE NOT NULL, `description` VARCHAR(200)). Bảng `users` (`user_id` UUID PRIMARY KEY DEFAULT gen_random_uuid(), `email` VARCHAR(255) UNIQUE NOT NULL, `password_hash` CHAR(60) NOT NULL, `full_name` VARCHAR(100) NOT NULL, `role_id` SMALLINT NOT NULL, `provider` VARCHAR(20) NOT NULL DEFAULT 'local' với CHECK (provider IN ('local','firebase','google','facebook')), `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (role_id) REFERENCES roles(role_id)). Tạo chỉ mục `idx_users_email`, `idx_users_role_id`. Chèn dữ liệu khởi tạo 5 vai trò RBAC.
+
+* **Đặc Tả DDL SQL Lược Đồ Cơ Sở Dữ Liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
 ```sql
--- Khởi tạo schema cho các bảng người dùng, vai trò và trung tâm
-CREATE TABLE IF NOT EXISTS roles (
+-- =====================================================================
+-- V1__init_roles_and_users.sql
+-- Khởi tạo bảng Roles và Users cho Membership Hub
+-- =====================================================================
+
+CREATE TABLE roles (
     role_id SMALLINT PRIMARY KEY,
-    name VARCHAR(30) NOT NULL UNIQUE,
+    name VARCHAR(30) UNIQUE NOT NULL,
     description VARCHAR(200)
 );
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) UNIQUE NOT NULL,
     password_hash CHAR(60) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
-    role_id SMALLINT NOT NULL REFERENCES roles(role_id),
-    provider VARCHAR(20) NOT NULL DEFAULT 'local' CHECK (provider IN ('local', 'firebase', 'google', 'facebook')),
+    role_id SMALLINT NOT NULL,
+    provider VARCHAR(20) NOT NULL DEFAULT 'local',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles(role_id),
+    CONSTRAINT chk_users_provider CHECK (provider IN ('local','firebase','google','facebook'))
 );
 
-CREATE TABLE IF NOT EXISTS centers (
-    center_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(100) NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    tax_id VARCHAR(13) NOT NULL UNIQUE CHECK (tax_id ~ '^[0-9]{10,13}$'),
-    contact_phone VARCHAR(20),
-    contact_email VARCHAR(255) CHECK (contact_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
-);
-
--- Tạo index cho các trường thường xuyên truy vấn
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role_id ON users(role_id);
-CREATE INDEX idx_centers_tax_id ON centers(tax_id);
+
+INSERT INTO roles (role_id, name, description) VALUES
+    (1, 'SystemAdmin', 'Quản trị viên hệ thống toàn cục'),
+    (2, 'CenterAdmin', 'Quản trị viên cấp trung tâm'),
+    (3, 'Manager', 'Quản lý cấp dưới'),
+    (4, 'Teacher', 'Giáo viên chỉ xem lịch giảng dạy'),
+    (5, 'Student', 'Học viên đăng ký khóa học');
 ```
 <!--END_DDL_MIGRATION-->
 
-#### 📝 Công việc phụ 1.2: Xây dựng dịch vụ xác thực email/mật khẩu và cấp phát JWT token
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthService.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-001], [ARC-006]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Triển khai logic xác thực đầu vào cho email và mật khẩu: kiểm tra định dạng email hợp lệ, kiểm tra độ mạnh mật khẩu tối thiểu 8 ký tự có chữ hoa, chữ thường, số và ký tự đặc biệt. Sử dụng thư viện BCrypt để băm mật khẩu trước khi lưu vào cơ sở dữ liệu. Triển khai logic cấp phát JWT access token có thời hạn 15 phút và refresh token có thời hạn 7 ngày, kèm cơ chế làm mới token hợp lệ. Lưu trữ refresh token đã mã hóa trong cơ sở dữ liệu để xác thực khi thực hiện yêu cầu làm mới token. Đảm bảo tất cả thao tác xử lý mật khẩu và token tuân thủ các tiêu chuẩn bảo mật OWASP Top 10, không lộ thông tin nhạy cảm trong log.
+#### 📝 NHIỆM VỤ PHỤ 2.2: Tạo tập lệnh di trú V1 - bảng Centers
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/center-service/src/main/resources/db/migration/V1__init_centers.sql
 
-#### 📝 Công việc phụ 1.3: Xây dựng endpoint đăng ký và đăng nhập người dùng
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthResource.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-001], [EXC-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Xây dựng endpoint `POST /api/v1/auth/register` để xử lý yêu cầu đăng ký người dùng: xác thực đầu vào đầy đủ, tạo bản ghi người dùng mới với vai trò mặc định là Student, trả về JWT access token và refresh token khi đăng ký thành công. Xây dựng endpoint `POST /api/v1/auth/login` để xử lý đăng nhập với email/mật khẩu, xác thực thông tin và cấp token tương tự. Triển khai xử lý ngoại lệ `VALIDATION_INPUT_INVALID`: nếu có trường không hợp lệ, trả về mã 400 kèm danh sách chi tiết lỗi từng trường, không tiết lộ thông tin nhạy cảm về cấu trúc cơ sở dữ liệu. Đảm bảo tất cả yêu cầu đều có kiểm tra xác thực đầu vào nghiêm ngặt, ngăn chặn tấn công injection.
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-003]<!--END_TAGS-->
 
-#### 📝 Công việc phụ 1.4: Viết bộ kiểm thử đơn vị cho dịch vụ xác thực và endpoint đăng ký
-##### Đại lý phụ được phân công: [Tester]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthService.java;./sources/backend/auth-service/src/test/java/org/nlh4j/membership_hub/auth/AuthServiceTest.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-001], [EXC-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết các trường hợp kiểm thử đơn vị cho `AuthService`: kiểm tra xác thực email hợp lệ/không hợp lệ, kiểm tra độ mạnh mật khẩu, kiểm tra băm mật khẩu đúng định dạng bcrypt 60 ký tự, kiểm tra cấp phát JWT token có thời hạn chính xác 15 phút cho access token và 7 ngày cho refresh token. Viết kiểm thử cho endpoint đăng ký: kiểm tra đăng ký thành công với thông tin hợp lệ, kiểm tra trả về lỗi 400 khi thiếu trường bắt buộc, kiểm tra trả về lỗi khi email đã tồn tại. Đảm bảo độ bao phủ mã ít nhất 90% cho các tệp liên quan, không có trường hợp kiểm thử nào bị bỏ sót các nhánh điều kiện quan trọng.
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/center-service/src/main/resources/db/migration/V1__init_centers.sql` định nghĩa bảng `centers` (`center_id` UUID PRIMARY KEY DEFAULT gen_random_uuid(), `name` VARCHAR(100) NOT NULL, `address` VARCHAR(255) NOT NULL, `tax_id` VARCHAR(20) UNIQUE NOT NULL với CHECK (tax_id ~ '^[0-9]{10,13}$'), `contact_phone` VARCHAR(20), `contact_email` VARCHAR(100), `admin_user_id` UUID, `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (admin_user_id) REFERENCES users(user_id)). Tạo chỉ mục `idx_centers_tax_id`, `idx_centers_admin_user_id`.
 
-#### 📝 Công việc phụ 1.5: Xây dựng tài liệu đặc tả API cho luồng xác thực người dùng
-##### Đại lý phụ được phân công: [Doc]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/docs/auth-api-spec.md`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-001], [REQ-002], [ARC-006]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết tài liệu đặc tả API cho các endpoint xác thực: đăng ký, đăng nhập, làm mới token, đăng xuất. Mô tả chi tiết tham số yêu cầu, phản hồi thành công, phản hồi lỗi, mã lỗi HTTP tương ứng, yêu cầu xác thực (nếu có). Bao gồm ví dụ payload JSON cho mỗi trường hợp, ghi rõ các ràng buộc đầu vào (độ dài mật khẩu, định dạng email) và các mã lỗi có thể xảy ra (400, 401, 409). Đảm bảo tài liệu tuân thủ chuẩn Markdown của dự án, dễ đọc cho cả đội phát triển và đội vận hành.
+* **Đặc Tả DDL SQL Lược Đồ Cơ Sở Dữ Liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
+```sql
+-- =====================================================================
+-- V1__init_centers.sql
+-- Khởi tạo bảng Centers cho Membership Hub
+-- =====================================================================
 
-<!--START_EXC_HANDLER>
-```json
-// Trình xử lý ngoại lệ cục bộ của Giai đoạn 1 [EXC-004]
-{
-  "exception_handlers": [
-    {
-      "error_code": "VALIDATION_INPUT_INVALID",
-      "http_status": 400,
-      "trigger_condition": "Các trường đầu vào không đạt yêu cầu kiểm tra (email không đúng định dạng, mật khẩu không đủ mạnh, thiếu trường bắt buộc)",
-      "behavior": "Trả về phản hồi lỗi chi tiết liệt kê từng trường không hợp lệ, yêu cầu người dùng chỉnh sửa trước khi gửi lại, không tiết lộ thông tin nhạy cảm về cấu trúc hệ thống"
-    },
-    {
-      "error_code": "OAUTH2_AUTH_FAILED",
-      "http_status": 401,
-      "trigger_condition": "Trao đổi mã xác thực OAuth2 với nhà cung cấp thất bại, hoặc thông tin người dùng không hợp lệ",
-      "behavior": "Trả về thông báo lỗi xác thực thất bại, yêu cầu người dùng thử lại hoặc chọn phương thức đăng nhập khác, ghi log chi tiết lỗi cho mục đích kiểm tra"
-    },
-    {
-      "error_code": "TAX_ID_DUPLICATE",
-      "http_status": 409,
-      "trigger_condition": "Mã số thuế của trung tâm mới trùng với bản ghi đã tồn tại trong hệ thống",
-      "behavior": "Trả về lỗi xung đột, ngăn chặn tạo/cập nhật trung tâm, yêu cầu nhập mã số thuế khác, ghi log sự kiện cho mục đích kiểm tra"
+CREATE TABLE centers (
+    center_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    tax_id VARCHAR(20) UNIQUE NOT NULL,
+    contact_phone VARCHAR(20),
+    contact_email VARCHAR(100),
+    admin_user_id UUID,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_centers_admin FOREIGN KEY (admin_user_id) REFERENCES users(user_id),
+    CONSTRAINT chk_centers_taxid CHECK (tax_id ~ '^[0-9]{10,13}$')
+);
+
+CREATE INDEX idx_centers_tax_id ON centers(tax_id);
+CREATE INDEX idx_centers_admin_user_id ON centers(admin_user_id);
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 2.3: Kiểm thử tích hợp di trú V1 user và center
+##### Tác Nhân Được Phân Công: Tester
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/UserSchemaMigrationIT.java
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-001], [DAT-002], [DAT-003]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo lớp kiểm thử tích hợp Flyway `./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/UserSchemaMigrationIT.java` sử dụng `@QuarkusTest`. Cấu hình Testcontainers PostgreSQL 16, thực thi `@QuarkusTestResource` để khởi tạo container. Inject `Flyway` bean, gọi `flyway.migrate()` và xác minh các bảng `roles`, `users` tồn tại thông qua truy vấn JDBC metadata. Bổ sung kiểm tra ràng buộc CHECK `chk_users_provider` bằng cách chèn giá trị không hợp lệ và kỳ vọng ngoại lệ `SQLException`.
+
+```java
+package org.nlh4j.membershiphub.userservice;
+
+import io.quarkus.test.junit.QuarkusTest;
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
+
+import jakarta.inject.Inject;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+@QuarkusTest
+public class UserSchemaMigrationIT {
+
+    @Inject
+    Flyway flyway;
+
+    @Inject
+    DataSource dataSource;
+
+    @Test
+    void testRolesAndUsersTablesExist() throws Exception {
+        Assertions.assertNotNull(flyway, "Flyway phải được inject");
+        try (Connection conn = dataSource.getConnection();
+             Statement stmt = conn.createStatement()) {
+            try (ResultSet rs = stmt.executeQuery(
+                    "SELECT table_name FROM information_schema.tables " +
+                    "WHERE table_schema='public' AND table_name IN ('roles','users')")) {
+                int count = 0;
+                while (rs.next()) {
+                    count++;
+                }
+                Assertions.assertEquals(2, count, "Phải tồn tại đúng 2 bảng roles và users");
+            }
+        }
     }
-  ]
 }
 ```
-<!--END_EXC_HANDLER-->
 
----
+#### 📝 NHIỆM VỤ PHỤ 2.4: Đánh giá thiết kế schema Users và Centers
+##### Tác Nhân Được Phân Công: Reviewer
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/user-service/src/main/resources/db/migration/V1__init_roles_and_users.sql
 
-### 🌤️ NGÀY 2: <!--DAY_HEADER_START-->Triển khai xác thực OAuth2 và cơ chế phân quyền RBAC<!--DAY_HEADER_END-->
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-001], [DAT-002], [DAT-003]<!--END_TAGS-->
 
-#### 📝 Công việc phụ 2.1: Tích hợp luồng xác thực OAuth2 với Firebase, Google và Facebook
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/OAuth2Service.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-002], [EXC-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Triển khai logic xử lý xác thực OAuth2 cho 3 nhà cung cấp: Firebase, Google, Facebook. Xây dựng luồng trao đổi mã xác thực (auth code) lấy thông tin người dùng từ nhà cung cấp, kiểm tra tính hợp lệ của mã và xác thực chữ ký của mã xác thực. Nếu người dùng đã tồn tại trong hệ thống, cập nhật thông tin xác thực; nếu chưa tồn tại, tạo bản ghi người dùng mới với vai trò Student. Cấp JWT token tương tự luồng đăng nhập email/mật khẩu. Triển khai xử lý ngoại lệ khi trao đổi mã xác thực thất bại, trả về lỗi 401 với thông báo rõ ràng, không tiết lộ chi tiết kỹ thuật nhạy cảm. Đảm bảo tích hợp với Firebase Admin SDK đúng chuẩn, xác thực chữ ký của mã xác thực từ nhà cung cấp OAuth2.
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Đánh giá tệp SQL V1__init_roles_and_users.sql xác minh: (1) tất cả kiểu dữ liệu tuân thủ chuẩn ANSI SQL (không dùng `ENUM`); (2) provider được biểu diễn bằng `VARCHAR(20) NOT NULL` kết hợp `CHECK (provider IN (...))`; (3) ràng buộc FK giữa `users.role_id` và `roles.role_id` đúng; (4) chỉ mục `idx_users_email` và `idx_users_role_id` đủ để hỗ trợ truy vấn tần suất cao; (5) `gen_random_uuid()` được sử dụng đúng cho UUID PRIMARY KEY. Đồng thời đánh giá V1__init_centers.sql xác minh ràng buộc `tax_id` chỉ chấp nhận chuỗi số 10-13 ký tự thông qua biểu thức chính quy. Lập biên bản đánh giá với điểm tuân thủ.
 
-#### 📝 Công việc phụ 2.2: Xây dựng endpoint quản lý vai trò người dùng (RBAC)
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/user-service/src/main/java/org/nlh4j/membership_hub/user/RoleService.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-003], [ARC-001]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Triển khai logic gán/thay đổi vai trò người dùng: nhận ID người dùng và ID vai trò mới, cập nhật trường `role_id` trong bảng `users`. Áp dụng ngay quyền truy cập tương ứng với vai trò mới mà không yêu cầu người dùng đăng nhập lại. Triển khai kiểm tra quyền: chỉ System Admin mới có quyền thực hiện thao tác thay đổi vai trò, sử dụng bộ lọc RBAC đã triển khai để xác thực quyền trước khi xử lý yêu cầu.
+#### 📝 NHIỆM VỤ PHỤ 2.5: Soạn thảo tài liệu mô tả schema
+##### Tác Nhân Được Phân Công: Doc
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/docs/architecture/blueprint.md
 
-#### 📝 Công việc phụ 2.3: Xây dựng endpoint lấy danh sách người dùng và quản lý vai trò
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/user-service/src/main/java/org/nlh4j/membership_hub/user/UserResource.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-003], [ARC-001]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Xây dựng endpoint `GET /api/v1/admin/users` để lấy danh sách người dùng với thông tin vai trò tương ứng, hỗ trợ lọc theo vai trò và tìm kiếm theo tên/email, phân trang kết quả để tối ưu hiệu suất với khối lượng dữ liệu lớn. Xây dựng endpoint `PUT /api/v1/admin/users/{userId}/role` để cập nhật vai trò người dùng, kèm kiểm tra quyền truy cập của người thực hiện thao tác, đảm bảo chỉ System Admin mới có quyền truy cập các endpoint này.
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-001], [DAT-002], [DAT-003]<!--END_TAGS-->
 
-#### 📝 Công việc phụ 2.4: Viết bộ kiểm thử đơn vị cho luồng OAuth2 và RBAC
-##### Đại lý phụ được phân công: [Tester]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/OAuth2Service.java;./sources/backend/auth-service/src/test/java/org/nlh4j/membership_hub/auth/OAuth2ServiceTest.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-002], [REQ-003], [EXC-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết các trường hợp kiểm thử cho luồng OAuth2: kiểm tra xác thực thành công với từng nhà cung cấp (Firebase, Google, Facebook), kiểm tra tạo tài khoản mới khi người dùng OAuth2 chưa tồn tại, kiểm tra cập nhật thông tin người dùng đã tồn tại, kiểm tra xử lý lỗi khi mã xác thực không hợp lệ. Viết kiểm thử cho chức năng RBAC: kiểm tra cập nhật vai trò thành công, kiểm tra từ chối truy cập khi người dùng không có quyền thay đổi vai trò, kiểm tra quyền truy cập được áp dụng ngay sau khi thay đổi vai trò. Đảm bảo độ bao phủ mã đạt trên 90% cho các tệp liên quan.
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Bổ sung section "Sơ đồ quan hệ thực thể" vào tệp `./sources/docs/architecture/blueprint.md` mô tả chi tiết các bảng `roles`, `users`, `centers` bao gồm: từng cột với kiểu dữ liệu, ràng buộc, mô tả nghiệp vụ, các chỉ mục hỗ trợ truy vấn, mối quan hệ FK giữa các bảng. Tài liệu phải có bảng Markdown rõ ràng cho từng bảng. Sử dụng ngôn ngữ tiếng Việt cho phần mô tả, giữ nguyên tên cột tiếng Anh trong schema.
 
-<!--START_API_CONTRACT>
-```json
-// Hợp đồng API cho luồng xác thực và quản lý người dùng/vai trò
-[
-  {
-    "endpoint": "/api/v1/auth/register",
-    "method": "POST",
-    "description": "Đăng ký người dùng mới với email/mật khẩu",
-    "request": {
-      "body": {
-        "email": "string (required, định dạng email hợp lệ)",
-        "password": "string (required, tối thiểu 8 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt)",
-        "fullName": "string (required, tối đa 100 ký tự)",
-        "provider": "string (tùy chọn, giá trị: local, firebase, google, facebook, mặc định local)"
-      }
-    },
-    "response": {
-      "status": 201,
-      "body": {
-        "userId": "uuid",
-        "email": "string",
-        "role": "string (Student/Teacher)",
-        "accessToken": "string (JWT, hết hạn 15 phút)",
-        "refreshToken": "string (hết hạn 7 ngày)"
-      }
-    },
-    "error": {
-      "status": 400,
-      "body": { "error": "VALIDATION_FAILED", "message": "Danh sách lỗi trường không hợp lệ" }
-    }
-  },
-  {
-    "endpoint": "/api/v1/auth/oauth2/{provider}",
-    "method": "POST",
-    "description": "Xác thực OAuth2 với nhà cung cấp (Firebase/Google/Facebook)",
-    "request": {
-      "body": {
-        "authCode": "string (required, mã xác thực từ nhà cung cấp OAuth2)"
-      }
-    },
-    "response": {
-      "status": 200,
-      "body": "Tương tự response đăng ký"
-    },
-    "error": {
-      "status": 401,
-      "body": { "error": "OAUTH2_AUTH_FAILED", "message": "Xác thực OAuth2 thất bại" }
-    }
-  },
-  {
-    "endpoint": "/api/v1/admin/users/{userId}/role",
-    "method": "POST",
-    "description": "Gán vai trò mới cho người dùng",
-    "request": {
-      "body": {
-        "roleId": "smallint (required, ID vai trò từ bảng roles)"
-      }
-    },
-    "response": {
-      "status": 200,
-      "body": { "message": "Cập nhật vai trò thành công" }
-    },
-    "error": {
-      "status": 403,
-      "body": { "error": "FORBIDDEN", "message": "Không có quyền thực hiện thao tác này" }
-    }
-  },
-  {
-    "endpoint": "/api/v1/centers",
-    "method": "GET",
-    "description": "Lấy danh sách tất cả trung tâm",
-    "response": {
-      "status": 200,
-      "body": [
-        {
-          "centerId": "uuid",
-          "name": "string",
-          "address": "string",
-          "taxId": "string",
-          "contactPhone": "string",
-          "contactEmail": "string"
+### 🌤️ NGÀY 3: <!--DAY_HEADER_START-->DI TRÚ SCHEMA CƠ SỞ DỮ LIỆU BẰNG FLYWAY DDL - PHẦN 2 (COURSES, ENROLLMENTS, ATTENDANCE, STUDENTCARDS)<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 3.1: Tạo tập lệnh di trú V1 - bảng Courses
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/course-service/src/main/resources/db/migration/V1__init_courses.sql
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-004]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/course-service/src/main/resources/db/migration/V1__init_courses.sql`. Bảng `courses` (`course_id` UUID PRIMARY KEY DEFAULT gen_random_uuid(), `title` VARCHAR(150) NOT NULL, `description` TEXT, `start_date` DATE NOT NULL, `end_date` DATE NOT NULL, `teacher_id` UUID NOT NULL, `max_students` INT NOT NULL DEFAULT 30, `center_id` UUID, `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (teacher_id) REFERENCES users(user_id), FOREIGN KEY (center_id) REFERENCES centers(center_id), CONSTRAINT chk_courses_dates CHECK (end_date >= start_date)). Tạo chỉ mục `idx_courses_teacher_id`, `idx_courses_center_id`, `idx_courses_dates`.
+
+* **Đặc Tả DDL SQL Lược Đồ Cơ Sở Dữ Liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
+```sql
+-- =====================================================================
+-- V1__init_courses.sql
+-- Khởi tạo bảng Courses cho Membership Hub
+-- =====================================================================
+
+CREATE TABLE courses (
+    course_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(150) NOT NULL,
+    description TEXT,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    teacher_id UUID NOT NULL,
+    max_students INT NOT NULL DEFAULT 30,
+    center_id UUID,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_courses_teacher FOREIGN KEY (teacher_id) REFERENCES users(user_id),
+    CONSTRAINT fk_courses_center FOREIGN KEY (center_id) REFERENCES centers(center_id),
+    CONSTRAINT chk_courses_dates CHECK (end_date >= start_date)
+);
+
+CREATE INDEX idx_courses_teacher_id ON courses(teacher_id);
+CREATE INDEX idx_courses_center_id ON courses(center_id);
+CREATE INDEX idx_courses_dates ON courses(start_date, end_date);
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 3.2: Tạo tập lệnh di trú V2 - bảng Enrollments
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/course-service/src/main/resources/db/migration/V2__init_enrollments.sql
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-005]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/course-service/src/main/resources/db/migration/V2__init_enrollments.sql`. Bảng `enrollments` (`enrollment_id` UUID PRIMARY KEY DEFAULT gen_random_uuid(), `student_id` UUID NOT NULL, `course_id` UUID NOT NULL, `enrollment_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `status` VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' với CHECK (status IN ('ACTIVE','DROPPED','COMPLETED')), FOREIGN KEY (student_id) REFERENCES users(user_id), FOREIGN KEY (course_id) REFERENCES courses(course_id), UNIQUE (student_id, course_id)). Tạo chỉ mục `idx_enrollments_student_id`, `idx_enrollments_course_id`, `idx_enrollments_status`.
+
+* **Đặc Tả DDL SQL Lược Đồ Cơ Sở Dữ Liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
+```sql
+-- =====================================================================
+-- V2__init_enrollments.sql
+-- Khởi tạo bảng Enrollments cho Membership Hub
+-- =====================================================================
+
+CREATE TABLE enrollments (
+    enrollment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id UUID NOT NULL,
+    course_id UUID NOT NULL,
+    enrollment_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    CONSTRAINT fk_enrollments_student FOREIGN KEY (student_id) REFERENCES users(user_id),
+    CONSTRAINT fk_enrollments_course FOREIGN KEY (course_id) REFERENCES courses(course_id),
+    CONSTRAINT chk_enrollments_status CHECK (status IN ('ACTIVE','DROPPED','COMPLETED')),
+    CONSTRAINT uq_enrollments_student_course UNIQUE (student_id, course_id)
+);
+
+CREATE INDEX idx_enrollments_student_id ON enrollments(student_id);
+CREATE INDEX idx_enrollments_course_id ON enrollments(course_id);
+CREATE INDEX idx_enrollments_status ON enrollments(status);
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 3.3: Tạo tập lệnh di trú V1 - bảng Attendance với idempotency key
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_attendance.sql
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-006]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_attendance.sql`. Bảng `attendance` (`attendance_id` UUID PRIMARY KEY DEFAULT gen_random_uuid(), `student_id` UUID NOT NULL, `course_id` UUID NOT NULL, `attendance_date` DATE NOT NULL, `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `status` VARCHAR(20) NOT NULL DEFAULT 'PRESENT' với CHECK (status IN ('PRESENT','ABSENT','LATE')), `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (student_id) REFERENCES users(user_id), FOREIGN KEY (course_id) REFERENCES courses(course_id), UNIQUE (student_id, course_id, attendance_date)). Tạo chỉ mục `idx_attendance_student_id`, `idx_attendance_course_id`, `idx_attendance_date`.
+
+* **Đặc Tả DDL SQL Lược Đồ Cơ Sở Dữ Liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
+```sql
+-- =====================================================================
+-- V1__init_attendance.sql
+-- Khởi tạo bảng Attendance với idempotency key
+-- =====================================================================
+
+CREATE TABLE attendance (
+    attendance_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id UUID NOT NULL,
+    course_id UUID NOT NULL,
+    attendance_date DATE NOT NULL,
+    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL DEFAULT 'PRESENT',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_attendance_student FOREIGN KEY (student_id) REFERENCES users(user_id),
+    CONSTRAINT fk_attendance_course FOREIGN KEY (course_id) REFERENCES courses(course_id),
+    CONSTRAINT chk_attendance_status CHECK (status IN ('PRESENT','ABSENT','LATE')),
+    CONSTRAINT uq_attendance_idempotency UNIQUE (student_id, course_id, attendance_date)
+);
+
+CREATE INDEX idx_attendance_student_id ON attendance(student_id);
+CREATE INDEX idx_attendance_course_id ON attendance(course_id);
+CREATE INDEX idx_attendance_date ON attendance(attendance_date);
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 3.4: Tạo tập lệnh di trú V2 - bảng StudentCards
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/user-service/src/main/resources/db/migration/V2__init_student_cards.sql
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-007]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/user-service/src/main/resources/db/migration/V2__init_student_cards.sql`. Bảng `student_cards` (`card_id` UUID PRIMARY KEY DEFAULT gen_random_uuid(), `student_id` UUID NOT NULL UNIQUE, `issue_date` DATE NOT NULL, `validity_days` INT NOT NULL, `remaining_days` INT NOT NULL, `end_date` DATE NOT NULL, `status` VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' với CHECK (status IN ('ACTIVE','EXPIRED','SUSPENDED')), `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (student_id) REFERENCES users(user_id), CONSTRAINT chk_student_cards_validity CHECK (validity_days > 0 AND remaining_days >= 0)). Tạo chỉ mục `idx_student_cards_student_id`, `idx_student_cards_status`, `idx_student_cards_end_date`.
+
+* **Đặc Tả DDL SQL Lược Đồ Cơ Sở Dữ Liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
+```sql
+-- =====================================================================
+-- V2__init_student_cards.sql
+-- Khởi tạo bảng StudentCards cho Membership Hub
+-- =====================================================================
+
+CREATE TABLE student_cards (
+    card_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_id UUID NOT NULL UNIQUE,
+    issue_date DATE NOT NULL,
+    validity_days INT NOT NULL,
+    remaining_days INT NOT NULL,
+    end_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_student_cards_student FOREIGN KEY (student_id) REFERENCES users(user_id),
+    CONSTRAINT chk_student_cards_validity CHECK (validity_days > 0 AND remaining_days >= 0),
+    CONSTRAINT chk_student_cards_status CHECK (status IN ('ACTIVE','EXPIRED','SUSPENDED'))
+);
+
+CREATE INDEX idx_student_cards_student_id ON student_cards(student_id);
+CREATE INDEX idx_student_cards_status ON student_cards(status);
+CREATE INDEX idx_student_cards_end_date ON student_cards(end_date);
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 3.5: Kiểm thử tích hợp di trú V2 course, enrollment, attendance
+##### Tác Nhân Được Phân Công: Tester
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/AttendanceSchemaMigrationIT.java
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-004], [DAT-005], [DAT-006], [DAT-007]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo lớp kiểm thử tích hợp Flyway `./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/AttendanceSchemaMigrationIT.java` sử dụng `@QuarkusTest` và Testcontainers PostgreSQL 16. Inject `Flyway` và `DataSource`, thực thi `flyway.migrate()`, xác minh các bảng `courses`, `enrollments`, `attendance`, `student_cards` tồn tại. Đặc biệt kiểm tra ràng buộc `uq_attendance_idempotency` bằng cách chèn 2 bản ghi với cùng `(student_id, course_id, attendance_date)` và kỳ vọng `PSQLException` với mã lỗi ràng buộc duy nhất. Xác minh CHECK `chk_attendance_status` từ chối giá trị ngoài tập cho phép.
+
+```java
+package org.nlh4j.membershiphub.attendanceservice;
+
+import io.quarkus.test.junit.QuarkusTest;
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
+
+import jakarta.inject.Inject;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+@QuarkusTest
+public class AttendanceSchemaMigrationIT {
+
+    @Inject
+    Flyway flyway;
+
+    @Inject
+    DataSource dataSource;
+
+    @Test
+    void testSchemaTablesExist() throws Exception {
+        Assertions.assertNotNull(flyway);
+        try (Connection conn = dataSource.getConnection();
+             Statement stmt = conn.createStatement()) {
+            try (var rs = stmt.executeQuery(
+                    "SELECT count(*) FROM information_schema.tables " +
+                    "WHERE table_schema='public' AND table_name IN " +
+                    "('courses','enrollments','attendance','student_cards')")) {
+                rs.next();
+                Assertions.assertEquals(4, rs.getInt(1));
+            }
         }
-      ]
     }
-  },
-  {
-    "endpoint": "/api/v1/admin/centers",
-    "method": "POST",
-    "description": "Tạo trung tâm mới (chỉ System Admin)",
-    "request": {
-      "body": {
-        "name": "string (required)",
-        "address": "string (required)",
-        "taxId": "string (required, 10-13 chữ số)",
-        "contactPhone": "string (tùy chọn)",
-        "contactEmail": "string (tùy chọn, định dạng email hợp lệ)"
-      }
-    },
-    "response": {
-      "status": 201,
-      "body": "Object trung tâm vừa tạo"
-    },
-    "error": {
-      "status": 409,
-      "body": { "error": "TAX_ID_CONFLICT", "message": "Mã số thuế đã tồn tại" }
-    }
-  },
-  {
-    "endpoint": "/api/v1/admin/centers/{centerId}/admins",
-    "method": "POST",
-    "description": "Gán quản trị viên cho trung tâm",
-    "request": {
-      "body": {
-        "userId": "uuid (required)",
-        "isAssign": "boolean (required, true để gán, false để huỷ gán)"
-      }
-    },
-    "response": {
-      "status": 200,
-      "body": { "message": "Thao tác phân quyền trung tâm thành công" }
-    }
-  }
-]
+}
+```
+
+#### 📝 NHIỆM VỤ PHỤ 3.6: Đánh giá thiết kế schema Courses và Attendance
+##### Tác Nhân Được Phân Công: Reviewer
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_attendance.sql
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-004], [DAT-005], [DAT-006], [DAT-007]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Đánh giá tệp `./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_attendance.sql` xác minh: (1) ràng buộc `uq_attendance_idempotency` UNIQUE (student_id, course_id, attendance_date) đảm bảo idempotency đúng theo yêu cầu REQ-013; (2) kiểu `status` dùng VARCHAR(20) kết hợp CHECK thay vì ENUM; (3) các chỉ mục phục vụ truy vấn theo ngày và theo học viên/khóa học. Đồng thời đánh giá schema `courses`, `enrollments`, `student_cards` xác nhận ràng buộc ngày `end_date >= start_date`, UNIQUE `(student_id, course_id)` trong enrollments ngăn đăng ký trùng. Lập báo cáo đánh giá.
+
+#### 📝 NHIỆM VỤ PHỤ 3.7: Soạn thảo tài liệu sơ đồ ERD
+##### Tác Nhân Được Phân Công: Doc
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/docs/architecture/blueprint.md
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-004], [DAT-005], [DAT-006], [DAT-007]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Bổ sung section "Sơ đồ quan hệ thực thể - Phần 2" vào `./sources/docs/architecture/blueprint.md` mô tả chi tiết các bảng `courses`, `enrollments`, `attendance`, `student_cards`. Mỗi bảng phải có bảng Markdown với các cột: Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả. Mô tả quan hệ FK giữa các bảng, đặc biệt nhấn mạnh khóa tổng hợp UNIQUE `(student_id, course_id, attendance_date)` đảm bảo idempotency. Tài liệu dùng tiếng Việt cho phần giải thích.
+
+### 🌤️ NGÀY 4: <!--DAY_HEADER_START-->DI TRÚ SCHEMA CƠ SỞ DỮ LIỆU BẰNG FLYWAY DDL - PHẦN 3 (NOTIFICATIONS, PROMOTIONS, ANNOUNCEMENTS, SYSTEMSETTINGS) & HỢP ĐỒNG API<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 4.1: Tạo tập lệnh di trú V1 - bảng Notifications
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/notification-service/src/main/resources/db/migration/V1__init_notifications.sql
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-008]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/notification-service/src/main/resources/db/migration/V1__init_notifications.sql`. Bảng `notifications` (`notification_id` UUID PRIMARY KEY DEFAULT gen_random_uuid(), `user_id` UUID, `group_zalo` VARCHAR(50), `message` TEXT NOT NULL, `channel` VARCHAR(20) NOT NULL với CHECK (channel IN ('PUSH','ZALO','EMAIL','SMS')), `status` VARCHAR(20) NOT NULL DEFAULT 'PENDING' với CHECK (status IN ('PENDING','SENT','FAILED','DELIVERED')), `retry_count` INT NOT NULL DEFAULT 0, `sent_at` TIMESTAMP, `delivered` BOOLEAN NOT NULL DEFAULT FALSE, `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users(user_id)). Tạo chỉ mục `idx_notifications_user_id`, `idx_notifications_status`, `idx_notifications_channel`, `idx_notifications_sent_at`.
+
+* **Đặc Tả DDL SQL Lược Đồ Cơ Sở Dữ Liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
+```sql
+-- =====================================================================
+-- V1__init_notifications.sql
+-- Khởi tạo bảng Notifications cho Membership Hub
+-- =====================================================================
+
+CREATE TABLE notifications (
+    notification_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    group_zalo VARCHAR(50),
+    message TEXT NOT NULL,
+    channel VARCHAR(20) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    retry_count INT NOT NULL DEFAULT 0,
+    sent_at TIMESTAMP,
+    delivered BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+    CONSTRAINT chk_notifications_channel CHECK (channel IN ('PUSH','ZALO','EMAIL','SMS')),
+    CONSTRAINT chk_notifications_status CHECK (status IN ('PENDING','SENT','FAILED','DELIVERED'))
+);
+
+CREATE INDEX idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX idx_notifications_status ON notifications(status);
+CREATE INDEX idx_notifications_channel ON notifications(channel);
+CREATE INDEX idx_notifications_sent_at ON notifications(sent_at);
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 4.2: Tạo tập lệnh di trú V2 - bảng Promotions và Announcements
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/center-service/src/main/resources/db/migration/V2__init_promotions_announcements.sql
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-009], [DAT-010]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/center-service/src/main/resources/db/migration/V2__init_promotions_announcements.sql`. Bảng `promotions` (`promo_id` UUID PRIMARY KEY DEFAULT gen_random_uuid(), `code` VARCHAR(30) UNIQUE NOT NULL, `discount_percent` SMALLINT NOT NULL với CHECK (discount_percent BETWEEN 0 AND 100), `start_date` DATE, `end_date` DATE, `description` TEXT, `center_id` UUID, `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (center_id) REFERENCES centers(center_id), CHECK (end_date IS NULL OR start_date IS NULL OR end_date >= start_date)). Bảng `announcements` (`announcement_id` UUID PRIMARY KEY DEFAULT gen_random_uuid(), `title` VARCHAR(150) NOT NULL, `content` TEXT NOT NULL, `start_date` DATE, `end_date` DATE, `center_id` UUID, `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (center_id) REFERENCES centers(center_id)).
+
+* **Đặc Tả DDL SQL Lược Đồ Cơ Sở Dữ Liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
+```sql
+-- =====================================================================
+-- V2__init_promotions_announcements.sql
+-- Khởi tạo bảng Promotions và Announcements
+-- =====================================================================
+
+CREATE TABLE promotions (
+    promo_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(30) UNIQUE NOT NULL,
+    discount_percent SMALLINT NOT NULL,
+    start_date DATE,
+    end_date DATE,
+    description TEXT,
+    center_id UUID,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_promotions_center FOREIGN KEY (center_id) REFERENCES centers(center_id),
+    CONSTRAINT chk_promotions_discount CHECK (discount_percent BETWEEN 0 AND 100),
+    CONSTRAINT chk_promotions_dates CHECK (end_date IS NULL OR start_date IS NULL OR end_date >= start_date)
+);
+
+CREATE INDEX idx_promotions_code ON promotions(code);
+CREATE INDEX idx_promotions_center_id ON promotions(center_id);
+CREATE INDEX idx_promotions_dates ON promotions(start_date, end_date);
+
+CREATE TABLE announcements (
+    announcement_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(150) NOT NULL,
+    content TEXT NOT NULL,
+    start_date DATE,
+    end_date DATE,
+    center_id UUID,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_announcements_center FOREIGN KEY (center_id) REFERENCES centers(center_id)
+);
+
+CREATE INDEX idx_announcements_center_id ON announcements(center_id);
+CREATE INDEX idx_announcements_dates ON announcements(start_date, end_date);
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 4.3: Tạo tập lệnh di trú V3 - bảng SystemSettings
+##### Tác Nhân Được Phân Công: Coder
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/center-service/src/main/resources/db/migration/V3__init_system_settings.sql
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-011]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/backend/center-service/src/main/resources/db/migration/V3__init_system_settings.sql`. Bảng `system_settings` (`setting_key` VARCHAR(50) PRIMARY KEY, `setting_value` TEXT NOT NULL, `description` VARCHAR(200), `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, `updated_by` UUID, FOREIGN KEY (updated_by) REFERENCES users(user_id)). Tạo chỉ mục `idx_system_settings_updated_at`. Chèn dữ liệu khởi tạo: `default_locale=vi`, `dashboard_refresh_minutes=15`, `max_renewal_days=365`, `notification_retry_max=3`.
+
+* **Đặc Tả DDL SQL Lược Đồ Cơ Sở Dữ Liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
+```sql
+-- =====================================================================
+-- V3__init_system_settings.sql
+-- Khởi tạo bảng SystemSettings cho Membership Hub
+-- =====================================================================
+
+CREATE TABLE system_settings (
+    setting_key VARCHAR(50) PRIMARY KEY,
+    setting_value TEXT NOT NULL,
+    description VARCHAR(200),
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by UUID,
+    CONSTRAINT fk_system_settings_user FOREIGN KEY (updated_by) REFERENCES users(user_id)
+);
+
+CREATE INDEX idx_system_settings_updated_at ON system_settings(updated_at);
+
+INSERT INTO system_settings (setting_key, setting_value, description) VALUES
+    ('default_locale', 'vi', 'Locale mặc định cho hệ thống'),
+    ('dashboard_refresh_minutes', '15', 'Chu kỳ làm mới dashboard (phút)'),
+    ('max_renewal_days', '365', 'Số ngày gia hạn thẻ tối đa'),
+    ('notification_retry_max', '3', 'Số lần thử lại gửi thông báo tối đa');
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 4.4: Tạo hợp đồng OpenAPI cho 4 luồng nghiệp vụ cốt lõi
+##### Tác Nhân Được Phân Công: Doc
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/docs/api/openapi-spec.yaml
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-006], [ARC-007], [ARC-008], [ARC-009]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/docs/api/openapi-spec.yaml` đặc tả OpenAPI 3.0.3 cho 4 luồng nghiệp vụ cốt lõi. Luồng Xác thực (ARC-006): `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/oauth/{provider}`. Luồng Điểm danh (ARC-007): `POST /api/attendance/scan` với body chứa `qrPayload` base64. Luồng Thông báo (ARC-008): `POST /api/notifications/dispatch`, `GET /api/notifications/history`. Luồng Tích hợp di động (ARC-009): `GET /api/mobile/dashboard`, `POST /api/mobile/device-token`. Mỗi endpoint khai báo request/response schema, mã trạng thái HTTP, cấu trúc JWT bearer security scheme. Tệp phải hợp lệ theo OpenAPI 3.0 spec.
+
+* **Hợp Đồng API & Định Tuyến Sự Kiện [ARC-XXX]:** <!--START_API_CONTRACT-->
+```yaml
+openapi: 3.0.3
+info:
+  title: Membership Hub API
+  version: 1.0.0
+  description: Hợp đồng tích hợp cho 4 luồng nghiệp vụ cốt lõi: Xác thực, Điểm danh, Thông báo, Tích hợp di động
+servers:
+  - url: https://api.membershiphub.com
+    description: Production
+  - url: https://staging-api.membershiphub.com
+    description: Staging
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AuthRegisterRequest:
+      type: object
+      required: [email, password, termsAccepted]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          minLength: 8
+        fullName:
+          type: string
+          maxLength: 100
+        termsAccepted:
+          type: boolean
+    AuthLoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    AuthTokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+        tokenType:
+          type: string
+          default: Bearer
+    AttendanceScanRequest:
+      type: object
+      required: [qrPayload]
+      properties:
+        qrPayload:
+          type: string
+          description: Base64 mã hóa chứa studentId và courseId
+    AttendanceScanResponse:
+      type: object
+      properties:
+        attendanceId:
+          type: string
+          format: uuid
+        recordedAt:
+          type: string
+          format: date-time
+        duplicate:
+          type: boolean
+    NotificationDispatchRequest:
+      type: object
+      required: [channel, message, target]
+      properties:
+        channel:
+          type: string
+          enum: [PUSH, ZALO, EMAIL, SMS]
+        message:
+          type: string
+        target:
+          type: object
+          properties:
+            userId:
+              type: string
+              format: uuid
+            groupZalo:
+              type: string
+    MobileDashboardResponse:
+      type: object
+      properties:
+        role:
+          type: string
+        navigation:
+          type: array
+          items:
+            type: object
+        upcomingCourses:
+          type: array
+          items:
+            type: object
+    DeviceTokenRequest:
+      type: object
+      required: [deviceToken, platform]
+      properties:
+        deviceToken:
+          type: string
+        platform:
+          type: string
+          enum: [IOS, ANDROID]
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/auth/register:
+    post:
+      summary: Đăng ký tài khoản mới
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRegisterRequest'
+      responses:
+        '201':
+          description: Đăng ký thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '400':
+          description: Dữ liệu không hợp lệ
+  /api/auth/login:
+    post:
+      summary: Đăng nhập email/mật khẩu
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthLoginRequest'
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+  /api/auth/refresh:
+    post:
+      summary: Làm mới access token
+      tags: [Authentication]
+      responses:
+        '200':
+          description: Token mới
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+  /api/auth/oauth/{provider}:
+    post:
+      summary: Xác thực OAuth2 (Firebase/Google/Facebook)
+      tags: [Authentication]
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [firebase, google, facebook]
+      responses:
+        '200':
+          description: Xác thực thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+  /api/attendance/scan:
+    post:
+      summary: Quét QR điểm danh
+      tags: [Attendance]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceScanRequest'
+      responses:
+        '200':
+          description: Điểm danh thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceScanResponse'
+        '409':
+          description: Xung đột - điểm danh đã tồn tại
+  /api/notifications/dispatch:
+    post:
+      summary: Phát thông báo
+      tags: [Notifications]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationDispatchRequest'
+      responses:
+        '202':
+          description: Thông báo đã được xếp hàng
+  /api/mobile/dashboard:
+    get:
+      summary: Lấy dashboard theo vai trò
+      tags: [Mobile]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dashboard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileDashboardResponse'
+  /api/mobile/device-token:
+    post:
+      summary: Đăng ký device token FCM/APNs
+      tags: [Mobile]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceTokenRequest'
+      responses:
+        '204':
+          description: Token đã đăng ký
 ```
 <!--END_API_CONTRACT-->
 
----
+#### 📝 NHIỆM VỤ PHỤ 4.5: Kiểm thử tích hợp di trú V3 notification, promotion, announcement, systemsetting
+##### Tác Nhân Được Phân Công: Tester
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/backend/notification-service/src/test/java/org/nlh4j/membershiphub/notificationservice/NotificationSchemaMigrationIT.java
 
-### 🌤️ NGÀY 3: <!--DAY_HEADER_START-->Triển khai quản lý trung tâm và phân quyền quản trị trung tâm<!--DAY_HEADER_END-->
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-008], [DAT-009], [DAT-010], [DAT-011]<!--END_TAGS-->
 
-#### 📝 Công việc phụ 3.1: Xây dựng dịch vụ quản lý trung tâm (CRUD)
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/center-service/src/main/java/org/nlh4j/membership_hub/center/CenterService.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-005], [ARC-002]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Triển khai logic CRUD cho bảng `centers`: tạo trung tâm mới với kiểm tra trùng lặp mã số thuế (trả về lỗi 409 nếu trùng), cập nhật thông tin trung tâm, xóa trung tâm (kiểm tra không có khóa học hoặc học viên đang hoạt động trước khi xóa), lấy thông tin chi tiết trung tâm theo ID. Đảm bảo tất cả các thao tác chỉ được thực hiện bởi System Admin, sử dụng bộ lọc RBAC để xác thực quyền trước khi xử lý bất kỳ yêu cầu nào. Tất cả các tham số đầu vào phải được kiểm tra và làm sạch để ngăn chặn tấn công SQL injection và XSS.
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo lớp kiểm thử tích hợp Flyway `./sources/backend/notification-service/src/test/java/org/nlh4j/membershiphub/notificationservice/NotificationSchemaMigrationIT.java` sử dụng `@QuarkusTest` và Testcontainers PostgreSQL 16. Inject `Flyway` và `DataSource`, thực thi `flyway.migrate()`, xác minh các bảng `notifications`, `promotions`, `announcements`, `system_settings` tồn tại. Kiểm tra ràng buộc CHECK `chk_notifications_channel` từ chối giá trị ngoài tập cho phép. Xác minh `system_settings` chứa 4 bản ghi khởi tạo (`default_locale`, `dashboard_refresh_minutes`, `max_renewal_days`, `notification_retry_max`).
 
-#### 📝 Công việc phụ 3.2: Xây dựng API CRUD quản lý trung tâm
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/center-service/src/main/java/org/nlh4j/membership_hub/center/CenterResource.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-004], [REQ-005], [ARC-002]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Xây dựng các endpoint REST cho quản lý trung tâm: `GET /api/v1/centers` (lấy danh sách tất cả trung tâm, trả về các trường name, address, taxId, contactPhone, contactEmail, hỗ trợ phân trang), `GET /api/v1/centers/{centerId}` (lấy chi tiết trung tâm), `POST /api/v1/admin/centers` (tạo trung tâm mới), `PUT /api/v1/admin/centers/{centerId}` (cập nhật trung tâm), `DELETE /api/v1/admin/centers/{centerId}` (xóa trung tâm). Áp dụng kiểm tra quyền truy cập cho tất cả các endpoint, chỉ cho phép System Admin thực hiện các thao tác tạo, sửa, xóa. Đảm bảo tất cả phản hồi lỗi đều tuân thủ định dạng chuẩn của hệ thống, không tiết lộ thông tin nhạy cảm về cấu trúc cơ sở dữ liệu.
+```java
+package org.nlh4j.membershiphub.notificationservice;
 
-#### 📝 Công việc phụ 3.3: Triển khai chức năng gán/huỷ gán quản trị viên trung tâm
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/center-service/src/main/java/org/nlh4j/membership_hub/center/CenterAdminService.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-006], [ARC-002]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Xây dựng endpoint `POST /api/v1/admin/centers/{centerId}/admins` để gán người dùng làm Center Admin cho trung tâm cụ thể: cập nhật vai trò của người dùng thành Center Admin, lưu thông tin trung tâm được quản lý vào hồ sơ người dùng. Xây dựng endpoint `DELETE /api/v1/admin/centers/{centerId}/admins/{userId}` để huỷ gán quyền Center Admin, đặt lại vai trò của người dùng về Student. Đảm bảo chỉ System Admin mới có quyền thực hiện các thao tác này, kiểm tra quyền ở tầng controller trước khi xử lý yêu cầu.
+import io.quarkus.test.junit.QuarkusTest;
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
 
-#### 📝 Công việc phụ 3.4: Viết bộ kiểm thử tích hợp cho API quản lý trung tâm
-##### Đại lý phụ được phân công: [Tester]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `INTEGRATION_SCOPE;./sources/backend/center-service/src/test/java/org/nlh4j/membership_hub/center/CenterIntegrationTest.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-004], [REQ-005], [REQ-006]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết các trường hợp kiểm thử tích hợp cho API quản lý trung tâm: kiểm tra lấy danh sách trung tâm trả về đúng định dạng, kiểm tra tạo trung tâm thành công với thông tin hợp lệ, kiểm tra trả về lỗi 409 khi mã số thuế trùng lặp, kiểm tra cập nhật thông tin trung tâm thành công, kiểm tra xóa trung tâm thành công, kiểm tra gán/huỷ gán quản trị viên trung tâm hoạt động đúng. Kiểm tra rằng các thao tác bị từ chối khi người dùng không có quyền System Admin, đảm bảo độ bao phủ mã đạt trên 90%.
+import jakarta.inject.Inject;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
-<!--START_API_CONTRACT>
-```json
-// Hợp đồng API cho dịch vụ quản lý trung tâm
-[
-  {
-    "endpoint": "/api/v1/centers",
-    "method": "GET",
-    "description": "Lấy danh sách tất cả trung tâm (công khai cho người dùng đã xác thực)",
-    "request": {
-      "queryParams": {
-        "page": "INT (tùy chọn, mặc định 1)",
-        "size": "INT (tùy chọn, mặc định 20)"
-      }
-    },
-    "response": {
-      "status": 200,
-      "body": [
-        {
-          "centerId": "uuid",
-          "name": "string",
-          "address": "string",
-          "taxId": "string",
-          "contactPhone": "string",
-          "contactEmail": "string"
+@QuarkusTest
+public class NotificationSchemaMigrationIT {
+
+    @Inject
+    Flyway flyway;
+
+    @Inject
+    DataSource dataSource;
+
+    @Test
+    void testAllRemainingTablesExist() throws Exception {
+        Assertions.assertNotNull(flyway);
+        try (Connection conn = dataSource.getConnection();
+             Statement stmt = conn.createStatement()) {
+            try (ResultSet rs = stmt.executeQuery(
+                    "SELECT count(*) FROM information_schema.tables " +
+                    "WHERE table_schema='public' AND table_name IN " +
+                    "('notifications','promotions','announcements','system_settings')")) {
+                rs.next();
+                Assertions.assertEquals(4, rs.getInt(1),
+                        "Phải tồn tại 4 bảng còn lại");
+            }
+            try (ResultSet rs = stmt.executeQuery(
+                    "SELECT count(*) FROM system_settings")) {
+                rs.next();
+                Assertions.assertTrue(rs.getInt(1) >= 4,
+                        "Phải có ít nhất 4 thiết lập hệ thống mặc định");
+            }
         }
-      ]
     }
-  },
-  {
-    "endpoint": "/api/v1/admin/centers/{centerId}",
-    "method": "PUT",
-    "description": "Cập nhật thông tin trung tâm (chỉ System Admin)",
-    "request": {
-      "body": {
-        "name": "string (required)",
-        "address": "string (required)",
-        "contactPhone": "string (tùy chọn)",
-        "contactEmail": "string (tùy chọn)"
-      }
-    },
-    "response": {
-      "status": 200,
-      "body": "Object trung tâm đã cập nhật"
-    },
-    "error": {
-      "status": 409,
-      "body": { "error": "TAX_ID_CONFLICT", "message": "Mã số thuế đã tồn tại" }
-    }
-  },
-  {
-    "endpoint": "/api/v1/admin/centers/{centerId}/admins/{userId}",
-    "method": "DELETE",
-    "description": "Huỷ gán quyền Center Admin cho người dùng",
-    "response": {
-      "status": 200,
-      "body": { "message": "Thao tác phân quyền trung tâm thành công" }
-    },
-    "error": {
-      "status": 403,
-      "body": { "error": "FORBIDDEN", "message": "Không có quyền thực hiện thao tác này" }
-    }
-  }
-]
+}
 ```
-<!--END_API_CONTRACT-->
 
----
+#### 📝 NHIỆM VỤ PHỤ 4.6: Kiểm thử tích hợp hợp đồng OpenAPI
+##### Tác Nhân Được Phân Công: Tester
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/infra/test/openapi-spec-validation.sh
 
-### 🌤️ NGÀY 4: <!--DAY_HEADER_START-->Hoàn thiện phân quyền RBAC và kiểm thử toàn diện giai đoạn<!--DAY_HEADER_END-->
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-006], [ARC-007], [ARC-008], [ARC-009]<!--END_TAGS-->
 
-#### 📝 Công việc phụ 4.1: Triển khai bộ lọc phân quyền RBAC toàn cục cho tất cả endpoint
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/RbacFilter.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Xây dựng bộ lọc JAX-RS toàn cục để kiểm tra quyền truy cập của người dùng trước khi xử lý yêu cầu. Định nghĩa ma trận quyền truy cập cho từng vai trò: System Admin (toàn quyền trên tất cả trung tâm và tài nguyên), Center Admin (toàn quyền trong trung tâm của mình, không truy cập được trung tâm khác), Manager (quyền quản lý học viên, tạo thông báo, xem danh sách khóa học, không chỉnh sửa khóa học hoặc chỉ định giáo viên), Teacher (quyền xem khóa học của mình, danh sách học viên, lịch dạy, chỉ đọc), Student (quyền duyệt khóa học, đăng ký, xem thẻ hội viên). Áp dụng bộ lọc cho tất cả các endpoint, trả về lỗi 403 Forbidden nếu người dùng không có quyền truy cập, kèm thông báo chi tiết về quyền bị thiếu. Đảm bảo bộ lọc không có lỗ hổng bypass quyền, tuân thủ đầy đủ OWASP Top 10.
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `./sources/infra/test/openapi-spec-validation.sh` chứa kịch bản bash kiểm thử tính hợp lệ của tệp OpenAPI. Sử dụng `swagger-cli` hoặc `openapi-spec-validator` thông qua Docker, thực thi `docker run --rm -v $(pwd)/sources/docs/api:/spec redocly/cli lint /spec/openapi-spec.yaml` để xác minh cú pháp. Thoát mã 0 nếu tệp hợp lệ, mã 1 nếu có lỗi cú pháp hoặc tham chiếu schema bị thiếu. In log chi tiết cho mỗi endpoint được phát hiện.
 
-#### 📝 Công việc phụ 4.2: Viết bộ kiểm thử đơn vị cho bộ lọc RBAC
-##### Đại lý phụ được phân công: [Tester]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/RbacFilter.java;./sources/backend/auth-service/src/test/java/org/nlh4j/membership_hub/auth/RbacFilterTest.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết các trường hợp kiểm thử cho bộ lọc RBAC: kiểm tra truy cập thành công khi người dùng có quyền phù hợp với vai trò, kiểm tra trả về lỗi 403 khi người dùng không có quyền, kiểm tra quyền truy cập của Center Admin chỉ áp dụng cho trung tâm mà họ quản lý, kiểm tra quyền của Manager không cho phép chỉnh sửa khóa học. Đảm bảo độ bao phủ mã 100% cho bộ lọc RBAC, bao gồm tất cả các nhánh điều kiện và trường hợp ngoại lệ.
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-#### 📝 Công việc phụ 4.3: Rà soát mã nguồn và sửa lỗi cho các thành phần giai đoạn 1
-##### Đại lý phụ được phân công: [Reviewer]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/auth-service/src/main/java/org/nlh4j/membership_hub/auth/AuthResource.java;./sources/backend/user-service/src/main/java/org/nlh4j/membership_hub/user/UserResource.java;./sources/backend/center-service/src/main/java/org/nlh4j/membership_hub/center/CenterResource.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-001], [REQ-002], [REQ-003], [REQ-004], [REQ-005], [REQ-006], [EXC-004], [ARC-001], [ARC-002], [ARC-006]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Rà soát toàn bộ mã nguồn của các dịch vụ auth, user, center để phát hiện lỗi cú pháp, lỗi logic, điểm yếu bảo mật (ví dụ: lỗi SQL injection, thiếu kiểm tra quyền, lỗi xử lý ngoại lệ). Sửa tất cả các lỗi được phát hiện, đảm bảo mã nguồn tuân thủ tiêu chuẩn mã hóa doanh nghiệp và yêu cầu OWASP Top 10. Đảm bảo tất cả các thẻ theo dõi yêu cầu được triển khai đầy đủ, không có thẻ nào bị bỏ sót. Kiểm tra tất cả các thông báo lỗi trả về cho người dùng không tiết lộ thông tin nhạy cảm về hệ thống.
+SPEC_PATH="./sources/docs/api/openapi-spec.yaml"
+DOCKER_IMAGE="redocly/cli:latest"
 
-#### 📝 Công việc phụ 4.4: Hoàn thiện tài liệu kỹ thuật cho giai đoạn 1
-##### Đại lý phụ được phân công: [Doc]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/docs/rbac-policy.md;./sources/docs/center-management-spec.md`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-001], [REQ-002], [REQ-003], [REQ-004], [REQ-005], [REQ-006], [ARC-001], [ARC-002], [ARC-006]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Hoàn thiện tài liệu chính sách RBAC, mô tả chi tiết quyền truy cập của từng vai trò, quy trình gán/thay đổi vai trò, xử lý ngoại lệ liên quan (lỗi 403, lỗi xác thực). Hoàn thiện tài liệu đặc tả quản lý trung tâm, mô tả chi tiết các endpoint, tham số, phản hồi, xử lý lỗi (lỗi 409 trùng mã số thuế, lỗi 403 thiếu quyền). Đảm bảo tài liệu được viết rõ ràng, dễ hiểu cho đội phát triển và đội vận hành, bao gồm ví dụ sử dụng và hướng dẫn xử lý sự cố thường gặp.
+echo "============================================================"
+echo "  KIỂM THỬ TÍNH HỢP LỆ CỦA HỢP ĐỒNG OPENAPI"
+echo "============================================================"
+
+if [ ! -f "${SPEC_PATH}" ]; then
+    echo "[LỖI] Không tìm thấy tệp đặc tả: ${SPEC_PATH}"
+    exit 1
+fi
+
+echo "[INFO] Đang chạy redocly/cli lint trên ${SPEC_PATH}"
+docker run --rm -v "$(pwd)":/spec "${DOCKER_IMAGE}" lint "/spec/${SPEC_PATH#./}"
+
+echo "============================================================"
+echo "  HỢP ĐỒNG OPENAPI ĐÃ ĐƯỢC XÁC MINH THÀNH CÔNG"
+echo "============================================================"
+exit 0
+```
+
+#### 📝 NHIỆM VỤ PHỤ 4.7: Đánh giá tổng thể schema và hợp đồng tích hợp
+##### Tác Nhân Được Phân Công: Reviewer
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/docs/api/openapi-spec.yaml
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[DAT-008], [DAT-009], [DAT-010], [DAT-011], [ARC-006], [ARC-007], [ARC-008], [ARC-009]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Đánh giá cuối cùng giai đoạn 1: xác minh toàn bộ 11 bảng đã được tạo với ràng buộc chuẩn ANSI, không sử dụng ENUM, đầy đủ FK và CHECK. Đánh giá hợp đồng OpenAPI: bảo đảm 4 luồng nghiệp vụ (xác thực, điểm danh, thông báo, tích hợp di động) đều có endpoint với security scheme JWT đúng, schema request/response đầy đủ. Sinh báo cáo đánh giá tổng hợp với bảng tuân thủ cho từng Tag ID [DAT-001] đến [DAT-011] và [ARC-006] đến [ARC-009]. Lập danh sách khuyến nghị cải tiến nếu phát hiện bất thường.
+
+#### 📝 NHIỆM VỤ PHỤ 4.8: Hoàn thiện tài liệu kiến trúc tổng thể
+##### Tác Nhân Được Phân Công: Doc
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/docs/architecture/blueprint.md
+
+* **Mã Thẻ Truy Xuất:** <!--START_TAGS-->[ARC-006], [ARC-007], [ARC-008], [ARC-009]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Bổ sung section "Sơ đồ Mermaid - 4 Luồng nghiệp vụ cốt lõi" vào `./sources/docs/architecture/blueprint.md`. Bao gồm 4 sơ đồ Mermaid sequenceDiagram: (1) Luồng Xác thực (ARC-006) mô tả client gửi email/password đến user-service, kiểm tra credentials, ký JWT 15 phút, trả refresh token 7 ngày; (2) Luồng Điểm danh (ARC-007) mô tả mobile app gửi QR payload đến attendance-service, xác thực quan hệ học viên-khóa học, idempotency check, ghi nhận; (3) Luồng Thông báo (ARC-008) mô tả sự kiện nghiệp vụ publish Kafka topic, notification-service consume, dispatch FCM/APNs/Zalo; (4) Luồng Tích hợp di động (ARC-009) mô tả mobile app gọi REST API qua bearer token, cache offline, đồng bộ khi có mạng. Tài liệu dùng tiếng Việt cho phần mô tả, giữ nguyên tên thực thể tiếng Anh.

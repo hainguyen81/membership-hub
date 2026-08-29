@@ -1,8 +1,8 @@
 {
     "project_name": "membership-hub",
-    "requirements": "sources/storage/business-analysis/membership-hub/requirements.md",
+    "requirements": "docs/requirements/requirements.md",
     "num_phases": 5,
-    "total_days": 21,
+    "total_days": 19,
     "phases": [
         {
             "phase": 1,
@@ -18,11 +18,11 @@
         },
         {
             "phase": 4,
-            "days": 3
+            "days": 4
         },
         {
             "phase": 5,
-            "days": 5
+            "days": 3
         }
     ]
 }

@@ -1,203 +1,240 @@
-# Giai đoạn 5: <!--PHASE_NAME_START-->Triển khai Hạ tầng DevOps, Bảo mật Toàn hệ thống và Tài liệu Doanh nghiệp<!--PHASE_NAME_END-->
+# Giai đoạn 5: <!--PHASE_NAME_START-->Bảo Mật Tích Hợp, Vận Hành DevOps Và Giám Sát Đa Vùng<!--PHASE_NAME_END-->
 
-## 📊 Bảng kiểm soát tài liệu
+## 📊 Kiểm Soát Tài Liệu
 
-| Mục | Chi tiết |
+| Hạng mục | Chi tiết |
 | :--- | :--- |
-| **ID Bản thiết kế** | ARCH-20260818163158 |
-| **Tên dự án** | membership-hub |
+| **Mã Bản Thiết Kế** | ARCH-20260829125322 |
+| **Tên Dự Án** | membership-hub |
 | **Giai đoạn** | 5 |
-| **Tên giai đoạn** | <!--PHASE_NAME_START-->Triển khai Hạ tầng DevOps, Bảo mật Toàn hệ thống và Tài liệu Doanh nghiệp<!--PHASE_NAME_END--> |
-| **Mô tả** | <!--PHASE_DESC_START-->Giai đoạn này triển khai lớp kiểm soát truy cập dựa trên vai trò (RBAC) toàn hệ thống đảm bảo tuân thủ OWASP Top 10, xây dựng toàn bộ hạ tầng DevOps (Docker đa giai đoạn, Terraform provisioning tài nguyên GCP, GKE orchestration với HPA tự động scale, pipeline CI/CD GitHub Actions), và hoàn thiện toàn bộ tài liệu doanh nghiệp (bản vẽ kiến trúc, tài liệu tham chiếu API, hướng dẫn vận hành) để đáp ứng tất cả các yêu cầu phi chức năng về hiệu suất, khả năng sẵn sàng, bảo mật và khả năng mở rộng.<!--PHASE_DESC_END--> |
-| **Phiên bản** | 1.0 (Cơ sở) |
-| **Ngày.Giờ** | 2026/08/18 16:31:58 |
-| **Tác giả** | Kiến trúc sư hệ thống doanh nghiệp (Đặc vụ SA) |
-| **Phê duyệt** | Đang chờ xem xét quản trị kỹ thuật |
+| **Tên Giai Đoạn** | <!--PHASE_NAME_START-->Bảo Mật Tích Hợp, Vận Hành DevOps Và Giám Sát Đa Vùng<!--PHASE_NAME_END--> |
+| **Mô Tả** | <!--PHASE_DESC_START-->Giai đoạn 5 củng cố bức tường bảo mật toàn hệ thống theo chuẩn OWASP Top 10, hoàn thiện khả năng mã hóa dữ liệu TLS 1.3 và AES-256, đóng gói ứng dụng qua Docker đa giai đoạn với kích thước ảnh dưới 500MB, tự động hóa cung cấp hạ tầng GCP bằng Terraform (VPC, IAM, Cloud SQL PostgreSQL), triển khai điều phối GKE với HPA tự co giãn theo CPU > 70% hoặc độ trễ > 300ms kèm failover đa vùng, đồng thời cấu hình giám sát Stackdriver, lưu giữ log kiểm toán 1 năm, sao lưu point-in-time 24 giờ và soạn thảo sổ tay khôi phục sau thảm họa đảm bảo SLA 99,9% cùng tuân thủ NFR-001 đến NFR-009.<!--PHASE_DESC_END--> |
+| **Phiên Bản** | 1.0 (Đường Cơ Sở) |
+| **Thời Gian** | 2026/08/29 12:53:22 |
+| **Tác Giả** | Kiến Trúc Sư Hệ Thống Doanh Nghiệp (SA Agent) |
+| **Phê Duyệt** | Đang Chờ Đánh Giá Quản Trị Kỹ Thuật |
 
-## 1. Phạm vi hoạt động và mục tiêu của giai đoạn
-Giai đoạn 5 là giai đoạn hoàn thiện cuối cùng của dự án, tập trung vào việc đóng gói hệ thống thành sản phẩm sản xuất ổn định và bảo mật. Giai đoạn này sẽ triển khai lớp bảo mật RBAC toàn hệ thống dưới dạng bộ lọc JAX-RS toàn cục, đảm bảo phân quyền chặt chẽ theo 5 vai trò người dùng và cách ly quyền theo trung tâm. Tiếp theo, giai đoạn sẽ xây dựng toàn bộ hạ tầng DevOps bao gồm Dockerfile đa giai đoạn tối ưu kích thước, Terraform modules để provisioning GCP (VPC, Cloud SQL, Redis, IAM), Kubernetes manifests với HPA tự động scale và rolling update strategy, cùng pipeline CI/CD tự động với GitHub Actions. Cuối cùng, giai đoạn sẽ hoàn thiện toàn bộ tài liệu doanh nghiệp: bản vẽ kiến trúc hệ thống, tài liệu tham chiếu API REST, hướng dẫn cài đặt và vận hành, hướng dẫn sao lưu và phục hồi thảm họa. Tất cả thành phần phải tuân thủ các yêu cầu phi chức năng về hiệu suất (độ trễ API <200ms), khả năng sẵn sàng (99.9% uptime), bảo mật (TLS 1.3, mã hóa AES-256, OWASP Top 10), khả năng mở rộng ngang, ghi log audit lưu trữ 1 năm, đa ngôn ngữ, và tuân thủ GDPR/CCPA.
+## 1. Phạm Vi Hoạt Động & Mục Tiêu Giai Đoạn
 
-## 2. Phạm vi kỹ thuật được phép và ranh giới thư mục
-- **Thư mục backend bảo mật:** `./sources/backend/auth/src/main/java/org/nlh4j/membership_hub/security/`, `./sources/backend/auth/src/test/java/org/nlh4j/membership_hub/`
-- **Thư mục hạ tầng:** `./sources/infra/terraform/`, `./sources/infra/docker/`, `./sources/infra/gke/`, `./sources/infra/.github/workflows/`, `./sources/infra/test/`
-- **Thư mục tài liệu:** `./sources/docs/architecture/`, `./sources/docs/api/`, `./sources/docs/operations/`
-- **Endpoint và cấu hình hạ tầng được phép triển khai:**
-  - RBAC Middleware (JAX-RS ContainerRequestFilter) cho tất cả endpoint backend
-  - Dockerfile đa giai đoạn cho tất cả dịch vụ backend và frontend
-  - Terraform modules cho VPC, Cloud SQL (PostgreSQL), Redis, IAM, Cloud Storage
-  - Kubernetes Deployment, Service, HPA manifests cho tất cả dịch vụ
-  - GitHub Actions CI/CD pipeline với các stages: build, test, security scan, push to GCR, deploy to GKE
-  - Tài liệu kiến trúc hệ thống, tài liệu API REST, hướng dẫn cài đặt và vận hành
+Giai đoạn 5 thực hiện năm nhiệm vụ cốt lõi được phân bổ theo bảng tóm tắt đa giai đoạn: Nhiệm vụ 17 (bảo mật tích hợp và tuân thủ chuẩn doanh nghiệp), Nhiệm vụ 20 (container hóa Docker đa giai đoạn và đẩy Registry), Nhiệm vụ 21 (cung cấp hạ tầng GCP và Terraform), Nhiệm vụ 22 (điều phối cụm GKE và HPA), Nhiệm vụ 23 (giám sát, ghi log và kiểm toán bảo mật). Phạm vi kéo dài từ Ngày 1 đến Ngày 3 theo phân bổ chính thức trong ma trận tóm tắt đa giai đoạn.
 
-## 3. Chỉ thị chức năng cho đại lý phụ chuyên biệt
-*   **Coder**: Đóng vai trò là Nhà phát triển ứng dụng cấp Cao/Chính. Chịu trách nhiệm triển khai mã nguồn ứng dụng thuần túy trên lớp dịch vụ backend (REST controllers, services, repositories) và ứng dụng khách frontend. Bị cấm viết bộ kiểm thử hoặc manifest hạ tầng.
-*   **Tester**: Đóng vai trò là Kiểm soát chất lượng (QC/QA) cấp Lead/Chính. Chuyên về kỹ thuật bộ kiểm thử, xác thực và cổng chất lượng. Chịu trách nhiệm tạo các bộ kiểm thử đơn vị, tích hợp và end-to-end. Bị cấm sửa mã nguồn ứng dụng sản xuất. Nếu phạm vi kiểm thử tích hợp không thể cô lập thành một tệp mã ứng dụng cụ thể, phải sử dụng literal token `INTEGRATION_SCOPE` làm tham số đầu tiên của cặp dấu chấm phẩy.
-*   **Doc**: Hoạt động như là Nhà viết kỹ thuật chính và Kiến trúc sư hệ thống doanh nghiệp. Chuyên về biên soạn tài liệu đặc tả kỹ thuật toàn diện, tài liệu tham chiếu schema, bản vẽ hệ thống và danh mục kiến trúc doanh nghiệp. Mỗi tệp tài liệu kỹ thuật được tạo phải có phần mở rộng `.md` và nằm nghiêm ngặt trong `./sources/docs/`.
-*   **Reviewer**: Chịu trách nhiệm xác minh trình biên dịch, cổng phân tích tĩnh và vá lỗi phòng thủ. Chuyên về kiểm toán chất lượng mã nguồn, giải quyết lỗi biên dịch, sửa lỗ hổng bảo mật OWASP và đề xuất tối ưu truy vấn.
-*   **Docker**: Chuyên về container hóa, xây dựng Dockerfile đa giai đoạn, tối ưu gói phần mềm và đẩy hình ảnh ứng dụng đã xác minh lên DockerHub.
-*   **GCP**: Chuyên về tự động hóa đám mây trên Google Cloud Platform. Chịu trách nhiệm xây dựng và đẩy hình ảnh lên Google Cloud Artifact Registry (GCR), và điều phối môi trường container một cách native trên Google Cloud Run.
-*   **GKE**: Chuyên về điều phối container sản xuất bên trong Google Kubernetes Engine. Chịu trách nhiệm xây dựng manifest triển khai Kubernetes, điều khiển định tuyến, cấu hình HPA, Helm charts, và triển khai workload microservices vào cụm GKE đang hoạt động.
+Các tài sản kỹ thuật bắt buộc phải sinh ra bao gồm: tài liệu blueprint bảo mật tích hợp và tuân thủ `./sources/docs/security-compliance-blueprint.md` mô tả chi tiết biện pháp phòng chống SQLi, XSS, CSRF theo OWASP Top 10 kèm chính sách mã hóa TLS 1.3, AES-256, tuân thủ GDPR/CCPA; sổ tay khôi phục sau thảm họa `./sources/docs/disaster-recovery-runbook.md` với chỉ số RTO 30 phút và RPO 5 phút; sáu Dockerfile đa giai đoạn cho sáu vi dịch vụ tại `./sources/infra/docker/` đảm bảo kích thước ảnh cuối dưới 500MB theo NFR-005; bốn module Terraform tại `./sources/infra/terraform/` cung cấp VPC, IAM least-privilege, Cloud SQL PostgreSQL 15 HA với mã hóa CMEK và point-in-time recovery; bốn manifest Kubernetes tại `./sources/infra/gke/` cho Deployment, HPA, Ingress và Kustomization hỗ trợ failover đa vùng; hai tệp giám sát tại `./sources/infra/monitoring/` cấu hình Stackdriver alerts và chính sách lưu giữ log 365 ngày. Toàn bộ tài sản phải được gắn thẻ truy xuất theo hệ thống TagID `[NFR-001]`, `[NFR-002]`, `[NFR-003]`, `[NFR-004]`, `[NFR-005]`, `[NFR-006]`, `[NFR-007]`, `[NFR-008]`, `[NFR-009]`, `[ARC-001]`, `[ARC-002]`, `[ARC-003]`, `[ARC-004]`, `[ARC-005]` đảm bảo khả năng truy vết đầy đủ.
 
-## 4. Định nghĩa hoàn thành giai đoạn (DoD)
-1. Hoàn thành 100% các thẻ theo dõi yêu cầu được phân bổ cho Giai đoạn 5: [REQ-003], [ARC-001] đến [ARC-010], [NFR-001] đến [NFR-009], không có thẻ nào bị bỏ sót.
-2. Bộ lọc RBAC toàn cục hoạt động chính xác, ngăn chặn mọi truy cập trái phép với độ trễ xác thực <10ms, đạt độ bao phủ kiểm thử 100% cho lớp trung gian.
-3. Hình ảnh Docker cuối cùng của tất cả dịch vụ có kích thước dưới 500MB, đạt yêu cầu NFR-005.
-4. Hạ tầng GCP được provisioning thành công qua Terraform với đầy đủ VPC, Cloud SQL, Redis, IAM, đảm bảo mã hóa AES-256 và TLS 1.3.
-5. Manifest GKE triển khai thành công với HPA tự động scale (CPU >70% hoặc độ trễ >300ms), rolling update strategy, và khả năng chịu lỗi.
-6. Pipeline CI/CD tự động hóa thành công từ commit đến triển khai, bao gồm build, test, security scan, và deployment.
-7. Toàn bộ tài liệu doanh nghiệp được hoàn thiện: kiến trúc hệ thống, tài liệu API REST, hướng dẫn cài đặt và vận hành, hướng dẫn sao lưu và phục hồi.
-8. Tất cả yêu cầu phi chức năng về hiệu suất (độ trễ API <200ms), khả năng sẵn sàng (99.9% uptime), bảo mật (TLS 1.3, AES-256), khả năng mở rộng, ghi log audit lưu trữ 1 năm, đa ngôn ngữ, tuân thủ GDPR/CCPA, sao lưu PostgreSQL hàng ngày và phục hồi điểm thời lên đến 24 giờ được đáp ứng và ghi chú đầy đủ trong tài liệu.
+## 2. Phạm Vi Kỹ Thuật Cho Phép & Ranh Giới Thư Mục
 
-## 5. NHẬT KÝ THỰC HIỆN KIẾN TRÚC THEO NGÀY
+Danh sách tệp vật lý và tài sản được phép sinh ra trong giai đoạn này:
 
-### 🌤️ NGÀY 1:
-<!--DAY_HEADER_START-->Triển khai lớp trung gian RBAC toàn cục và kiểm thử đơn vị quyền truy cập<!--DAY_HEADER_END-->
+* `./sources/docs/security-compliance-blueprint.md` [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [NFR-003], [NFR-008]
+* `./sources/docs/disaster-recovery-runbook.md` [NFR-009], [NFR-006]
+* `./sources/infra/docker/user-service.Dockerfile` [NFR-005]
+* `./sources/infra/docker/center-service.Dockerfile` [NFR-005]
+* `./sources/infra/docker/course-service.Dockerfile` [NFR-005]
+* `./sources/infra/docker/attendance-service.Dockerfile` [NFR-005]
+* `./sources/infra/docker/notification-service.Dockerfile` [NFR-005]
+* `./sources/infra/docker/reporting-service.Dockerfile` [NFR-005]
+* `./sources/infra/terraform/main.tf` [NFR-002], [NFR-004]
+* `./sources/infra/terraform/vpc.tf` [NFR-002]
+* `./sources/infra/terraform/iam.tf` [NFR-003]
+* `./sources/infra/terraform/cloudsql.tf` [NFR-001], [NFR-008]
+* `./sources/infra/gke/deployment.yaml` [NFR-002], [NFR-004]
+* `./sources/infra/gke/hpa.yaml` [NFR-004]
+* `./sources/infra/gke/ingress.yaml` [NFR-002]
+* `./sources/infra/gke/kustomization.yaml` [NFR-004]
+* `./sources/infra/monitoring/stackdriver-alerts.yaml` [NFR-002], [NFR-006]
+* `./sources/infra/monitoring/log-retention.tf` [NFR-006]
 
-#### 📝 Công việc phụ 1.1: Triển khai lớp trung gian RBAC toàn cục
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/auth/src/main/java/org/nlh4j/membership_hub/security/RbacMiddleware.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-003], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Triển khai lớp trung gian RBAC dưới dạng JAX-RS ContainerRequestFilter để xác thực quyền truy cập của người dùng dựa trên vai trò được lưu trong JWT token. Áp dụng ma trận quyền truy cập: System Admin (toàn quyền trên tất cả trung tâm), Center Admin (toàn quyền trong trung tâm được phân công), Manager (quyền quản lý học viên, thông báo, không chỉnh sửa khóa học), Teacher (quyền xem khóa học, danh sách học viên, lịch dạy - chỉ đọc), Student (quyền duyệt khóa học, đăng ký, xem thẻ hội viên). Lớp trung gian phải trích xuất vai trò từ JWT token, so khớp với endpoint được yêu cầu và phương thức HTTP, trả về lỗi 403 Forbidden với thông báo chi tiết nếu người dùng không có quyền. Đảm bảo kiểm tra quyền được áp dụng cho tất cả endpoint trước khi xử lý yêu cầu. Sử dụng prepared statements của Hibernate ORM để truy vấn thông tin vai trò, ngăn chặn SQL injection. Áp dụng làm sạch dữ liệu đầu vào để chống XSS. Đảm bảo không có lỗ hổng bypass quyền truy cập.
+* **RÀNG BUỘC BẮT BUỘC VỀ TÀI SẢN CƠ SỞ**:
+  - Cấu trúc Dockerfile phải tuân thủ nguyên tắc đa giai đoạn với stage build sử dụng JDK và stage runtime sử dụng JRE Alpine nhằm giữ kích thước ảnh cuối dưới 500MB theo NFR-005.
+  - Tất cả module Terraform phải khai báo provider `google` với region `asia-southeast1` và bật đầy đủ Google APIs cần thiết thông qua `google_project_service`.
+  - Manifest GKE phải sử dụng HPA với ngưỡng CPU > 70% hoặc độ trễ yêu cầu > 300ms theo NFR-004, tích hợp readiness probe `/health/ready` và liveness probe `/health/live`.
+  - Tài liệu blueprint phải mô tả chi tiết biện pháp phòng chống OWASP Top 10, chính sách mã hóa TLS 1.3, AES-256, và quy trình tuân thủ GDPR/CCPA theo NFR-003, NFR-008.
 
-<!--START_EXC_HANDLER>
-```json
-{
-  "exception_handlers": [
-    {
-      "error_code": "RBAC_ACCESS_DENIED",
-      "http_status": 403,
-      "trigger_condition": "Người dùng không có quyền truy cập tài nguyên dựa trên vai trò",
-      "behavior": "Trả về mã lỗi 403 Forbidden với thông báo chi tiết về quyền bị thiếu và tài nguyên bị từ chối."
-    }
-  ]
-}
-```
-<!--END_EXC_HANDLER-->
+## 3. Chỉ Thị Chức Năng Chuyên Biệt Cho Tác Nhân Phụ
 
-#### 📝 Công việc phụ 1.2: Viết bộ kiểm thử đơn vị cho lớp trung gian RBAC
-##### Đại lý phụ được phân công: [Tester]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/auth/src/test/java/org/nlh4j/membership_hub/RbacMiddlewareTest.java;./sources/backend/auth/src/main/java/org/nlh4j/membership_hub/security/RbacMiddleware.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-003], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Viết bộ kiểm thử đơn vị toàn diện cho lớp RbacMiddleware sử dụng JUnit 5 và Mockito. Các kịch bản test bắt buộc: (1) Người dùng có vai trò System Admin truy cập endpoint quản lý trung tâm thành công; (2) Người dùng có vai trò Student truy cập endpoint quản lý khóa học bị từ chối với mã 403; (3) Center Admin truy cập tài nguyên của trung tâm khác bị từ chối; (4) Manager truy cập endpoint chỉnh sửa khóa học bị từ chối; (5) Teacher truy cập endpoint đăng ký khóa học bị từ chối; (6) JWT token hết hạn hoặc không hợp lệ bị từ chối truy cập với mã 401; (7) Kiểm tra độ trễ xác thực quyền dưới 10ms. Đảm bảo độ bao phủ mã đạt trên 90% bằng JaCoCo và tất cả test case pass trên môi trường CI/CD.
+*   **Coder**: Đóng vai trò Nhà Phát Triển Ứng Dụng Cao Cấp. Chịu trách nhiệm triển khai mã nguồn ứng dụng thuần túy. Bị cấm viết bộ kiểm thử, biểu mẫu Docker, hoặc kịch bản Terraform.
 
-#### 📝 Công việc phụ 1.3: Khởi tạo cấu trúc tài liệu kỹ thuật và từ điển dữ liệu hạ tầng
-##### Đại lý phụ được phân công: [Doc]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/docs/operations/infrastructure-overview.md;./sources/docs/operations/terraform-modules.md;./sources/docs/operations/gke-manifests.md`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[NFR-001], [NFR-002], [NFR-004], [NFR-005], [NFR-009]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Khởi tạo cấu trúc thư mục và khung tài liệu kỹ thuật cho toàn bộ hạ tầng DevOps của giai đoạn 5. Tạo tài liệu tổng quan hạ tầng mô tả kiến trúc đám mây GCP, cấu hình VPC, Cloud SQL, Redis, GKE. Tạo từ điển dữ liệu cho các tài nguyên hạ tầng (terraform modules, variables, outputs). Tạo hướng dẫn cấu trúc manifest GKE (deployment, service, HPA). Đảm bảo tất cả tài liệu tuân thủ chuẩn Markdown doanh nghiệp, có mục lục, liên kết chéo, và được đặt trong đúng vị trí thư mục `./sources/docs/operations/`. Tài liệu phải phục vụ làm cơ sở cho các tác vụ phát triển và vận hành sau này.
+* **Tester**: Đóng vai trò Trưởng Nhóm Kiểm Thử/Đảm Bảo Chất Lượng. Chuyên về kỹ thuật bộ kiểm thử, xác thực và cổng chất lượng. Chịu trách nhiệm sinh script kiểm thử tích hợp build, xác minh kích thước ảnh Docker, đo lường hiệu năng hạ tầng, và xác thực quy trình rollback. Bị cấm sửa đổi mã nguồn sản phẩm hoặc biểu mẫu hạ tầng. Nếu nhiệm vụ phụ liên quan đến phạm vi tích hợp tổng thể mà không thể khoanh vùng một tệp cụ thể, phải xuất chính xác chuỗi ký tự `INTEGRATION_SCOPE` làm tham số đầu tiên của cặp phân tách bằng dấu chấm phẩy.
 
-### 🌤️ NGÀY 2:
-<!--DAY_HEADER_START-->Rà soát mã RBAC và xây dựng Dockerfile đa giai đoạn<!--DAY_HEADER_END-->
+* **Doc**: Đóng vai trò Chuyên Viên Viết Tài Liệu Kỹ Thuật và Kiến Trúc Sư Hệ Thống Doanh Nghiệp. Chuyên về biên soạn tài liệu đặc tả kỹ thuật toàn diện, blueprint bảo mật, sổ tay vận hành, sơ đồ Mermaid mô tả luồng và quy trình khôi phục. Mỗi tệp tài liệu kỹ thuật được sinh ra phải được liệt kê dưới dạng thực thể đường dẫn tệp rõ ràng kết thúc bằng phần mở rộng `.md` và nằm hoàn toàn trong sơ đồ lưu trữ tập trung: `./sources/docs/`.
 
-#### 📝 Công việc phụ 2.1: Rà soát mã nguồn lớp trung gian RBAC và sửa lỗi bảo mật
-##### Đại lý phụ được phân công: [Reviewer]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/backend/auth/src/main/java/org/nlh4j/membership_hub/security/RbacMiddleware.java`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[REQ-003], [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [NFR-003]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Thực hiện rà soát toàn bộ mã nguồn lớp RbacMiddleware để phát hiện và sửa các lỗ hổng bảo mật tiềm ẩn. Kiểm tra các điểm: (1) Không có lỗi so khớp vai trò không phân biệt chữ hoa chữ thường; (2) Không có lỗi thiếu kiểm tra quyền trên các endpoint ẩn hoặc HTTP methods không phải GET; (3) Không có lỗi bypass quyền qua tham số URL hoặc header đặc biệt; (4) Đảm bảo tuân thủ đầy đủ OWASP Top 10, đặc biệt là kiểm soát truy cập và xác thực đầu vào; (5) Tối ưu hiệu suất xác thực quyền để độ trễ xác thực <10ms; (6) Đảm bảo mã nguồn tuân thủ tiêu chuẩn mã hóa doanh nghiệp và quy tắc đặt tên biến. Ghi nhận tất cả lỗi nghiêm trọng và đề xuất giải pháp sửa chữa.
+*   **Reviewer**: Chịu trách nhiệm xác minh trình biên dịch, cổng phân tích tĩnh và vá lỗi phòng thủ. Chuyên về đánh giá chất lượng tài liệu, giải quyết lỗ hổng bảo mật OWASP, xử lý các blocker cổng chất lượng và xác nhận tuân thủ NFR.
 
-#### 📝 Công việc phụ 2.2: Xây dựng Dockerfile đa giai đoạn cho tất cả dịch vụ
-##### Đại lý phụ được phân công: [Docker]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/infra/docker/Dockerfile;./sources/infra/docker/.dockerignore`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Xây dựng Dockerfile đa giai đoạn cho tất cả dịch vụ backend (Quarkus) và frontend (Next.js). Sử dụng base image nhẹ (alpine hoặc distroless) cho giai đoạn cuối. Loại bỏ các tệp không cần thiết (tệp nguồn, tệp test, công cụ build, Maven/Gradle cache) trong giai đoạn cuối để tối ưu kích thước hình ảnh. Tối ưu cấu hình layer caching bằng cách sao chép tệp phụ thuộc trước khi sao chép mã nguồn. Đảm bảo kích thước hình ảnh cuối cùng dưới 500MB cho tất cả dịch vụ, tuân thủ yêu cầu NFR-005. Tạo file `.dockerignore` để loại bỏ các tệp không cần thiết khỏi ngữ cảnh build.
+*   **Docker**: Chuyên biệt về container hóa, kỹ thuật Dockerfile đa giai đoạn, tối ưu gói và đẩy tài sản ảnh ứng dụng đã xác minh lên Artifact Registry.
 
-### 🌤️ NGÀY 3:
-<!--DAY_HEADER_START-->Provisioning hạ tầng GCP và tạo manifest GKE<!--DAY_HEADER_END-->
+*   **GCP**: Chuyên về tự động hóa đám mây trong Google Cloud Platform. Chịu trách nhiệm xây dựng kịch bản Terraform cung cấp VPC, IAM, Cloud SQL, cấu hình mã hóa at-rest, và tích hợp Secret Manager.
 
-#### 📝 Công việc phụ 3.1: Provisioning hạ tầng GCP bằng Terraform
-##### Đại lý phụ được phân công: [GCP]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/infra/terraform/main.tf;./sources/infra/terraform/variables.tf;./sources/infra/terraform/outputs.tf`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[NFR-001], [NFR-002], [NFR-004], [NFR-009]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Cấu hình và triển khai toàn bộ hạ tầng GCP cần thiết cho hệ thống bằng Terraform. Tạo VPC với subnet riêng cho các dịch vụ backend và frontend, đảm bảo không có kết nối công cộng trực tiếp đến cơ sở dữ liệu. Cấu hình IAM roles với nguyên tắc đặc quyền tối thiểu cho từng dịch vụ. Provisioning Cloud SQL (PostgreSQL) với cấu hình sao lưu tự động hàng ngày, mã hóa dữ liệu lưu trữ AES-256, và kết nối TLS 1.3. Tạo Redis cluster cho caching phiên làm việc với chính sách hết hạn 24 giờ và LRU eviction. Cấu hình Cloud Storage cho lưu trữ tệp báo cáo. Thiết lập Firewall rules chỉ mở các cổng cần thiết (80, 443, 5432, 6379). Đảm bảo tất cả tài nguyên được định nghĩa dưới dạng mã (IaC), có thể reproduce và version control. Tích hợp monitoring và logging từ đầu.
+*   **GKE**: Chuyên về điều phối container sản xuất bên trong Google Kubernetes Engine. Chịu trách nhiệm xây dựng manifest triển khai Kubernetes, điều khiển định tuyến, cấu hình HPA, biểu đồ Helm và triển khai tải công việc microservice vào cụm GKE đang hoạt động.
 
-<!--START_EXC_HANDLER>
-```json
-{
-  "exception_handlers": [
-    {
-      "error_code": "GCP_PROVISIONING_FAILED",
-      "http_status": 500,
-      "trigger_condition": "Quá trình provisioning tài nguyên GCP qua Terraform thất bại",
-      "behavior": "Ghi log lỗi chi tiết, rollback các tài nguyên đã tạo và thông báo cho đội ngũ vận hành."
-    }
-  ]
-}
-```
-<!--END_EXC_HANDLER-->
+## 4. Định Nghĩa Hoàn Thành Giai Đoạn
 
-#### 📝 Công việc phụ 3.2: Tạo manifest triển khai GKE cho tất cả dịch vụ
-##### Đại lý phụ được phân công: [GKE]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/infra/gke/deployment.yaml;./sources/infra/gke/hpa.yaml;./sources/infra/gke/service.yaml`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[NFR-002], [NFR-004], [NFR-009]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo manifest Kubernetes triển khai cho tất cả dịch vụ backend và frontend lên GKE. Cấu hình resource limits (CPU, memory) cho từng dịch vụ dựa trên khối lượng công việc dự kiến. Thiết lập readiness và liveness probes với các ngưỡng phù hợp để đảm bảo khả năng chịu lỗi. Cấu hình Horizontal Pod Autoscaler (HPA) tự động scale số lượng pod dựa trên ngưỡng CPU >70% hoặc độ trễ yêu cầu >300ms. Cấu hình rolling update strategy với maxSurge và maxUnavailable để đảm bảo không có thời gian chết trong quá trình triển khai phiên bản mới. Tạo Service manifest cho từng dịch vụ với LoadBalancer hoặc NodePort tùy theo nhu cầu. Đảm bảo tất cả dịch vụ có thể giao tiếp với nhau trong cluster thông qua DNS nội bộ.
+Giai đoạn 5 được coi là hoàn thành khi đáp ứng đồng thời các tiêu chí định lượng sau: một trăm phần trăm danh mục kiểm soát OWASP Top 10 đã có biện pháp giảm thiểu rõ ràng ứng với từng mã kiến trúc ARC-001 đến ARC-005 trong tài liệu blueprint; chính sách mã hóa TLS 1.3 cho đường truyền và AES-256 cho dữ liệu lưu trữ được đặc tả đầy đủ kèm chu kỳ xoay vòng khóa 90 ngày; quy trình GDPR/CCPA mô tả chi tiết endpoint xóa dữ liệu, xuất JSON và quản lý consent marketing; sáu Dockerfile đa giai đoạn được xác minh biên dịch thành công với kích thước ảnh cuối dưới 500MB theo NFR-005; bốn module Terraform `main.tf`, `vpc.tf`, `iam.tf`, `cloudsql.tf` cung cấp hạ tầng GCP đầy đủ với Cloud SQL PostgreSQL 15 HA, mã hóa CMEK, point-in-time recovery 24 giờ theo NFR-009; bốn manifest GKE triển khai Deployment, HPA với ngưỡng CPU > 70% hoặc độ trễ > 300ms, Ingress TLS 1.3 và Kustomization hỗ trợ overlay staging/production; Stackdriver alerts cấu hình đầy đủ cho uptime check 99,9% SLA, lỗi 5xx > 1%, độ trễ p95 > 400ms với log retention 365 ngày theo NFR-006; sổ tay khôi phục sau thảm họa mô tả chi tiết quy trình failover đa vùng với RTO 30 phút và RPO 5 phút; script kiểm thử tích hợp xác minh build Docker và triển khai GKE hoạt động đúng kỳ vọng; một trăm phần trăm mã TagID được phân bổ cho giai đoạn 5 phải được ánh xạ chính xác trong báo cáo đánh giá cuối giai đoạn.
 
-<!--START_EXC_HANDLER>
-```json
-{
-  "exception_handlers": [
-    {
-      "error_code": "GKE_DEPLOYMENT_FAILED",
-      "http_status": 500,
-      "trigger_condition": "Việc triển khai manifest lên GKE thất bại",
-      "behavior": "Giữ nguyên phiên bản cũ, ghi log lỗi và kích hoạt cảnh báo cho đội ngũ DevOps."
-    }
-  ]
-}
-```
-<!--END_EXC_HANDLER-->
+## 5. NHẬT KÝ THỰC THI KIẾN TRÚC THEO NGÀY
 
-### 🌤️ NGÀY 4:
-<!--DAY_HEADER_START-->Thiết lập pipeline CI/CD và kiểm thử tích hợp hạ tầng<!--DAY_HEADER_END-->
+### 🌤️ NGÀY 1: <!--DAY_HEADER_START-->THIẾT LẬP BẢO MẬT OWASP VÀ ĐẶC TẢ TUÂN THỦ GDPR/CCPA<!--DAY_HEADER_END-->
 
-#### 📝 Công việc phụ 4.1: Xây dựng pipeline CI/CD với GitHub Actions
-##### Đại lý phụ được phân công: [Coder]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/infra/.github/workflows/ci-cd-pipeline.yaml`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[NFR-001], [NFR-005], [NFR-006]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Xây dựng pipeline CI/CD tự động với GitHub Actions bao gồm các stages: (1) Checkout mã nguồn và thiết lập môi trường Java 21 và Node.js; (2) Build backend Quarkus với Maven và kiểm tra kích thước artifact; (3) Build frontend Next.js và kiểm tra kích thước bundle; (4) Chạy bộ kiểm thử đơn vị và tích hợp với mục tiêu độ bao phủ >=85%; (5) Quét lỗ hổng bảo mật phụ thuộc bằng OWASP Dependency Check; (6) Kiểm tra kích thước hình ảnh Docker đảm bảo dưới 500MB; (7) Push hình ảnh đã build lên Google Container Registry (GCR); (8) Triển khai tự động lên GKE khi commit vào nhánh main. Tích hợp ghi log audit cho tất cả sự kiện pipeline (build, test, deploy) với timestamp, user ID, và chi tiết hành động, lưu trữ log trong 1 năm theo yêu cầu NFR-006. Cấu hình thông báo lỗi qua email và Slack cho đội ngũ DevOps.
+#### 📝 NHIỆM VỤ PHỤ 1.1: Soạn thảo blueprint bảo mật và tuân thủ
+##### Tác Nhân Được Phân Công: Doc
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/docs/security-compliance-blueprint.md
 
-<!--START_EXC_HANDLER>
-```json
-{
-  "exception_handlers": [
-    {
-      "error_code": "DOCKER_BUILD_FAILED",
-      "http_status": 500,
-      "trigger_condition": "Quá trình build Docker image thất bại",
-      "behavior": "Dừng pipeline CI/CD, ghi log lỗi build chi tiết và thông báo cho nhà phát triển."
-    }
-  ]
-}
-```
-<!--END_EXC_HANDLER-->
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [NFR-003], [NFR-008]<!--END_TAGS-->
 
-#### 📝 Công việc phụ 4.2: Thực hiện kiểm thử tích hợp hạ tầng toàn hệ thống
-##### Đại lý phụ được phân công: [Tester]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `INTEGRATION_SCOPE;./sources/infra/test/infrastructure-integration-test.yaml`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[NFR-001], [NFR-002], [NFR-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Thực hiện kiểm thử tích hợp toàn bộ hạ tầng để xác minh tất cả thành phần hoạt động đúng như đặc tả. Các kịch bản test: (1) Xác minh tất cả tài nguyên GCP được triển khai chính xác theo đặc tả Terraform (VPC, Cloud SQL, Redis, GKE clusters); (2) Kiểm tra kết nối giữa các dịch vụ (backend, PostgreSQL, Redis, FCM) hoạt động ổn định với độ trễ dưới 200ms; (3) Kiểm tra HPA tự động scale pod khi tải tăng (giả lập tải cao và kiểm tra số lượng pod tăng lên); (4) Kiểm tra pipeline CI/CD chạy thành công từ commit đến triển khai trên môi trường staging; (5) Kiểm tra tính năng sao lưu và phục hồi PostgreSQL hoạt động chính xác (thực hiện backup, xóa bảng, restore và xác minh dữ liệu được khôi phục). Ghi nhận tất cả lỗi phát sinh và đề xuất giải pháp khắc phục. Đảm bảo tất cả test case pass trước khi chuyển sang giai đoạn vận hành.
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Soạn thảo tài liệu blueprint bảo mật cấp doanh nghiệp tại `./sources/docs/security-compliance-blueprint.md`. Tài liệu phải mô tả chi tiết chiến lược phòng chống SQL Injection thông qua `PreparedStatement` và JPA parameterized query cho toàn bộ vi dịch vụ Quarkus; biện pháp chống XSS thông qua `DOMPurify` cho dữ liệu đầu vào từ biểu mẫu web, sử dụng `dangerouslySetInnerHTML` kết hợp pipeline làm sạch; cơ chế bảo vệ CSRF bằng double submit cookie token cho mọi endpoint thay đổi trạng thái. Đặc tả chính sách mã hóa TLS 1.3 cho mọi kênh truyền dữ liệu, mã hóa at-rest AES-256 cho Cloud SQL PostgreSQL và Cloud Storage, chu kỳ xoay vòng khóa 90 ngày. Tích hợp bộ tiêu chuẩn OWASP Top 10 vào checklist CI/CD cho từng mã ARC-001 đến ARC-005. Bổ sung phần tuân thủ GDPR/CCPA mô tả quy trình xóa dữ liệu theo yêu cầu chủ thể, xuất JSON dữ liệu cá nhân, cơ chế thu hồi consent marketing, lưu giữ nhật ký đồng ý 1 năm. Đảm bảo tài liệu chứa sơ đồ Mermaid mô tả luồng phát hiện và phản ứng sự cố bảo mật, ma trận phân loại dữ liệu nhạy cảm, và danh sách kiểm tra kiểm toán bảo mật cuối giai đoạn.
 
-### 🌤️ NGÀY 5:
-<!--DAY_HEADER_START-->Hoàn thiện tài liệu doanh nghiệp và rà soát cuối cùng<!--DAY_HEADER_END-->
+#### 📝 NHIỆM VỤ PHỤ 1.2: Kiểm tra đối chiếu blueprint bảo mật
+##### Tác Nhân Được Phân Công: Reviewer
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/docs/security-compliance-blueprint.md
 
-#### 📝 Công việc phụ 5.1: Soạn thảo tài liệu kiến trúc hệ thống
-##### Đại lý phụ được phân công: [Doc]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/docs/architecture/system-architecture.md`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [ARC-006], [ARC-007], [ARC-008], [ARC-009], [ARC-010]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Soạn thảo bản vẽ kiến trúc hệ thống tổng thể theo chuẩn doanh nghiệp. Tài liệu phải bao gồm: (1) Sơ đồ kiến trúc tổng thể thể hiện các lớp: Frontend (Next.js, React Native), Backend (Quarkus microservices), Data Layer (PostgreSQL, Redis), Infrastructure (GKE, Terraform, Docker); (2) Mô tả chi tiết cấu trúc microservices và tương tác giữa các dịch vụ qua REST API và Kafka events; (3) Ma trận RBAC với 5 vai trò người dùng và ma trận quyền truy cập chi tiết; (4) Sơ đồ luồng dữ liệu chính: xác thực OAuth2/JWT, điểm danh QR, thông báo đa kênh, đăng ký khóa học, gia hạn thẻ hội viên; (5) Sơ đồ tương tác giữa các thành phần kiến trúc trong các luồng nghiệp vụ chính; (6) Danh sách các thư viện và phiên bản công nghệ được sử dụng; (7) Sơ đồ hạ tầng GCP và GKE. Đảm bảo tài liệu phản ánh chính xác kiến trúc đã triển khai và tuân thủ tất cả yêu cầu kiến trúc đã định nghĩa.
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [NFR-003], [NFR-008]<!--END_TAGS-->
 
-#### 📝 Công việc phụ 5.2: Soạn thảo tài liệu API và hướng dẫn vận hành
-##### Đại lý phụ được phân công: [Doc]
-##### Thành phần và yêu cầu kỹ thuật mục tiêu:
-* **Đường dẫn tệp mục tiêu:** `./sources/docs/api/rest-api-reference.md;./sources/docs/operations/installation-guide.md;./sources/docs/operations/backup-recovery-guide.md`
-* **Thẻ theo dõi truy xuất:** <!--START_TAGS-->[ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [ARC-006], [ARC-007], [ARC-008], [ARC-009], [ARC-010], [NFR-001], [NFR-002], [NFR-003], [NFR-004], [NFR-005], [NFR-006], [NFR-007], [NFR-008], [NFR-009]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Soạn thảo bộ tài liệu doanh nghiệp hoàn chỉnh. Tài liệu API REST phải mô tả đầy đủ tất cả endpoint công khai và nội bộ, bao gồm đường dẫn, phương thức HTTP, schema yêu cầu/phản hồi, mã lỗi, ví dụ sử dụng, và yêu cầu xác thực. Tài liệu hướng dẫn cài đặt phải mô tả chi tiết quy trình triển khai hệ thống trên môi trường GKE, bao gồm cấu hình biến môi trường, khởi tạo cơ sở dữ liệu, triển khai dịch vụ, và cấu hình DNS. Tài liệu hướng dẫn vận hành phải bao gồm quy trình giám sát, xử lý sự cố thường gặp, quy trình sao lưu và phục hồi thảm họa PostgreSQL (bao gồm PITR), quy trình scale dịch vụ, và quy trình cập nhật phiên bản. Đảm bảo tất cả yêu cầu phi chức năng về hiệu suất, bảo mật, khả năng sẵn sàng, tuân thủ GDPR/CCPA được ghi chú đầy đủ trong tài liệu.
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Thực hiện rà soát toàn diện tài liệu blueprint bảo mật tại `./sources/docs/security-compliance-blueprint.md`. Xác nhận 100% danh mục kiểm soát OWASP Top 10 đã có biện pháp giảm thiểu rõ ràng ứng với từng mã kiến trúc ARC-001 đến ARC-005. Xác nhận cấu hình TLS 1.3, AES-256 và chính sách khóa đã phù hợp với NFR-003. Đánh giá tính đầy đủ của quy trình GDPR/CCPA theo NFR-008 bao gồm endpoint xóa dữ liệu, xuất JSON và quản lý consent. Phát hành nhận xét và danh sách điều chỉnh nếu phát hiện khoảng trống. Đảm bảo sơ đồ Mermaid phản ứng sự cố phải mô tả rõ ràng các bước phát hiện, phân loại mức độ nghiêm trọng, kênh thông báo và thời gian phản ứng tối đa.
+
+### 🌤️ NGÀY 2: <!--DAY_HEADER_START-->CONTAINER HÓA DOCKER ĐA GIAI ĐOẠN VÀ ĐẨY ARTIFACT REGISTRY<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 2.1: Xây dựng Dockerfile đa giai đoạn cho user-service
+##### Tác Nhân Được Phân Công: Docker
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/infra/docker/user-service.Dockerfile
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo Dockerfile đa giai đoạn cho `user-service` tại `./sources/infra/docker/user-service.Dockerfile`. Stage build sử dụng `eclipse-temurin:21-jdk-jammy` chạy Maven wrapper với cache layer; stage runtime sử dụng `eclipse-temurin:21-jre-jammy` Alpine để giữ kích thước ảnh cuối dưới 500MB theo NFR-005. Tích hợp non-root user UID 1001, healthcheck gọi `/health/live`, label OCI đầy đủ (org.opencontainers.image.title, org.opencontainers.image.version, org.opencontainers.image.source) và ARG cho phiên bản JDK. Thực thi kiểm thử cục bộ `docker build` đảm bảo biên dịch sạch, sau đó đẩy image lên Artifact Registry region `asia-southeast1` với tag `user-service:1.0.0-rc.1`.
+
+#### 📝 NHIỆM VỤ PHỤ 2.2: Xây dựng Dockerfile cho center-service
+##### Tác Nhân Được Phân Công: Docker
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/infra/docker/center-service.Dockerfile
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo Dockerfile đa giai đoạn cho `center-service` tại `./sources/infra/docker/center-service.Dockerfile` đối chiếu kích thước ảnh cuối dưới 500MB theo NFR-005. Đảm bảo stage build sử dụng Maven với cache layer, stage runtime sử dụng JRE Alpine, thêm probe `/health/ready` và cấu hình ENTRYPOINT chạy ứng dụng Quarkus với JVM ergonomics (`-XX:MaxRAMPercentage=75.0`, `-XX:+UseG1GC`). Đẩy image lên Artifact Registry với tag `center-service:1.0.0-rc.1`.
+
+#### 📝 NHIỆM VỤ PHỤ 2.3: Xây dựng Dockerfile cho course-service
+##### Tác Nhân Được Phân Công: Docker
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/infra/docker/course-service.Dockerfile
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo Dockerfile đa giai đoạn cho `course-service` tại `./sources/infra/docker/course-service.Dockerfile` đảm bảo tổng kích thước ảnh cuối dưới 500MB theo NFR-005. Bổ sung ARG cho cấu hình Quarkus profile (`quarkus.profile=prod`), ENV cho JWT issuer (`JWT_ISSUER`), tích hợp OpenTelemetry agent nhằm phục vụ giám sát. Sử dụng multi-stage với layer copy riêng cho dependencies Maven để tận dụng cache Docker. Đẩy image lên Artifact Registry với tag `course-service:1.0.0-rc.1`.
+
+#### 📝 NHIỆM VỤ PHỤ 2.4: Xây dựng Dockerfile cho attendance-service
+##### Tác Nhân Được Phân Công: Docker
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/infra/docker/attendance-service.Dockerfile
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo Dockerfile đa giai đoạn cho `attendance-service` tại `./sources/infra/docker/attendance-service.Dockerfile` đảm bảo kích thước ảnh cuối dưới 500MB theo NFR-005. Tối ưu build với `--no-transfer-progress`, copy chỉ artifact JAR sau giai đoạn package, expose cổng 8080 và cấu hình healthcheck gọi `/health/ready`. Tích hợp ENV cho Kafka bootstrap servers và database connection string. Đẩy image lên Artifact Registry với tag `attendance-service:1.0.0-rc.1`.
+
+#### 📝 NHIỆM VỤ PHỤ 2.5: Xây dựng Dockerfile cho notification-service và reporting-service
+##### Tác Nhân Được Phân Công: Docker
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/infra/docker/notification-service.Dockerfile
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo Dockerfile đa giai đoạn cho `notification-service` tại `./sources/infra/docker/notification-service.Dockerfile` đảm bảo kích thước ảnh cuối dưới 500MB theo NFR-005, đồng thời tạo Dockerfile tương ứng cho `reporting-service` tại `./sources/infra/docker/reporting-service.Dockerfile` trong cùng nhiệm vụ phụ. Tích hợp biến môi trường cho cấu hình FCM/APNs/Zalo (`FCM_SERVER_KEY`, `APNS_KEY_ID`, `ZALO_OA_ACCESS_TOKEN`), giữ ảnh runtime ở JRE Alpine, đẩy cả hai image lên Artifact Registry với tag semantic `notification-service:1.0.0-rc.1` và `reporting-service:1.0.0-rc.1`.
+
+#### 📝 NHIỆM VỤ PHỤ 2.6: Kiểm thử tích hợp quy trình build Docker đa dịch vụ
+##### Tác Nhân Được Phân Công: Tester
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/infra/test/maven-build-integration.sh
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo script tại `./sources/infra/test/maven-build-integration.sh` thực thi `docker build` cho toàn bộ sáu Dockerfile, kiểm tra exit code, đo dung lượng ảnh tạo ra và xác nhận mỗi ảnh đều có kích thước dưới 500MB theo NFR-005. Script phải dừng ngay khi phát hiện ảnh vượt ngưỡng, đồng thời tự động đẩy kết quả vào pipeline log để phục vụ audit. Bổ sung bước `docker inspect` xác nhận label OCI, non-root user và cấu hình healthcheck tồn tại.
+
+### 🌤️ NGÀY 3: <!--DAY_HEADER_START-->CUNG CẤP HẠ TẦNG GCP, ĐIỀU PHỐI GKE VÀ GIÁM SÁT STACKDRIVER<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 3.1: Kịch bản Terraform cho VPC, IAM và cơ sở dữ liệu
+##### Tác Nhân Được Phân Công: GCP
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/infra/terraform/main.tf
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-003], [NFR-004], [NFR-008]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Khởi tạo module Terraform `main.tf` tại `./sources/infra/terraform/main.tf` liên kết các module con `vpc.tf`, `iam.tf`, `cloudsql.tf` để cung cấp hạ tầng GCP. Bật API `compute.googleapis.com`, `sqladmin.googleapis.com`, `container.googleapis.com`, `iam.googleapis.com`, `monitoring.googleapis.com` thông qua `google_project_service`. Định nghĩa provider `google` với region `asia-southeast1` và biến đầu vào cho project ID, môi trường, và tags chi phí. Tài liệu phải thể hiện rõ chiến lược multi-AZ, gắn nhãn tài nguyên tuân thủ chính sách FinOps và ghi chú hỗ trợ failover NFR-002.
+
+#### 📝 NHIỆM VỤ PHỤ 3.2: Định nghĩa VPC và IAM an toàn
+##### Tác Nhân Được Phân Công: GCP
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/infra/terraform/vpc.tf
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-003]<!--END_TAGS-->
+
+* **Hng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo module `vpc.tf` tại `./sources/infra/terraform/vpc.tf` cung cấp mạng VPC chế độ tùy chỉnh với dải CIDR `10.20.0.0/16`, subnet cho GKE và Cloud SQL trên hai zone, firewall cho phép truy cập nội bộ giữa các vi dịch vụ và chặn SSH từ internet theo NFR-002. Bổ sung `google_compute_router` và `google_compute_nat` để cấp Internet egress cho node GKE. Định nghĩa Cloud NAT cho phép egress ổn định, đồng thời giới hạn truy cập API từ internet thông qua Private Google Access.
+
+#### 📝 NHIỆM VỤ PHỤ 3.3: Cấu hình IAM tối thiểu theo nguyên tắc đặc quyền tối thiểu
+##### Tác Nhân Được Phân Công: GCP
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/infra/terraform/iam.tf
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-003], [NFR-008]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo module `iam.tf` tại `./sources/infra/terraform/iam.tf` cấp service account riêng cho mỗi vi dịch vụ với quyền hạn chế theo nguyên tắc least privilege, role `roles/cloudsql.client` cho backend, `roles/artifactregistry.reader` cho pull image, `roles/monitoring.metricWriter` cho xuất chỉ số. Bổ sung IAM binding cho phép Cloud Build triển khai lên GKE và kích hoạt Workload Identity theo NFR-003, NFR-008.
+
+#### 📝 NHIỆM VỤ PHỤ 3.4: Khởi tạo Cloud SQL PostgreSQL với mã hóa và sao lưu
+##### Tác Nhân Được Phân Công: GCP
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/infra/terraform/cloudsql.tf
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-001], [NFR-008], [NFR-009]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo module `cloudsql.tf` tại `./sources/infra/terraform/cloudsql.tf` cung cấp Cloud SQL PostgreSQL 15 HA với cờ `database_version = "POSTGRES_15"`, bật mã hóa at-rest bằng CMEK, cấu hình sao lưu tự động hằng ngày, point-in-time recovery lên tới 24 giờ, kích hoạt query insights và read replica cho workload báo cáo theo NFR-001, NFR-008, NFR-009. Định nghĩa `google_sql_user` cho từng vi dịch vụ, cấu hình `private_network` trỏ tới VPC đã tạo.
+
+#### 📝 NHIỆM VỤ PHỤ 3.5: Triển khai GKE Deployment, HPA và Ingress
+##### Tác Nhân Được Phân Công: GKE
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/infra/gke/deployment.yaml
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-004]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo manifest `deployment.yaml` tại `./sources/infra/gke/deployment.yaml` cho cụm GKE Autopilot với ba replica khởi tạo cho mỗi vi dịch vụ, sử dụng image từ Artifact Registry, gắn service account riêng và secret cho kết nối Cloud SQL. Cấu hình readiness probe `/health/ready` và liveness probe `/health/live`, thiết lập resource request/limit theo ngưỡng NFR-001, đồng thời gắn nhãn topology cho Kustomize.
+
+#### 📝 NHIỆM VỤ PHỤ 3.6: Cấu hình HPA, Ingress và Kustomization
+##### Tác Nhân Được Phân Công: GKE
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/infra/gke/hpa.yaml
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-004]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo manifest `hpa.yaml` tại `./sources/infra/gke/hpa.yaml` định nghĩa HorizontalPodAutoscaler với ngưỡng CPU > 70% hoặc độ trễ yêu cầu > 300ms, tối thiểu 3 pod và tối đa 20 pod theo NFR-004. Tạo `ingress.yaml` tại `./sources/infra/gke/ingress.yaml` cho Cloud Load Balancer với TLS 1.3 và IP tĩnh. Tạo `kustomization.yaml` tại `./sources/infra/gke/kustomization.yaml` liệt kê toàn bộ deployment, service, HPA, ingress và secret, hỗ trợ overlay staging/production.
+
+#### 📝 NHIỆM VỤ PHỤ 3.7: Cấu hình giám sát Stackdriver và chính sách lưu giữ log
+##### Tác Nhân Được Phân Công: GCP
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/infra/monitoring/stackdriver-alerts.yaml
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-006]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo manifest `stackdriver-alerts.yaml` tại `./sources/infra/monitoring/stackdriver-alerts.yaml` định nghĩa cảnh báo uptime check 99,9% SLA, cảnh báo lỗi 5xx > 1% trong 5 phút, cảnh báo độ trễ p95 > 400ms theo NFR-002. Cấu hình log-based metric cho audit log, đồng thời tạo `log-retention.tf` tại `./sources/infra/monitoring/log-retention.tf` thiết lập Log Sink lưu trữ 365 ngày theo NFR-006. Tích hợp notification channel gửi email và Slack khi vi phạm SLA.
+
+#### 📝 NHIỆM VỤ PHỤ 3.8: Kiểm thử tích hợp hạ tầng GKE và giám sát
+##### Tác Nhân Được Phân Công: Tester
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/infra/test/maven-build-integration.sh
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-004], [NFR-006]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo script tích hợp mở rộng tại `./sources/infra/test/maven-build-integration.sh` để thực thi `kubectl apply -k` với Kustomize overlay staging, đợi rollout hoàn tất và xác nhận HPA đã đọc metric. Script phải kích hoạt tải giả lập nhằm xác nhận ngưỡng CPU > 70% kích hoạt scale-out theo NFR-004, đồng thời xác minh Stackdriver đã thu thập log cấu hình kiểm toán theo NFR-006. Báo cáo kết quả vào pipeline log.
+
+#### 📝 NHIỆM VỤ PHỤ 3.9: Soạn thảo sổ tay khôi phục sau thảm họa
+##### Tác Nhân Được Phân Công: Doc
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/docs/disaster-recovery-runbook.md
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-006], [NFR-009]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Soạn thảo sổ tay vận hành `disaster-recovery-runbook.md` tại `./sources/docs/disaster-recovery-runbook.md` mô tả quy trình failover đa vùng giữa `asia-southeast1` và `asia-east1`, danh sách kiểm tra RTO 30 phút và RPO 5 phút theo NFR-009. Tài liệu phải bao gồm kịch bản mất Cloud SQL, mất cluster GKE, mất Artifact Registry kèm câu lệnh Terraform/Pulumi khôi phục, quy trình xác minh toàn vẹn dữ liệu, và danh sách liên lạc khẩn cấp. Đồng thời mô tả quy trình trích xuất audit log 1 năm từ Stackdriver theo NFR-006.
+
+#### 📝 NHIỆM VỤ PHỤ 3.10: Đánh giá sổ tay khôi phục và chiến lược failover
+##### Tác Nhân Được Phân Công: Reviewer
+##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/docs/disaster-recovery-runbook.md
+
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-006], [NFR-009]<!--END_TAGS-->
+
+* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Rà soát sổ tay `disaster-recovery-runbook.md` tại `./sources/docs/disaster-recovery-runbook.md`, xác nhận các chỉ số RTO/RPO đáp ứng NFR-009, danh sách kiểm tra đầy đủ cho cả ba kịch bản mất dịch vụ (mất Cloud SQL, mất cluster GKE, mất Artifact Registry), đồng thời đảm bảo cơ chế xuất audit log 1 năm theo NFR-006 đã rõ ràng. Đưa ra nhận xét và yêu cầu chỉnh sửa nếu phát hiện khoảng trống trong quy trình failover hoặc thiếu bước xác minh toàn vẹn dữ liệu sau khôi phục.
