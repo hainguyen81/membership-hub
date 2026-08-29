@@ -1,4 +1,4 @@
-graph TD
+```graph TD
     classDef root fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff;
     classDef backend fill:#0f172a,stroke:#10b981,stroke-width:2px,color:#fff;
     classDef service fill:#1e1e38,stroke:#8b5cf6,stroke-width:1px,color:#fff;
@@ -18,3 +18,4 @@ graph TD
     SourcesBackend --> AttendSvc["attendance-service (org.nlh4j.membershiphub.attendanceservice)"]:::service
     SourcesBackend --> NotifSvc["notification-service (org.nlh4j.membershiphub.notificationservice)"]:::service
     SourcesBackend --> ReportSvc["reporting-service (org.nlh4j.membershiphub.reportingservice)"]:::service
+```
