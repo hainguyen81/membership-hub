@@ -376,7 +376,7 @@ def splitAIResponseData(raw_data):
     
     # extract by regex
     match = re.search(
-        r"```(?:text|json|xml|mermaid|sql|python|code)?\s*(.*?)\s*```",
+        r"```(?:text|json|xml|mermaid|markdown|sql|python|code|yaml|properties|bash|java|ts|tsx)?\s*(.*?)\s*```",
         raw_data,
         re.DOTALL,
     )
