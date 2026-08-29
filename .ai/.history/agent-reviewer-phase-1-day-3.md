@@ -1,3 +1,39 @@
+# Day 3: model models/gemini-3.5-flash - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_attendance.sql
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Component Destination Path: `./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_attendance.sql` (Must map to sources/backend/ or sources/frontend/)
+*   Context Module Context Reference Path: `INTEGRATION_SCOPE`
+
+### SOURCE CODE UNDER AUDIT (VERIFICATION TARGET)
+* **Target Code Component Payload For Comprehensive Review:**
+<EXISTING_CODE_UNDER_AUDIT>
+
+</EXISTING_CODE_UNDER_AUDIT>
+
+
+### ❌ REAL RAW COMPILER ERROR LOGS (CRITICAL FIX TARGET)
+The codebase above triggered the following compiler or runtime exceptions. You MUST analyze this stack trace or log error text to pinpoint and auto-patch the root cause:
+```text
+True
+```
+*   Operational Modality Activated: COMPILER_FIXER_MODE
+
+
+### 📋 EXECUTION SUB-TASKS TO ENFORCE
+['Đánh giá tệp ./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_attendance.sql xác minh các tiêu chí: (1) ràng buộc uq_attendance_idempotency UNIQUE (student_id, course_id, attendance_date) đảm bảo idempotency đúng theo yêu cầu REQ-013; (2) kiểu status dùng VARCHAR(20) kết hợp CHECK thay vì ENUM theo chuẩn ANSI SQL; (3) các chỉ mục idx_attendance_student_id, idx_attendance_course_id, idx_attendance_date phục vụ truy vấn theo ngày và theo học viên/khóa học. Đồng thời đánh giá schema courses, enrollments, student_cards xác nhận ràng buộc ngày end_date >= start_date, UNIQUE (student_id, course_id) trong enrollments ngăn đăng ký trùng. Lập báo cáo đánh giá với bảng tuân thủ cho từng TagID và danh sách khuyến nghị sửa lỗi nếu phát hiện bất thường.']
+
+---
+
+### ⚙️ LEAD REVIEWER/FIXER EXECUTION INSTRUCTION:
+Please read the comprehensive architectural constraints, workspace folder routing rules, sub-task specifications, and potential compiler log streams provided above. Automatically evaluate the error signatures or static code anomalies to construct either a fully patched backend Java component or a frontend TypeScript/Next.js asset. 
+
+Ensure that you read the exact Tag IDs from the `['[DAT-004]', '[DAT-005]', '[DAT-006]', '[DAT-007]']` variable, merge them seamlessly with any pre-existing tags inside the source payload, and permanently inject/preserve those exact Tag IDs within the generated code's Javadoc documentation or file header comments. The final code must be completely self-contained and compiler-ready. Emit the production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```sql
 -- =================================================================================================
 -- BẢN THIẾT KẾ HỆ THỐNG DỮ LIỆU & KIỂM TOÁN TUÂN THỦ (DATA LAYER COMPLIANCE AUDIT)
 -- Mã Bản Thiết Kế: ARCH-20260829122721
@@ -118,3 +154,5 @@ CREATE TABLE IF NOT EXISTS student_cards (
 CREATE INDEX IF NOT EXISTS idx_student_cards_student_id ON student_cards (student_id);
 CREATE INDEX IF NOT EXISTS idx_student_cards_status ON student_cards (status);
 CREATE INDEX IF NOT EXISTS idx_student_cards_end_date ON student_cards (end_date);
+```
+
