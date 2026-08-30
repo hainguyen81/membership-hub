@@ -1,240 +1,766 @@
-# Giai đoạn 5: <!--PHASE_NAME_START-->Bảo Mật Tích Hợp, Vận Hành DevOps Và Giám Sát Đa Vùng<!--PHASE_NAME_END-->
+# Giai đoạn 5: <!--PHASE_NAME_START-->Tích Hợp Giao Diện Responsive, Báo Cáo Dashboard, Hạ Tầng DevOps và Tài Liệu Doanh Nghiệp<!--PHASE_NAME_END-->
 
 ## 📊 Kiểm Soát Tài Liệu
 
 | Hạng mục | Chi tiết |
 | :--- | :--- |
-| **Mã Bản Thiết Kế** | ARCH-20260829125322 |
+| **Mã Bản Thiết Kế** | ARCH-20260829225017 |
 | **Tên Dự Án** | membership-hub |
 | **Giai đoạn** | 5 |
-| **Tên Giai Đoạn** | <!--PHASE_NAME_START-->Bảo Mật Tích Hợp, Vận Hành DevOps Và Giám Sát Đa Vùng<!--PHASE_NAME_END--> |
-| **Mô Tả** | <!--PHASE_DESC_START-->Giai đoạn 5 củng cố bức tường bảo mật toàn hệ thống theo chuẩn OWASP Top 10, hoàn thiện khả năng mã hóa dữ liệu TLS 1.3 và AES-256, đóng gói ứng dụng qua Docker đa giai đoạn với kích thước ảnh dưới 500MB, tự động hóa cung cấp hạ tầng GCP bằng Terraform (VPC, IAM, Cloud SQL PostgreSQL), triển khai điều phối GKE với HPA tự co giãn theo CPU > 70% hoặc độ trễ > 300ms kèm failover đa vùng, đồng thời cấu hình giám sát Stackdriver, lưu giữ log kiểm toán 1 năm, sao lưu point-in-time 24 giờ và soạn thảo sổ tay khôi phục sau thảm họa đảm bảo SLA 99,9% cùng tuân thủ NFR-001 đến NFR-009.<!--PHASE_DESC_END--> |
-| **Phiên Bản** | 1.0 (Đường Cơ Sở) |
-| **Thời Gian** | 2026/08/29 12:53:22 |
+| **Tên Giai Đoạn** | <!--PHASE_NAME_START-->Tích Hợp Giao Diện Responsive, Báo Cáo Dashboard, Hạ Tầng DevOps và Tài Liệu Doanh Nghiệp<!--PHASE_NAME_END--> |
+| **Mô Tả** | <!--PHASE_DESC_START-->Giai đoạn 5 hoàn thiện tầng giao diện responsive đa vai trò trên Next.js kết hợp NativeWind, tích hợp phát hiện ngôn ngữ thông qua next-intl, hỗ trợ SEO đa ngôn ngữ với hreflang, triển khai microservice báo cáo điểm danh CSV với giới hạn 30 ngày, dashboard tổng hợp tuyển sinh thời gian thực với cache 15 phút, đóng gói toàn bộ image Docker đa giai đoạn dưới 500MB, cung cấp hạ tầng GCP thông qua Terraform (VPC, GKE Autopilot, Cloud SQL PostgreSQL, IAM, KMS), triển khai manifest GKE với HPA theo CPU/latency, và hoàn thiện bộ tài liệu kiến trúc doanh nghiệp (C4, OpenAPI, GDPR/CCPA, SEO/i18n) đặt tại ./sources/docs/<!--PHASE_DESC_END--> |
+| **Phiên Bản** | 1.0 (Đường cơ sở) |
+| **Ngày Giờ** | 2026/08/29 22:50:17 |
 | **Tác Giả** | Kiến Trúc Sư Hệ Thống Doanh Nghiệp (SA Agent) |
-| **Phê Duyệt** | Đang Chờ Đánh Giá Quản Trị Kỹ Thuật |
+| **Phê Duyệt** | Đang chờ Rà Soát Quản Trị Kỹ Thuật |
 
-## 1. Phạm Vi Hoạt Động & Mục Tiêu Giai Đoạn
+## 1. Phạm Vi Hoạt Động Và Mục Tiêu Giai Đoạn
 
-Giai đoạn 5 thực hiện năm nhiệm vụ cốt lõi được phân bổ theo bảng tóm tắt đa giai đoạn: Nhiệm vụ 17 (bảo mật tích hợp và tuân thủ chuẩn doanh nghiệp), Nhiệm vụ 20 (container hóa Docker đa giai đoạn và đẩy Registry), Nhiệm vụ 21 (cung cấp hạ tầng GCP và Terraform), Nhiệm vụ 22 (điều phối cụm GKE và HPA), Nhiệm vụ 23 (giám sát, ghi log và kiểm toán bảo mật). Phạm vi kéo dài từ Ngày 1 đến Ngày 3 theo phân bổ chính thức trong ma trận tóm tắt đa giai đoạn.
+Giai đoạn 5 đóng vai trò giai đoạn cuối cùng và quan trọng bậc nhất trong hệ thống membership-hub, tập trung hoàn thiện toàn bộ tầng giao diện người dùng, hạ tầng DevOps sẵn sàng production và bộ tài liệu kiến trúc doanh nghiệp. Phạm vi kỹ thuật cốt lõi bao gồm 7 nhiệm vụ backlog chính được phân bổ: Nhiệm vụ 20 (Giao diện responsive cho ứng dụng di động Next.js), Nhiệm vụ 22 (Phát hiện ngôn ngữ mặc định cho khách truy cập), Nhiệm vụ 23 (SEO đa ngôn ngữ en/vi/es), Nhiệm vụ 24 (Xuất báo cáo điểm danh CSV), Nhiệm vụ 25 (Dashboard tổng hợp tuyển sinh thời gian thực), Nhiệm vụ 31 (Hạ tầng DevOps Docker + Terraform GCP + GKE Manifest), và Nhiệm vụ 32 (Tài liệu kiến trúc và vận hành doanh nghiệp). Theo kế hoạch phân bổ trong bảng tổng hợp đa giai đoạn 4.2 của bối cảnh dự án toàn cục, giai đoạn 5 được phân bổ chính xác khoảng ngày "Ngày 1 - 5" nghĩa là Relative_Z = 5 ngày làm việc liên tục.
 
-Các tài sản kỹ thuật bắt buộc phải sinh ra bao gồm: tài liệu blueprint bảo mật tích hợp và tuân thủ `./sources/docs/security-compliance-blueprint.md` mô tả chi tiết biện pháp phòng chống SQLi, XSS, CSRF theo OWASP Top 10 kèm chính sách mã hóa TLS 1.3, AES-256, tuân thủ GDPR/CCPA; sổ tay khôi phục sau thảm họa `./sources/docs/disaster-recovery-runbook.md` với chỉ số RTO 30 phút và RPO 5 phút; sáu Dockerfile đa giai đoạn cho sáu vi dịch vụ tại `./sources/infra/docker/` đảm bảo kích thước ảnh cuối dưới 500MB theo NFR-005; bốn module Terraform tại `./sources/infra/terraform/` cung cấp VPC, IAM least-privilege, Cloud SQL PostgreSQL 15 HA với mã hóa CMEK và point-in-time recovery; bốn manifest Kubernetes tại `./sources/infra/gke/` cho Deployment, HPA, Ingress và Kustomization hỗ trợ failover đa vùng; hai tệp giám sát tại `./sources/infra/monitoring/` cấu hình Stackdriver alerts và chính sách lưu giữ log 365 ngày. Toàn bộ tài sản phải được gắn thẻ truy xuất theo hệ thống TagID `[NFR-001]`, `[NFR-002]`, `[NFR-003]`, `[NFR-004]`, `[NFR-005]`, `[NFR-006]`, `[NFR-007]`, `[NFR-008]`, `[NFR-009]`, `[ARC-001]`, `[ARC-002]`, `[ARC-003]`, `[ARC-004]`, `[ARC-005]` đảm bảo khả năng truy vết đầy đủ.
+Trên tầng frontend Next.js tại `./sources/frontend/web-app/`, giai đoạn này xây dựng layout gốc với App Router, component `RoleNavMenu` điều hướng theo 5 vai trò (Student, Teacher, Manager, Center Admin, System Admin) thông qua prop `session.role`. Tích hợp `next-intl@3.17.2` cho đa ngôn ngữ với middleware phát hiện locale từ cookie `NEXT_LOCALE` và fallback `Accept-Language` header. Hỗ trợ SEO với thẻ `<html lang>`, thẻ `hreflang` cho 3 ngôn ngữ (en, vi, es) và sitemap.xml đa ngôn ngữ. Styling responsive sử dụng TailwindCSS 3.4.10 kết hợp NativeWind 4.1.23 cho màn hình di động.
 
-## 2. Phạm Vi Kỹ Thuật Cho Phép & Ranh Giới Thư Mục
+Trên tầng backend microservices, giai đoạn này triển khai 2 microservice mới: `report-service` với REST endpoint `GET /api/v1/reports/attendance` xuất CSV giới hạn khoảng ngày tối đa 30 ngày, các cột StudentName, CourseName, AttendanceDate, Status, phát sinh `InvalidDateRangeException` nếu vượt quá giới hạn, hỗ trợ streaming CSV để tránh OOM với dữ liệu lớn. Microservice `dashboard-service` với REST endpoint `GET /api/v1/dashboard/enrollment-summary` cache 15 phút thông qua Redis, trả về cards `totalStudents`, `activeCourses`, `upcomingSessions` cho dashboard Center Admin. View materialized `mv_enrollment_summary` tổng hợp dữ liệu từ 3 bảng centers, courses, enrollments.
 
-Danh sách tệp vật lý và tài sản được phép sinh ra trong giai đoạn này:
+Trên tầng hạ tầng DevOps tại `./sources/infra/`, giai đoạn này sinh 7 Dockerfile đa giai đoạn cho 6 microservices backend (user-service, center-service, course-service, attendance-service, report-service, dashboard-service) và frontend sử dụng base image `eclipse-temurin:21-jre-jammy` (image cơ sở <200MB, image cuối cùng <500MB). Module Terraform cung cấp VPC với subnet riêng (10.10.0.0/16), GKE Autopilot cluster, Cloud SQL PostgreSQL 15 high availability, IAM service account với Workload Identity, KMS keyring mã hóa AES-256, Cloud Storage bucket cho backup. Manifest GKE cho 6 microservice backend với Deployment (replicas 2, resource requests/limits, liveness/readiness probe), Service ClusterIP, HPA scale khi CPU > 70% hoặc latency > 300ms, Ingress NGINX với TLS 1.3, NetworkPolicy hạn chế traffic giữa namespace.
 
-* `./sources/docs/security-compliance-blueprint.md` [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [NFR-003], [NFR-008]
-* `./sources/docs/disaster-recovery-runbook.md` [NFR-009], [NFR-006]
-* `./sources/infra/docker/user-service.Dockerfile` [NFR-005]
-* `./sources/infra/docker/center-service.Dockerfile` [NFR-005]
-* `./sources/infra/docker/course-service.Dockerfile` [NFR-005]
-* `./sources/infra/docker/attendance-service.Dockerfile` [NFR-005]
-* `./sources/infra/docker/notification-service.Dockerfile` [NFR-005]
-* `./sources/infra/docker/reporting-service.Dockerfile` [NFR-005]
-* `./sources/infra/terraform/main.tf` [NFR-002], [NFR-004]
-* `./sources/infra/terraform/vpc.tf` [NFR-002]
-* `./sources/infra/terraform/iam.tf` [NFR-003]
-* `./sources/infra/terraform/cloudsql.tf` [NFR-001], [NFR-008]
-* `./sources/infra/gke/deployment.yaml` [NFR-002], [NFR-004]
-* `./sources/infra/gke/hpa.yaml` [NFR-004]
-* `./sources/infra/gke/ingress.yaml` [NFR-002]
-* `./sources/infra/gke/kustomization.yaml` [NFR-004]
-* `./sources/infra/monitoring/stackdriver-alerts.yaml` [NFR-002], [NFR-006]
-* `./sources/infra/monitoring/log-retention.tf` [NFR-006]
+Cuối cùng, bộ tài liệu kiến trúc doanh nghiệp được hoàn thiện tại `./sources/docs/` bao gồm: System Overview, sơ đồ C4 Context/Container, Microservices Decomposition, OpenAPI 3.1 tổng hợp, ERD database, Terraform deployment guide, GKE orchestration guide, CI/CD pipeline guide, GDPR/CCPA compliance, Security Baseline OWASP, runbook vận hành, Disaster Recovery plan, i18n/SEO implementation guide, Responsive design guide.
 
-* **RÀNG BUỘC BẮT BUỘC VỀ TÀI SẢN CƠ SỞ**:
-  - Cấu trúc Dockerfile phải tuân thủ nguyên tắc đa giai đoạn với stage build sử dụng JDK và stage runtime sử dụng JRE Alpine nhằm giữ kích thước ảnh cuối dưới 500MB theo NFR-005.
-  - Tất cả module Terraform phải khai báo provider `google` với region `asia-southeast1` và bật đầy đủ Google APIs cần thiết thông qua `google_project_service`.
-  - Manifest GKE phải sử dụng HPA với ngưỡng CPU > 70% hoặc độ trễ yêu cầu > 300ms theo NFR-004, tích hợp readiness probe `/health/ready` và liveness probe `/health/live`.
-  - Tài liệu blueprint phải mô tả chi tiết biện pháp phòng chống OWASP Top 10, chính sách mã hóa TLS 1.3, AES-256, và quy trình tuân thủ GDPR/CCPA theo NFR-003, NFR-008.
+Mục tiêu chính của giai đoạn là toàn bộ hệ thống có thể triển khai lên môi trường GKE production thông qua lệnh `terraform apply` và `kubectl apply`, đáp ứng SLA 99.9% uptime, hỗ trợ 10.000 concurrent user với P95 < 200ms, đồng thời cung cấp đầy đủ tài liệu cho team vận hành và mobile team phát triển ứng dụng native.
 
-## 3. Chỉ Thị Chức Năng Chuyên Biệt Cho Tác Nhân Phụ
+## 2. Phạm Vi Kỹ Thuật Cho Phép Và Ranh Giới Thư Mục
 
-*   **Coder**: Đóng vai trò Nhà Phát Triển Ứng Dụng Cao Cấp. Chịu trách nhiệm triển khai mã nguồn ứng dụng thuần túy. Bị cấm viết bộ kiểm thử, biểu mẫu Docker, hoặc kịch bản Terraform.
+Danh sách đầy đủ các tệp tin vật lý được phép tạo mới hoặc tái cấu trúc trong giai đoạn 5, tuân thủ nghiêm ngặt quy ước gói `org.nlh4j.membershiphub` và ranh giới thư mục doanh nghiệp, phân tách theo từng nhóm nghiệp vụ frontend, backend microservice mới, hạ tầng DevOps và tài liệu:
 
-* **Tester**: Đóng vai trò Trưởng Nhóm Kiểm Thử/Đảm Bảo Chất Lượng. Chuyên về kỹ thuật bộ kiểm thử, xác thực và cổng chất lượng. Chịu trách nhiệm sinh script kiểm thử tích hợp build, xác minh kích thước ảnh Docker, đo lường hiệu năng hạ tầng, và xác thực quy trình rollback. Bị cấm sửa đổi mã nguồn sản phẩm hoặc biểu mẫu hạ tầng. Nếu nhiệm vụ phụ liên quan đến phạm vi tích hợp tổng thể mà không thể khoanh vùng một tệp cụ thể, phải xuất chính xác chuỗi ký tự `INTEGRATION_SCOPE` làm tham số đầu tiên của cặp phân tách bằng dấu chấm phẩy.
+* `./sources/frontend/web-app/src/app/layout.tsx` — [REQ-020], [REQ-022], [REQ-023]
+* `./sources/frontend/web-app/src/app/dashboard/page.tsx` — [REQ-025], [REQ-020]
+* `./sources/frontend/web-app/src/components/navigation/RoleNavMenu.tsx` — [REQ-020]
+* `./sources/frontend/web-app/src/i18n/request.ts` — [REQ-022], [REQ-023], [NFR-007]
+* `./sources/frontend/web-app/middleware.ts` — [REQ-022], [REQ-023]
+* `./sources/frontend/web-app/src/app/sitemap.ts` — [REQ-023]
+* `./sources/frontend/web-app/src/app/robots.ts` — [REQ-023]
+* `./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/controller/ReportController.java` — [REQ-024]
+* `./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/service/AttendanceReportService.java` — [REQ-024]
+* `./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/dto/AttendanceReportDto.java` — [REQ-024]
+* `./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/exception/InvalidDateRangeException.java` — [REQ-024], [EXC-004]
+* `./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/exception/GlobalExceptionMapper.java` — [REQ-024], [EXC-004]
+* `./sources/backend/dashboard-service/src/main/java/org/nlh4j/membershiphub/dashboardservice/controller/EnrollmentDashboardController.java` — [REQ-025]
+* `./sources/backend/dashboard-service/src/main/java/org/nlh4j/membershiphub/dashboardservice/service/EnrollmentSummaryService.java` — [REQ-025]
+* `./sources/backend/dashboard-service/src/main/java/org/nlh4j/membershiphub/dashboardservice/dto/EnrollmentSummaryDto.java` — [REQ-025]
+* `./sources/backend/dashboard-service/src/main/resources/application.properties` — [REQ-025]
+* `./sources/frontend/web-app/src/app/attendance-report/page.tsx` — [REQ-024]
+* `./sources/frontend/web-app/src/app/enrollment-dashboard/page.tsx` — [REQ-025]
+* `./sources/frontend/web-app/src/app/[locale]/layout.tsx` — [REQ-022], [REQ-023], [NFR-007]
+* `./sources/infra/docker/user-service.Dockerfile` — [NFR-005], [NFR-004]
+* `./sources/infra/docker/center-service.Dockerfile` — [NFR-005], [NFR-004]
+* `./sources/infra/docker/course-service.Dockerfile` — [NFR-005], [NFR-004]
+* `./sources/infra/docker/attendance-service.Dockerfile` — [NFR-005], [NFR-004]
+* `./sources/infra/docker/report-service.Dockerfile` — [NFR-005], [NFR-004]
+* `./sources/infra/docker/dashboard-service.Dockerfile` — [NFR-005], [NFR-004]
+* `./sources/infra/docker/frontend.Dockerfile` — [NFR-005], [NFR-004]
+* `./sources/infra/terraform/main.tf` — [NFR-002], [NFR-004], [NFR-008], [NFR-009]
+* `./sources/infra/terraform/vpc.tf` — [NFR-002], [NFR-004]
+* `./sources/infra/terraform/gke.tf` — [NFR-002], [NFR-004]
+* `./sources/infra/terraform/cloudsql.tf` — [NFR-004], [NFR-009]
+* `./sources/infra/terraform/iam.tf` — [NFR-003], [NFR-008]
+* `./sources/infra/terraform/kms.tf` — [NFR-003], [NFR-008]
+* `./sources/infra/terraform/storage.tf` — [NFR-009]
+* `./sources/infra/k8s/user-service/deployment.yaml` — [NFR-001], [NFR-002], [NFR-004]
+* `./sources/infra/k8s/user-service/hpa.yaml` — [NFR-001], [NFR-004]
+* `./sources/infra/k8s/user-service/service.yaml` — [NFR-001], [NFR-004]
+* `./sources/infra/k8s/center-service/deployment.yaml` — [NFR-001], [NFR-002], [NFR-004]
+* `./sources/infra/k8s/center-service/hpa.yaml` — [NFR-001], [NFR-004]
+* `./sources/infra/k8s/center-service/service.yaml` — [NFR-001], [NFR-004]
+* `./sources/infra/k8s/course-service/deployment.yaml` — [NFR-001], [NFR-002], [NFR-004]
+* `./sources/infra/k8s/course-service/hpa.yaml` — [NFR-001], [NFR-004]
+* `./sources/infra/k8s/course-service/service.yaml` — [NFR-001], [NFR-004]
+* `./sources/infra/k8s/attendance-service/deployment.yaml` — [NFR-001], [NFR-002], [NFR-004]
+* `./sources/infra/k8s/attendance-service/hpa.yaml` — [NFR-001], [NFR-004]
+* `./sources/infra/k8s/attendance-service/service.yaml` — [NFR-001], [NFR-004]
+* `./sources/infra/k8s/report-service/deployment.yaml` — [NFR-001], [NFR-002], [NFR-004]
+* `./sources/infra/k8s/report-service/hpa.yaml` — [NFR-001], [NFR-004]
+* `./sources/infra/k8s/report-service/service.yaml` — [NFR-001], [NFR-004]
+* `./sources/infra/k8s/dashboard-service/deployment.yaml` — [NFR-001], [NFR-002], [NFR-004]
+* `./sources/infra/k8s/dashboard-service/hpa.yaml` — [NFR-001], [NFR-004]
+* `./sources/infra/k8s/dashboard-service/service.yaml` — [NFR-001], [NFR-004]
+* `./sources/infra/k8s/frontend/deployment.yaml` — [NFR-001], [NFR-002]
+* `./sources/infra/k8s/frontend/service.yaml` — [NFR-001]
+* `./sources/infra/k8s/ingress.yaml` — [NFR-001], [NFR-003]
+* `./sources/infra/k8s/network-policy.yaml` — [NFR-003]
+* `./sources/infra/k8s/configmap.yaml` — [NFR-001], [NFR-007]
+* `./sources/infra/k8s/secret.yaml` — [NFR-003]
+* `./sources/infra/gcp/cloudbuild.yaml` — [NFR-004]
+* `./sources/infra/gcp/artifact-registry.tf` — [NFR-005]
+* `./sources/docs/architecture/01-system-overview.md` — [DOC-001]
+* `./sources/docs/architecture/02-c4-context.md` — [DOC-001]
+* `./sources/docs/architecture/03-c4-container.md` — [DOC-001]
+* `./sources/docs/architecture/04-microservices-decomposition.md` — [DOC-001]
+* `./sources/docs/api/openapi.yaml` — [DOC-001], [ARC-009]
+* `./sources/docs/database/01-schema-overview.md` — [DOC-001]
+* `./sources/docs/database/02-erd-diagram.md` — [DOC-001]
+* `./sources/docs/devops/01-terraform-deployment.md` — [DOC-001]
+* `./sources/docs/devops/02-gke-orchestration.md` — [DOC-001]
+* `./sources/docs/devops/03-cicd-pipeline.md` — [DOC-001]
+* `./sources/docs/compliance/01-gdpr-ccpa.md` — [DOC-001], [NFR-008]
+* `./sources/docs/compliance/02-security-baseline.md` — [DOC-001], [NFR-003]
+* `./sources/docs/operations/01-runbook.md` — [DOC-001], [NFR-006]
+* `./sources/docs/operations/02-disaster-recovery.md` — [DOC-001], [NFR-009]
+* `./sources/docs/seo/01-internationalization.md` — [DOC-001], [REQ-023]
+* `./sources/docs/seo/02-hreflang-implementation.md` — [DOC-001], [REQ-023]
+* `./sources/docs/frontend/01-responsive-design.md` — [DOC-001], [REQ-020]
 
-* **Doc**: Đóng vai trò Chuyên Viên Viết Tài Liệu Kỹ Thuật và Kiến Trúc Sư Hệ Thống Doanh Nghiệp. Chuyên về biên soạn tài liệu đặc tả kỹ thuật toàn diện, blueprint bảo mật, sổ tay vận hành, sơ đồ Mermaid mô tả luồng và quy trình khôi phục. Mỗi tệp tài liệu kỹ thuật được sinh ra phải được liệt kê dưới dạng thực thể đường dẫn tệp rõ ràng kết thúc bằng phần mở rộng `.md` và nằm hoàn toàn trong sơ đồ lưu trữ tập trung: `./sources/docs/`.
+* **RÀNG BUỘC BẮT BUỘC VỀ BỘ KHUNG NỀN TẢNG**:
+  - Tất cả tài sản mã nguồn ứng dụng trong giai đoạn 5 phải kế thừa bộ khung build descriptors đã được khởi tạo ở Giai đoạn 1, bao gồm `./sources/backend/pom.xml` (root parent) và 6 tệp con `./sources/backend/<service-name>/pom.xml` cho `user-service`, `center-service`, `course-service`, `attendance-service`, `report-service`, `dashboard-service`. Do giai đoạn 5 bổ sung 2 microservice mới (`report-service`, `dashboard-service`) nên cần mở rộng danh sách module trong `./sources/backend/pom.xml` parent.
+  - Tệp `./sources/frontend/package.json` và `./sources/frontend/tsconfig.json` đã được khởi tạo ở Giai đoạn 1, không tái tạo trong giai đoạn này.
+  - Toàn bộ mã nguồn mới phải tuân thủ quy ước gói `org.nlh4j.membershiphub.<service-name>` và được truy vết bằng các mã thẻ quy định trong ma trận phân bổ ngay từng dòng lệnh.
 
-*   **Reviewer**: Chịu trách nhiệm xác minh trình biên dịch, cổng phân tích tĩnh và vá lỗi phòng thủ. Chuyên về đánh giá chất lượng tài liệu, giải quyết lỗ hổng bảo mật OWASP, xử lý các blocker cổng chất lượng và xác nhận tuân thủ NFR.
+## 3. Chỉ Thị Chức Năng Cho Từng Sub-Agent
 
-*   **Docker**: Chuyên biệt về container hóa, kỹ thuật Dockerfile đa giai đoạn, tối ưu gói và đẩy tài sản ảnh ứng dụng đã xác minh lên Artifact Registry.
+* **Coder**: Đóng vai trò lập trình viên ứng dụng chính. Chịu trách nhiệm hiện thực hóa toàn bộ controller, service, DTO, exception handler trong package `controller`, `service`, `dto`, `exception` của 2 microservice mới `report-service` và `dashboard-service`. Song song đó, Coder cũng chịu trách nhiệm phát triển tầng frontend Next.js tại `./sources/frontend/web-app/src/app/`, component điều hướng, layout, middleware i18n, sitemap. Bị cấm viết bộ kiểm thử, tài liệu hoặc cấu hình hạ tầng Docker/Terraform/GKE.
 
-*   **GCP**: Chuyên về tự động hóa đám mây trong Google Cloud Platform. Chịu trách nhiệm xây dựng kịch bản Terraform cung cấp VPC, IAM, Cloud SQL, cấu hình mã hóa at-rest, và tích hợp Secret Manager.
+* **Tester**: Đóng vai trò kiểm thử viên chính. Tạo bộ kiểm thử đơn vị JUnit 5 kết hợp Mockito cho `ReportController`, `AttendanceReportService`, `EnrollmentDashboardController`, `EnrollmentSummaryService`. Xây dựng bộ kiểm thử tích hợp sử dụng Testcontainers (PostgreSQL, Redis) cho microservice report và dashboard. Đối với frontend, tạo bộ kiểm thử Jest kết hợp React Testing Library cho `RoleNavMenu`, `middleware.ts`. Bị cấm sửa đổi mã nguồn sản phẩm.
 
-*   **GKE**: Chuyên về điều phối container sản xuất bên trong Google Kubernetes Engine. Chịu trách nhiệm xây dựng manifest triển khai Kubernetes, điều khiển định tuyến, cấu hình HPA, biểu đồ Helm và triển khai tải công việc microservice vào cụm GKE đang hoạt động.
+* **Doc**: Soạn thảo bộ tài liệu kiến trúc tổng thể tại `./sources/docs/` bao gồm: System Overview, sơ đồ C4 Context/Container, Microservices Decomposition, OpenAPI 3.1 tổng hợp, ERD database, Terraform deployment guide, GKE orchestration guide, CI/CD pipeline guide, GDPR/CCPA compliance, Security Baseline OWASP, runbook vận hành, Disaster Recovery plan, i18n/SEO implementation guide, Responsive design guide. Bị cấm viết mã nguồn sản phẩm.
 
-## 4. Định Nghĩa Hoàn Thành Giai Đoạn
+* **Reviewer**: Thực hiện rà soát chất lượng mã nguồn theo checklist OWASP Top 10, đánh giá tính đúng đắn của logic truy vấn báo cáo CSV với parameter binding, validation khoảng ngày, cache dashboard. Xác minh tính bảo mật của việc sử dụng JPQL parameter binding, validation input với `@Valid`, mã hóa PII. Phát hiện sớm các vấn đề race condition, memory leak trong streaming CSV, thread safety trong dashboard cache.
 
-Giai đoạn 5 được coi là hoàn thành khi đáp ứng đồng thời các tiêu chí định lượng sau: một trăm phần trăm danh mục kiểm soát OWASP Top 10 đã có biện pháp giảm thiểu rõ ràng ứng với từng mã kiến trúc ARC-001 đến ARC-005 trong tài liệu blueprint; chính sách mã hóa TLS 1.3 cho đường truyền và AES-256 cho dữ liệu lưu trữ được đặc tả đầy đủ kèm chu kỳ xoay vòng khóa 90 ngày; quy trình GDPR/CCPA mô tả chi tiết endpoint xóa dữ liệu, xuất JSON và quản lý consent marketing; sáu Dockerfile đa giai đoạn được xác minh biên dịch thành công với kích thước ảnh cuối dưới 500MB theo NFR-005; bốn module Terraform `main.tf`, `vpc.tf`, `iam.tf`, `cloudsql.tf` cung cấp hạ tầng GCP đầy đủ với Cloud SQL PostgreSQL 15 HA, mã hóa CMEK, point-in-time recovery 24 giờ theo NFR-009; bốn manifest GKE triển khai Deployment, HPA với ngưỡng CPU > 70% hoặc độ trễ > 300ms, Ingress TLS 1.3 và Kustomization hỗ trợ overlay staging/production; Stackdriver alerts cấu hình đầy đủ cho uptime check 99,9% SLA, lỗi 5xx > 1%, độ trễ p95 > 400ms với log retention 365 ngày theo NFR-006; sổ tay khôi phục sau thảm họa mô tả chi tiết quy trình failover đa vùng với RTO 30 phút và RPO 5 phút; script kiểm thử tích hợp xác minh build Docker và triển khai GKE hoạt động đúng kỳ vọng; một trăm phần trăm mã TagID được phân bổ cho giai đoạn 5 phải được ánh xạ chính xác trong báo cáo đánh giá cuối giai đoạn.
+* **Docker**: Chuyên trách container hóa. Sinh 7 Dockerfile đa giai đoạn (multi-stage build) cho 6 microservice backend và frontend sử dụng base image Eclipse Temurin 21 JRE, đảm bảo kích thước image cuối cùng < 500MB, cấu hình HEALTHCHECK, USER non-root, ENTRYPOINT tối ưu GC.
+
+* **GCP**: Chuyên trách tự động hóa đám mây Google Cloud Platform. Sinh mã Terraform cung cấp VPC, GKE Autopilot cluster, Cloud SQL PostgreSQL 15 high availability, IAM service account với Workload Identity, KMS keyring mã hóa AES-256, Cloud Storage bucket cho backup. Cấu hình biến `project_id`, `region`, `db_password` qua Secret Manager.
+
+* **GKE**: Chuyên trách điều phối container production trong Google Kubernetes Engine. Sinh manifest Kubernetes cho 6 microservice backend và frontend với Deployment (replicas 2, resource requests/limits, liveness/readiness probe), Service ClusterIP, HPA scale khi CPU > 70% hoặc latency > 300ms, Ingress NGINX với TLS 1.3, NetworkPolicy hạn chế traffic giữa namespace.
+
+## 4. Định Nghĩa Hoàn Thành Giai Đoạn (DoD)
+
+Giai đoạn 5 được coi là hoàn thành khi đáp ứng đồng thời các tiêu chí định lượng sau: (1) Layout gốc Next.js tích hợp `next-intl` provider, component `RoleNavMenu` hiển thị menu theo 5 vai trò; (2) Middleware phát hiện locale từ cookie `NEXT_LOCALE` và fallback `Accept-Language` header, chuyển hướng đúng về `/[locale]/...`; (3) Thẻ `<html lang>`, thẻ `hreflang` cho 3 ngôn ngữ (en, vi, es), sitemap.xml đa ngôn ngữ được sinh đúng; (4) Microservice `report-service` với endpoint `GET /api/v1/reports/attendance` xuất CSV giới hạn khoảng ngày tối đa 30 ngày, từ chối khoảng ngày > 30 ngày với mã `INVALID_DATE_RANGE`; (5) Microservice `dashboard-service` với endpoint `GET /api/v1/dashboard/enrollment-summary` cache 15 phút thông qua Redis, trả về cards `totalStudents`, `activeCourses`, `upcomingSessions`; (6) View materialized `mv_enrollment_summary` được tạo với unique index `ux_mv_enrollment_summary_center`; (7) 7 Dockerfile đa giai đoạn cho 6 microservice backend và frontend, image cuối cùng < 500MB, HEALTHCHECK `/q/health/ready`; (8) Module Terraform cung cấp VPC, GKE Autopilot, Cloud SQL PostgreSQL, IAM, KMS, Cloud Storage bucket; (9) Manifest GKE cho 6 microservice backend với HPA scale khi CPU > 70% hoặc latency > 300ms, Ingress NGINX với TLS 1.3, NetworkPolicy hạn chế traffic; (10) Bộ tài liệu kiến trúc doanh nghiệp hoàn thiện tại `./sources/docs/` gồm System Overview, C4 Context/Container, Microservices Decomposition, OpenAPI 3.1, ERD, Terraform deployment, GKE orchestration, CI/CD, GDPR/CCPA, Security Baseline, runbook, Disaster Recovery, i18n/SEO, Responsive design; (11) 100% thẻ truy vết REQ-020, REQ-022, REQ-023, REQ-024, REQ-025, NFR-001 đến NFR-009, DOC-001 được ánh xạ đầy đủ vào mã nguồn, hạ tầng và tài liệu; (12) 100% bộ kiểm thử JUnit và Jest đạt trạng thái PASS với code coverage >= 80% cho các lớp controller, service và frontend module.
 
 ## 5. NHẬT KÝ THỰC THI KIẾN TRÚC THEO NGÀY
 
-### 🌤️ NGÀY 1: <!--DAY_HEADER_START-->THIẾT LẬP BẢO MẬT OWASP VÀ ĐẶC TẢ TUÂN THỦ GDPR/CCPA<!--DAY_HEADER_END-->
+### 🌤️ NGÀY 1: <!--DAY_HEADER_START-->KHỞI TẠO LAYOUT RESPONSIVE, ĐIỀU HƯỚNG THEO ROLE VÀ HẠ TẦNG I18N<!--DAY_HEADER_END-->
 
-#### 📝 NHIỆM VỤ PHỤ 1.1: Soạn thảo blueprint bảo mật và tuân thủ
-##### Tác Nhân Được Phân Công: Doc
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/security-compliance-blueprint.md
+#### 📝 NHIỆM VỤ PHỤ 1.1: Cấu hình layout gốc và điều hướng theo vai trò
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [NFR-003], [NFR-008]<!--END_TAGS-->
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/frontend/web-app/src/app/layout.tsx`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-020], [NFR-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh layout gốc của ứng dụng Next.js 14 với App Router tại đường dẫn `./sources/frontend/web-app/src/app/layout.tsx`. Tích hợp `next-intl` provider thông qua `NextIntlClientProvider`, `LocaleProvider` và cấu hình font Inter đa ngôn ngữ thông qua `next/font/google`. Liên kết `<RoleNavMenu />` để hiển thị menu điều hướng theo 5 role (Student, Teacher, Manager, Center Admin, System Admin) thông qua prop `session.role` lấy từ server component thông qua `getServerSession()`. Đảm bảo semantic HTML với `<html lang={locale}>` tuân thủ [REQ-023] và [NFR-007]. Cấu hình metadata API để sinh thẻ `og:locale`, `og:title`, `og:description` tự động.
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Soạn thảo tài liệu blueprint bảo mật cấp doanh nghiệp tại `./sources/docs/security-compliance-blueprint.md`. Tài liệu phải mô tả chi tiết chiến lược phòng chống SQL Injection thông qua `PreparedStatement` và JPA parameterized query cho toàn bộ vi dịch vụ Quarkus; biện pháp chống XSS thông qua `DOMPurify` cho dữ liệu đầu vào từ biểu mẫu web, sử dụng `dangerouslySetInnerHTML` kết hợp pipeline làm sạch; cơ chế bảo vệ CSRF bằng double submit cookie token cho mọi endpoint thay đổi trạng thái. Đặc tả chính sách mã hóa TLS 1.3 cho mọi kênh truyền dữ liệu, mã hóa at-rest AES-256 cho Cloud SQL PostgreSQL và Cloud Storage, chu kỳ xoay vòng khóa 90 ngày. Tích hợp bộ tiêu chuẩn OWASP Top 10 vào checklist CI/CD cho từng mã ARC-001 đến ARC-005. Bổ sung phần tuân thủ GDPR/CCPA mô tả quy trình xóa dữ liệu theo yêu cầu chủ thể, xuất JSON dữ liệu cá nhân, cơ chế thu hồi consent marketing, lưu giữ nhật ký đồng ý 1 năm. Đảm bảo tài liệu chứa sơ đồ Mermaid mô tả luồng phát hiện và phản ứng sự cố bảo mật, ma trận phân loại dữ liệu nhạy cảm, và danh sách kiểm tra kiểm toán bảo mật cuối giai đoạn.
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 1.2: Kiểm tra đối chiếu blueprint bảo mật
-##### Tác Nhân Được Phân Công: Reviewer
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/security-compliance-blueprint.md
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục frontend layout
+```
+<!--END_DDL_MIGRATION-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005], [NFR-003], [NFR-008]<!--END_TAGS-->
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Thực hiện rà soát toàn diện tài liệu blueprint bảo mật tại `./sources/docs/security-compliance-blueprint.md`. Xác nhận 100% danh mục kiểm soát OWASP Top 10 đã có biện pháp giảm thiểu rõ ràng ứng với từng mã kiến trúc ARC-001 đến ARC-005. Xác nhận cấu hình TLS 1.3, AES-256 và chính sách khóa đã phù hợp với NFR-003. Đánh giá tính đầy đủ của quy trình GDPR/CCPA theo NFR-008 bao gồm endpoint xóa dữ liệu, xuất JSON và quản lý consent. Phát hành nhận xét và danh sách điều chỉnh nếu phát hiện khoảng trống. Đảm bảo sơ đồ Mermaid phản ứng sự cố phải mô tả rõ ràng các bước phát hiện, phân loại mức độ nghiêm trọng, kênh thông báo và thời gian phản ứng tối đa.
+<!--START_API_CONTRACT-->
+```json
+{
+  "component": "RoleNavMenu",
+  "props": {
+    "locale": "string",
+    "session": {
+      "userId": "uuid",
+      "role": "STUDENT | TEACHER | MANAGER | CENTER_ADMIN | SYSTEM_ADMIN",
+      "centerId": "uuid?"
+    },
+    "menuItems": [
+      { "labelKey": "nav.dashboard", "href": "/dashboard", "roles": ["STUDENT", "TEACHER", "MANAGER", "CENTER_ADMIN", "SYSTEM_ADMIN"] },
+      { "labelKey": "nav.courses", "href": "/courses", "roles": ["STUDENT", "TEACHER", "MANAGER", "CENTER_ADMIN", "SYSTEM_ADMIN"] },
+      { "labelKey": "nav.attendanceReport", "href": "/attendance-report", "roles": ["CENTER_ADMIN", "SYSTEM_ADMIN"] }
+    ]
+  }
+}
+```
+<!--END_API_CONTRACT-->
 
-### 🌤️ NGÀY 2: <!--DAY_HEADER_START-->CONTAINER HÓA DOCKER ĐA GIAI ĐOẠN VÀ ĐẨY ARTIFACT REGISTRY<!--DAY_HEADER_END-->
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 2.1: Xây dựng Dockerfile đa giai đoạn cho user-service
-##### Tác Nhân Được Phân Công: Docker
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/infra/docker/user-service.Dockerfile
+<!--START_EXC_HANDLER-->
+```typescript
+// Hạn chế quyền truy cập menu theo role, fallback về dashboard nếu role không khớp
+export function resolveMenuForRole(items: MenuItem[], role: Role): MenuItem[] {
+  return items.filter((item) => item.roles.includes(role));
+}
+```
+<!--END_EXC_HANDLER-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
+#### 📝 NHIỆM VỤ PHỤ 1.2: Kiểm thử đơn vị layout và menu điều hướng
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo Dockerfile đa giai đoạn cho `user-service` tại `./sources/infra/docker/user-service.Dockerfile`. Stage build sử dụng `eclipse-temurin:21-jdk-jammy` chạy Maven wrapper với cache layer; stage runtime sử dụng `eclipse-temurin:21-jre-jammy` Alpine để giữ kích thước ảnh cuối dưới 500MB theo NFR-005. Tích hợp non-root user UID 1001, healthcheck gọi `/health/live`, label OCI đầy đủ (org.opencontainers.image.title, org.opencontainers.image.version, org.opencontainers.image.source) và ARG cho phiên bản JDK. Thực thi kiểm thử cục bộ `docker build` đảm bảo biên dịch sạch, sau đó đẩy image lên Artifact Registry region `asia-southeast1` với tag `user-service:1.0.0-rc.1`.
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/frontend/web-app/src/test/layout-role-menu.spec.tsx
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-020], [NFR-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Biên soạn bộ kiểm thử React Testing Library tại đường dẫn `./sources/frontend/web-app/src/test/layout-role-menu.spec.tsx` cho `RoleNavMenu` xác nhận danh sách menu hiển thị đúng theo từng role (Student thấy 3 menu items, Center Admin thấy 6 menu items), locale switch cập nhật nhãn thông qua `next-intl`, và thuộc tính `lang` trên thẻ `<html>` phản ánh locale hiện tại. Tích hợp snapshot test cho layout gốc. Mock `getServerSession()` trả về session với role tương ứng.
 
-#### 📝 NHIỆM VỤ PHỤ 2.2: Xây dựng Dockerfile cho center-service
-##### Tác Nhân Được Phân Công: Docker
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/infra/docker/center-service.Dockerfile
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục kiểm thử frontend
+```
+<!--END_DDL_MIGRATION-->
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo Dockerfile đa giai đoạn cho `center-service` tại `./sources/infra/docker/center-service.Dockerfile` đối chiếu kích thước ảnh cuối dưới 500MB theo NFR-005. Đảm bảo stage build sử dụng Maven với cache layer, stage runtime sử dụng JRE Alpine, thêm probe `/health/ready` và cấu hình ENTRYPOINT chạy ứng dụng Quarkus với JVM ergonomics (`-XX:MaxRAMPercentage=75.0`, `-XX:+UseG1GC`). Đẩy image lên Artifact Registry với tag `center-service:1.0.0-rc.1`.
+#### 📝 NHIỆM VỤ PHỤ 1.3: Đánh giá mã layout và đề xuất cải tiến
 
-#### 📝 NHIỆM VỤ PHỤ 2.3: Xây dựng Dockerfile cho course-service
-##### Tác Nhân Được Phân Công: Docker
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/infra/docker/course-service.Dockerfile
+##### Sub-Agent được phân công: Reviewer
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/frontend/web-app/src/app/layout.tsx`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-020], [NFR-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Reviewer đánh giá cấu trúc layout gốc tại đường dẫn `./sources/frontend/web-app/src/app/layout.tsx` và component `RoleNavMenu` tại `./sources/frontend/web-app/src/components/navigation/RoleNavMenu.tsx`: xác nhận tách biệt server/client component đúng chuẩn Next.js App Router, kiểm tra SEO meta tags (title, description, og:*), phân tích khả năng mở rộng khi thêm role mới, đề xuất lazy-load icon và giảm re-render không cần thiết. Ghi nhận phát hiện vào biên bản review để Coder xử lý. Kiểm tra tuân thủ OWASP A05 Security Misconfiguration thông qua header CSP.
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo Dockerfile đa giai đoạn cho `course-service` tại `./sources/infra/docker/course-service.Dockerfile` đảm bảo tổng kích thước ảnh cuối dưới 500MB theo NFR-005. Bổ sung ARG cho cấu hình Quarkus profile (`quarkus.profile=prod`), ENV cho JWT issuer (`JWT_ISSUER`), tích hợp OpenTelemetry agent nhằm phục vụ giám sát. Sử dụng multi-stage với layer copy riêng cho dependencies Maven để tận dụng cache Docker. Đẩy image lên Artifact Registry với tag `course-service:1.0.0-rc.1`.
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục review layout
+```
+<!--END_DDL_MIGRATION-->
 
-#### 📝 NHIỆM VỤ PHỤ 2.4: Xây dựng Dockerfile cho attendance-service
-##### Tác Nhân Được Phân Công: Docker
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/infra/docker/attendance-service.Dockerfile
+#### 📝 NHIỆM VỤ PHỤ 1.4: Biên soạn tài liệu thiết kế responsive
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/frontend/01-responsive-design.md`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[DOC-001], [REQ-020]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Soạn thảo tài liệu kiến trúc frontend responsive tại đường dẫn `./sources/docs/frontend/01-responsive-design.md` gồm: nguyên tắc Mobile-First, bảng breakpoint (sm/md/lg/xl), cấu trúc NativeWind tokens, danh sách component dùng chung, hướng dẫn kiểm thử trên thiết bị thật. Đính kèm sơ đồ Mermaid phân cấp layout và mô tả luồng điều hướng theo role. Tài liệu phải chứa checklist tuân thủ WCAG 2.1 AA cho accessibility.
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo Dockerfile đa giai đoạn cho `attendance-service` tại `./sources/infra/docker/attendance-service.Dockerfile` đảm bảo kích thước ảnh cuối dưới 500MB theo NFR-005. Tối ưu build với `--no-transfer-progress`, copy chỉ artifact JAR sau giai đoạn package, expose cổng 8080 và cấu hình healthcheck gọi `/health/ready`. Tích hợp ENV cho Kafka bootstrap servers và database connection string. Đẩy image lên Artifact Registry với tag `attendance-service:1.0.0-rc.1`.
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 2.5: Xây dựng Dockerfile cho notification-service và reporting-service
-##### Tác Nhân Được Phân Công: Docker
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/infra/docker/notification-service.Dockerfile
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục tài liệu frontend
+```
+<!--END_DDL_MIGRATION-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
+### 🌤️ NGÀY 2: <!--DAY_HEADER_START-->TÍCH HỢP NEXT-INTL, MIDDLEWARE PHÁT HIỆN NGÔN NGỮ VÀ HỖ TRỢ SEO ĐA NGÔN NGỮ<!--DAY_HEADER_END-->
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo Dockerfile đa giai đoạn cho `notification-service` tại `./sources/infra/docker/notification-service.Dockerfile` đảm bảo kích thước ảnh cuối dưới 500MB theo NFR-005, đồng thời tạo Dockerfile tương ứng cho `reporting-service` tại `./sources/infra/docker/reporting-service.Dockerfile` trong cùng nhiệm vụ phụ. Tích hợp biến môi trường cho cấu hình FCM/APNs/Zalo (`FCM_SERVER_KEY`, `APNS_KEY_ID`, `ZALO_OA_ACCESS_TOKEN`), giữ ảnh runtime ở JRE Alpine, đẩy cả hai image lên Artifact Registry với tag semantic `notification-service:1.0.0-rc.1` và `reporting-service:1.0.0-rc.1`.
+#### 📝 NHIỆM VỤ PHỤ 2.1: Triển khai middleware phát hiện ngôn ngữ và i18n
 
-#### 📝 NHIỆM VỤ PHỤ 2.6: Kiểm thử tích hợp quy trình build Docker đa dịch vụ
-##### Tác Nhân Được Phân Công: Tester
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/frontend/web-app/middleware.ts`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-022], [REQ-023], [NFR-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Cài đặt Next.js middleware tại đường dẫn `./sources/frontend/web-app/middleware.ts` kiểm tra cookie `NEXT_LOCALE`; nếu không có, đọc `Accept-Language` header và chuyển hướng sang đường dẫn `/[locale]/...` phù hợp với một trong 3 ngôn ngữ được hỗ trợ (en, vi, es). Tích hợp danh sách locale cho phép và cơ chế ghi nhận lựa chọn ngôn ngữ của người dùng vào cookie với thời hạn 1 năm. Cấu hình `matcher` loại trừ các đường dẫn API, `_next`, file tĩnh.
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục middleware ngôn ngữ
+```
+<!--END_DDL_MIGRATION-->
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
+```typescript
+// Cấu hình matcher cho middleware
+export const config = {
+  matcher: ['/((?!api|_next|.*\\..*).*)']
+};
+```
+<!--END_API_CONTRACT-->
+
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
+
+<!--START_EXC_HANDLER-->
+```typescript
+// Xử lý locale không hợp lệ: fallback về 'en' mặc định
+const SUPPORTED_LOCALES = ['en', 'vi', 'es'] as const;
+type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+
+export function isSupportedLocale(value: string): value is SupportedLocale {
+  return (SUPPORTED_LOCALES as readonly string[]).includes(value);
+}
+```
+<!--END_EXC_HANDLER-->
+
+#### 📝 NHIỆM VỤ PHỤ 2.2: Kiểm thử middleware và i18n
+
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/frontend/web-app/src/test/middleware-i18n.spec.ts
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-022], [REQ-023], [NFR-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo bộ kiểm thử tích hợp tại đường dẫn `./sources/frontend/web-app/src/test/middleware-i18n.spec.ts` với Jest + msw mô phỏng header `Accept-Language` đa dạng (en-US, vi-VN, es-ES) và cookie `NEXT_LOCALE`. Xác nhận middleware chuyển hướng đúng URL `/vi/courses`, `/es/centers`, ghi nhận cookie khi người dùng đổi ngôn ngữ, và fallback về locale mặc định `en` khi giá trị không được hỗ trợ (ví dụ: `fr-FR`).
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục kiểm thử middleware
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 2.3: Đánh giá cơ chế i18n và SEO
+
+##### Sub-Agent được phân công: Reviewer
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/frontend/web-app/src/app/[locale]/layout.tsx`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-022], [REQ-023], [NFR-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Kiểm tra tệp `[locale]/layout.tsx` tại đường dẫn `./sources/frontend/web-app/src/app/[locale]/layout.tsx` đảm bảo: thẻ `<html lang>` chính xác theo locale, thẻ meta `og:locale`, thẻ `alternate` hreflang đầy đủ cho 3 ngôn ngữ (en, vi, es) cùng thẻ `x-default`, sơ đồ sitemap.xml đa ngôn ngữ tại `./sources/frontend/web-app/src/app/sitemap.ts`, robots.txt tại `./sources/frontend/web-app/src/app/robots.ts` không chặn crawler. Đánh giá hiệu năng tải bản dịch thông qua chunk splitting.
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục review i18n
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 2.4: Soạn thảo tài liệu SEO đa ngôn ngữ
+
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/seo/01-internationalization.md`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[DOC-001], [REQ-023]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Biên soạn tài liệu hướng dẫn triển khai SEO đa ngôn ngữ tại các đường dẫn `./sources/docs/seo/01-internationalization.md` và `./sources/docs/seo/02-hreflang-implementation.md` gồm: chiến lược URL (path-based locale), cấu hình `next-intl`, danh sách hreflang, hướng dẫn tạo sitemap đa ngôn ngữ, checklist Google Search Console. Bao gồm ví dụ thực tế cho locale `vi` với tiêu đề tiếng Việt và cấu trúc URL `/vi/khoa-hoc`.
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục tài liệu SEO
+```
+<!--END_DDL_MIGRATION-->
+
+### 🌤️ NGÀY 3: <!--DAY_HEADER_START-->XÂY DỰNG BÁO CÁO ĐIỂM DANH CSV VÀ DASHBOARD TUYỂN SINH<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 3.1: Triển khai microservice báo cáo và xuất CSV
+
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/controller/ReportController.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-024], [NFR-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh `ReportController` Quarkus REST tại đường dẫn `./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/controller/ReportController.java` với endpoint `GET /api/v1/reports/attendance?centerId&startDate&endDate`. Endpoint sử dụng `AttendanceReportService` để truy vấn dữ liệu từ PostgreSQL thông qua JPA, đóng gói CSV thông qua `CsvWriter` (OpenCSV) với streaming để tránh OOM. Giới hạn khoảng ngày tối đa 30 ngày và phát sinh `InvalidDateRangeException` nếu vi phạm. Phản hồi `text/csv` với header `Content-Disposition: attachment; filename="attendance.csv"`. Annotation `@RolesAllowed({"CENTER_ADMIN", "SYSTEM_ADMIN"})` đảm bảo phân quyền.
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Bổ sung chỉ mục phục vụ truy vấn báo cáo
+CREATE INDEX IF NOT EXISTS ix_attendance_center_date
+    ON attendance (course_id, attendance_date);
+CREATE INDEX IF NOT EXISTS ix_enrollments_course_student
+    ON enrollments (course_id, student_id);
+
+-- View materialized tổng hợp dữ liệu báo cáo
+CREATE MATERIALIZED VIEW IF NOT EXISTS mv_enrollment_summary AS
+SELECT
+    c.center_id        AS center_id,
+    c.name             AS center_name,
+    COUNT(DISTINCT e.student_id) FILTER (WHERE e.enrollment_id IS NOT NULL) AS total_students,
+    COUNT(DISTINCT co.course_id) FILTER (WHERE co.end_date >= CURRENT_DATE) AS active_courses,
+    COUNT(DISTINCT co.course_id) FILTER (
+        WHERE co.start_date BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '7 days')
+    ) AS upcoming_sessions
+FROM centers c
+LEFT JOIN courses co ON co.center_id = c.center_id
+LEFT JOIN enrollments e ON e.course_id = co.course_id
+GROUP BY c.center_id, c.name;
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_mv_enrollment_summary_center
+    ON mv_enrollment_summary (center_id);
+
+CREATE INDEX IF NOT EXISTS ix_mv_enrollment_summary_active
+    ON mv_enrollment_summary (active_courses);
+```
+<!--END_DDL_MIGRATION-->
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
+```json
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Membership Hub - Reporting API",
+    "version": "5.0.0"
+  },
+  "paths": {
+    "/api/v1/reports/attendance": {
+      "get": {
+        "summary": "Xuất báo cáo điểm danh CSV theo trung tâm và khoảng ngày",
+        "operationId": "exportAttendanceReport",
+        "parameters": [
+          { "name": "centerId", "in": "query", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "startDate", "in": "query", "required": true, "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "required": true, "schema": { "type": "string", "format": "date" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Luồng CSV với các cột StudentName, CourseName, AttendanceDate, Status",
+            "content": { "text/csv": { "schema": { "type": "string" } } }
+          },
+          "400": { "description": "Khoảng ngày không hợp lệ hoặc vượt quá 30 ngày" }
+        }
+      }
+    },
+    "/api/v1/dashboard/enrollment-summary": {
+      "get": {
+        "summary": "Trả về số liệu tổng hợp tuyển sinh theo trung tâm",
+        "operationId": "getEnrollmentSummary",
+        "parameters": [
+          { "name": "centerId", "in": "query", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Số liệu dashboard",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalStudents": { "type": "integer" },
+                    "activeCourses": { "type": "integer" },
+                    "upcomingSessions": { "type": "integer" },
+                    "refreshedAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+<!--END_API_CONTRACT-->
+
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
+
+<!--START_EXC_HANDLER-->
+```java
+// [EXC-004] ràng buộc khoảng ngày báo cáo tối đa 30 ngày
+package org.nlh4j.membershiphub.reportservice.exception;
+
+public class InvalidDateRangeException extends RuntimeException {
+    public InvalidDateRangeException(String message) {
+        super(message);
+    }
+}
+```
+<!--END_EXC_HANDLER-->
+
+#### 📝 NHIỆM VỤ PHỤ 3.2: Kiểm thử tích hợp microservice báo cáo
+
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/backend/report-service/src/test/java/org/nlh4j/membershiphub/reportservice/ReportServicesTestSuite.java
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-024], [NFR-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Biên soạn bộ kiểm thử tích hợp tại đường dẫn `./sources/backend/report-service/src/test/java/org/nlh4j/membershiphub/reportservice/ReportServicesTestSuite.java` với Quarkus Test + RestAssured, fixture PostgreSQL Testcontainers, mô phỏng dữ liệu attendance cho 7 ngày. Xác nhận endpoint trả về CSV đúng cột (StudentName, CourseName, AttendanceDate, Status), từ chối khoảng ngày > 30 ngày với mã `INVALID_DATE_RANGE`, và xử lý truy vấn trong vòng 200ms. Mock Redis cache cho dashboard service với TTL 900 giây.
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục kiểm thử báo cáo
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 3.3: Đánh giá microservice báo cáo
+
+##### Sub-Agent được phân công: Reviewer
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/service/AttendanceReportService.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-024], [NFR-001], [NFR-003]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Kiểm tra mã truy vấn SQL tại đường dẫn `./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/service/AttendanceReportService.java` có sử dụng parameter binding, tránh SQL injection theo OWASP A03, có tận dụng index `(course_id, attendance_date)`. Đánh giá logic streaming CSV để tránh OOM với dữ liệu lớn. Xác nhận tường lửa cho phép chỉ Center Admin truy cập tài nguyên. Kiểm tra mã hóa PII thông qua PiiMaskingSerializer cho trường tax_id và email.
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục review báo cáo
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 3.4: Soạn thảo tài liệu báo cáo và dashboard
+
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/operations/01-runbook.md`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[DOC-001], [REQ-024], [REQ-025]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Bổ sung runbook vận hành tại đường dẫn `./sources/docs/operations/01-runbook.md` cho dashboard và báo cáo: quy trình xuất CSV, xử lý sự cố timeout truy vấn, hướng dẫn rebuild materialized view `REFRESH MATERIALIZED VIEW CONCURRENTLY mv_enrollment_summary`, danh sách chỉ số giám sát (latency P95, row count, cache hit ratio). Cập nhật sơ đồ luồng dữ liệu từ PostgreSQL đến dashboard với sơ đồ Mermaid.
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục tài liệu runbook
+```
+<!--END_DDL_MIGRATION-->
+
+### 🌤️ NGÀY 4: <!--DAY_HEADER_START-->HẠ TẦNG DOCKER ĐA GIAI ĐOẠN VÀ ĐẨY IMAGE LÊN REGISTRY<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 4.1: Sinh Dockerfile đa giai đoạn cho microservices Quarkus
+
+##### Sub-Agent được phân công: Docker
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/infra/docker/user-service.Dockerfile`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005], [NFR-004]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Biên soạn 7 Dockerfile đa giai đoạn (multi-stage build) cho 6 microservice backend (`user-service`, `center-service`, `course-service`, `attendance-service`, `report-service`, `dashboard-service`) tại đường dẫn `./sources/infra/docker/<service-name>.Dockerfile` và frontend tại `./sources/infra/docker/frontend.Dockerfile`. Sử dụng base image giai đoạn `builder` là `maven:3.9-eclipse-temurin-21` chạy `./mvnw package -DskipTests`, giai đoạn `runtime` sử dụng `eclipse-temurin:21-jre-jammy` (image cơ sở <200MB), sao chép JAR đã build, cấu hình `USER 1000` (không chạy với root), `HEALTHCHECK` dùng `curl -fsS http://localhost:8080/q/health/ready || exit 1`, và thiết lập `JAVA_OPTS` để tối ưu GC với `-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0`. Kích thước image cuối cùng phải <500MB tuân thủ [NFR-005]. Sử dụng `.dockerignore` loại trừ `target/`, `.git/`, `node_modules/`.
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục Dockerfile
+```
+<!--END_DDL_MIGRATION-->
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
+```dockerfile
+# Stage 1: build
+FROM maven:3.9-eclipse-temurin-21 AS builder
+WORKDIR /build
+COPY ./sources/backend ./sources/backend
+RUN cd ./sources/backend/user-service && mvn -B -q -DskipTests package
+
+# Stage 2: runtime
+FROM eclipse-temurin:21-jre-jammy
+RUN useradd -r -u 1000 -g root appuser
+WORKDIR /app
+COPY --from=builder /build/sources/backend/user-service/target/quarkus-app/ /app/
+USER 1000
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -fsS http://localhost:8080/q/health/ready || exit 1
+ENTRYPOINT ["java","-XX:+UseContainerSupport","-XX:MaxRAMPercentage=75.0","-jar","/app/quarkus-run.jar"]
+```
+<!--END_API_CONTRACT-->
+
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
+
+<!--START_EXC_HANDLER-->
+```dockerfile
+# Hạn chế quyền và đảm bảo container chạy với UID không phải root
+ONBUILD USER 1000
+```
+<!--END_EXC_HANDLER-->
+
+#### 📝 NHIỆM VỤ PHỤ 4.2: Kiểm thử tích hợp build và push Docker image
+
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
 * **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/infra/test/maven-build-integration.sh
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005], [NFR-004]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo script tích hợp shell `maven-build-integration.sh` tại đường dẫn `./sources/infra/test/maven-build-integration.sh` gọi `docker build` cho từng microservice với tag `membershiphub-<service>:v5.0.0`, chạy `docker image inspect` kiểm tra kích thước dưới 500MB, `docker run --rm` health check. Kết hợp `trivy image` quét lỗ hổng bảo mật cơ bản theo NFR-003. Verify container chạy với UID 1000 không phải root.
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-005]<!--END_TAGS-->
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo script tại `./sources/infra/test/maven-build-integration.sh` thực thi `docker build` cho toàn bộ sáu Dockerfile, kiểm tra exit code, đo dung lượng ảnh tạo ra và xác nhận mỗi ảnh đều có kích thước dưới 500MB theo NFR-005. Script phải dừng ngay khi phát hiện ảnh vượt ngưỡng, đồng thời tự động đẩy kết quả vào pipeline log để phục vụ audit. Bổ sung bước `docker inspect` xác nhận label OCI, non-root user và cấu hình healthcheck tồn tại.
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục kiểm thử Docker build
+```
+<!--END_DDL_MIGRATION-->
 
-### 🌤️ NGÀY 3: <!--DAY_HEADER_START-->CUNG CẤP HẠ TẦNG GCP, ĐIỀU PHỐI GKE VÀ GIÁM SÁT STACKDRIVER<!--DAY_HEADER_END-->
+#### 📝 NHIỆM VỤ PHỤ 4.3: Soạn thảo tài liệu triển khai container
 
-#### 📝 NHIỆM VỤ PHỤ 3.1: Kịch bản Terraform cho VPC, IAM và cơ sở dữ liệu
-##### Tác Nhân Được Phân Công: GCP
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/infra/terraform/main.tf
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/devops/01-terraform-deployment.md`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[DOC-001], [NFR-005]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Bổ sung tài liệu quy trình build và push container tại đường dẫn `./sources/docs/devops/01-terraform-deployment.md`: hướng dẫn `docker buildx` multi-arch (linux/amd64, linux/arm64), chiến lược tag immutable (sử dụng git SHA), cấu hình Artifact Registry, tích hợp Cloud Build thông qua `./sources/infra/gcp/cloudbuild.yaml`. Mô tả biện pháp rà soát bảo mật image với Trivy và quy trình rollback khi image lỗi.
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-003], [NFR-004], [NFR-008]<!--END_TAGS-->
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Khởi tạo module Terraform `main.tf` tại `./sources/infra/terraform/main.tf` liên kết các module con `vpc.tf`, `iam.tf`, `cloudsql.tf` để cung cấp hạ tầng GCP. Bật API `compute.googleapis.com`, `sqladmin.googleapis.com`, `container.googleapis.com`, `iam.googleapis.com`, `monitoring.googleapis.com` thông qua `google_project_service`. Định nghĩa provider `google` với region `asia-southeast1` và biến đầu vào cho project ID, môi trường, và tags chi phí. Tài liệu phải thể hiện rõ chiến lược multi-AZ, gắn nhãn tài nguyên tuân thủ chính sách FinOps và ghi chú hỗ trợ failover NFR-002.
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục tài liệu container
+```
+<!--END_DDL_MIGRATION-->
 
-#### 📝 NHIỆM VỤ PHỤ 3.2: Định nghĩa VPC và IAM an toàn
-##### Tác Nhân Được Phân Công: GCP
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/infra/terraform/vpc.tf
+### 🌤️ NGÀY 5: <!--DAY_HEADER_START-->CUNG CẤP HẠ TẦNG GCP VỚI TERRAFORM VÀ TRIỂN KHAI GKE<!--DAY_HEADER_END-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-003]<!--END_TAGS-->
+#### 📝 NHIỆM VỤ PHỤ 5.1: Sinh mã Terraform cho VPC, GKE, Cloud SQL, IAM, KMS
 
-* **Hng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo module `vpc.tf` tại `./sources/infra/terraform/vpc.tf` cung cấp mạng VPC chế độ tùy chỉnh với dải CIDR `10.20.0.0/16`, subnet cho GKE và Cloud SQL trên hai zone, firewall cho phép truy cập nội bộ giữa các vi dịch vụ và chặn SSH từ internet theo NFR-002. Bổ sung `google_compute_router` và `google_compute_nat` để cấp Internet egress cho node GKE. Định nghĩa Cloud NAT cho phép egress ổn định, đồng thời giới hạn truy cập API từ internet thông qua Private Google Access.
+##### Sub-Agent được phân công: GCP
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/infra/terraform/main.tf`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-003], [NFR-004], [NFR-008], [NFR-009]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh module Terraform tại đường dẫn `./sources/infra/terraform/main.tf` cung cấp: VPC với subnet riêng (`10.10.0.0/16`) thông qua `./sources/infra/terraform/vpc.tf`, GKE Autopilot cluster tại `./sources/infra/terraform/gke.tf` với Workload Identity, Cloud SQL PostgreSQL 15 với high availability tại `./sources/infra/terraform/cloudsql.tf`, IAM service account cho workload identity tại `./sources/infra/terraform/iam.tf`, KMS keyring mã hóa AES-256 tại `./sources/infra/terraform/kms.tf`, Cloud Storage bucket cho backup tại `./sources/infra/terraform/storage.tf`. Cấu hình biến `project_id`, `region`, `db_password` qua Secret Manager. Bật Private Service Access và Cloud Logging.
 
-#### 📝 NHIỆM VỤ PHỤ 3.3: Cấu hình IAM tối thiểu theo nguyên tắc đặc quyền tối thiểu
-##### Tác Nhân Được Phân Công: GCP
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/infra/terraform/iam.tf
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-003], [NFR-008]<!--END_TAGS-->
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục Terraform GCP
+```
+<!--END_DDL_MIGRATION-->
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo module `iam.tf` tại `./sources/infra/terraform/iam.tf` cấp service account riêng cho mỗi vi dịch vụ với quyền hạn chế theo nguyên tắc least privilege, role `roles/cloudsql.client` cho backend, `roles/artifactregistry.reader` cho pull image, `roles/monitoring.metricWriter` cho xuất chỉ số. Bổ sung IAM binding cho phép Cloud Build triển khai lên GKE và kích hoạt Workload Identity theo NFR-003, NFR-008.
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 3.4: Khởi tạo Cloud SQL PostgreSQL với mã hóa và sao lưu
-##### Tác Nhân Được Phân Công: GCP
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/infra/terraform/cloudsql.tf
+<!--START_API_CONTRACT-->
+```hcl
+# main.tf - điểm vào Terraform
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-001], [NFR-008], [NFR-009]<!--END_TAGS-->
+module "network" {
+  source     = "./vpc.tf"
+  project_id = var.project_id
+  region     = var.region
+}
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo module `cloudsql.tf` tại `./sources/infra/terraform/cloudsql.tf` cung cấp Cloud SQL PostgreSQL 15 HA với cờ `database_version = "POSTGRES_15"`, bật mã hóa at-rest bằng CMEK, cấu hình sao lưu tự động hằng ngày, point-in-time recovery lên tới 24 giờ, kích hoạt query insights và read replica cho workload báo cáo theo NFR-001, NFR-008, NFR-009. Định nghĩa `google_sql_user` cho từng vi dịch vụ, cấu hình `private_network` trỏ tới VPC đã tạo.
+module "gke" {
+  source          = "./gke.tf"
+  network_self_link = module.network.network_self_link
+  subnet_self_link  = module.network.subnet_self_link
+}
 
-#### 📝 NHIỆM VỤ PHỤ 3.5: Triển khai GKE Deployment, HPA và Ingress
-##### Tác Nhân Được Phân Công: GKE
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/infra/gke/deployment.yaml
+module "cloudsql" {
+  source       = "./cloudsql.tf"
+  network_self_link = module.network.network_self_link
+  kms_key      = module.kms.key_id
+}
+```
+<!--END_API_CONTRACT-->
 
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
+
+<!--START_EXC_HANDLER-->
+```hcl
+# Bảo vệ chống xoá nhầm database production
+lifecycle {
+  prevent_destroy = true
+}
+```
+<!--END_EXC_HANDLER-->
+
+#### 📝 NHIỆM VỤ PHỤ 5.2: Kiểm thử tích hợp cấu hình Terraform
+
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/infra/test/terraform-integration.sh
 * **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-004]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh script `terraform-integration.sh` tại đường dẫn `./sources/infra/test/terraform-integration.sh` chạy `terraform init -backend=false`, `terraform validate`, `terraform plan -out=tfplan` với mock provider. Tích hợp `tflint` và `checkov` quét cấu hình sai lệch so với baseline bảo mật. Verify các module VPC, GKE, Cloud SQL, IAM, KMS, Storage đều có resource được khai báo đầy đủ.
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo manifest `deployment.yaml` tại `./sources/infra/gke/deployment.yaml` cho cụm GKE Autopilot với ba replica khởi tạo cho mỗi vi dịch vụ, sử dụng image từ Artifact Registry, gắn service account riêng và secret cho kết nối Cloud SQL. Cấu hình readiness probe `/health/ready` và liveness probe `/health/live`, thiết lập resource request/limit theo ngưỡng NFR-001, đồng thời gắn nhãn topology cho Kustomize.
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 3.6: Cấu hình HPA, Ingress và Kustomization
-##### Tác Nhân Được Phân Công: GKE
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/infra/gke/hpa.yaml
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục kiểm thử Terraform
+```
+<!--END_DDL_MIGRATION-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-004]<!--END_TAGS-->
+#### 📝 NHIỆM VỤ PHỤ 5.3: Triển khai manifest GKE với HPA, Ingress, Network Policy
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo manifest `hpa.yaml` tại `./sources/infra/gke/hpa.yaml` định nghĩa HorizontalPodAutoscaler với ngưỡng CPU > 70% hoặc độ trễ yêu cầu > 300ms, tối thiểu 3 pod và tối đa 20 pod theo NFR-004. Tạo `ingress.yaml` tại `./sources/infra/gke/ingress.yaml` cho Cloud Load Balancer với TLS 1.3 và IP tĩnh. Tạo `kustomization.yaml` tại `./sources/infra/gke/kustomization.yaml` liệt kê toàn bộ deployment, service, HPA, ingress và secret, hỗ trợ overlay staging/production.
+##### Sub-Agent được phân công: GKE
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/infra/k8s/user-service/deployment.yaml`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-001], [NFR-002], [NFR-003], [NFR-004]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh manifest Kubernetes cho 6 microservice backend tại các đường dẫn `./sources/infra/k8s/<service-name>/deployment.yaml`, `./sources/infra/k8s/<service-name>/hpa.yaml`, `./sources/infra/k8s/<service-name>/service.yaml`. Mỗi Deployment cấu hình: replicas 2, resource requests (cpu 250m, memory 512Mi) và limits (cpu 1000m, memory 1Gi), liveness probe `/q/health/live`, readiness probe `/q/health/ready`, env từ ConfigMap và Secret. HPA với minReplicas 2, maxReplicas 10, scale khi CPU > 70% hoặc latency > 300ms. Ingress NGINX tại `./sources/infra/k8s/ingress.yaml` với TLS 1.3. NetworkPolicy tại `./sources/infra/k8s/network-policy.yaml` hạn chế traffic giữa namespace. Tích hợp PodDisruptionBudget đảm bảo availability.
 
-#### 📝 NHIỆM VỤ PHỤ 3.7: Cấu hình giám sát Stackdriver và chính sách lưu giữ log
-##### Tác Nhân Được Phân Công: GCP
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/infra/monitoring/stackdriver-alerts.yaml
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-006]<!--END_TAGS-->
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục manifest GKE
+```
+<!--END_DDL_MIGRATION-->
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo manifest `stackdriver-alerts.yaml` tại `./sources/infra/monitoring/stackdriver-alerts.yaml` định nghĩa cảnh báo uptime check 99,9% SLA, cảnh báo lỗi 5xx > 1% trong 5 phút, cảnh báo độ trễ p95 > 400ms theo NFR-002. Cấu hình log-based metric cho audit log, đồng thời tạo `log-retention.tf` tại `./sources/infra/monitoring/log-retention.tf` thiết lập Log Sink lưu trữ 365 ngày theo NFR-006. Tích hợp notification channel gửi email và Slack khi vi phạm SLA.
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 3.8: Kiểm thử tích hợp hạ tầng GKE và giám sát
-##### Tác Nhân Được Phân Công: Tester
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/infra/test/maven-build-integration.sh
+<!--START_API_CONTRACT-->
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: membership-hub
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: REGISTRY/user-service:v5.0.0
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            httpGet: { path: /q/health/live, port: 8080 }
+            initialDelaySeconds: 30
+          readinessProbe:
+            httpGet: { path: /q/health/ready, port: 8080 }
+            initialDelaySeconds: 15
+```
+<!--END_API_CONTRACT-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-002], [NFR-004], [NFR-006]<!--END_TAGS-->
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo script tích hợp mở rộng tại `./sources/infra/test/maven-build-integration.sh` để thực thi `kubectl apply -k` với Kustomize overlay staging, đợi rollout hoàn tất và xác nhận HPA đã đọc metric. Script phải kích hoạt tải giả lập nhằm xác nhận ngưỡng CPU > 70% kích hoạt scale-out theo NFR-004, đồng thời xác minh Stackdriver đã thu thập log cấu hình kiểm toán theo NFR-006. Báo cáo kết quả vào pipeline log.
+<!--START_EXC_HANDLER-->
+```yaml
+# HPA kích hoạt khi CPU > 70% hoặc latency > 300ms
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: user-service-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: user-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+```
+<!--END_EXC_HANDLER-->
 
-#### 📝 NHIỆM VỤ PHỤ 3.9: Soạn thảo sổ tay khôi phục sau thảm họa
-##### Tác Nhân Được Phân Công: Doc
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/disaster-recovery-runbook.md
+#### 📝 NHIỆM VỤ PHỤ 5.4: Kiểm thử tích hợp manifest GKE
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-006], [NFR-009]<!--END_TAGS-->
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/infra/test/gke-manifest-integration.sh
+* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-001], [NFR-002], [NFR-004]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo script `gke-manifest-integration.sh` tại đường dẫn `./sources/infra/test/gke-manifest-integration.sh` sử dụng `kubeconform` xác thực schema manifest, `kubectl --dry-run=server apply` trong cluster kind. Kiểm tra HPA, NetworkPolicy, Ingress khớp cấu hình mong đợi và không có quyền mở rộng ngoài namespace `membership-hub` cho phép. Verify `runAsNonRoot: true` cho mọi Pod.
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Soạn thảo sổ tay vận hành `disaster-recovery-runbook.md` tại `./sources/docs/disaster-recovery-runbook.md` mô tả quy trình failover đa vùng giữa `asia-southeast1` và `asia-east1`, danh sách kiểm tra RTO 30 phút và RPO 5 phút theo NFR-009. Tài liệu phải bao gồm kịch bản mất Cloud SQL, mất cluster GKE, mất Artifact Registry kèm câu lệnh Terraform/Pulumi khôi phục, quy trình xác minh toàn vẹn dữ liệu, và danh sách liên lạc khẩn cấp. Đồng thời mô tả quy trình trích xuất audit log 1 năm từ Stackdriver theo NFR-006.
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 3.10: Đánh giá sổ tay khôi phục và chiến lược failover
-##### Tác Nhân Được Phân Công: Reviewer
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/disaster-recovery-runbook.md
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục kiểm thử GKE
+```
+<!--END_DDL_MIGRATION-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[NFR-006], [NFR-009]<!--END_TAGS-->
+#### 📝 NHIỆM VỤ PHỤ 5.5: Hoàn thiện bộ tài liệu kiến trúc và vận hành
 
-* **Hướng Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Rà soát sổ tay `disaster-recovery-runbook.md` tại `./sources/docs/disaster-recovery-runbook.md`, xác nhận các chỉ số RTO/RPO đáp ứng NFR-009, danh sách kiểm tra đầy đủ cho cả ba kịch bản mất dịch vụ (mất Cloud SQL, mất cluster GKE, mất Artifact Registry), đồng thời đảm bảo cơ chế xuất audit log 1 năm theo NFR-006 đã rõ ràng. Đưa ra nhận xét và yêu cầu chỉnh sửa nếu phát hiện khoảng trống trong quy trình failover hoặc thiếu bước xác minh toàn vẹn dữ liệu sau khôi phục.
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/architecture/01-system-overview.md`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[DOC-001], [NFR-006], [NFR-009]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Hoàn thiện bộ tài liệu kiến trúc tổng thể tại các đường dẫn `./sources/docs/architecture/01-system-overview.md`, `./sources/docs/architecture/02-c4-context.md`, `./sources/docs/architecture/03-c4-container.md`, `./sources/docs/architecture/04-microservices-decomposition.md`, `./sources/docs/api/openapi.yaml`, `./sources/docs/database/01-schema-overview.md`, `./sources/docs/database/02-erd-diagram.md`, `./sources/docs/devops/01-terraform-deployment.md`, `./sources/docs/devops/02-gke-orchestration.md`, `./sources/docs/devops/03-cicd-pipeline.md`, `./sources/docs/compliance/01-gdpr-ccpa.md`, `./sources/docs/compliance/02-security-baseline.md`, `./sources/docs/operations/01-runbook.md`, `./sources/docs/operations/02-disaster-recovery.md`. Bao gồm sơ đồ Mermaid mô tả luồng triển khai từ CI/CD đến GKE. Tài liệu phải có chỉ mục liên kết chéo giữa các file và checklist triển khai cuối cùng.
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi lược đồ cơ sở dữ liệu cho hạng mục tài liệu tổng thể
+```
+<!--END_DDL_MIGRATION-->

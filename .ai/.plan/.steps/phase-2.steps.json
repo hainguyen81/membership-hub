@@ -1,8 +1,8 @@
 {
     "phase_id": 2,
-    "phase_name": "Xây Dựng Xác Thực, Phân Quyền RBAC Và Quản Lý Trung Tâm",
-    "phase_description": "Giai đoạn này tập trung kiến lập nền tảng bảo mật và quản trị nòng cốt của hệ thống Membership Hub, bao gồm toàn bộ luồng xác thực người dùng qua email mật khẩu và OAuth2 với Firebase, Google, Facebook kèm cấp phát JWT 15 phút và refresh token 7 ngày. Đồng thời, hệ thống phân quyền RBAC 5 cấp được thực thi thông qua bộ lọc bảo mật của Quarkus, đảm bảo phân tách quyền hạn chặt chẽ giữa System Admin, Center Admin, Manager, Teacher và Student. Module quản lý trung tâm cung cấp đầy đủ thao tác CRUD với cơ chế phát hiện và xử lý xung đột mã số thuế, hỗ trợ gán và thu hồi quyền Center Admin theo từng đơn vị. Bên cạnh đó, bộ tài liệu kiến trúc doanh nghiệp bao gồm blueprint tổng thể, ma trận phân quyền chi tiết và sổ tay vận hành được khởi tạo nhằm phục vụ công tác kiểm toán và bàn giao vận hành. Toàn bộ tài sản được truy vết bằng hệ thống thẻ TagID chuẩn doanh nghiệp, đảm bảo tính nhất quán và khả năng kiểm định chéo.",
-    "objectives": "Xây dựng hệ thống xác thực đa nhà cung cấp (email/password + OAuth2 với Firebase, Google, Facebook) kèm cấp phát JWT 15 phút và refresh token 7 ngày. Triển khai ma trận phân quyền RBAC 5 cấp thông qua bộ lọc bảo mật Quarkus. Xây dựng module quản lý trung tâm với đầy đủ thao tác CRUD, phát hiện xung đột mã số thuế, hỗ trợ gán/thu hồi quyền Center Admin. Tạo tập lệnh di trú V2_1 bổ sung dữ liệu hạt giống cho 5 vai trò RBAC và tài khoản System Admin mặc định. Hoàn thiện bộ tài liệu kiến trúc doanh nghiệp gồm blueprint tổng thể, ma trận phân quyền chi tiết và sổ tay vận hành. Đảm bảo 100% tài sản được gắn thẻ TagID theo chuẩn doanh nghiệp và tuân thủ nghiêm ngặt chuẩn OWASP Top 10.",
+    "phase_name": "Quản Lý Người Dùng, Trung Tâm Và Phân Quyền RBAC",
+    "phase_description": "Giai đoạn 2 tập trung xây dựng hai trụ cột nghiệp vụ nền tảng của hệ thống Membership Hub: quản lý danh tính người dùng và quản lý hồ sơ trung tâm. Giai đoạn này hiện thực hóa toàn bộ luồng đăng ký tài khoản mới với xác thực email/mật khẩu theo chuẩn OWASP, tích hợp xác thực xã hội qua OAuth2 (Firebase/Google/Facebook), cơ chế gán và thay đổi vai trò người dùng theo ma trận phân quyền 5 cấp độ (RBAC), đồng thời thiết lập REST API quản lý trung tâm với đầy đủ thao tác CRUD, kiểm tra trùng lặp TaxID, cơ chế gán/huỷ gán Center Admin với ranh giới phân quyền chặt chẽ",
+    "objectives": "Xây dựng luồng nghiệp vụ quản lý danh tính người dùng và quản lý hồ sơ trung tâm trên hai microservices user-service và center-service, bao gồm: đăng ký tài khoản mới (POST /api/v1/users/register), xác thực Social OAuth2 (POST /api/v1/auth/social), cập nhật vai trò theo ma trận RBAC 5 cấp độ (PUT /api/v1/users/{id}/role), REST API quản lý trung tâm (CRUD /api/v1/centers), gán/huỷ gán Center Admin (POST/DELETE /api/v1/centers/{id}/admins), danh sách khoá học (GET /api/v1/courses). Toàn bộ REST API phải tuân thủ OWASP Top 10, sử dụng JWT 15 phút, refresh token 7 ngày, Bean Validation 3.0, ghi audit log tập trung với thời gian lưu trữ tối thiểu 1 năm, sẵn sàng triển khai lên môi trường development cho giai đoạn 3 phát triển luồng khoá học và điểm danh QR.",
     "project_name": "membership-hub",
     "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
     "source_target_dir": "sources/",
@@ -10,60 +10,40 @@
         {
             "day": 1,
             "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
-            "context_section": "THIẾT LẬP MODULE XÁC THỰC VÀ MA TRẬN RBAC",
+            "context_section": "NGÀY 1: KHỞI TẠO AUTHCONTROLLER VÀ LUỒNG ĐĂNG KÝ NGƯỜI DÙNG",
             "sub_tasks": [
                 {
                     "id": "D1_ST1",
                     "agent": "Coder",
-                    "desc": "Tạo module Maven con user-service kế thừa từ pom.xml gốc, khai báo dependency Quarkus RESTEasy Reactive, Hibernate ORM Panache, JWT SmallRye, BCrypto. Đồng thời tạo entity JPA User.java ánh xạ bảng users với các trường user_id (UUID), email (varchar 255), password_hash (char 60), full_name (varchar 100), role_id (FK roles), provider (varchar 20, default 'local'), created_at, updated_at; định nghĩa quan hệ @ManyToOne(fetch=LAZY) tới Role với @JoinColumn name='role_id' và @ForeignKey name='fk_users_role'; áp dụng @Table uniqueConstraints @UniqueConstraint name='uq_users_email_provider' columnNames={'email','provider'}; thêm @PreUpdate cập nhật updatedAt=LocalDateTime.now(). Tuân thủ OWASP bằng prepared statement thông qua Panache, không nối chuỗi SQL thô. Package: org.nlh4j.membershiphub.userservice.",
+                    "desc": "Tạo tệp mã nguồn ./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/controller/AuthController.java hiện thực hóa lớp AuthController được đánh dấu @RestController với đường dẫn gốc /api/v1. Triển khai endpoint POST /api/v1/users/register nhận RegisterRequest thông qua @RequestBody với annotation @Valid để kích hoạt Bean Validation Jakarta. Ủy quyền xử lý cho AuthService.register(). Trả về ResponseEntity với mã HTTP 201 Created và AuthResponse chứa accessToken (JWT 15 phút), refreshToken (7 ngày), expiresIn (900 giây), userId (UUID) và role mặc định. Toàn bộ endpoint được bảo vệ bởi JwtAuthFilter cho phép truy cập công khai ngoại trừ chính nó. Tích hợp annotation @AuditLogged để ghi log kiểm toán phục vụ NFR-006 với action USER_REGISTERED. Đảm bảo xử lý ngoại lệ MethodArgumentNotValidException trả về HTTP 400 với mảng chi tiết lỗi từng trường, EmailAlreadyExistsException trả về HTTP 409 với mã EMAIL_ALREADY_EXISTS, tuân thủ chuẩn OWASP A03 Injection thông qua việc sử dụng JPQL parameter binding trong service layer.",
                     "targeted_tags": [
-                        "[ARC-000]",
                         "[REQ-001]",
-                        "[REQ-003]",
-                        "[DAT-001]"
+                        "[EXC-004]",
+                        "[ARC-006]"
                     ],
                     "components": [
-                        "./sources/backend/user-service/pom.xml",
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/User.java"
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/controller/AuthController.java"
                     ]
                 },
                 {
                     "id": "D1_ST2",
                     "agent": "Tester",
-                    "desc": "Xây dựng script kiểm thử tích hợp Maven build pipeline cho user-service xác nhận khả năng biên dịch cross-module, xác minh rằng entity User ánh xạ chính xác sang bảng users, kiểm tra các ràng buộc unique constraint (email, provider) được sinh ra đúng. Bao gồm test hồi quy cho việc load classpath và dependency resolution từ parent pom.xml. Sử dụng Testcontainers PostgreSQL 16 để xác minh schema thực tế.",
+                    "desc": "Tạo tệp kiểm thử đơn vị ./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/controller/AuthControllerTest.java sử dụng JUnit 5 kết hợp Mockito 5.7.0 và RestAssured 5.4.0. Tạo tối thiểu 6 test case: (1) register_withValidData_returns201AndJwtToken xác minh đăng ký thành công với email hợp lệ, mật khẩu mạnh, đồng ý điều khoản trả về HTTP 201 và response body chứa accessToken, refreshToken, userId, role; (2) register_withInvalidEmail_returns400 xác minh email sai định dạng invalid-email trả về HTTP 400 với mảng errors chứa trường email; (3) register_withWeakPassword_returns400 xác minh mật khẩu weak thiếu chữ hoa, ký tự đặc biệt trả về HTTP 400 với danh sách trường lỗi; (4) register_withoutAgreedToTerms_returns400 xác minh thiếu checkbox đồng ý điều khoản trả về HTTP 400; (5) register_withDuplicateEmail_returns409 xác minh email đã tồn tại trả về HTTP 409 với mã EMAIL_ALREADY_EXISTS; (6) register_withMissingRequiredField_returns400 xác minh thiếu trường bắt buộc trả về HTTP 400. Sử dụng @InjectMock để mock AuthService và AuditLogger.",
                     "targeted_tags": [
-                        "[ARC-000]",
                         "[REQ-001]",
-                        "[DAT-001]"
+                        "[EXC-004]"
                     ],
                     "components": [
-                        "INTEGRATION_SCOPE;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/UserServicesTestSuite.java"
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/controller/AuthController.java;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/controller/AuthControllerTest.java"
                     ]
                 },
                 {
                     "id": "D1_ST3",
-                    "agent": "Reviewer",
-                    "desc": "Rà soát entity User.java đảm bảo tuân thủ quy ước Java Enterprise (đặt tên trường camelCase nhưng ánh xạ snake_case qua @Column), xác nhận rằng trường passwordHash sử dụng char(60) cho bcrypt, đảm bảo lazy loading đúng cách cho quan hệ Role, xác minh annotation @PreUpdate cập nhật updatedAt tự động. Đề xuất chiến lược fix nếu phát hiện bottleneck truy vấn và đảm bảo không có SQL injection vector.",
+                    "agent": "Doc",
+                    "desc": "Cập nhật tệp tài liệu API tổng hợp ./sources/docs/api/user-center-contracts.md bổ sung mục mô tả endpoint POST /api/v1/users/register với các thành phần: mô tả nghiệp vụ chi tiết, bảng mã lỗi HTTP 400 (validation failed), 409 (EMAIL_ALREADY_EXISTS), schema request/response đầy đủ, ví dụ curl thực tế với payload JSON, ghi chú bảo mật (rate limiting 5 lần/phút), liên kết chéo đến ma trận RBAC. Đảm bảo tài liệu chứa sơ đồ Mermaid sequenceDiagram thể hiện luồng đăng ký từ client đến server và phản hồi JWT.",
                     "targeted_tags": [
                         "[REQ-001]",
-                        "[REQ-003]",
-                        "[DAT-001]"
-                    ],
-                    "components": [
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/User.java"
-                    ]
-                },
-                {
-                    "id": "D1_ST4",
-                    "agent": "Doc",
-                    "desc": "Soạn thảo tài liệu kỹ thuật doanh nghiệp mô tả chi tiết ma trận RBAC 5 cấp, bao gồm bảng ánh xạ quyền hạn theo từng vai trò (System Admin, Center Admin, Manager, Teacher, Student), sơ đồ luồng phân quyền dạng Mermaid sequenceDiagram và flowchart, các ràng buộc truy cập chéo trung tâm, và quy trình leo thang khi vi phạm. Tài liệu phải ở định dạng Markdown tiêu chuẩn với các tiêu đề phân cấp rõ ràng.",
-                    "targeted_tags": [
-                        "[DOC-001]",
-                        "[ARC-001]",
-                        "[ARC-002]",
-                        "[ARC-003]",
-                        "[ARC-004]",
-                        "[ARC-005]"
+                        "[DOC-001]"
                     ],
                     "components": [
                         "./sources/docs/architecture/ENTERPRISE_SYSTEM_ARCHITECTURE_BLUEPRINT.md",
@@ -71,7 +51,7 @@
                         "./sources/docs/architecture/CROSS_PLATFORM_INTEGRATED_BUSINESS_FLOWS.md",
                         "./sources/docs/security/ENTERPRISE_SECURITY_OWASP_COMPLIANCE_MATRIX.md",
                         "./sources/docs/security/CENTRAL_MONITORING_LOGGING_ARCHITECTURE.md",
-                        "./sources/docs/architecture/rbac-matrix.md"
+                        "./sources/docs/api/user-center-contracts.md"
                     ]
                 }
             ]
@@ -79,70 +59,44 @@
         {
             "day": 2,
             "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
-            "context_section": "XÂY DỰNG AUTHSERVICE, JWTTOKENPROVIDER VÀ CÁC DTO XÁC THỰC",
+            "context_section": "NGÀY 2: TÍCH HỢP XÁC THỰC SOCIAL OAUTH2 VÀ SOCIAL PROVIDER",
             "sub_tasks": [
                 {
                     "id": "D2_ST1",
                     "agent": "Coder",
-                    "desc": "Xây dựng AuthService.java (@ApplicationScoped) xử lý logic đăng ký, đăng nhập, làm mới token. Mã hóa mật khẩu bằng BCrypt cost factor 10, validate định dạng email (regex ^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2}$, max 255 ký tự) và độ mạnh mật khẩu (min 8 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt). Tạo JWT access token TTL 900 giây và refresh token TTL 604800 giây thông qua JwtTokenProvider thuật toán HS256 với secret key từ biến môi trường. Tích hợp PasswordEncoderService để so sánh hash an toàn. AuthResponse gồm accessToken, refreshToken, expiresIn=900, tokenType='Bearer', userId, role. Ném DuplicateEmailException khi email+provider đã tồn tại; InvalidCredentialsException khi credentials sai; WeakPasswordException khi mật khẩu yếu. Mọi truy vấn cơ sở dữ liệu sử dụng prepared statement thông qua Panache.",
+                    "desc": "Tạo tệp mã nguồn ./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/service/SocialAuthService.java hiện thực hóa lớp SocialAuthService được tiêm SocialTokenVerifier và UserSocialAccountRepository. Triển khai phương thức authenticateWithSocial(SocialAuthRequest request) thực hiện theo trình tự: (1) xác minh ID token với provider tương ứng thông qua SocialTokenVerifier.verify(), (2) trích xuất email và provider_user_id từ SocialUserInfo, (3) tìm kiếm bản ghi trong bảng UserSocialAccounts theo (provider, provider_user_id), (4) nếu chưa tồn tại thì tạo mới user với role mặc định Student (role_id=5) và liên kết social account, (5) cập nhật profile_picture_url nếu có, (6) gọi JwtTokenProvider.generateAccessToken() và generateRefreshToken() trả về AuthResponse với cờ isNewUser. Toàn bộ thao tác phải sử dụng @Transactional và ghi audit log thông qua AuthAuditLogger. Xử lý UnsupportedProviderException trả về HTTP 400 với mã UNSUPPORTED_PROVIDER, InvalidTokenException trả về HTTP 401 với mã INVALID_SOCIAL_TOKEN.",
                     "targeted_tags": [
-                        "[REQ-001]",
                         "[REQ-002]",
-                        "[ARC-006]"
+                        "[ARC-006]",
+                        "[NFR-003]"
                     ],
                     "components": [
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/dto/RegistrationRequest.java",
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/dto/LoginRequest.java",
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/dto/AuthResponse.java",
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/AuthService.java",
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/JwtTokenProvider.java",
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/PasswordEncoderService.java",
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/exception/InvalidCredentialsException.java",
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/exception/DuplicateEmailException.java",
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/exception/WeakPasswordException.java"
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/service/SocialAuthService.java"
                     ]
                 },
                 {
                     "id": "D2_ST2",
                     "agent": "Tester",
-                    "desc": "Viết bộ test JUnit5 + Mockito cho AuthService xác minh các kịch bản: đăng ký thành công với email hợp lệ và mật khẩu mạnh, từ chối đăng ký khi email trùng lặp (ném DuplicateEmailException errorCode='EMAIL_DUPLICATE'), từ chối khi mật khẩu yếu thiếu chữ hoa/thường/số/ký tự đặc biệt (ném WeakPasswordException), đăng nhập thành công với credentials đúng, từ chối khi sai mật khẩu (ném InvalidCredentialsException errorCode='INVALID_CREDENTIALS'), refresh token hợp lệ được cấp access token mới. Sử dụng @ParameterizedTest để phủ nhiều trường hợp biên. Verify AuthResponse có expiresIn=900, tokenType='Bearer'.",
+                    "desc": "Tạo tệp kiểm thử đơn vị ./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/service/SocialAuthServiceTest.java sử dụng JUnit 5 kết hợp Mockito 5.7.0 (@InjectMock). Mock SocialTokenVerifier trả về SocialUserInfo giả lập cho từng provider. Tạo 5 test case: (1) authenticateWithGoogle_forNewUser_createsAccountAndReturnsJwt xác minh xác thực thành công với Google token hợp lệ cho user mới, trả về AuthResponse với isNewUser=true và role Student; (2) authenticateWithGoogle_forExistingUser_returnsExistingJwt xác minh xác thực thành công cho user đã liên kết trước đó, trả về isNewUser=false; (3) authenticateWithExpiredToken_throwsInvalidTokenException xác minh token hết hạn ném InvalidTokenException; (4) authenticateWithUnknownProvider_throwsUnsupportedProviderException xác minh provider twitter không hỗ trợ ném UnsupportedProviderException; (5) authenticateWithFacebook_savesProfilePicture xác minh Facebook provider lưu đúng profile_picture_url vào bảng UserSocialAccounts. Mock UserSocialAccountRepository để kiểm tra phương thức findByProviderAndProviderUserId được gọi đúng tham số.",
                     "targeted_tags": [
-                        "[REQ-001]",
                         "[REQ-002]",
-                        "[ARC-006]",
                         "[EXC-004]"
                     ],
                     "components": [
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/AuthService.java;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/AuthServiceTest.java"
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/service/SocialAuthService.java;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/service/SocialAuthServiceTest.java"
                     ]
                 },
                 {
                     "id": "D2_ST3",
                     "agent": "Reviewer",
-                    "desc": "Kiểm tra JwtTokenProvider đảm bảo secret key không hardcode (đọc từ System.getenv), sử dụng thuật toán ký HS256 an toàn, xác minh TTL access token đúng 900 giây và refresh token đúng 604800 giây, kiểm tra tính nguyên tử khi cấp token (không có race condition), đảm bảo exception khi token không hợp lệ được ném đúng cách. Đánh giá tuân thủ OWASP A02 (Cryptographic Failures) và A07 (Identification and Authentication Failures).",
+                    "desc": "Reviewer thực hiện đánh giá chuyên sâu lớp JwtAuthFilter và SocialTokenVerifier tại đường dẫn ./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/security/JwtAuthFilter.java để phát hiện: (1) khả năng timing attack trong so sánh token sử dụng MessageDigest.isEqual() thay vì String.equals(), (2) lỗi xác thực chữ ký JWT khi token bị giả mạo, (3) xử lý trường hợp token bị thu hồi (blacklist) thông qua Redis với key jwt:blacklist:<jti> và TTL bằng thời gian còn lại của token, (4) tuân thủ nguyên tắc OWASP A02:2021 về Cryptographic Failures. Đề xuất vá lỗi cụ thể cho từng phát hiện và tạo báo cáo review với format: Vấn đề phát hiện, Mức độ nghiêm trọng (Critical/High/Medium/Low), Đề xuất fix, File liên quan.",
                     "targeted_tags": [
                         "[REQ-001]",
-                        "[ARC-006]",
+                        "[REQ-002]",
                         "[NFR-003]"
                     ],
                     "components": [
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/JwtTokenProvider.java"
-                    ]
-                },
-                {
-                    "id": "D2_ST4",
-                    "agent": "Doc",
-                    "desc": "Bổ sung vào blueprint kiến trúc doanh nghiệp phần mô tả luồng xác thực chi tiết: biểu đồ tuần tự Mermaid sequenceDiagram cho quy trình đăng ký/đăng nhập, sơ đồ Mermaid flowChart cho OAuth2 flow với Firebase/Google/Facebook, cấu trúc JWT token và claim definitions (userId, role, provider, exp, iat), bảng mapping endpoint POST /api/v1/auth/register, POST /api/v1/auth/login, POST /api/v1/auth/refresh với Tag ID [REQ-001][REQ-002][ARC-006], chính sách mã hóa TLS 1.3 tại chỗ theo NFR-003.",
-                    "targeted_tags": [
-                        "[DOC-001]",
-                        "[ARC-006]"
-                    ],
-                    "components": [
-                        "./sources/docs/architecture/ENTERPRISE_SYSTEM_ARCHITECTURE_BLUEPRINT.md",
-                        "./sources/docs/architecture/CENTRAL_ENDPOINT_API_CONTRACT_SPECS.md",
-                        "./sources/docs/architecture/CROSS_PLATFORM_INTEGRATED_BUSINESS_FLOWS.md",
-                        "./sources/docs/security/ENTERPRISE_SECURITY_OWASP_COMPLIANCE_MATRIX.md",
-                        "./sources/docs/security/CENTRAL_MONITORING_LOGGING_ARCHITECTURE.md"
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/security/JwtAuthFilter.java"
                     ]
                 }
             ]
@@ -150,56 +104,55 @@
         {
             "day": 3,
             "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
-            "context_section": "TÍCH HỢP SOCIAL AUTHENTICATION VỚI FIREBASE, GOOGLE VÀ FACEBOOK",
+            "context_section": "NGÀY 3: CƠ CHẾ GÁN VÀ THAY ĐỔI VAI TRÒ NGƯỜI DÙNG (RBAC) 5 CẤP ĐỘ",
             "sub_tasks": [
                 {
                     "id": "D3_ST1",
                     "agent": "Coder",
-                    "desc": "Xây dựng SocialAuthService hỗ trợ xác thực qua 3 nhà cung cấp Firebase, Google, Facebook. Sử dụng client HTTP java.net.http.HttpClient để gọi endpoint verify token từ mỗi provider, trích xuất thông tin email và profile picture, tạo hoặc cập nhật user local với provider tương ứng, cấp JWT token theo chuẩn chung. Áp dụng cache token verification trong 5 phút để giảm tải. Mọi cuộc gọi HTTP ra bên ngoài phải sử dụng TLS 1.3 theo NFR-003.\n\nRequest Payload Schema: {\"provider\":\"firebase|google|facebook\",\"providerToken\":\"string\",\"emailHint\":\"string\"}\n\nResponse Payload Schema: {\"accessToken\":\"jwt-string\",\"refreshToken\":\"jwt-string\",\"expiresIn\":900,\"tokenType\":\"Bearer\",\"userId\":\"uuid\",\"role\":\"Student\",\"provider\":\"firebase|google|facebook\"}\n\nProvider Verification Endpoints:\n- Firebase: https://identitytoolkit.googleapis.com/v1/accounts:lookup?key={FIREBASE_API_KEY}\n- Google: https://oauth2.googleapis.com/tokeninfo?id_token={token}\n- Facebook: https://graph.facebook.com/debug_token?input_token={token}&access_token={FB_APP_TOKEN}\n\nError Status Codes: 400 INVALID_PROVIDER_TOKEN, 401 UNAUTHORIZED_PROVIDER, 502 PROVIDER_UNREACHABLE\n\nSQL injection prevention: Sử dụng Panache prepared statements, không nối chuỗi SQL thô.",
+                    "desc": "Tạo tệp mã nguồn ./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/service/UserRoleService.java hiện thực hóa lớp UserRoleService với annotation @ApplicationScoped và @PreAuthorize(\"hasAnyRole('SystemAdmin','CenterAdmin')\"). Triển khai phương thức updateUserRole(UUID userId, int newRoleId, UUID actingUserId) thực hiện theo trình tự: (1) kiểm tra người thực hiện có phải SystemAdmin hay CenterAdmin hợp lệ thông qua SecurityContext, (2) kiểm tra sự tồn tại của user trong bảng Users ném UserNotFoundException nếu không tồn tại, (3) xác thực newRoleId thuộc tập {1, 2, 3, 4, 5} ném InvalidRoleException nếu ngoài phạm vi, (4) lưu oldRoleId, cập nhật cột role_id trong bảng Users và updated_at, (5) vô hiệu hóa phiên JWT hiện tại bằng cách thêm vào blacklist Redis với key jwt:blacklist:<userId> và TTL bằng thời gian còn lại của token, (6) ghi AuditLogs với old_value và new_value thông qua AuditLogger, (7) gửi Kafka event user.role.changed lên topic user-events với payload JSON chứa userId, oldRoleId, newRoleId, changedBy, timestamp để các service khác cập nhật cache. Xử lý trường hợp CenterAdmin chỉ được đổi role trong phạm vi trung tâm mình quản lý bằng cách kiểm tra center_id của user mục tiêu khớp với center_id của CenterAdmin đang thực hiện.",
                     "targeted_tags": [
-                        "[REQ-002]",
-                        "[ARC-006]"
+                        "[REQ-003]",
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]"
                     ],
                     "components": [
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/SocialAuthService.java"
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/service/UserRoleService.java"
                     ]
                 },
                 {
                     "id": "D3_ST2",
                     "agent": "Tester",
-                    "desc": "Xây dựng test tích hợp sử dụng WireMock để giả lập phản hồi từ Firebase, Google, Facebook API. Kiểm thử kịch bản: token hợp lệ từ mỗi provider tạo/cập nhật user đúng cách, token hết hạn trả về lỗi INVALID_PROVIDER_TOKEN, user mới được tạo với role Student mặc định, JWT được cấp với claim provider chính xác.\n\nTest Scenarios Matrix:\n- Valid Firebase token -> User created with provider=firebase -> 200 OK with JWT\n- Valid Google token -> Existing user updated -> 200 OK with refreshed JWT\n- Valid Facebook token -> New user created -> 200 OK with JWT\n- Expired Firebase token -> 401 INVALID_PROVIDER_TOKEN\n- Malformed Google token -> 401 INVALID_PROVIDER_TOKEN\n- Null email from Facebook -> 400 INVALID_PROVIDER_TOKEN\n- Concurrent requests for same email -> race condition test with 10 parallel requests\n- TLS 1.3 enforcement verification on outbound HTTP calls\n\nDatabase schema remains unchanged in this sub-task.",
+                    "desc": "Tạo tệp kiểm thử đơn vị ./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/service/UserRoleServiceTest.java sử dụng JUnit 5 kết hợp Mockito 5.7.0. Tạo 8 test case: (1) updateRole_bySystemAdmin_returnsSuccess xác minh SystemAdmin thay đổi role thành công với oldRoleId=5, newRoleId=2, verify AuditLogger được gọi với action ROLE_CHANGED; (2) updateRole_byCenterAdminWithinOwnCenter_returnsSuccess xác minh CenterAdmin thay đổi role thành công trong trung tâm mình quản lý; (3) updateRole_byCenterAdminOutsideOwnCenter_throwsAccessDeniedException xác minh CenterAdmin cố gắng thay đổi user ở trung tâm khác bị từ chối với mã CROSS_CENTER_FORBIDDEN; (4) updateRole_byManager_throwsAccessDeniedException xác minh Manager thay đổi role bị từ chối với mã INSUFFICIENT_PRIVILEGES; (5) updateRole_byTeacher_throwsAccessDeniedException xác minh Teacher thay đổi role bị từ chối; (6) updateRole_withInvalidRoleId_throwsConstraintViolationException xác minh roleId=6 hoặc roleId=0 ném ConstraintViolationException trả về HTTP 400; (7) updateRole_forNonExistentUser_throwsUserNotFoundException xác minh user không tồn tại trả về HTTP 404; (8) updateRole_blacklistsOldJwtToken xác minh sau khi đổi role, JWT cũ bị thêm vào Redis blacklist và JwtAuthFilter từ chối token này trong request tiếp theo.",
                     "targeted_tags": [
-                        "[REQ-002]",
-                        "[ARC-006]",
+                        "[REQ-003]",
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]",
                         "[EXC-004]"
                     ],
                     "components": [
-                        "INTEGRATION_SCOPE;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/SocialAuthIntegrationTest.java"
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/service/UserRoleService.java;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/service/UserRoleServiceTest.java"
                     ]
                 },
                 {
                     "id": "D3_ST3",
-                    "agent": "Reviewer",
-                    "desc": "Xác minh rằng SocialAuthService không lưu trữ token gốc từ provider, chỉ trích xuất thông tin cần thiết (email, name, picture), kiểm tra timeout HTTP client được cấu hình hợp lý (5 giây), đảm bảo xử lý race condition khi hai request social auth đồng thời cho cùng email, đề xuất fix strategy nếu phát hiện điểm nghẽn hiệu năng. Đánh giá tuân thủ OWASP A03 (Injection) khi parse JSON response.\n\nReview Checklist:\n- Verify provider token is NOT persisted in any storage layer\n- HTTP client timeout configuration: 5000ms exactly\n- TLS 1.3 enforcement on all outbound provider calls\n- JSON parsing using safe deserializer (no eval, no unsafe reflection)\n- Race condition handling: verify @Transactional or optimistic locking for concurrent user creation\n- Cache TTL for token verification: 5 minutes maximum\n- Error logging does not leak provider tokens to log files\n- OWASP A03 compliance: confirm parameterized approach to JSON parsing",
-                    "targeted_tags": [
-                        "[REQ-002]",
-                        "[ARC-006]",
-                        "[NFR-003]"
-                    ],
-                    "components": [
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/SocialAuthService.java"
-                    ]
-                },
-                {
-                    "id": "D3_ST4",
                     "agent": "Doc",
-                    "desc": "Bổ sung sơ đồ tuần tự Mermaid cho 3 luồng OAuth2 (Firebase, Google, Facebook), bảng so sánh claim structure giữa các provider, hướng dẫn cấu hình API key cho từng provider trong biến môi trường, tài liệu xử lý edge case khi provider trả về email null.\n\nDocumentation Components:\n- Mermaid sequence diagram: Firebase OAuth2 flow with token exchange steps\n- Mermaid sequence diagram: Google OAuth2 flow with id_token verification\n- Mermaid sequence diagram: Facebook OAuth2 flow with debug_token validation\n- Claim comparison table: sub, email, name, picture, email_verified across providers\n- Environment variable configuration matrix: FIREBASE_API_KEY, GOOGLE_CLIENT_ID, FB_APP_TOKEN, FB_APP_SECRET\n- Edge case handling: null email from provider, expired tokens, rate limiting from providers\n- Security notes: TLS 1.3 enforcement, token non-persistence policy, 5-minute verification cache TTL",
+                    "desc": "Tạo tài liệu Markdown ./sources/docs/architecture/phase-2-rbac-matrix.md mô tả ma trận phân quyền 5 cấp độ theo định dạng bảng gồm các cột: Role, Scope, CRUD Permissions, Special Permissions, Allowed Endpoints. Đính kèm sơ đồ Mermaid flowchart biểu diễn quan hệ kế thừa giữa các role SystemAdmin, CenterAdmin, Manager, Teacher, Student. Bao gồm danh sách endpoint mà từng role có thể truy cập với mã HTTP tương ứng. Ghi chú tuân thủ nguyên tắc least privilege và giải thích rằng CenterAdmin chỉ có hiệu lực trong phạm vi center_id của mình, không thể ảnh hưởng đến trung tâm khác. Tham chiếu các mã thẻ [ARC-001], [ARC-002], [ARC-003], [ARC-004], [ARC-005].",
                     "targeted_tags": [
-                        "[DOC-001]",
-                        "[ARC-006]"
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]",
+                        "[DOC-001]"
                     ],
                     "components": [
-                        "./sources/docs/architecture/blueprint.md"
+                        "./sources/docs/architecture/phase-2-rbac-matrix.md"
                     ]
                 }
             ]
@@ -207,67 +160,45 @@
         {
             "day": 4,
             "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
-            "context_section": "TRIỂN KHAI RBAC FILTER, QUẢN LÝ VAI TRÒ VÀ PHÂN QUYỀN",
+            "context_section": "NGÀY 4: REST API DANH SÁCH VÀ QUẢN LÝ TRUNG TÂM (PHẦN 1) - CONTROLLER VÀ SERVICE LÕI",
             "sub_tasks": [
                 {
                     "id": "D4_ST1",
                     "agent": "Coder",
-                    "desc": "Tạo RbacFilter triển khai ContainerRequestFilter của JAX-RS, sử dụng @Priority(Priorities.AUTHORIZATION) và annotation @RbacRequired tùy chỉnh để khai báo role cần thiết cho từng endpoint. Filter phân tích JWT token, trích xuất role, so sánh với annotation, ném UnauthorizedRoleException nếu không khớp. Tích hợp với SecurityContextProducer để cung cấp SecurityContext cho CDI. Đảm bảo thực thi nguyên tắc phân quyền tối thiểu (least privilege) theo OWASP A01.\n\nRBAC Role Hierarchy (5 levels):\n- Level 1: System Admin (full system access)\n- Level 2: Center Admin (scoped to assigned center)\n- Level 3: Manager (limited administrative scope)\n- Level 4: Teacher (read-only on assigned courses)\n- Level 5: Student (personal data access only)\n\nFilter Contract:\n- Annotation: @RbacRequired({\"System Admin\", \"Center Admin\"})\n- JWT claim extraction: role, userId, centerId\n- Match logic: exact role match OR hierarchical inheritance (System Admin inherits all)\n- Response on deny: 403 INSUFFICIENT_PRIVILEGES with localized Vietnamese message\n\nCross-center access control: Center Admin tokens must include centerId claim; filter validates requested resource centerId matches token centerId.\n\nSQL injection prevention: N/A for filter logic; ensure downstream repository calls use prepared statements.",
+                    "desc": "Tạo tệp mã nguồn ./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/CenterController.java hiện thực hóa lớp CenterController với annotation @RestController và @RequestMapping(\"/api/v1/centers\"). Triển khai 4 endpoint: (1) GET /api/v1/centers với @PreAuthorize(\"isAuthenticated()\") trả về danh sách phân trang gồm Name, Address, TaxID, AdminContact thông qua Pageable với page, size, sort parameters mặc định size=20, sort=name,asc, gọi CenterService.listCenters(); (2) POST /api/v1/centers với @PreAuthorize(\"hasRole('SystemAdmin')\") nhận CenterRequest với @Valid, gọi CenterService.createCenter(); (3) PUT /api/v1/centers/{id} với @PreAuthorize(\"hasAnyRole('SystemAdmin','CenterAdmin')\") cập nhật thông tin trung tâm; (4) DELETE /api/v1/centers/{id} với @PreAuthorize(\"hasRole('SystemAdmin')\") thực hiện soft delete bằng cách cập nhật cờ is_deleted=true. Áp dụng @Valid cho mọi request body để kích hoạt Bean Validation. Tích hợp CenterService với validation cho TaxID unique theo regex ^[0-9]{10,13}$ và email format ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2}$. Trả về ResponseEntity với mã HTTP 200/201/204 tương ứng. Ghi audit log cho mọi thao tác CRUD thông qua AuditLogger.",
                     "targeted_tags": [
-                        "[REQ-003]",
-                        "[ARC-001]",
-                        "[ARC-002]",
-                        "[ARC-003]",
-                        "[ARC-004]",
-                        "[ARC-005]"
+                        "[REQ-004]",
+                        "[REQ-005]"
                     ],
                     "components": [
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/security/RbacFilter.java"
+                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/CenterController.java"
                     ]
                 },
                 {
                     "id": "D4_ST2",
                     "agent": "Tester",
-                    "desc": "Viết bộ kiểm thử JUnit5 cho RbacFilter xác minh: System Admin có thể truy cập mọi endpoint, Center Admin chỉ truy cập được endpoint trong phạm vi trung tâm của mình, Manager có quyền tạo thông báo và quản lý học viên, Teacher chỉ xem được khóa học được phân công, Student chỉ truy cập endpoint cá nhân. Sử dụng @QuarkusTest với JWT token giả lập thông qua Jwt.issuer() builder.\n\nTest Scenarios Matrix:\n- System Admin accessing any endpoint -> 200 OK\n- Center Admin accessing own center resource -> 200 OK\n- Center Admin accessing different center resource -> 403 INSUFFICIENT_PRIVILEGES\n- Manager creating notification -> 200 OK\n- Manager deleting system admin -> 403 INSUFFICIENT_PRIVILEGES\n- Teacher viewing assigned course -> 200 OK\n- Teacher viewing unassigned course -> 403 INSUFFICIENT_PRIVILEGES\n- Student accessing personal profile -> 200 OK\n- Student accessing admin dashboard -> 403 INSUFFICIENT_PRIVILEGES\n- Missing JWT token -> 401 UNAUTHORIZED\n- Expired JWT token -> 401 UNAUTHORIZED\n- Tampered JWT signature -> 401 UNAUTHORIZED\n\nJWT Mock Builder: Jwt.issuer(\"https://membership-hub.local\").claim(\"role\", \"Center Admin\").claim(\"centerId\", \"uuid-1\")\n\nDatabase schema remains unchanged in this sub-task.",
+                    "desc": "Tạo tệp kiểm thử đơn vị ./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/controller/CenterControllerTest.java sử dụng JUnit 5 kết hợp Mockito 5.7.0 và RestAssured 5.4.0. Mock CenterService và AuditLogger. Tạo 7 test case: (1) listCenters_byAuthenticatedUser_returns200WithPagination xác minh lấy danh sách phân trang thành công với user bất kỳ đã xác thực, response chứa content mảng các trung tâm, totalElements, totalPages; (2) createCenter_bySystemAdmin_returns201 xác minh SystemAdmin tạo trung tâm mới thành công với payload hợp lệ, trả về HTTP 201 và response body chứa centerId; (3) createCenter_byManager_returns403 xác minh Manager cố tạo trung tâm bị từ chối với mã INSUFFICIENT_PRIVILEGES; (4) createCenter_withDuplicateTaxId_returns409 xác minh tạo trung tâm với TaxID đã tồn tại trả về HTTP 409 với mã TAX_ID_CONFLICT; (5) createCenter_withInvalidEmail_returns400 xác minh tạo trung tâm với email sai định dạng invalid-email trả về HTTP 400 với mảng errors; (6) updateCenter_bySystemAdmin_returns200 xác minh cập nhật trung tâm thành công; (7) deleteCenter_bySystemAdmin_returns204 xác minh xoá trung tâm thành công với soft delete. Sử dụng @InjectMock và @QuarkusTest.",
                     "targeted_tags": [
-                        "[REQ-003]",
-                        "[ARC-001]",
-                        "[ARC-002]",
-                        "[ARC-003]",
-                        "[ARC-004]",
-                        "[ARC-005]",
+                        "[REQ-004]",
+                        "[REQ-005]",
                         "[EXC-004]"
                     ],
                     "components": [
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/security/RbacFilter.java;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/security/RbacFilterTest.java"
+                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/CenterController.java;./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/controller/CenterControllerTest.java"
                     ]
                 },
                 {
                     "id": "D4_ST3",
                     "agent": "Reviewer",
-                    "desc": "Đánh giá logic phân quyền trong UserService.updateUserRole, đảm bảo rằng chỉ System Admin mới có thể thay đổi role thành System Admin, kiểm tra cơ chế audit log khi role được thay đổi (theo NFR-006), xác minh quyền Center Admin bị giới hạn trong trung tâm được gán, đề xuất tối ưu hóa caching cho permission check. Đánh giá tuân thủ OWASP A01 (Broken Access Control) và ngăn chặn IDOR.\n\nReview Checklist:\n- updateUserRole method: only System Admin can promote to System Admin role\n- Role transition validation: no self-demotion of System Admin without second admin approval\n- Audit log entry on every role change: timestamp, actor userId, target userId, old role, new role, reason\n- Center Admin scope enforcement: centerId claim must match resource centerId\n- IDOR prevention: user can only access own resources unless elevated role grants access\n- Permission check caching strategy: Redis cache with 60-second TTL, invalidation on role change\n- OWASP A01 compliance: verify deny-by-default for unmatched routes\n- OWASP A07 compliance: verify session invalidation on role change\n- Mass assignment prevention: RoleUpdateRequest fields are strictly validated against allowed schema",
+                    "desc": "Reviewer thực hiện đánh giá chuyên sâu lớp CenterService tại đường dẫn ./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/service/CenterService.java để phát hiện: (1) lỗ hổng SQL injection trong truy vấn tìm kiếm findByNameContaining bằng cách sử dụng JPQL LIKE :pattern với parameter binding, (2) tuân thủ nguyên tắc OWASP A03:2021 Injection, (3) khả năng race condition khi kiểm tra trùng lặp TaxID đồng thời giữa hai request tạo trung tâm - đề xuất sử dụng unique constraint kết hợp upsert pattern, (4) hiệu năng truy vấn khi danh sách trung tâm lớn - đề xuất sử dụng phân trang server-side với Pageable và index trên cột name đã có sẵn. Tạo báo cáo review với format: Vấn đề phát hiện, Mức độ nghiêm trọng, Đề xuất fix, File liên quan. Đảm bảo tất cả mã lỗi nghiệp vụ EMAIL_ALREADY_EXISTS, TAX_ID_CONFLICT, CENTER_NOT_FOUND được ánh xạ đúng HTTP status code thông qua CenterExceptionHandler.",
                     "targeted_tags": [
-                        "[REQ-003]",
-                        "[ARC-001]",
+                        "[REQ-004]",
+                        "[REQ-005]",
                         "[ARC-002]",
-                        "[ARC-003]",
-                        "[ARC-004]",
-                        "[ARC-005]"
+                        "[NFR-003]"
                     ],
                     "components": [
-                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/UserService.java"
-                    ]
-                },
-                {
-                    "id": "D4_ST4",
-                    "agent": "Doc",
-                    "desc": "Bổ sung sổ tay vận hành các quy trình: cách cấp/thu hồi quyền System Admin, quy trình khôi phục khi Center Admin bị khóa tài khoản, checklist audit role hàng tháng, biểu mẫu yêu cầu thay đổi role, dashboard giám sát số lượng user theo từng role. Tài liệu phải bằng tiếng Việt và sử dụng định dạng Markdown chuẩn.\n\nDocumentation Components:\n- Mermaid flowchart: System Admin role grant/revocation procedure with 2-step approval\n- Mermaid flowchart: Center Admin account recovery procedure with identity verification\n- Monthly audit checklist: count users per role, identify dormant admin accounts, verify last login timestamps\n- Role change request form template: requester, target user, current role, requested role, business justification, approver signature\n- Monitoring dashboard specification: Grafana panel definitions for user count by role, role change frequency, failed access attempts by role\n- Incident response playbook: compromised admin account, unauthorized role escalation, mass permission change",
-                    "targeted_tags": [
-                        "[DOC-001]",
-                        "[ARC-001]"
-                    ],
-                    "components": [
-                        "./sources/docs/operations/runbook.md"
+                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/service/CenterService.java"
                     ]
                 }
             ]
@@ -275,73 +206,165 @@
         {
             "day": 5,
             "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
-            "context_section": "NGÀY 5: XÂY DỰNG MODULE CENTER-SERVICE VÀ QUẢN LÝ TRUNG TÂM",
+            "context_section": "GÁN/HUỶ GÁN CENTER ADMIN VÀ QUẢN LÝ LIÊN KẾT NGƯỜI DÙNG - TRUNG TÂM",
             "sub_tasks": [
                 {
                     "id": "D5_ST1",
                     "agent": "Coder",
-                    "desc": "Xây dựng CenterService xử lý danh sách, CRUD trung tâm, gán/hủy gán Center Admin. Validate trường name (max 100), address (max 255), tax_id (10-13 chữ số, unique), contact phone/email optional theo regex. Khi tạo trung tâm mới, kiểm tra trùng lặp tax_id bằng query database trước khi insert, ném DuplicateTaxIdException nếu xung đột. Gán Center Admin cập nhật role user thành Center Admin kèm centerId. Đồng thời tạo tập tin migration V2_1__seed_roles_and_admin.sql bổ sung dữ liệu hạt giống cho 5 vai trò RBAC (System Admin, Center Admin, Manager, Teacher, Student), tài khoản System Admin mặc định với email admin@membershiphub.local, password hash BCrypt, role_id=1, provider=local; đồng thời tạo các index idx_users_role_id, idx_centers_tax_id và unique index uq_users_email_provider. Tuân thủ nguyên tắc OWASP bằng cách sử dụng prepared statement thông qua Panache, không nối chuỗi SQL thô.",
+                    "desc": "Triển khai lớp CenterAdminService với annotation @ApplicationScoped tại đường dẫn ./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/service/CenterAdminService.java. Triển khai phương thức assignAdmin(UUID centerId, UUID userId, UUID actingUserId) thực hiện: (1) xác thực actingUserId có role SystemAdmin thông qua SecurityContext, ném AccessDeniedException nếu không đủ quyền, (2) kiểm tra centerId tồn tại trong bảng Centers ném CenterNotFoundException nếu không, (3) kiểm tra userId tồn tại trong bảng Users ném UserNotFoundException nếu không, (4) cập nhật role_id = 2 (CenterAdmin) trong bảng Users thông qua JPQL parameter binding, (5) lưu center_id vào bảng liên kết CenterAdmins với khóa chính tổng hợp (center_id, user_id), (6) ghi audit log thông qua AuditLogger với action CENTER_ADMIN_ASSIGNED, (7) gửi Kafka event center.admin.assigned lên topic center-events với payload chứa centerId, userId, assignedBy, timestamp. Phương thức unassignAdmin(centerId, userId, actingUserId) thực hiện ngược lại: xoá bản ghi trong CenterAdmins, đặt role_id = 5 (Student) trong Users nếu user không thuộc trung tâm nào khác, ghi audit log CENTER_ADMIN_UNASSIGNED, gửi Kafka event center.admin.unassigned. Toàn bộ thao tác phải sử dụng @Transactional đảm bảo ACID.",
                     "targeted_tags": [
-                        "[REQ-004]",
-                        "[REQ-005]",
                         "[REQ-006]",
-                        "[DAT-002]"
+                        "[ARC-002]",
+                        "[NFR-006]"
                     ],
                     "components": [
-                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/CenterService.java",
-                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/dto/CenterCreateRequest.java",
-                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/dto/CenterUpdateRequest.java",
-                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/dto/CenterAdminAssignRequest.java",
-                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/dto/CenterResponse.java",
-                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/repository/CenterRepository.java",
-                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/exception/DuplicateTaxIdException.java",
-                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/exception/CenterNotFoundException.java",
-                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/exception/CenterAccessDeniedException.java",
-                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/CenterController.java",
-                        "./sources/backend/user-service/src/main/resources/db/migration/V2_1__seed_roles_and_admin.sql"
+                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/service/CenterAdminService.java"
                     ]
                 },
                 {
                     "id": "D5_ST2",
                     "agent": "Tester",
-                    "desc": "Xây dựng test tích hợp sử dụng @QuarkusTest với Testcontainers PostgreSQL 16 cho CenterService tại đường dẫn ./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/CenterServiceIntegrationTest.java. Kiểm thử các kịch bản: tạo trung tâm thành công với đầy đủ thông tin hợp lệ, từ chối khi tax_id trùng lặp với trung tâm đã tồn tại, cập nhật thông tin trung tâm từng phần, xóa trung tâm thành công, danh sách trung tâm trả về đầy đủ thông tin mapping đúng DTO, gán Center Admin cập nhật đúng userId trên trung tâm, validate input cho từng trường name (1-100 ký tự), address (1-255 ký tự), taxId (regex 10-13 chữ số), contact phone/email. Xác minh rằng constraint CHECK chỉ chấp nhận tax_id từ 10-13 chữ số, tập lệnh migration V2_1 chèn đủ 5 vai trò và tài khoản admin mặc định với hash BCrypt hợp lệ. Phạm vi tích hợp tổng thể không thể khoanh vùng một tệp mã nguồn cụ thể nên sử dụng cờ INTEGRATION_SCOPE.",
+                    "desc": "Tạo tệp kiểm thử đơn vị ./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/service/CenterAdminServiceTest.java sử dụng JUnit 5 kết hợp Mockito 5.7.0. Mock CenterRepository, UserRepository, CenterAdminsRepository và KafkaProducer. Tạo 6 test case: (1) assignAdmin_bySystemAdmin_returnsSuccess xác minh SystemAdmin gán Center Admin thành công, verify UserRepository.updateRole được gọi với roleId=2, CenterAdminsRepository.save được gọi, KafkaProducer.send được gọi với topic center-events; (2) assignAdmin_byCenterAdmin_throwsAccessDeniedException xác minh CenterAdmin cố gán admin khác bị từ chối với mã INSUFFICIENT_PRIVILEGES; (3) assignAdmin_forNonExistentUser_throwsUserNotFoundException xác minh gán user không tồn tại trả về HTTP 404; (4) assignAdmin_forNonExistentCenter_throwsCenterNotFoundException xác minh gán cho center không tồn tại trả về HTTP 404; (5) assignAdmin_duplicateAssignment_throwsDataIntegrityViolationException xác minh gán trùng lặp trả về HTTP 409 với mã DUPLICATE_ADMIN_ASSIGNMENT; (6) unassignAdmin_removesAdminAndResetsRole xác minh huỷ gán thành công, role chuyển về Student (roleId=5) nếu user không thuộc trung tâm nào khác, verify audit log CENTER_ADMIN_UNASSIGNED được ghi.",
                     "targeted_tags": [
-                        "[REQ-004]",
-                        "[REQ-005]",
                         "[REQ-006]",
+                        "[ARC-002]",
                         "[EXC-004]"
                     ],
                     "components": [
-                        "INTEGRATION_SCOPE;./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/CenterServiceIntegrationTest.java"
+                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/service/CenterAdminService.java",
+                        "./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/service/CenterAdminServiceTest.java"
                     ]
                 },
                 {
                     "id": "D5_ST3",
-                    "agent": "Reviewer",
-                    "desc": "Rà soát CenterService đảm bảo logic gán Center Admin không vi phạm quyền chéo trung tâm (Center Admin A không thể can thiệp vào trung tâm của Center Admin B), kiểm tra xử lý transaction khi xóa trung tâm có dữ liệu liên quan (khóa học, học viên) để tránh orphan record, đề xuất chiến lược soft-delete thay vì hard-delete bằng trường deleted_at, xác minh caching cho danh sách trung tâm để giảm tải database. Đánh giá tuân thủ OWASP A01 (Broken Access Control) khi truy vấn danh sách trung tâm phải lọc theo center_id của người dùng hiện tại, đảm bảo không có IDOR vulnerability, kiểm tra input validation chống SQL injection và XSS. Đề xuất tối ưu hóa nếu phát hiện bottleneck truy vấn và đảm bảo tập tin migration V2_1 không vi phạm Flyway convention.",
+                    "agent": "Doc",
+                    "desc": "Cập nhật tệp tài liệu API tổng hợp ./sources/docs/api/user-center-contracts.md bổ sung 3 endpoint mới: (1) POST /api/v1/centers/{id}/admins với payload { \"userId\": \"UUID\" } trả về HTTP 200 với response chứa centerId, userId, assignedAt, (2) DELETE /api/v1/centers/{id}/admins/{userId} trả về HTTP 204, (3) danh sách endpoint CRUD trung tâm đầy đủ. Mô tả bảng mã lỗi 403 (INSUFFICIENT_PRIVILEGES, CROSS_CENTER_FORBIDDEN), 404 (CENTER_NOT_FOUND, USER_NOT_FOUND), 409 (TAX_ID_CONFLICT, DUPLICATE_ADMIN_ASSIGNMENT). Ghi chú về hiệu lực quyền hạn ngay sau khi gán (cache invalidation) và cách thức CenterAdmin chỉ có hiệu lực trong center_id của mình.",
                     "targeted_tags": [
                         "[REQ-004]",
                         "[REQ-005]",
-                        "[REQ-006]"
+                        "[REQ-006]",
+                        "[DOC-001]"
                     ],
                     "components": [
-                        "./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/CenterService.java"
+                        "./sources/docs/api/user-center-contracts.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 6,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "GLOBAL EXCEPTION HANDLER VÀ KIỂM TOÁN TẬP TRUNG",
+            "sub_tasks": [
+                {
+                    "id": "D6_ST1",
+                    "agent": "Coder",
+                    "desc": "Triển khai lớp GlobalExceptionHandler được đánh dấu @RestControllerAdvice tại đường dẫn ./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/exception/GlobalExceptionHandler.java xử lý tập trung các ngoại lệ: (1) MethodArgumentNotValidException trả về HTTP 400 với mảng FieldErrorResponse chứa field, message, rejectedValue cho từng trường vi phạm, (2) ConstraintViolationException trả về HTTP 400 với cùng cấu trúc, (3) DataIntegrityViolationException ánh xạ thành HTTP 409 với mã lỗi tương ứng EMAIL_ALREADY_EXISTS, TAX_ID_CONFLICT, DUPLICATE_KEY dựa trên phân tích ConstraintViolation từ exception, (4) AuthenticationException trả về HTTP 401 với mã UNAUTHENTICATED, (5) AccessDeniedException trả về HTTP 403 với mã INSUFFICIENT_PRIVILEGES, (6) EntityNotFoundException trả về HTTP 404 với mã RESOURCE_NOT_FOUND, (7) Exception mặc định trả về HTTP 500 nhưng không để lộ stack trace ra response. Mỗi response phải bao gồm các trường timestamp (ISO-8601), status (HTTP code), errorCode (mã nghiệp vụ), message (thông điệp thân thiện), path (đường dẫn request), traceId (UUID từ OpenTelemetry) để phục vụ observability.",
+                    "targeted_tags": [
+                        "[EXC-004]",
+                        "[NFR-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/exception/GlobalExceptionHandler.java"
                     ]
                 },
                 {
-                    "id": "D5_ST4",
-                    "agent": "Doc",
-                    "desc": "Hoàn thiện blueprint kiến trúc doanh nghiệp tại đường dẫn ./sources/docs/architecture/blueprint.md với các nội dung: sơ đồ Mermaid tổng quan hệ thống (System Context Diagram) thể hiện mối quan hệ giữa người dùng cuối, các vi dịch vụ và hạ tầng; sơ đồ Container Diagram cho 6 vi dịch vụ; sơ đồ Component Diagram cho user-service và center-service; bảng tổng hợp endpoint API với Tag ID mapping đầy đủ; ma trận phân quyền đầy đủ 5 cấp RBAC; checklist bảo mật OWASP Top 10. Tài liệu phải ở định dạng Markdown với tiêu đề phân cấp rõ ràng, các sơ đồ Mermaid phải có cú pháp chính xác và biểu diễn đúng kiến trúc microservice mục tiêu.",
+                    "id": "D6_ST2",
+                    "agent": "Tester",
+                    "desc": "Tạo tệp kiểm thử đơn vị ./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/exception/GlobalExceptionHandlerTest.java sử dụng JUnit 5 kết hợp MockMvc. Tạo 7 test case kiểm tra: (1) handleMethodArgumentNotValid_returns400WithFieldErrors xác minh response 400 với mảng errors chứa trường email khi email sai định dạng invalid-email; (2) handleDataIntegrityViolation_duplicateEmail_returns409 xác minh response 409 với mã EMAIL_ALREADY_EXISTS; (3) handleAuthenticationException_returns401 xác minh response 401 với mã UNAUTHENTICATED khi thiếu token; (4) handleAccessDeniedException_returns403 xác minh response 403 với mã INSUFFICIENT_PRIVILEGES khi không đủ quyền; (5) handleEntityNotFoundException_returns404 xác minh response 404 với mã USER_NOT_FOUND; (6) handleGenericException_returns500WithoutStackTrace xác minh response 500 với thông điệp chung nhưng không lộ stack trace; (7) allResponses_includeTraceId xác minh mọi response đều có trường traceId để liên kết log với OpenTelemetry. Sử dụng MockMvc để thực thi controller thật kết hợp mock service layer.",
                     "targeted_tags": [
-                        "[DOC-001]",
+                        "[EXC-004]",
+                        "[NFR-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/exception/GlobalExceptionHandler.java",
+                        "./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/exception/GlobalExceptionHandlerTest.java"
+                    ]
+                },
+                {
+                    "id": "D6_ST3",
+                    "agent": "Coder",
+                    "desc": "Triển khai lớp AuditLogger với annotation @ApplicationScoped tại đường dẫn ./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/audit/AuditLogger.java, inject AuditLogRepository (Panache Repository). Tạo annotation @AuditLogged(action = \"...\", targetEntity = \"...\") cho phép ghi log kiểm toán tự động thông qua AOP aspect. Triển khai phương thức log(UUID userId, String action, String targetEntity, UUID targetId, String oldValue, String newValue, String ipAddress, String userAgent): (1) lưu bản ghi vào bảng AuditLogs với đầy đủ trường theo schema đã định, (2) đồng thời ghi log có cấu trúc (JSON) ra console thông qua SLF4J với mức INFO để tích hợp với Google Cloud Logging, (3) sử dụng @Transactional(propagation = Propagation.REQUIRES_NEW) để đảm bảo thao tác ghi log không làm thất bại giao dịch chính, (4) hash chain chống tamper bằng cách tính prev_hash từ bản ghi trước đó. Tuân thủ [NFR-006] yêu cầu lưu trữ 1 năm.",
+                    "targeted_tags": [
+                        "[NFR-006]",
+                        "[REQ-003]",
+                        "[REQ-006]"
+                    ],
+                    "components": [
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/audit/AuditLogger.java"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 7,
+            "context_file": ".ai/.plan/.context/phase-2.context.blueprint.md",
+            "context_section": "NGÀY 7: ĐÁNH GIÁ TỔNG THỂ VÀ TÍCH HỢP CUỐI KỲ GIAI ĐOẠN 2",
+            "sub_tasks": [
+                {
+                    "id": "D7_ST1",
+                    "agent": "Reviewer",
+                    "desc": "Thực hiện đánh giá tổng thể toàn bộ mã nguồn Giai đoạn 2 theo checklist OWASP Top 10 tại đường dẫn ./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/security/JwtAuthFilter.java. Cụ thể: (1) Kiểm tra tuân thủ A01 Broken Access Control thông qua annotation @PreAuthorize trên các endpoint PUT /api/v1/users/{id}/role, POST /api/v1/centers/{id}/admins; (2) Kiểm tra tuân thủ A03 Injection thông qua JPQL parameter binding trong UserRoleService, CenterService, CenterAdminService; (3) Kiểm tra tuân thủ A07 Identification and Authentication Failures gồm JWT validation với MessageDigest.isEqual(), xử lý token expiry và token blacklist thông qua Redis với key jwt:blacklist:<jti> có TTL bằng thời gian còn lại của token; (4) Đánh giá nguyên tắc SOLID và Clean Architecture cho 7 service layer gồm AuthService, SocialAuthService, UserRoleService, CenterService, CenterAdminService, GlobalExceptionHandler, AuditLogger; (5) Đánh giá hiệu năng truy vấn database cho CenterService.listCenters() với Pageable và khả năng chịu tải; (6) Tổng hợp 8 mã lỗi nghiệp vụ chuẩn hoá gồm EMAIL_ALREADY_EXISTS (409), TAX_ID_CONFLICT (409), INVALID_TOKEN (401), TOKEN_EXPIRED (401), INSUFFICIENT_PRIVILEGES (403), USER_NOT_FOUND (404), CENTER_NOT_FOUND (404), VALIDATION_FAILED (400) với mô tả tiếng Việt rõ ràng cho developer và end-user. Lập báo cáo đánh giá chi tiết với định dạng bảng gồm mức độ nghiêm trọng (Critical/High/Medium/Low), mô tả vấn đề, đề xuất fix, file liên quan.",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[REQ-002]",
+                        "[REQ-003]",
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[REQ-006]",
                         "[ARC-001]",
                         "[ARC-002]",
                         "[ARC-003]",
                         "[ARC-004]",
                         "[ARC-005]",
-                        "[ARC-006]"
+                        "[NFR-003]",
+                        "[NFR-006]",
+                        "[EXC-004]"
                     ],
                     "components": [
+                        "./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/security/JwtAuthFilter.java"
+                    ]
+                },
+                {
+                    "id": "D7_ST2",
+                    "agent": "Tester",
+                    "desc": "Tạo tệp kiểm thử tích hợp liên service tại đường dẫn ./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/UserCenterIntegrationTest.java sử dụng Testcontainers (PostgreSQL 16-alpine + Redis 7-alpine) kết hợp WireMock. Tạo 4 kịch bản end-to-end: (1) endToEnd_registerAssignRoleAccessCenter_succeeds - mô phỏng luồng hoàn chỉnh từ đăng ký user mới qua POST /api/v1/users/register với payload JSON {\\\"email\\\":\\\"user@test.com\\\",\\\"password\\\":\\\"Strong@123\\\",\\\"agreedToTerms\\\":true} → gán role CenterAdmin qua PUT /api/v1/users/{id}/role với payload {\\\"newRoleId\\\":2,\\\"reason\\\":\\\"promotion\\\"} → truy cập endpoint center GET /api/v1/centers?page=0&size=20&sort=name,asc thành công với HTTP 200 và response chứa content mảng các trung tâm; (2) endToEnd_roleChangeFromCenterAdminToStudent_blocksAccess - xác minh sau khi đổi role từ CenterAdmin (roleId=2) về Student (roleId=5) qua PUT /api/v1/users/{id}/role, endpoint center quản trị POST /api/v1/centers trả về HTTP 403 với mã INSUFFICIENT_PRIVILEGES và JWT cũ bị thêm vào Redis blacklist với key jwt:blacklist:<userId>; (3) endToEnd_socialAuthGoogle_linksAndReusesAccount - mô phỏng đăng ký qua Google OAuth2 với idToken giả lập từ WireMock → liên kết social account trong bảng UserSocialAccounts với provider=GOOGLE → đăng nhập lần sau với cùng idToken không tạo user mới (isNewUser=false); (4) endToEnd_auditLogsConsistentBetweenServices - xác minh đồng bộ audit log giữa user-service và center-service thông qua cùng bảng AuditLogs với các action USER_REGISTERED, ROLE_CHANGED, CENTER_ADMIN_ASSIGNED, CENTER_ADMIN_UNASSIGNED.",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[REQ-003]",
+                        "[REQ-006]",
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-006]",
+                        "[NFR-003]"
+                    ],
+                    "components": [
+                        "INTEGRATION_SCOPE;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/UserCenterIntegrationTest.java"
+                    ]
+                },
+                {
+                    "id": "D7_ST3",
+                    "agent": "Doc",
+                    "desc": "Tổng hợp và cập nhật tài liệu tổng kết Giai đoạn 2 tại đường dẫn ./sources/docs/api/user-center-contracts.md bao gồm 8 nội dung chính: (1) Bảng tổng hợp 7 endpoint đã triển khai với các cột Method, Path, Required Role, Description, Response Status gồm POST /api/v1/users/register (role: Public), POST /api/v1/auth/social (role: Public), PUT /api/v1/users/{id}/role (role: SystemAdmin,CenterAdmin), GET /api/v1/centers (role: isAuthenticated), POST /api/v1/centers (role: SystemAdmin), PUT /api/v1/centers/{id} (role: SystemAdmin,CenterAdmin), DELETE /api/v1/centers/{id} (role: SystemAdmin), POST/DELETE /api/v1/centers/{id}/admins (role: SystemAdmin); (2) Sơ đồ Mermaid sequenceDiagram mô tả luồng đăng ký email/password Client → AuthController → AuthService → UserRepository → JwtTokenProvider → Response với JWT 15 phút; (3) Sơ đồ Mermaid sequenceDiagram mô tả luồng Social OAuth2 với 3 provider Firebase/Google/Facebook qua SocialTokenVerifier; (4) Sơ đồ Mermaid sequenceDiagram mô tả luồng gán role và vô hiệu hóa phiên thông qua Redis blacklist; (5) Bảng mã lỗi chuẩn hoá với 8 mã EMAIL_ALREADY_EXISTS (409), TAX_ID_CONFLICT (409), INVALID_TOKEN (401), TOKEN_EXPIRED (401), INSUFFICIENT_PRIVILEGES (403), USER_NOT_FOUND (404), CENTER_NOT_FOUND (404), VALIDATION_FAILED (400) kèm mô tả tiếng Việt; (6) Checklist tuân thủ OWASP Top 10 đã áp dụng với 10 mục kiểm tra A01 đến A10; (7) Hướng dẫn cấu hình biến môi trường cho OAuth2 providers FIREBASE_API_KEY, GOOGLE_CLIENT_ID, FACEBOOK_APP_ID; (8) Tài liệu chuyển giao cho Giai đoạn 3 với danh sách 7 endpoint đã sẵn sàng tích hợp cho luồng khoá học và điểm danh QR.",
+                    "targeted_tags": [
+                        "[REQ-001]",
+                        "[REQ-002]",
+                        "[REQ-003]",
+                        "[REQ-004]",
+                        "[REQ-005]",
+                        "[REQ-006]",
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]",
+                        "[ARC-006]",
+                        "[NFR-003]",
+                        "[NFR-006]",
+                        "[DOC-001]"
+                    ],
+                    "components": [
+                        "./sources/docs/api/user-center-contracts.md",
                         "./sources/docs/architecture/ENTERPRISE_SYSTEM_ARCHITECTURE_BLUEPRINT.md",
                         "./sources/docs/architecture/CENTRAL_ENDPOINT_API_CONTRACT_SPECS.md",
                         "./sources/docs/architecture/CROSS_PLATFORM_INTEGRATED_BUSINESS_FLOWS.md",

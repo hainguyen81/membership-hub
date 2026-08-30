@@ -1,722 +1,962 @@
-# Giai đoạn 4: <!--PHASE_NAME_START-->Tích Hợp Thông Báo, Báo Cáo, Đa Ngôn Ngữ Và Di Động<!--PHASE_NAME_END-->
+# Giai đoạn 4: <!--PHASE_NAME_START-->Tích Hợp Thẻ Thành Viên, Thông Báo Đa Kênh, Khuyến Mãi, AI Chatbot và Hợp Đồng Mobile<!--PHASE_NAME_END-->
 
 ## 📊 Kiểm Soát Tài Liệu
 
 | Hạng mục | Chi tiết |
 | :--- | :--- |
-| **Mã Bản Thiết Kế** | ARCH-20260829125322 |
+| **Mã Bản Thiết Kế** | ARCH-20260829225017 |
 | **Tên Dự Án** | membership-hub |
 | **Giai đoạn** | 4 |
-| **Tên Giai Đoạn** | <!--PHASE_NAME_START-->Tích Hợp Thông Báo, Báo Cáo, Đa Ngôn Ngữ Và Di Động<!--PHASE_NAME_END--> |
-| **Mô Tả** | <!--PHASE_DESC_START-->Giai đoạn 4 tập trung kỹ thuật hóa toàn bộ luồng nghiệp vụ hậu điểm danh và trải nghiệm người dùng cuối của hệ thống Membership Hub, bao gồm quản lý thẻ thành viên với cơ chế gia hạn 1-365 ngày qua cổng thanh toán, hệ thống thông báo đa kênh FCM/APNs/Zalo với cơ chế retry tối đa 3 lần, quản lý khuyến mãi và thông báo quảng bá có hiệu lực theo thời hạn, tích hợp chatbot AI chăm sóc khách hàng với cơ chế leo thang, tối ưu hóa giao diện di động responsive theo vai trò kèm đăng ký device token, quốc tế hóa SEO đa ngôn ngữ en/vi/es với thẻ hreflang, báo cáo CSV điểm danh theo trung tâm kết hợp dashboard thời gian thực với chu kỳ làm mới cấu hình được, cùng cơ chế xử lý FIFO khi khôi phục dịch vụ sau sự cố đảm bảo không mất yêu cầu đang chờ. Toàn bộ tài sản mã nguồn, hợp đồng API, tài liệu kiến trúc và bộ xử lý ngoại lệ bản địa hóa tiếng Việt được kiến lập và truy vết đầy đủ bằng hệ thống thẻ TagID chuẩn doanh nghiệp.<!--PHASE_DESC_END--> |
-| **Phiên Bản** | 1.0 (Đường Cơ Sở) |
-| **Thời Gian** | 2026/08/29 12:53:22 |
-| **Tác Giả** | Kiến Trúc Sư Hệ Thống Doanh Nghiệp (SA Agent) |
-| **Phê Duyệt** | Đang Chờ Đánh Giá Quản Trị Kỹ Thuật |
+| **Tên Giai Đoạn** | <!--PHASE_NAME_START-->Tích Hợp Thẻ Thành Viên, Thông Báo Đa Kênh, Khuyến Mãi, AI Chatbot và Hợp Đồng Mobile<!--PHASE_NAME_END--> |
+| **Mô Tả** | <!--PHASE_DESC_START-->Giai đoạn 4 triển khai hệ thống quản lý thẻ thành viên số với logic gia hạn 1-365 ngày, hệ thống thông báo đa kênh thông qua Kafka với cơ chế retry 3 lần và dead-letter queue, quản lý CRUD khuyến mãi với chế độ perpetual, CRUD thông báo chung với auto-hide khi quá hạn, tích hợp AI Chatbot dựa trên Vertex AI Gemini với cơ chế escalate khi độ tin cậy thấp dưới 0.6, cùng với việc hoàn thiện hợp đồng tích hợp mobile app chuẩn OpenAPI 3.1 hỗ trợ bearer token và offline cache thông qua Service Worker kết hợp IndexedDB<!--PHASE_DESC_END--> |
+| **Phiên Bản** | 1.0 (Baseline) |
+| **Ngày Giờ** | 2026/08/29 22:50:17 |
+| **Tác Giả** | Enterprise System Architect (SA Agent) |
+| **Phê Duyệt** | Đang chờ Rà Soát Quản Trị Kỹ Thuật |
 
-## 1. Phạm Vi Hoạt Động & Mục Tiêu Giai Đoạn
+## 1. Phạm Vi Hoạt Động Và Mục Tiêu Giai Đoạn
 
-Giai đoạn 4 thực hiện tám nhiệm vụ cốt lõi được phân bổ theo bảng tóm tắt đa giai đoạn: Nhiệm vụ 8 (quản lý thẻ thành viên và gia hạn), Nhiệm vụ 9 (hệ thống thông báo đa kênh), Nhiệm vụ 10 (quản lý khuyến mãi và thông báo quảng bá), Nhiệm vụ 11 (tích hợp chatbot AI chăm sóc khách hàng), Nhiệm vụ 12 (giao diện di động đa vai trò và thông báo đẩy), Nhiệm vụ 13 (quốc tế hóa và SEO đa ngôn ngữ), Nhiệm vụ 14 (báo cáo và bảng điều khiển phân tích), Nhiệm vụ 15 (khôi phục hệ thống sau sự cố và xử lý hàng đợi). Phạm vi kéo dài từ Ngày 1 đến Ngày 4 theo phân bổ chính thức trong ma trận tóm tắt đa giai đoạn.
+Giai đoạn 4 đóng vai trò trụ cột nghiệp vụ thứ tư trong hệ thống membership-hub, tập trung vào việc hiện thực hóa bốn nhóm chức năng quan trọng bám sát các yêu cầu nghiệp vụ REQ-014 đến REQ-019 và REQ-021, đồng thời hoàn thiện hợp đồng tích hợp Mobile (ARC-009) và hợp đồng thông báo đa kênh (ARC-008). Phạm vi kỹ thuật cốt lõi của giai đoạn này bao gồm 8 nhiệm vụ backlog chính được phân bổ: Nhiệm vụ 14 (Xem thẻ thành viên và số ngày còn lại), Nhiệm vụ 15 (Gia hạn thẻ thành viên với renewal_days 1-365), Nhiệm vụ 16 (Kích hoạt thông báo đa kênh Push + Zalo), Nhiệm vụ 17 (Quản lý CRUD khuyến mãi), Nhiệm vụ 18 (Quản lý CRUD thông báo chung với auto-hide), Nhiệm vụ 19 (Tích hợp AI Chatbot Vertex AI), Nhiệm vụ 21 (Đẩy Push Notification qua FCM/APNs), Nhiệm vụ 29 (Hợp đồng tích hợp Notification đa kênh), và Nhiệm vụ 30 (Tích hợp Mobile App với Backend qua REST kèm offline cache). Theo kế hoạch phân bổ trong bảng tổng hợp đa giai đoạn 4.2, giai đoạn 4 được phân bổ chính xác khoảng ngày "Ngày 1 - 7" nghĩa là Relative_Z = 7 ngày làm việc liên tục.
 
-Các tài sản kỹ thuật bắt buộc phải sinh ra bao gồm: module quản lý thẻ thành viên với `MembershipCardController` cung cấp endpoint `GET /api/v1/student-cards/me` và `POST /api/v1/student-cards/renew`; module thông báo đa kênh với `NotificationController`, `NotificationDispatchService`, `FcmApnsGatewayClient` và `ZaloGroupWebhookClient` hỗ trợ retry 3 lần theo cơ chế exponential backoff; module khuyến mãi và thông báo với `PromotionController` và `AnnouncementController` xử lý CRUD và lọc theo trạng thái hiệu lực; tích hợp chatbot AI với `AiChatbotClient` sử dụng MicroProfile Rest Client; giao diện di động Next.js với layout theo vai trò, i18n middleware phát hiện locale, sitemap đa ngôn ngữ; module báo cáo với `AttendanceReportController` xuất CSV và `EnrollmentDashboardController` cung cấp dashboard thời gian thực với chu kỳ làm mới cấu hình được; cơ chế xử lý FIFO thông qua hàng đợi bền vững khi khôi phục dịch vụ. Toàn bộ tài sản phải được gắn thẻ truy xuất theo hệ thống TagID `[REQ-014]`, `[REQ-015]`, `[REQ-016]`, `[REQ-017]`, `[REQ-018]`, `[REQ-019]`, `[REQ-020]`, `[REQ-021]`, `[REQ-022]`, `[REQ-023]`, `[REQ-024]`, `[REQ-025]`, `[ARC-008]`, `[ARC-009]`, `[NFR-007]`, `[EXC-003]`, `[EXC-005]` để đảm bảo khả năng truy vết đầy đủ.
+Trên microservice `user-service`, giai đoạn này xây dựng REST API `GET /api/v1/students/{studentId}/card` trả về thông tin thẻ thành viên bao gồm `cardId`, `studentId`, `issueDate`, `endDate`, `totalValidityDays`, `usedDays`, `remainingDays`, `renewalCount` với logic tính toán `remainingDays` dựa trên `endDate - now()`. Endpoint `POST /api/v1/students/{studentId}/card/renew` xử lý gia hạn thẻ với `renewalDays` nằm trong khoảng 1-365 (theo [REQ-015] và [EXC-004]), cập nhật `endDate` và lưu lịch sử gia hạn vào bảng `CardRenewalHistory` phục vụ audit. Toàn bộ thao tác gia hạn phải sử dụng `@Transactional` đảm bảo ACID, đồng thời đẩy sự kiện Kafka `notification-queue` để worker gửi thông báo xác nhận cho học viên.
 
-## 2. Phạm Vi Kỹ Thuật Cho Phép & Ranh Giới Thư Mục
+Trên microservice `center-service`, giai đoạn này triển khai REST CRUD `/api/v1/promotions` với các trường `code` UNIQUE, `discountPercent` 1-100, `startDate` và `endDate` tuỳ chọn, hỗ trợ perpetual promotion khi `endDate` là NULL thông qua cờ `isPerpetual`. REST CRUD `/api/v1/announcements` với các trường `title`, `content`, `startDate`, `expiryDate` tuỳ chọn, kèm scheduled task tự động đánh dấu `is_active=false` khi `expiryDate < CURRENT_DATE`. Logic validation đảm bảo tên mã khuyến mãi không trùng lặp và khoảng ngày hợp lệ.
 
-Danh sách tệp vật lý và điểm cuối được phép sinh ra trong giai đoạn này:
+Trên microservice `attendance-service`, giai đoạn này hiện thực hóa hệ thống thông báo đa kênh với REST endpoint `POST /api/v1/notifications/dispatch` nhận `NotificationDispatchRequest` chứa `notificationType` thuộc tập {PUSH, ZALO_GROUP, IN_APP}, `messageTitle`, `messageBody` và target audience. Sự kiện được publish lên Kafka topic `notification-queue` với 6 partition, retention 7 ngày, key là `dispatchId` UUID. Worker consumer `NotificationEventConsumer` xử lý message theo `notificationType`: nếu PUSH gọi `FcmClient` thông qua Firebase Admin SDK, nếu ZALO_GROUP gọi `ZaloBotClient` thông qua REST API `https://bot-api.zalo.me/v2/message`, nếu IN_APP lưu vào bảng `NotificationDispatch`. Cơ chế retry tối đa 3 lần với exponential backoff (1 phút, 5 phút, 15 phút) theo [EXC-003], sau đó chuyển trạng thái `DEAD_LETTER` và ghi audit log. Endpoint `POST /api/v1/devices/register` lưu trữ device token kết hợp platform iOS/Android/Web phục vụ push notification theo [REQ-021].
 
-* `./sources/backend/notification-service/pom.xml` [ARC-000]
-* `./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/controller/NotificationController.java` [REQ-016], [REQ-021], [ARC-008]
-* `./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/service/NotificationDispatchService.java` [REQ-016], [REQ-021], [EXC-003]
-* `./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/integration/FcmApnsGatewayClient.java` [REQ-021]
-* `./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/integration/ZaloGroupWebhookClient.java` [REQ-016], [ARC-008]
-* `./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/dto/NotificationDispatchRequest.java` [REQ-016], [ARC-008]
-* `./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/dto/NotificationDispatchResponse.java` [REQ-016]
-* `./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/exception/NotificationDeliveryException.java` [REQ-016], [EXC-003]
-* `./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/exception/InvalidNotificationTargetException.java` [REQ-016]
-* `./sources/backend/reporting-service/pom.xml` [ARC-000]
-* `./sources/backend/reporting-service/src/main/java/org/nlh4j/membershiphub/reportingservice/controller/AttendanceReportController.java` [REQ-024]
-* `./sources/backend/reporting-service/src/main/java/org/nlh4j/membershiphub/reportingservice/controller/EnrollmentDashboardController.java` [REQ-025]
-* `./sources/backend/reporting-service/src/main/java/org/nlh4j/membershiphub/reportingservice/service/AttendanceCsvExportService.java` [REQ-024]
-* `./sources/backend/reporting-service/src/main/java/org/nlh4j/membershiphub/reportingservice/service/DashboardMetricsService.java` [REQ-025]
-* `./sources/backend/reporting-service/src/main/java/org/nlh4j/membershiphub/reportingservice/dto/AttendanceReportRow.java` [REQ-024]
-* `./sources/backend/reporting-service/src/main/java/org/nlh4j/membershiphub/reportingservice/dto/DashboardSummaryResponse.java` [REQ-025]
-* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/controller/MembershipCardController.java` [REQ-014], [REQ-015]
-* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/StudentCardRenewalService.java` [REQ-015]
-* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/MembershipCardQueryService.java` [REQ-014]
-* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/dto/MembershipCardResponse.java` [REQ-014]
-* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/dto/RenewalRequest.java` [REQ-015]
-* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/exception/InvalidRenewalPeriodException.java` [REQ-015]
-* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/exception/PaymentGatewayFailedException.java` [REQ-015]
-* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/PromotionController.java` [REQ-017]
-* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/AnnouncementController.java` [REQ-018]
-* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/service/PromotionService.java` [REQ-017]
-* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/service/AnnouncementService.java` [REQ-018]
-* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/dto/PromotionRequest.java` [REQ-017]
-* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/dto/AnnouncementRequest.java` [REQ-018]
-* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/exception/DuplicatePromotionCodeException.java` [REQ-017]
-* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/exception/InvalidPromotionPeriodException.java` [REQ-017]
-* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/integration/AiChatbotClient.java` [REQ-019]
-* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/controller/ChatbotController.java` [REQ-019]
-* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/dto/ChatbotQuestionRequest.java` [REQ-019]
-* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/dto/ChatbotResponse.java` [REQ-019]
-* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/exception/ChatbotUnavailableException.java` [REQ-019]
-* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/recovery/OutboxRelayScheduler.java` [EXC-001], [EXC-005], [REQ-012]
-* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/recovery/RecoveryNotificationService.java` [EXC-005]
-* `./sources/frontend/web-app/package.json` [REQ-020], [REQ-022], [REQ-023]
-* `./sources/frontend/web-app/src/app/[locale]/layout.tsx` [REQ-022], [REQ-023]
-* `./sources/frontend/web-app/src/app/[locale]/dashboard/membership-card/page.tsx` [REQ-014]
-* `./sources/frontend/web-app/src/app/[locale]/dashboard/reports/page.tsx` [REQ-024], [REQ-025]
-* `./sources/frontend/web-app/src/app/sitemap.xml/route.ts` [REQ-023]
-* `./sources/frontend/web-app/src/i18n/en/common.json` [REQ-022], [REQ-023], [NFR-007]
-* `./sources/frontend/web-app/src/i18n/vi/common.json` [REQ-022], [REQ-023], [NFR-007]
-* `./sources/frontend/web-app/src/i18n/es/common.json` [REQ-022], [REQ-023], [NFR-007]
-* `./sources/frontend/web-app/src/middleware.ts` [REQ-022]
-* `./sources/frontend/web-app/src/components/mobile/RoleBasedNavigation.tsx` [REQ-020]
-* `./sources/frontend/web-app/src/components/notifications/NotificationCenter.tsx` [REQ-021]
-* `./sources/frontend/web-app/src/components/promotion/PromotionBanner.tsx` [REQ-017]
-* `./sources/frontend/web-app/src/components/announcement/AnnouncementModal.tsx` [REQ-018]
-* `./sources/frontend/web-app/src/components/chatbot/ChatWidget.tsx` [REQ-019]
-* `./sources/docs/architecture/notifications-fcm-apns.md` [DOC-001], [ARC-008]
-* `./sources/docs/architecture/disaster-recovery-fifo.md` [DOC-001], [EXC-005]
-* `./sources/docs/architecture/i18n-seo-strategy.md` [DOC-001], [REQ-022], [REQ-023]
-* `./sources/docs/contracts/notification-openapi.yaml` [REQ-016], [REQ-021], [ARC-008]
-* `./sources/docs/contracts/reporting-openapi.yaml` [REQ-024], [REQ-025]
-* `./sources/docs/contracts/membership-card-openapi.yaml` [REQ-014], [REQ-015]
-* `./sources/docs/diagrams/notification-flow.mmd` [ARC-008], [REQ-016]
-* `./sources/docs/diagrams/recovery-fifo-flow.mmd` [EXC-005]
+Trên microservice `course-service`, giai đoạn này triển khai REST endpoint `POST /api/v1/chatbot/query` tích hợp Vertex AI Gemini thông qua Google Cloud Vertex AI Java SDK. `VertexAiClient.query()` gọi `PredictionServiceClient.predict()` với endpoint `projects/membership-hub/locations/asia-southeast1/publishers/google/models/gemini-pro`, temperature 0.2, maxOutputTokens 512. Cơ chế session management lưu trữ lịch sử hội thoại vào bảng `ChatbotSession` với timeout 30 phút, tự động escalate sang nhân viên hỗ trợ khi `confidence < 0.6`. Scheduled task `cleanupExpiredSessions()` chạy mỗi 5 phút xóa session quá hạn 24 giờ.
 
-* **RÀNG BUỘC BẮT BUỘC VỀ BIỂU MẪU NỀN TẢNG**:
-  - Cấu trúc package Java phải tuân thủ nghiêm ngặt quy ước `org.nlh4j.membershiphub.<tên-dịch-vụ>` cho mọi tệp nguồn backend.
-  - Mọi thay đổi schema cơ sở dữ liệu phải thông qua tập tin migration Flyway versioned, cấm sửa đổi trực tiếp.
-  - Tất cả REST endpoint phải khai báo JSON contract rõ ràng với request/response schema và HTTP status code tiêu chuẩn.
-  - Cam kết OWASP Top 10: chuẩn bị câu lệnh parameterized chống SQL injection, escape output chống XSS, CSRF token cho form giao dịch.
+Trên tầng frontend Next.js tại `./sources/frontend/web-app/`, giai đoạn này xây dựng `MembershipHubClient` TypeScript sử dụng Axios với request interceptor tự động attach Bearer token, response interceptor xử lý 401 bằng refresh token flow. Module `cacheService` sử dụng IndexedDB qua thư viện `idb` lưu trữ thẻ thành viên, danh sách thông báo, queue offline request với TTL 24 giờ. Service Worker xử lý background sync, gửi lại queued requests khi thiết bị online trở lại. Toàn bộ hợp đồng OpenAPI 3.1 YAML cho notification queue và mobile app được công bố tại `./sources/docs/contracts/` phục vụ mobile team tích hợp.
 
-## 3. Chỉ Thị Chức Năng Chuyên Biệt Cho Tác Nhân Phụ
+Mục tiêu chính của giai đoạn là toàn bộ REST API backend, Kafka producer/consumer, OpenAPI contracts và frontend client library có thể tích hợp tức thì lên môi trường staging ngay khi kết thúc, đảm bảo mobile team có đủ tài liệu và SDK để phát triển ứng dụng native. Tất cả thao tác nghiệp vụ phải ghi log kiểm toán thông qua cơ chế tập trung, đảm bảo dấu vết kiểm toán đầy đủ phục vụ tuân thủ NFR-006 với thời gian lưu trữ tối thiểu 1 năm, mọi dữ liệu nhạy cảm phải được mã hóa AES-256 tại rest và truyền tải qua TLS 1.3 theo NFR-003.
 
-*   **Coder**: Đóng vai trò Nhà Phát Triển Ứng Dụng Cao Cấp. Chịu trách nhiệm triển khai mã nguồn ứng dụng thuần túy trên các dịch vụ backend `notification-service`, `reporting-service`, `attendance-service`, `center-service`, `user-service` và lớp frontend Next.js, bao gồm controller REST, service nghiệp vụ, DTO, bộ xử lý ngoại lệ bản địa hóa, client tích hợp bên ngoài (FCM, APNs, Zalo, AI), và các thành phần React cho giao diện di động responsive. Bị cấm viết bộ kiểm thử hoặc biểu mẫu hạ tầng.
+## 2. Phạm Vi Kỹ Thuật Cho Phép Và Ranh Giới Thư Mục
 
-* **Tester**: Đóng vai trò Trưởng Nhóm Kiểm Thử/Đảm Bảo Chất Lượng. Chuyên về kỹ thuật bộ kiểm thử, xác thực và cổng chất lượng. Chịu trách nhiệm sinh JUnit, kiểm thử tích hợp với Testcontainers, kiểm thử đơn vị với Mockito, kiểm thử tham số hóa và kịch bản xác thực idempotency. Bị cấm sửa đổi mã nguồn sản phẩm. Nếu nhiệm vụ phụ liên quan đến phạm vi tích hợp tổng thể hoặc đầu-cuối mà không thể khoanh vùng một tệp mã nguồn cụ thể, phải xuất chính xác chuỗi ký tự `INTEGRATION_SCOPE` làm tham số đầu tiên của cặp phân tách bằng dấu chấm phẩy.
+Danh sách đầy đủ các tệp tin vật lý được phép tạo mới hoặc tái cấu trúc trong giai đoạn 4, tuân thủ nghiêm ngặt quy ước gói `org.nlh4j.membershiphub` và ranh giới thư mục doanh nghiệp, phân tách theo microservice tương ứng với từng nhóm nghiệp vụ được phân bổ trong bảng phân bổ giai đoạn 4.2 của bối cảnh dự án toàn cục:
 
-* **Doc**: Đóng vai trò Chuyên Viên Viết Tài Liệu Kỹ Thuật và Kiến Trúc Sư Hệ Thống Doanh Nghiệp. Chuyên về biên soạn tài liệu đặc tả kỹ thuật toàn diện, hợp đồng OpenAPI 3.0.3, sơ đồ Mermaid mô tả luồng nghiệp vụ, checklist review và danh mục kiến trúc doanh nghiệp phù hợp với các lớp topology dự án đang hoạt động. Mỗi tệp tài liệu kỹ thuật được sinh ra phải được liệt kê dưới dạng thực thể đường dẫn tệp rõ ràng kết thúc bằng phần mở rộng `.md` hoặc `.yaml` hoặc `.mmd` và nằm hoàn toàn trong sơ đồ lưu trữ tập trung: `./sources/docs/`.
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/controller/StudentCardController.java` — [REQ-014], [REQ-015]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/service/StudentCardService.java` — [REQ-014], [REQ-015], [EXC-004]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/dto/StudentCardResponse.java` — [REQ-014]
+* `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/dto/CardRenewalRequest.java` — [REQ-015]
+* `./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/StudentCardControllerTest.java` — [REQ-014], [REQ-015]
+* `./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/service/StudentCardServiceTest.java` — [REQ-015], [EXC-004]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/PromotionController.java` — [REQ-017]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/AnnouncementController.java` — [REQ-018]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/service/PromotionService.java` — [REQ-017]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/service/AnnouncementService.java` — [REQ-018]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/dto/PromotionRequest.java` — [REQ-017]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/dto/PromotionResponse.java` — [REQ-017]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/dto/AnnouncementRequest.java` — [REQ-018]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/dto/AnnouncementResponse.java` — [REQ-018]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/repository/PromotionRepository.java` — [REQ-017]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/repository/AnnouncementRepository.java` — [REQ-018]
+* `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/exception/DuplicatePromotionCodeException.java` — [REQ-017], [EXC-004]
+* `./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/PromotionServiceTest.java` — [REQ-017]
+* `./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/AnnouncementServiceTest.java` — [REQ-018]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/controller/NotificationController.java` — [REQ-016], [ARC-008]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/controller/DeviceController.java` — [REQ-021]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/NotificationDispatcherService.java` — [REQ-016], [ARC-008], [EXC-003]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/PushDeliveryService.java` — [REQ-021], [EXC-003]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/integration/ZaloBotClient.java` — [ARC-008]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/integration/FcmClient.java` — [REQ-021]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/dto/NotificationDispatchRequest.java` — [REQ-016]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/dto/NotificationDispatchResponse.java` — [REQ-016]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/dto/DeviceRegistrationRequest.java` — [REQ-021]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/kafka/NotificationEventProducer.java` — [ARC-008]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/kafka/NotificationEventConsumer.java` — [ARC-008], [EXC-003]
+* `./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/NotificationDispatcherServiceTest.java` — [REQ-016], [EXC-003]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/ChatbotController.java` — [REQ-019]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/ChatbotService.java` — [REQ-019], [EXC-004]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/integration/VertexAiClient.java` — [REQ-019]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/dto/ChatbotQueryRequest.java` — [REQ-019]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/dto/ChatbotResponse.java` — [REQ-019]
+* `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/ChatbotServiceTest.java` — [REQ-019], [EXC-004]
+* `./sources/frontend/web-app/src/lib/api/membershipHubClient.ts` — [ARC-009]
+* `./sources/frontend/web-app/src/lib/api/notifications.ts` — [ARC-008], [REQ-021]
+* `./sources/frontend/web-app/src/lib/offline/cacheService.ts` — [ARC-009]
+* `./sources/frontend/web-app/src/sw/service-worker.ts` — [ARC-009]
+* `./sources/frontend/web-app/src/types/notification.d.ts` — [ARC-008]
+* `./sources/frontend/web-app/src/types/memberCard.d.ts` — [ARC-009]
+* `./sources/frontend/web-app/src/test/notifications.spec.ts` — [ARC-008]
+* `./sources/frontend/web-app/src/test/cacheService.spec.ts` — [ARC-009]
+* `./sources/docs/contracts/notification-queue.openapi.yaml` — [ARC-008], [REQ-016], [DOC-001]
+* `./sources/docs/contracts/mobile-app.openapi.yaml` — [ARC-009], [DOC-001]
+* `./sources/docs/contracts/member-card.openapi.yaml` — [REQ-014], [DOC-001]
 
-*   **Reviewer**: Chịu trách nhiệm xác minh trình biên dịch, cổng phân tích tĩnh và vá lỗi phòng thủ. Chuyên về đánh giá chất lượng mã, giải quyết lỗi biên dịch, sửa lỗ hổng bảo mật OWASP và xử lý các blocker cổng chất lượng SonarQube. Đánh giá tuân thủ quy ước RBAC, biên giới transaction, validation đầu vào và che giấu dữ liệu nhạy cảm.
+* **RÀNG BUỘC BẮT BUỘC VỀ BỘ KHUNG NỀN TẢNG**:
+  - Tất cả tài sản mã nguồn ứng dụng trong giai đoạn 4 phải kế thừa bộ khung build descriptors đã được khởi tạo ở Giai đoạn 1, bao gồm `./sources/backend/pom.xml` (root parent) và 4 tệp con `./sources/backend/<service-name>/pom.xml` cho `user-service`, `center-service`, `course-service`, `attendance-service`.
+  - Tệp `./sources/backend/pom.xml` và các tệp con KHÔNG được tái tạo trong giai đoạn này vì đã tồn tại từ Giai đoạn 1, đồng thời tệp `./sources/frontend/package.json` và `./sources/frontend/tsconfig.json` cũng đã được khởi tạo ở Giai đoạn 1.
+  - Toàn bộ mã nguồn mới phải tuân thủ quy ước gói `org.nlh4j.membershiphub.<service-name>` và được truy vết bằng các mã thẻ quy định trong ma trận phân bổ ngay từng dòng lệnh, đảm bảo 100% khả năng truy nguyên từ yêu cầu nghiệp vụ đến triển khai thực tế.
 
-*   **Docker**: Chuyên biệt về container hóa, kỹ thuật Dockerfile đa giai đoạn, tối ưu gói và đẩy tài sản ảnh ứng dụng đã xác minh lên DockerHub.
+## 3. Chỉ Thị Chức Năng Cho Từng Sub-Agent
 
-*   **GCP**: Chuyên về tự động hóa đám mây trong Google Cloud Platform. Chịu trách nhiệm xây dựng và đẩy ảnh lên Google Cloud Artifact Registry (GCR), điều phối môi trường container nguyên bản trên Google Cloud Run.
+* **Coder**: Đóng vai trò lập trình viên ứng dụng chính. Chịu trách nhiệm hiện thực hóa toàn bộ controller, service, DTO, exception handler, repository, Kafka producer/consumer, integration client (FcmClient, ZaloBotClient, VertexAiClient) trong package `controller`, `service`, `dto`, `repository`, `exception`, `kafka`, `integration` của `user-service`, `center-service`, `attendance-service` và `course-service`. Song song đó, Coder cũng chịu trách nhiệm phát triển tầng frontend TypeScript client tại `./sources/frontend/web-app/src/lib/api/`, module offline cache, Service Worker. Bị cấm viết bộ kiểm thử, tài liệu hoặc cấu hình hạ tầng.
 
-*   **GKE**: Chuyên về điều phối container sản xuất bên trong Google Kubernetes Engine. Chịu trách nhiệm xây dựng manifest triển khai Kubernetes, điều khiển định tuyến, cấu hình HPA, biểu đồ Helm và triển khai tải công việc microservice vào cụm GKE đang hoạt động.
+* **Tester**: Đóng vai trò kiểm thử viên chính. Tạo bộ kiểm thử đơn vị JUnit 5 kết hợp Mockito cho `StudentCardController`, `StudentCardService`, `PromotionService`, `AnnouncementService`, `NotificationDispatcherService`, `ChatbotService`. Xây dựng bộ kiểm thử tích hợp sử dụng Testcontainers (PostgreSQL, Kafka) và Embedded Kafka. Đối với frontend, tạo bộ kiểm thử Jest kết hợp React Testing Library cho `notifications.spec.ts` và `cacheService.spec.ts` sử dụng `fake-indexeddb` để mock IndexedDB. Bị cấm sửa đổi mã nguồn sản phẩm.
 
-## 4. Định Nghĩa Hoàn Thành Giai Đoạn
+* **Doc**: Soạn thảo các tài liệu OpenAPI 3.1 YAML tại `./sources/docs/contracts/` mô tả đầy đủ endpoint `/api/v1/students/{id}/card`, `/api/v1/students/{id}/card/renew`, `/api/v1/notifications/dispatch`, `/api/v1/devices/register`, `/api/v1/chatbot/query`. Tài liệu phải chứa security scheme BearerAuth, mô tả chi tiết request/response schema, mã lỗi chuẩn, ví dụ JSON, hướng dẫn retry và dead letter queue theo EXC-003.
 
-Giai đoạn 4 được coi là hoàn thành khi đáp ứng đồng thời các tiêu chí định lượng sau: một trăm phần trăm endpoint quản lý thẻ thành viên (`GET /api/v1/student-cards/me`, `POST /api/v1/student-cards/renew`) hoạt động đúng theo đặc tả với xác thực `renewalDays` từ 1-365 và xử lý lỗi cổng thanh toán; hệ thống thông báo đa kênh với `POST /api/v1/notifications/dispatch` hỗ trợ FCM/APNs/Zalo kèm cơ chế retry tối đa 3 lần với thời gian chờ theo cấp số nhân; CRUD khuyến mãi và thông báo hoạt động đúng với bộ lọc `endDate` hết hạn và xử lý mã khuyến mãi trùng lặp; chatbot AI endpoint `POST /api/v1/chatbot/ask` hoạt động với cơ chế leo thang khi độ tin cậy thấp; giao diện di động responsive theo vai trò với layout đa ngôn ngữ; middleware i18n phát hiện locale chính xác theo thứ tự ưu tiên cookie, Accept-Language, mặc định; sitemap đa ngôn ngữ với thẻ hreflang; báo cáo CSV điểm danh và dashboard thời gian thực với chu kỳ làm mới cấu hình được; cơ chế xử lý FIFO khi khôi phục dịch vụ với thông báo sự kiện đã khôi phục; bộ kiểm thử đơn vị và tích hợp phủ sóng tối thiểu 85 phần trăm các luồng nghiệp vụ trọng yếu; ba hợp đồng OpenAPI YAML được soạn thảo đầy đủ với đặc tả schema và response codes; sơ đồ Mermaid mô tả luồng thông báo và khôi phục. Một trăm phần trăm mã TagID được phân bổ cho giai đoạn 4 phải được ánh xạ chính xác trong báo cáo đánh giá cuối giai đoạn.
+* **Reviewer**: Thực hiện rà soát chất lượng mã nguồn theo checklist OWASP Top 10, đánh giá tính đúng đắn của logic retry queue với exponential backoff, dead letter handling, idempotency trong FcmClient, vertex AI confidence scoring. Xác minh tính bảo mật của việc sử dụng JPQL parameter binding, validation input với `@Valid`, mã hóa PII. Phát hiện sớm các vấn đề race condition, memory leak trong dead letter queue, thread safety trong NotificationEventConsumer.
+
+## 4. Định Nghĩa Hoàn Thành Giai Đoạn (DoD)
+
+Giai đoạn 4 được coi là hoàn thành khi đáp ứng đồng thời các tiêu chí định lượng sau: (1) Endpoint `GET /api/v1/students/{studentId}/card` trả về đầy đủ thông tin thẻ thành viên với `remainingDays` được tính toán chính xác; (2) Endpoint `POST /api/v1/students/{studentId}/card/renew` xử lý gia hạn với validation `renewalDays` trong khoảng 1-365 và lưu lịch sử vào bảng `CardRenewalHistory`; (3) REST CRUD `/api/v1/promotions` hỗ trợ perpetual promotion khi `endDate=null`, kiểm tra trùng lặp `code` UNIQUE; (4) REST CRUD `/api/v1/announcements` kèm scheduled task auto-hide khi quá expiry; (5) Endpoint `POST /api/v1/notifications/dispatch` publish sự kiện lên Kafka topic `notification-queue` với schema chuẩn; (6) Consumer `NotificationEventConsumer` xử lý PUSH, ZALO_GROUP, IN_APP đúng kênh, retry 3 lần với exponential backoff theo EXC-003, chuyển DEAD_LETTER sau khi hết retry; (7) Endpoint `POST /api/v1/devices/register` lưu device token với platform iOS/Android/Web; (8) Endpoint `POST /api/v1/chatbot/query` gọi Vertex AI Gemini, escalate khi confidence < 0.6, quản lý session 30 phút; (9) Frontend TypeScript client `MembershipHubClient` hỗ trợ bearer token auto-attach, refresh token flow khi 401; (10) Module `cacheService` sử dụng IndexedDB cache thẻ thành viên và queue offline request; (11) 100% thẻ truy vết REQ-014, REQ-015, REQ-016, REQ-017, REQ-018, REQ-019, REQ-021, ARC-008, ARC-009, EXC-003 được ánh xạ đầy đủ vào mã nguồn và tài liệu; (12) 100% bộ kiểm thử JUnit và Jest đạt trạng thái PASS với code coverage >= 80% cho các lớp controller, service và frontend module.
 
 ## 5. NHẬT KÝ THỰC THI KIẾN TRÚC THEO NGÀY
 
-### 🌤️ NGÀY 1: <!--DAY_HEADER_START-->KHỞI TẠO DESCRIPTOR VÀ BỘ XỬ LÝ NGOẠI LỆ TẬP TRUNG CHO HẠ TẦNG PHỤ TRỢ<!--DAY_HEADER_END-->
+### 🌤️ NGÀY 1: <!--DAY_HEADER_START-->TRIỂN KHAI STUDENTCARD API VÀ GIA HẠN THẺ THÀNH VIÊN<!--DAY_HEADER_END-->
 
-#### 📝 NHIỆM VỤ PHỤ 1.1: Khởi tạo descriptor Maven cho notification-service và reporting-service
-##### Tác Nhân Được Phân Công: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/notification-service/pom.xml
+#### 📝 NHIỆM VỤ PHỤ 1.1: Xây dựng REST endpoint xem thông tin thẻ thành viên
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/controller/StudentCardController.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-014]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp mã nguồn tại đường dẫn `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/controller/StudentCardController.java` hiện thực hóa lớp `StudentCardController` với annotation `@Path("/api/v1/students")` và method `@GET` tại `@Path("/{studentId}/card")`. Inject `StudentCardService` qua CDI. Sử dụng `@PathParam("studentId")` cho UUID, `@Context SecurityContext` để lấy thông tin người dùng hiện tại. Trả về DTO `StudentCardResponse` chứa các trường `cardId`, `studentId`, `issueDate`, `endDate`, `totalValidityDays`, `usedDays`, `remainingDays`, `renewalCount`. Áp dụng `@RolesAllowed({"STUDENT", "CENTER_ADMIN", "SYSTEM_ADMIN"})` và kiểm tra student chỉ được xem thẻ của chính mình trừ khi role là admin. Trả về HTTP 404 với mã `CARD_NOT_FOUND` khi không tìm thấy thẻ. Truy vết đầy đủ theo [REQ-014].
 
-* **Low-Level Technical Task Instruction:** Khởi tạo descriptor Maven cho module `notification-service` thừa kế từ `pom.xml` gốc. Khai báo `<groupId>org.nlh4j.membershiphub.notificationservice</groupId>`, `<artifactId>notification-service</artifactId>`. Bao gồm các dependency Quarkus 3.15.1: `quarkus-rest`, `quarkus-rest-jackson`, `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, `quarkus-flyway`, `quarkus-smallrye-jwt`, `quarkus-messaging-kafka` cho việc consume sự kiện từ `course-service` và `attendance-service`, `quarkus-rest-client` cho FCM/APNs/Zalo, `quarkus-smallrye-health`. Tích hợp plugin `quarkus-maven-plugin` với các goal `build`, `generate-code`, `generate-code-tests`. Cấu hình `quarkus.hibernate-orm.database.generation=validate` để buộc sử dụng Flyway migrations. Tất cả identifier ở dạng chữ thường alphanumeric, không chứa ký tự `-` hoặc `_`.
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 1.2: Khởi tạo descriptor Maven cho reporting-service
-##### Tác Nhân Được Phân Công: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/reporting-service/pom.xml
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không có thay đổi schema trong sub-task này
+-- Sử dụng bảng StudentCards đã được tạo trong Phase 1
+-- Truy vấn dữ liệu thẻ thành viên theo studentId
+SELECT card_id, student_id, issue_date, end_date, validity_days, remaining_days
+FROM StudentCards
+WHERE student_id = :studentId
+  AND is_active = true;
+```
+<!--END_DDL_MIGRATION-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
 
-* **Low-Level Technical Task Instruction:** Khởi tạo descriptor Maven cho module `reporting-service` thừa kế từ `pom.xml` gốc. Khai báo `<groupId>org.nlh4j.membershiphub.reportingservice</groupId>`, `<artifactId>reporting-service</artifactId>`. Bao gồm các dependency Quarkus 3.15.1: `quarkus-rest`, `quarkus-rest-jackson`, `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, `quarkus-flyway`, `quarkus-smallrye-jwt`, `quarkus-scheduler` cho refresh dashboard tự động, `quarkus-smallrye-health`. Cấu hình `quarkus.hibernate-orm.database.generation=validate` để buộc sử dụng Flyway migrations. Tích hợp plugin `quarkus-maven-plugin` chuẩn.
-
-#### 📝 NHIỆM VỤ PHỤ 1.3: Khởi tạo descriptor frontend và bổ sung dependency i18n, chatbot
-##### Tác Nhân Được Phân Công: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/frontend/web-app/package.json
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000], [REQ-020]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Cập nhật tệp `./sources/frontend/web-app/package.json` của ứng dụng Next.js. Bổ sung dependencies mới cho giai đoạn 4: `next-intl@3.20.0` để quản lý đa ngôn ngữ, `zustand@4.5.4` cho state management phía client, `react-qr-scanner@1.0.0-alpha.11` cho chức năng quét QR, `@react-oauth/google@0.12.1` cho OAuth Google, `socket.io-client@4.7.5` cho giao tiếp thời gian thực, `recharts@2.13.0` cho biểu đồ dashboard. Bổ sung devDependencies: `vitest@2.0.5` và `@testing-library/react@16.0.0` cho kiểm thử component. Đảm bảo phiên bản Next.js 14.2.15, React 18.3.1 và TypeScript 5.6.3 được giữ nguyên theo đường cơ sở.
-
-#### 📝 NHIỆM VỤ PHỤ 1.4: Soạn thảo tài liệu blueprint kiến trúc cho giai đoạn 4
-##### Tác Nhân Được Phân Côn: Doc
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/architecture/phase-4-blueprint.md
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-008], [ARC-009], [REQ-024], [REQ-025]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Soạn thảo tài liệu blueprint kiến trúc tại `./sources/docs/architecture/phase-4-blueprint.md` mô tả tổng quan giai đoạn 4. Tài liệu phải bao gồm: sơ đồ Mermaid `graph LR` mô tả topology triển khai với sáu vi dịch vụ (notification, reporting, attendance, center, user) và lớp frontend Next.js; bảng ma trận ánh xạ 17 mã TagID từ `[REQ-014]` đến `[EXC-005]` với thành phần kiến trúc tương ứng; sơ đồ tuần tự cho luồng thông báo đa kênh từ sự kiện nghiệp vụ đến FCM/APNs/Zalo; sơ đồ tuần tự cho luồng gia hạn thẻ thành viên từ phía client qua cổng thanh toán; mô tả chi tiết cơ chế xử lý FIFO khi khôi phục dịch vụ thông qua bảng `attendance_outbox`; checklist tuân thủ OWASP Top 10 cho từng module nghiệp vụ. Tài liệu sử dụng ngôn ngữ tiếng Việt cho phần mô tả, giữ nguyên tên thực thể và TagID ở dạng Technical English.
-
-#### 📝 NHIỆM VỤ PHỤ 1.5: Kiểm thử tích hợp build Maven đa mô-đun cho giai đoạn 4
-##### Tác Nhân Được Phân Côn: Tester
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/infra/test/maven-build-integration.sh
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000], [REQ-016], [REQ-024]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Tạo script bash tại `./sources/infra/test/maven-build-integration.sh` mở rộng từ giai đoạn 1 để xác minh khả năng biên dịch đa mô-đun cho tất cả sáu vi dịch vụ bao gồm notification-service và reporting-service vừa khởi tạo. Script thực thi `mvn clean validate` tại `./sources/backend/`, kiểm tra sự tồn tại của descriptor `pom.xml` cho từng vi dịch vụ, xác minh dependency resolution từ BOM Quarkus 3.15.1 không có xung đột. Thoát với mã 0 nếu thành công, mã khác 0 nếu thất bại. In log rõ ràng cho từng vi dịch vụ.
-
-### 🌤️ NGÀY 2: <!--DAY_HEADER_START-->QUẢN LÝ THẺ THÀNH VIÊN, GIA HẠN VÀ HỆ THỐNG THÔNG BÁO ĐA KÊNH<!--DAY_HEADER_END-->
-
-#### 📝 NHIỆM VỤ PHỤ 2.1: Triển khai MembershipCardController và MembershipCardQueryService
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/controller/MembershipCardController.java
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-014], [REQ-015]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Xây dựng class `@Path("/api/v1/student-cards")` `MembershipCardController` trong package `org.nlh4j.membershiphub.attendanceservice` inject `MembershipCardQueryService` và `StudentCardRenewalService`. Endpoint `GET /me` với annotation `@RolesAllowed({"Student"})` trích `studentId` từ JWT subject thông qua `@Context SecurityContext`; trả về `MembershipCardResponse` với response 200 chứa `cardId`, `studentId`, `issueDate`, `validityDays`, `remainingDays`, `status` và `endDate`. Endpoint `POST /renew` nhận `RenewalRequest` với `@Valid`; trả về 200 với `newEndDate` và `newRemainingDays` hoặc 402 với mã `PAYMENT_GATEWAY_FAILED` khi cổng thanh toán từ chối. Áp dụng `@Transactional` cho endpoint renew. Tích hợp `NotificationDispatchService` để gửi thông báo xác nhận gia hạn.
-
-* **Phase Localized Exception Handlers [EXC-005]:** <!--START_EXC_HANDLER-->
+<!--START_API_CONTRACT-->
 ```json
 {
-  "PAYMENT_GATEWAY_FAILED_HTTP_402": "Trả message 'Cổng thanh toán từ chối giao dịch, thẻ chưa được gia hạn' khi nhận phản hồi lỗi từ payment provider",
-  "INVALID_RENEWAL_PERIOD_HTTP_400": "Trả message 'Số ngày gia hạn phải nằm trong khoảng 1-365' khi renewalDays ngoài phạm vi cho phép",
-  "FIFO_PROCESSING_RECOVERY": "Đảm bảo giao dịch gia hạn nằm trong hàng đợi khi dịch vụ khôi phục được xử lý đúng thứ tự, tránh gia hạn hai lần"
+  "endpoint": "GET /api/v1/students/{studentId}/card",
+  "request": {
+    "pathParams": { "studentId": "UUID" },
+    "headers": { "Authorization": "Bearer <jwt_token>" }
+  },
+  "response_200": {
+    "cardId": "uuid",
+    "studentId": "uuid",
+    "issueDate": "2024-01-15",
+    "endDate": "2025-01-15",
+    "totalValidityDays": 365,
+    "usedDays": 45,
+    "remainingDays": 320,
+    "renewalCount": 0
+  },
+  "response_404": {
+    "error": "CARD_NOT_FOUND",
+    "message": "Không tìm thấy thẻ thành viên cho học viên này"
+  }
 }
 ```
-<!--END_EXC_HANDLER-->
+<!--END_API_CONTRACT-->
 
-* **API and Event Routing Contracts [REQ-014], [REQ-015]:** <!--START_API_CONTRACT-->
+#### 📝 NHIỆM VỤ PHỤ 1.2: Kiểm thử đơn vị cho StudentCardController
+
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/controller/StudentCardController.java;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/StudentCardControllerTest.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-014]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh test class JUnit 5 tại đường dẫn `./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/StudentCardControllerTest.java` với `@QuarkusTest` annotation. Sử dụng `@InjectMock` để mock `StudentCardService`. Test case 1: `testGetCard_Success` gọi GET endpoint với studentId hợp lệ, mock service trả về `StudentCardResponse` mẫu, verify HTTP 200 và JSON body chứa đầy đủ trường `cardId`, `studentId`, `issueDate`, `endDate`, `totalValidityDays`, `usedDays`, `remainingDays`, `renewalCount`. Test case 2: `testGetCard_NotFound` mock service throw `NotFoundException`, verify HTTP 404 với error code `CARD_NOT_FOUND`. Test case 3: `testGetCard_Forbidden` gọi với student khác, verify HTTP 403 với mã `INSUFFICIENT_PRIVILEGES`. Sử dụng `RestAssured` để gọi endpoint, assert JSON path với `jsonPath()`. Verify authorization header được gửi đúng định dạng Bearer token. Truy vết [REQ-014].
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Test scope không yêu cầu migration
+-- Sử dụng H2 in-memory database cho test với schema đã sync
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 1.3: Tài liệu hóa API thẻ thành viên
+
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/contracts/member-card.openapi.yaml`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-014], [DOC-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh file OpenAPI 3.1 YAML tại đường dẫn `./sources/docs/contracts/member-card.openapi.yaml` mô tả đầy đủ endpoint `GET /api/v1/students/{studentId}/card`. Bao gồm: mô tả nghiệp vụ, parameters (path, query, header), request body schema, response schemas (200, 401, 403, 404), ví dụ JSON cho mỗi response, security scheme BearerAuth. Thêm section xác thực phân quyền giải thích rằng chỉ student sở hữu hoặc admin mới có quyền truy cập. Bổ sung ví dụ curl command để gọi API. Truy vết [REQ-014] và [DOC-001].
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Tài liệu không yêu cầu migration vật lý
+-- Phần này chỉ tham chiếu bảng StudentCards trong phần mô tả
+```
+<!--END_DDL_MIGRATION-->
+
+#### 📝 NHIỆM VỤ PHỤ 1.4: Xây dựng logic gia hạn thẻ với validation renewal_days
+
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/service/StudentCardService.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-015], [EXC-004]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Thêm method `renewCard(UUID studentId, CardRenewalRequest request)` vào `StudentCardService` tại đường dẫn `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/service/StudentCardService.java`. Bước 1: Validate `renewalDays` trong khoảng 1-365 sử dụng Bean Validation `@Min(1) @Max(365)`, ném `ConstraintViolationException` nếu sai theo [EXC-004]. Bước 2: Tìm `StudentCard` active theo studentId thông qua `StudentCardRepository.findByStudentId()`, throw `NotFoundException` với mã `CARD_NOT_FOUND` nếu không tồn tại. Bước 3: Lưu giá trị `previousEndDate`, tính `newEndDate = currentEndDate.plusDays(renewalDays)`. Bước 4: Cập nhật entity với `endDate = newEndDate`, `renewalCount = renewalCount + 1`, `lastRenewedAt = LocalDateTime.now()`. Bước 5: Tạo bản ghi `CardRenewalHistory` với `previousEndDate`, `newEndDate`, `paymentReference`, `renewedAt`. Bước 6: Publish event `card-renewed` lên Kafka topic `notification-queue` thông qua `NotificationEventProducer` để worker gửi thông báo xác nhận. Sử dụng `@Transactional` để đảm bảo ACID giữa cập nhật thẻ và lưu lịch sử. Truy vết [REQ-015] và [EXC-004].
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Sử dụng bảng StudentCards đã tạo trong Phase 1
+-- Logic tính toán end_date mới khi gia hạn
+UPDATE StudentCards
+SET end_date = end_date + (:renewalDays * INTERVAL '1 day'),
+    renewal_count = renewal_count + 1,
+    last_renewed_at = now(),
+    updated_at = now()
+WHERE card_id = :cardId
+  AND is_active = true;
+
+-- Lưu lịch sử gia hạn
+INSERT INTO CardRenewalHistory (renewal_id, card_id, student_id, renewal_days, previous_end_date, new_end_date, payment_reference, renewed_at)
+VALUES (gen_random_uuid(), :cardId, :studentId, :renewalDays, :previousEndDate, :newEndDate, :paymentReference, now());
+```
+<!--END_DDL_MIGRATION-->
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
 ```json
 {
-  "GET /api/v1/student-cards/me": {
-    "description": "Lấy thông tin thẻ thành viên hiện tại của học viên",
-    "response_200": {
-      "cardId": "uuid",
-      "studentId": "uuid",
-      "issueDate": "YYYY-MM-DD",
-      "endDate": "YYYY-MM-DD",
-      "validityDays": 365,
-      "remainingDays": 120,
-      "status": "ACTIVE"
-    }
-  },
-  "POST /api/v1/student-cards/renew": {
-    "request": {
+  "endpoint": "POST /api/v1/students/{studentId}/card/renew",
+  "request": {
+    "pathParams": { "studentId": "UUID" },
+    "body": {
       "renewalDays": 30,
-      "paymentTransactionId": "tx_abc123"
-    },
-    "response_200": {
-      "cardId": "uuid",
-      "newEndDate": "YYYY-MM-DD",
-      "newRemainingDays": 150,
-      "status": "ACTIVE"
-    },
-    "response_402": {
-      "code": "PAYMENT_GATEWAY_FAILED",
-      "message": "Cổng thanh toán từ chối giao dịch"
+      "paymentReference": "PAY-2024-001234"
     }
+  },
+  "response_200": {
+    "cardId": "uuid",
+    "endDate": "2025-02-14",
+    "renewalCount": 1
   }
 }
 ```
 <!--END_API_CONTRACT-->
 
-#### 📝 NHIỆM VỤ PHỤ 2.2: Triển khai StudentCardRenewalService với xử lý race condition
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/StudentCardRenewalService.java
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
 
+<!--START_EXC_HANDLER-->
+```java
+// Xử lý theo [EXC-004]: validation renewalDays ngoài khoảng 1-365
+if (request.getRenewalDays() < 1 || request.getRenewalDays() > 365) {
+    throw new ConstraintViolationException(
+        "renewalDays phải nằm trong khoảng 1-365",
+        Set.of(ConstraintViolationImpl.forField("renewalDays"))
+    );
+}
+```
+<!--END_EXC_HANDLER-->
+
+### 🌤️ NGÀY 2: <!--DAY_HEADER_START-->KIỂM THỬ GIA HẠN THẺ VÀ TRIỂN KHAI REST ENDPOINT GIA HẠN<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 2.1: Xây dựng REST endpoint gia hạn thẻ
+
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/controller/StudentCardController.java`
 * **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-015]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Thêm method `@POST` với `@Path("/{studentId}/card/renew")` trong `StudentCardController` tại đường dẫn `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/controller/StudentCardController.java`. Sử dụng `@Valid` annotation cho `CardRenewalRequest` body để kích hoạt Bean Validation. Inject `StudentCardService`. Trả về `Response.status(Response.Status.OK).entity(updatedCardResponse).build()`. Annotation `@RolesAllowed({"STUDENT"})` và kiểm tra student chỉ gia hạn thẻ của chính mình thông qua `@Context SecurityContext` lấy `userId` từ JWT. Xử lý exception bằng `@ExceptionHandler` cho `ConstraintViolationException` trả về HTTP 400 với danh sách field lỗi và mã `INVALID_RENEWAL_PAYLOAD`. Truy vết [REQ-015].
 
-* **Low-Level Technical Task Instruction:** Xây dựng class `@ApplicationScoped` `StudentCardRenewalService` trong package `org.nlh4j.membershiphub.attendanceservice` inject `EntityManager` và `PaymentGatewayClient`. Phương thức `renew(UUID studentId, int renewalDays, String paymentTransactionId)` thực hiện: (1) validate `renewalDays` nằm trong khoảng 1-365, nếu không ném `InvalidRenewalPeriodException`; (2) tìm `StudentCard` theo `studentId` với `@Version` để áp dụng optimistic locking; (3) gọi `PaymentGatewayClient.confirm(paymentTransactionId)`; (4) nếu thành công, cập nhật `endDate = endDate.plusDays(renewalDays)`, `remainingDays = remainingDays + renewalDays`; (5) nếu thất bại, ném `PaymentGatewayFailedException` với HTTP 402 và KHÔNG cập nhật `endDate`. Sử dụng `@Transactional(REQUIRES_NEW)` để đảm bảo giao dịch nguyên tử. Inject `NotificationDispatchService` để phát thông báo xác nhận sau khi gia hạn thành công.
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-* **Phase Localized Exception Handlers [EXC-005]:** <!--START_EXC_HANDLER-->
-```json
-{
-  "OPTIMISTIC_LOCK_CONFLICT": "Ném ConcurrentModificationException khi hai yêu cầu gia hạn đồng thời, HTTP 409 với message 'Thẻ đang được cập nhật, vui lòng thử lại'",
-  "PAYMENT_REVERSAL": "Đảo ngược giao dịch khi DB write thất bại sau khi payment gateway xác nhận thành công"
+<!--START_DDL_MIGRATION-->
+```sql
+-- Endpoint layer không trực tiếp thao tác DDL
+-- Logic được delegate xuống service layer đã triển khai ở Nhiệm vụ 1.4
+```
+<!--END_DDL_MIGRATION-->
+
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
+
+<!--START_EXC_HANDLER-->
+```java
+// Xử lý [EXC-004]: validation thất bại trả về HTTP 400
+@ExceptionHandler(ConstraintViolationException.class)
+public Response handleValidation(ConstraintViolationException ex) {
+    return Response.status(400)
+        .entity(Map.of(
+            "error", "INVALID_RENEWAL_PAYLOAD",
+            "violations", ex.getConstraintViolations().stream()
+                .map(v -> Map.of("field", v.getPropertyPath().toString(), "message", v.getMessage()))
+                .toList()
+        ))
+        .build();
 }
 ```
 <!--END_EXC_HANDLER-->
 
-#### 📝 NHIỆM VỤ PHỤ 2.3: Kiểm thử tích hợp cho MembershipCardController
-##### Tác Nhân Được Phân Côn: Tester
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/controller/MembershipCardController.java;./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/controller/MembershipCardControllerTest.java
+#### 📝 NHIỆM VỤ PHỤ 2.2: Kiểm thử tích hợp cho luồng gia hạn thẻ
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-014], [REQ-015]<!--END_TAGS-->
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/CardRenewalIntegrationTest.java
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-015], [EXC-004]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh integration test tại đường dẫn `./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/CardRenewalIntegrationTest.java` sử dụng `@QuarkusTest` với test profile active H2. Test scenario 1: `testRenewCard_Success` tạo StudentCard mẫu với `endDate` ban đầu, gọi POST renew với `renewalDays=30`, verify response 200 và `endDate` được cộng thêm 30 ngày, kiểm tra bản ghi `CardRenewalHistory` được tạo với `previousEndDate` và `newEndDate` đúng. Test scenario 2 theo [EXC-004]: `testRenewCard_InvalidDays` gọi với `renewalDays=400`, verify HTTP 400 với error code `INVALID_RENEWAL_PAYLOAD`. Test scenario 3: `testRenewCard_NotFound` gọi với studentId không tồn tại, verify HTTP 404 với mã `CARD_NOT_FOUND`. Test scenario 4: `testRenewCard_Forbidden` gọi với student khác, verify HTTP 403 với mã `INSUFFICIENT_PRIVILEGES`. Test scenario 5: `testRenewCard_ConcurrentRenew` sử dụng `CompletableFuture` chạy 2 request đồng thời, verify optimistic locking xử lý đúng không gây mất dữ liệu. Truy vết [REQ-015] và [EXC-004].
 
-* **Low-Level Technical Task Instruction:** Tạo lớp `MembershipCardControllerTest` sử dụng `@QuarkusTest` với RestAssured. Các test case: (1) `testGetCard_Success` xác minh response 200 với đầy đủ trường và `remainingDays` đúng; (2) `testGetCard_WrongRole` với JWT giả lập vai trò Teacher, expect HTTP 403; (3) `testRenewCard_InvalidPeriod` với `renewalDays = 0` hoặc `> 365`, expect HTTP 400 với mã `INVALID_RENEWAL_PERIOD`; (4) `testRenewCard_PaymentFailed` sử dụng `@InjectMock PaymentGatewayClient` trả về lỗi, expect HTTP 402 và xác minh `endDate` không thay đổi thông qua query trực tiếp; (5) `testRenewCard_Success` xác minh `endDate` được cộng đúng số ngày và notification được publish. Sử dụng `TestTransaction` để rollback dữ liệu sau mỗi test.
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 2.4: Triển khai NotificationController và NotificationDispatchService
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/controller/NotificationController.java
+<!--START_EXC_HANDLER-->
+```java
+// Test case xác minh [EXC-004] được xử lý đúng
+@Test
+void testRenewCard_InvalidDays() {
+    CardRenewalRequest request = new CardRenewalRequest();
+    request.setRenewalDays(400);
+    request.setPaymentReference("PAY-INVALID");
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-016], [REQ-021], [ARC-008]<!--END_TAGS-->
+    given()
+        .contentType(ContentType.JSON)
+        .body(request)
+    .when()
+        .post("/api/v1/students/{id}/card/renew", studentId)
+    .then()
+        .statusCode(400)
+        .body("error", equalTo("INVALID_RENEWAL_PAYLOAD"));
+}
+```
+<!--END_EXC_HANDLER-->
 
-* **Low-Level Technical Task Instruction:** Xây dựng class `@Path("/api/v1/notifications")` `NotificationController` trong package `org.nlh4j.membershiphub.notificationservice` inject `NotificationDispatchService`. Endpoint `POST /dispatch` với annotation `@RolesAllowed({"SystemAdmin", "CenterAdmin", "Manager"})` nhận `NotificationDispatchRequest` chứa `userId` (optional UUID), `groupZalo` (optional), `message` (required max 1000), `mediaUrl` (optional HTTPS), `priority` (enum HIGH/NORMAL/LOW). Trả về response 202 với `notificationId` và `status` là `QUEUED` ngay lập tức vì quá trình gửi là bất đồng bộ. Áp dụng `@Valid` cho request body. Endpoint `GET /history` với `@QueryParam("userId")` trả về danh sách thông báo đã gửi với response 200.
+#### 📝 NHIỆM VỤ PHỤ 2.3: Kiểm thử đơn vị cho StudentCardService
 
-* **API and Event Routing Contracts [REQ-016], [REQ-021], [ARC-008]:** <!--START_API_CONTRACT-->
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/service/StudentCardService.java;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/service/StudentCardServiceTest.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-015], [EXC-004]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh test class tại đường dẫn `./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/service/StudentCardServiceTest.java` sử dụng JUnit 5 kết hợp Mockito 5.7.0. Mock `StudentCardRepository`, `CardRenewalHistoryRepository`, `NotificationEventProducer`. Test case 1: `testRenewCard_Success` mock repository trả về StudentCard active, mock producer xác nhận publish event lên Kafka, verify `endDate` được cộng đúng số ngày, `renewalCount` tăng 1, bản ghi `CardRenewalHistory` được tạo. Test case 2 theo [EXC-004]: `testRenewCard_InvalidDays_ThrowsException` gọi với `renewalDays=0` và `renewalDays=366`, verify throw `ConstraintViolationException`. Test case 3: `testRenewCard_CardNotFound` mock repository trả về Optional.empty, verify throw `NotFoundException` với mã `CARD_NOT_FOUND`. Test case 4: `testRenewCard_PublishesKafkaEvent` verify Kafka event được publish với `eventType=card-renewed`, `studentId`, `newEndDate`, `paymentReference`. Test case 5: `testRenewCard_Transactional` sử dụng `@QuarkusTransactionTest` verify khi một trong các thao tác DB fail thì toàn bộ transaction rollback. Truy vết [REQ-015] và [EXC-004].
+
+#### 📝 NHIỆM VỤ PHỤ 2.4: Đánh giá mã nguồn StudentCardService
+
+##### Sub-Agent được phân công: Reviewer
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/service/StudentCardService.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-014], [REQ-015], [EXC-004], [NFR-003]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Reviewer đánh giá tệp `./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/service/StudentCardService.java` đảm bảo: (1) Logic tính toán `remainingDays` chính xác dựa trên `endDate` và `currentDate`, xử lý đúng múi giờ Asia/Ho_Chi_Minh; (2) Phương thức `renewCard` sử dụng `@Transactional` với `propagation=REQUIRED` đảm bảo ACID; (3) Validation `renewalDays` được thực hiện ở cả Bean Validation và service layer theo defense-in-depth; (4) Truy vấn JPQL sử dụng parameter binding ngăn chặn SQL injection theo OWASP A03; (5) Mã hóa `paymentReference` sử dụng AES-256 trước khi lưu DB theo NFR-003; (6) Kiểm tra idempotency thông qua việc xử lý race condition khi hai request gia hạn đồng thời với optimistic locking `@Version`. Đề xuất cải tiến performance thông qua cache `StudentCard` trong Redis với TTL 300s. Tạo báo cáo review với format: Phát hiện, Mức độ nghiêm trọng, Đề xuất fix, File liên quan.
+
+### 🌤️ NGÀY 3: <!--DAY_HEADER_START-->TRIỂN KHAI NOTIFICATION DISPATCHER VÀ KAFKA PRODUCER/CONSUMER<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 3.1: Xây dựng Kafka producer cho notification-queue
+
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/kafka/NotificationEventProducer.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-008], [REQ-016]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo class `NotificationEventProducer` tại đường dẫn `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/kafka/NotificationEventProducer.java` sử dụng SmallRye Reactive Messaging với `@Channel("notification-queue")` và `Emitter<NotificationEvent>`. Method `dispatch(NotificationDispatchRequest request)` chuyển đổi request thành `NotificationEvent` với UUID `dispatchId`, thời gian `createdAt`, validate enum `notificationType` thuộc tập {PUSH, ZALO_GROUP, IN_APP}. Sử dụng `Multi<NotificationEvent>` để hỗ trợ fan-out tới nhiều user. Cấu hình backpressure với buffer size 256. Log structured với MDC tracking `dispatchId` để phục vụ tracing. Implement interface `HealthCheck` để theo dõi trạng thái Kafka broker. Sử dụng annotation `@ApplicationScoped` cho CDI. Truy vết [ARC-008] và [REQ-016].
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Không yêu cầu migration mới
+-- Producer ghi message trực tiếp lên Kafka topic notification-queue
+```
+<!--END_DDL_MIGRATION-->
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
 ```json
 {
-  "POST /api/v1/notifications/dispatch": {
-    "request": {
-      "userId": "uuid (optional)",
-      "groupZalo": "string (optional)",
-      "message": "string (required, max 1000)",
-      "mediaUrl": "string (optional, must be HTTPS)",
-      "priority": "HIGH | NORMAL | LOW"
-    },
-    "response_202": {
-      "notificationId": "uuid",
-      "status": "QUEUED"
-    }
-  },
-  "GET /api/v1/notifications/history": {
-    "parameters": {
-      "userId": "uuid"
-    },
-    "response_200": {
-      "items": [
-        {
-          "notificationId": "uuid",
-          "channel": "PUSH | ZALO | EMAIL | SMS",
-          "message": "string",
-          "status": "PENDING | SENT | FAILED | DELIVERED",
-          "sentAt": "ISO-8601",
-          "retryCount": 0
-        }
-      ]
-    }
+  "kafka_topic": "notification-queue",
+  "message_key": "dispatchId",
+  "value_schema": {
+    "dispatchId": "uuid",
+    "notificationType": "PUSH|ZALO_GROUP|IN_APP",
+    "targetUserId": "uuid|null",
+    "targetGroupZalo": "string|null",
+    "targetDeviceToken": "string|null",
+    "messageTitle": "string",
+    "messageBody": "string",
+    "payload": "object|null",
+    "attemptCount": "integer",
+    "createdAt": "iso8601"
   }
 }
 ```
 <!--END_API_CONTRACT-->
 
-* **Phase Localized Exception Handlers [EXC-003]:** <!--START_EXC_HANDLER-->
-```json
-{
-  "NOTIFICATION_DELIVERY_FAILED": "Ghi log cảnh báo, kích hoạt retry queue với thời gian chờ exponential backoff (1s, 5s, 30s), tối đa 3 lần theo EXC-003",
-  "INVALID_NOTIFICATION_TARGET": "HTTP 400 khi cả userId và groupZalo đều null, message 'Phải cung cấp userId hoặc groupZalo'"
+#### 📝 NHIỆM VỤ PHỤ 3.2: Xây dựng Kafka consumer cho notification-queue
+
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/kafka/NotificationEventConsumer.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-008], [EXC-003]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo class `NotificationEventConsumer` tại đường dẫn `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/kafka/NotificationEventConsumer.java` với annotation `@Incoming("notification-queue")` nhận `NotificationEvent`. Implement logic xử lý theo `notificationType`: nếu `PUSH` gọi `FcmClient.sendPush`, nếu `ZALO_GROUP` gọi `ZaloBotClient.postMessage`, nếu `IN_APP` lưu vào `NotificationDispatchRepository`. Bọc logic trong try-catch theo [EXC-003]: nếu gửi thất bại, tăng `attemptCount`, nếu `attemptCount < maxAttempts` (3) thì re-emit message với delay exponential backoff (1 phút, 5 phút, 15 phút) sử dụng `ScheduledExecutorService`, nếu `attemptCount >= 3` thì đánh dấu `DEAD_LETTER` và publish lên dead letter topic `notification-queue.DLQ`. Cập nhật `NotificationDispatch.status` tương ứng. Sử dụng `@Acknowledgment(MANUAL)` để manual commit offset sau khi xử lý thành công. Truy vết [ARC-008] và [EXC-003].
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Cập nhật trạng thái dispatch sau khi xử lý
+UPDATE NotificationDispatch
+SET status = :status,
+    attempt_count = attempt_count + 1,
+    last_attempt_at = now(),
+    delivered_at = CASE WHEN :status = 'DELIVERED' THEN now() ELSE delivered_at END
+WHERE dispatch_id = :dispatchId;
+```
+<!--END_DDL_MIGRATION-->
+
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
+
+<!--START_EXC_HANDLER-->
+```java
+// Xử lý [EXC-003]: retry với exponential backoff
+@Incoming("notification-queue")
+@Acknowledgment(MANUAL)
+public CompletionStage<Void> consume(Message<NotificationEvent> message) {
+    NotificationEvent event = message.getPayload();
+    try {
+        deliveryService.deliver(event);
+        event.setStatus(NotificationStatus.DELIVERED);
+    } catch (DeliveryException e) {
+        if (event.getAttemptCount() < MAX_ATTEMPTS) {
+            long delayMs = (long) Math.pow(5, event.getAttemptCount()) * 60_000L;
+            scheduledExecutor.schedule(() -> producer.retry(event), delayMs, TimeUnit.MILLISECONDS);
+        } else {
+            event.setStatus(NotificationStatus.DEAD_LETTER);
+            deadLetterPublisher.publish(event);
+        }
+    } finally {
+        dispatchRepository.updateStatus(event);
+        return message.ack();
+    }
 }
 ```
 <!--END_EXC_HANDLER-->
 
-#### 📝 NHIỆM VỤ PHỤ 2.5: Triển khai FcmApnsGatewayClient với circuit breaker
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/integration/FcmApnsGatewayClient.java
+#### 📝 NHIỆM VỤ PHỤ 3.3: Kiểm thử cho luồng notification dispatcher
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-021]<!--END_TAGS-->
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/NotificationDispatcherService.java;./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/NotificationDispatcherServiceTest.java
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-016], [ARC-008], [EXC-003]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh test class JUnit 5 tại đường dẫn `./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/NotificationDispatcherServiceTest.java` với `@QuarkusTest`. Test case 1: `testDispatch_PushType` gọi `dispatcher.dispatch()` với type=PUSH, verify Kafka message được emit với schema đúng thông qua `InMemoryConnector`. Test case 2: `testConsume_PushDeliverySuccess` feed message vào consumer, mock `FcmClient` thành công, verify `NotificationDispatch` status=DELIVERED. Test case 3 theo [EXC-003]: `testConsume_RetryOnFailure` mock `FcmClient` throw exception lần 1, verify `attemptCount=1` và message được schedule retry với delay 1 phút. Test case 4 theo [EXC-003]: `testConsume_DeadLetterAfter3Attempts` giả lập 3 lần fail liên tiếp, verify status=DEAD_LETTER và dead letter publisher được gọi. Test case 5: `testDispatch_InvalidType` gọi với `notificationType` không hợp lệ, verify throw `IllegalArgumentException` với mã `INVALID_NOTIFICATION_TYPE`. Test case 6: `testConsume_ZaloGroupDelivery` mock `ZaloBotClient` trả về success, verify message Zalo được post đúng. Truy vết [REQ-016], [ARC-008] và [EXC-003].
 
-* **Low-Level Technical Task Instruction:** Xây dựng class `@ApplicationScoped` `FcmApnsGatewayClient` trong package `org.nlh4j.membershiphub.notificationservice.integration` sử dụng MicroProfile Rest Client. Khai báo annotation `@RegisterRestClient(baseUri = "https://fcm.googleapis.com")` với interface định nghĩa các endpoint FCM v1 API. Cấu hình timeout 5 giây cho mỗi yêu cầu thông qua `quarkus.rest-client.fcm.url` và `quarkus.rest-client.fcm.connect-timeout=5000`. Phương thức `sendPush(String deviceToken, String title, String body, Map<String,String> data)` thực hiện POST tới `/v1/projects/{projectId}/messages:send` với payload JSON đúng chuẩn FCM v1. Áp dụng annotation `@CircuitBreaker(requestVolumeThreshold=4, failureRatio=0.5, delay=10000)` để tránh lũ lụt yêu cầu khi FCM/APNs ngừng hoạt động. Tích hợp `@Retry(maxRetries=3, delay=1000, jitter=500)` cho cơ chế retry theo `EXC-003`.
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
 
-* **Phase Localized Exception Handlers [EXC-003]:** <!--START_EXC_HANDLER-->
-```json
-{
-  "FCM_DELIVERY_FAILED": "Ném NotificationDeliveryException sau khi retry hết 3 lần, HTTP 503 với message 'Dịch vụ thông báo tạm thời không khả dụng'",
-  "CIRCUIT_BREAKER_OPEN": "Trả fail-fast response khi circuit breaker mở, log cảnh báo và lưu vào retry queue"
+<!--START_EXC_HANDLER-->
+```java
+// Test xác minh [EXC-003] retry logic
+@Test
+void testConsume_DeadLetterAfter3Attempts() {
+    when(fcmClient.sendPush(any())).thenThrow(new DeliveryException("FCM_DOWN"));
+
+    for (int i = 0; i < 3; i++) {
+        consumer.consume(testMessage);
+    }
+
+    verify(deadLetterPublisher).publish(argThat(event ->
+        event.getAttemptCount() == 3 &&
+        event.getStatus() == NotificationStatus.DEAD_LETTER
+    ));
 }
 ```
 <!--END_EXC_HANDLER-->
 
-#### 📝 NHIỆM VỤ PHỤ 2.6: Triển khai ZaloGroupWebhookClient
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/integration/ZaloGroupWebhookClient.java
+### 🌤️ NGÀY 4: <!--DAY_HEADER_START-->TRIỂN KHAI FCM CLIENT, ZALO BOT CLIENT VÀ PUSH DELIVERY<!--DAY_HEADER_END-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-016], [ARC-008]<!--END_TAGS-->
+#### 📝 NHIỆM VỤ PHỤ 4.1: Xây dựng FCM integration cho push notification
 
-* **Low-Level Technical Task Instruction:** Xây dựng class `@ApplicationScoped` `ZaloGroupWebhookClient` trong package `org.nlh4j.membershiphub.notificationservice.integration` sử dụng `java.net.http.HttpClient` để gọi Zalo OA API. Cấu hình endpoint `https://openapi.zalo.me/v2.0/oa/message/cs` với access token lấy từ biến môi trường `ZALO_OA_ACCESS_TOKEN`. Phương thức `postToGroup(String groupId, String message, String mediaUrl)` xây dựng payload JSON theo đặc tả Zalo OA API, thực hiện POST request với timeout 5 giây, xử lý response code 200 thành công và các mã lỗi 4xx/5xx bằng cách ném `NotificationDeliveryException` để kích hoạt cơ chế retry. Tích hợp `@CircuitBreaker` tương tự FCM client.
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/integration/FcmClient.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-021], [EXC-003]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo class `FcmClient` tại đường dẫn `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/integration/FcmClient.java` sử dụng Firebase Admin SDK. Inject `FirebaseMessaging` instance thông qua CDI producer. Method `sendPush(String deviceToken, String title, String body, Map<String, String> data)` xây dựng `Message` object với `Notification` (title, body) và `AndroidConfig`/`ApnsConfig` tùy platform. Gọi `FirebaseMessaging.getInstance().send(message)` và trả về message ID. Xử lý exception theo [EXC-003]: bắt `FirebaseMessagingException` với mã lỗi `UNREGISTERED` hoặc `INVALID_ARGUMENT` thì throw `InvalidDeviceTokenException` (không retry, đánh dấu device inactive), các mã khác throw `DeliveryException` (retry được). Cấu hình timeout 10 giây cho mỗi request thông qua `HttpRequestOptions.setTimeout()`. Truy vết [REQ-021] và [EXC-003].
 
-#### 📝 NHIỆM VỤ PHỤ 2.7: Kiểm thử đơn vị cho NotificationDispatchService với cơ chế retry
-##### Tác Nhân Được Phân Côn: Tester
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/service/NotificationDispatchService.java;./sources/backend/notification-service/src/test/java/org/nlh4j/membershiphub/notificationservice/service/NotificationDispatchServiceTest.java
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-016], [REQ-021], [EXC-003]<!--END_TAGS-->
+<!--START_DDL_MIGRATION-->
+```sql
+-- Đánh dấu device token không hợp lệ khi FCM trả lỗi UNREGISTERED
+UPDATE DeviceToken
+SET is_active = false,
+    last_used_at = now()
+WHERE device_token = :token;
+```
+<!--END_DDL_MIGRATION-->
 
-* **Low-Level Technical Task Instruction:** Tạo lớp `NotificationDispatchServiceTest` với JUnit 5 và Mockito. Sử dụng `@InjectMock FcmApnsGatewayClient` và `@InjectMock ZaloGroupWebhookClient` để mô phỏng hành vi. Test case: (1) `testDispatch_Success` xác minh cả hai client được gọi và notification được lưu với status `SENT`; (2) `testDispatch_FcmFailsAllRetries` mô phỏng `IOException` ở cả ba lần retry, xác minh `Mockito.verify(fcmClient, Mockito.times(3))` được gọi và notification cuối cùng có status `FAILED` với `retryCount=3`; (3) `testDispatch_RetryThenSuccess` mô phỏng lỗi ở hai lần đầu và thành công ở lần thứ ba, xác minh status cuối cùng là `SENT`; (4) `testDispatch_CircuitBreakerOpens` sử dụng `Resilience4j` test utilities để xác minh khi tỷ lệ lỗi vượt ngưỡng, circuit breaker mở và các yêu cầu tiếp theo fail-fast.
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 2.8: Đánh giá mã nguồn module thẻ thành viên và thông báo
-##### Tác Nhân Được Phân Côn: Reviewer
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/service/NotificationDispatchService.java
+<!--START_EXC_HANDLER-->
+```java
+// Xử lý [EXC-003]: phân loại lỗi để quyết định retry hay không
+public void sendPush(String token, String title, String body, Map<String, String> data) {
+    try {
+        Message message = Message.builder()
+            .setToken(token)
+            .setNotification(Notification.builder().setTitle(title).setBody(body).build())
+            .putAllData(data)
+            .build();
+        firebaseMessaging.send(message);
+    } catch (FirebaseMessagingException e) {
+        if (e.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED
+            || e.getMessagingErrorCode() == MessagingErrorCode.INVALID_ARGUMENT) {
+            throw new InvalidDeviceTokenException(token, e);
+        }
+        throw new DeliveryException("FCM_DELIVERY_FAILED", e);
+    }
+}
+```
+<!--END_EXC_HANDLER-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-014], [REQ-015], [REQ-016], [EXC-003]<!--END_TAGS-->
+#### 📝 NHIỆM VỤ PHỤ 4.2: Xây dựng Zalo Bot Client
 
-* **Low-Level Technical Task Instruction:** Thực hiện code review tập trung vào: (1) Logic gia hạn thẻ với `@Version` để chống race condition khi hai yêu cầu gia hạn đồng thời; (2) Cơ chế rollback khi payment gateway xác nhận thành công nhưng DB write thất bại; (3) Tính bất biến của `issueDate` sau khi gia hạn - không được phép thay đổi; (4) Sử dụng `Instant` thay vì `LocalDate` cho các phép tính múi giờ; (5) Cơ chế retry với exponential backoff đúng theo `EXC-003`; (6) Circuit breaker pattern tránh lũ lụt yêu cầu khi dịch vụ bên thứ ba ngừng hoạt động. Đề xuất chiến lược vá lỗi nếu phát hiện điểm nghẽn.
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/integration/ZaloBotClient.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-008], [EXC-003]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo class `ZaloBotClient` tại đường dẫn `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/integration/ZaloBotClient.java` sử dụng `RESTClient` (MicroProfile Rest Client) gọi Zalo Bot API. Method `postMessage(String groupId, String message)` gửi POST request tới endpoint `https://bot-api.zalo.me/v2/message` với body JSON `{recipient: {group_id: groupId}, message: {text: message}}`. Inject access token từ config `mp.rest.client.zalo.token` thông qua `@ConfigProperty`. Xử lý response theo [EXC-003]: nếu HTTP 401 token hết hạn, refresh token qua Zalo OAuth2 rồi retry 1 lần; nếu HTTP 404 group không tồn tại, throw `ZaloGroupNotFoundException`; các lỗi khác throw `DeliveryException`. Cấu hình timeout 15 giây. Sử dụng `@CircuitBreaker` với `requestVolumeThreshold=4`, `failureRatio=0.5` để tránh gọi liên tục khi Zalo API down. Truy vết [ARC-008] và [EXC-003].
 
-### 🌤️ NGÀY 3: <!--DAY_HEADER_START-->QUẢN LÝ KHUYẾN MÃI, THÔNG BÁO QUẢNG BÁ VÀ CHATBOT AI<!--DAY_HEADER_END-->
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 3.1: Triển khai PromotionController và PromotionService
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/PromotionController.java
+<!--START_DDL_MIGRATION-->
+```sql
+-- Log lỗi gửi Zalo
+INSERT INTO NotificationDispatch (dispatch_id, notification_type, target_group_zalo, status, attempt_count, created_at)
+VALUES (:dispatchId, 'ZALO_GROUP', :groupId, 'FAILED', 1, now());
+```
+<!--END_DDL_MIGRATION-->
 
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
+
+<!--START_EXC_HANDLER-->
+```java
+// Xử lý [EXC-003]: refresh token khi 401
+@CircuitBreaker(requestVolumeThreshold = 4, failureRatio = 0.5)
+public void postMessage(String groupId, String message) {
+    try {
+        zaloApi.sendMessage(accessToken, buildPayload(groupId, message));
+    } catch (WebApplicationException e) {
+        if (e.getResponse().getStatus() == 401) {
+            accessToken = refreshZaloToken();
+            zaloApi.sendMessage(accessToken, buildPayload(groupId, message));
+        } else if (e.getResponse().getStatus() == 404) {
+            throw new ZaloGroupNotFoundException(groupId, e);
+        } else {
+            throw new DeliveryException("ZALO_DELIVERY_FAILED", e);
+        }
+    }
+}
+```
+<!--END_EXC_HANDLER-->
+
+#### 📝 NHIỆM VỤ PHỤ 4.3: Đánh giá mã nguồn notification pipeline
+
+##### Sub-Agent được phân công: Reviewer
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/kafka/NotificationEventConsumer.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-008], [REQ-016], [REQ-021], [EXC-003]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Reviewer đánh giá tệp `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/kafka/NotificationEventConsumer.java` tập trung vào: (1) Thread safety - verify sử dụng `ConcurrentHashMap` cho in-memory state, không có shared mutable state; (2) Memory leak - đảm bảo dead letter queue có bounded size và cleanup scheduler; (3) Idempotency - verify xử lý duplicate message qua `dispatchId` unique constraint trong bảng `NotificationDispatch`; (4) Error handling - đảm bảo mọi exception path đều log đầy đủ context với MDC và ghi vào audit log theo NFR-006; (5) Backpressure - kiểm tra Kafka consumer config `max.poll.records` phù hợp, tránh OOM khi message burst; (6) Sử dụng `@Acknowledgment(MANUAL)` đúng cách, tránh message loss khi consumer crash; (7) Phân tích EXPLAIN ANALYZE cho query `SELECT * FROM NotificationDispatch WHERE status = 'PENDING' AND attempt_count < 3 ORDER BY created_at ASC LIMIT 100` để đề xuất index tối ưu. Sinh báo cáo review với format: Vấn đề phát hiện, Mức độ nghiêm trọng (Critical/High/Medium/Low), Đề xuất fix cụ thể, File liên quan. Truy vết [ARC-008], [REQ-016], [REQ-021] và [EXC-003].
+
+### 🌤️ NGÀY 5: <!--DAY_HEADER_START-->TRIỂN KHAI REST API CHO PROMOTION VÀ ANNOUNCEMENT CRUD<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 5.1: Xây dựng CRUD API cho Promotions
+
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/PromotionController.java`
 * **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-017]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Triển khai REST controller tại đường dẫn `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/PromotionController.java` với 5 endpoints: GET `/api/v1/promotions` (list có phân trang, hỗ trợ lọc theo `isActive`, `centerId`), GET `/{promoId}` (chi tiết), POST `/` (tạo mới), PUT `/{promoId}` (cập nhật), DELETE `/{promoId}` (xóa mềm với `is_active=false`). Sử dụng `@Valid` cho `PromotionRequest` với validation: `code` max 30 chars UNIQUE, `name` max 100 chars, `discountPercent` 1-100, `startDate`/`endDate` nếu có phải hợp lệ. Logic perpetual: nếu `endDate=null` thì set `isPerpetual=true`. Inject `PromotionService` và `AuditLogService`. Áp dụng `@RolesAllowed({"CENTER_ADMIN", "MANAGER", "SYSTEM_ADMIN"})`. Kiểm tra center ownership cho CenterAdmin. Truy vết [REQ-017].
 
-* **Low-Level Technical Task Instruction:** Xây dựng class `@Path("/api/v1/promotions")` `PromotionController` trong package `org.nlh4j.membershiphub.centerservice` inject `PromotionService`. Các endpoint: `GET /` trả về danh sách khuyến mãi với response 200; `POST /` với `@RolesAllowed({"SystemAdmin", "CenterAdmin", "Manager"})` nhận `PromotionRequest` chứa `name` (required max 100), `code` (required unique max 30), `discountPercent` (required 0-100), `startDate` (optional), `endDate` (optional, nếu null thì khuyến mãi vĩnh viễn), `description` (optional max 500). Trả về 201 với mã tạo thành công hoặc 409 với mã `DUPLICATE_PROMOTION_CODE`. Endpoint `PUT /{promoId}` cập nhật; `DELETE /{promoId}` xóa với response 204. Áp dụng `@Valid` cho tất cả request body.
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-* **API and Event Routing Contracts [REQ-017]:** <!--START_API_CONTRACT-->
+<!--START_DDL_MIGRATION-->
+```sql
+-- Sử dụng bảng Promotions đã định nghĩa trong bảng phân bổ DDL giai đoạn 4
+-- Logic truy vấn danh sách khuyến mãi còn hiệu lực
+SELECT promo_id, code, name, discount_percent, start_date, end_date, is_perpetual
+FROM Promotions
+WHERE is_active = true
+  AND (is_perpetual = true OR (start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE))
+ORDER BY created_at DESC
+LIMIT :pageSize OFFSET :offset;
+```
+<!--END_DDL_MIGRATION-->
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
 ```json
 {
-  "POST /api/v1/promotions": {
-    "request": {
-      "name": "Summer Discount 2024",
-      "code": "SUMMER24",
-      "discountPercent": 15,
-      "startDate": "2024-06-01",
-      "endDate": null,
-      "description": "Applies to all courses"
-    },
-    "response_201": {
-      "promoId": "uuid",
-      "name": "string",
-      "code": "string",
-      "discountPercent": 15,
-      "startDate": "YYYY-MM-DD",
-      "endDate": "YYYY-MM-DD hoặc null",
-      "active": true
-    }
+  "endpoint": "POST /api/v1/promotions",
+  "request_body": {
+    "code": "SUMMER2024",
+    "name": "Khuyến mãi hè 2024",
+    "description": "Giảm 20% cho tất cả khóa học",
+    "discountPercent": 20,
+    "startDate": "2024-06-01",
+    "endDate": "2024-08-31"
+  },
+  "response_201": {
+    "promoId": "uuid",
+    "code": "SUMMER2024",
+    "isPerpetual": false,
+    "createdAt": "2024-05-15T10:30:00Z"
   }
 }
 ```
 <!--END_API_CONTRACT-->
 
-* **Phase Localized Exception Handlers [EXC-004]:** <!--START_EXC_HANDLER-->
+#### 📝 NHIỆM VỤ PHỤ 5.2: Xây dựng CRUD API cho Announcements
+
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/AnnouncementController.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-018]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Triển khai REST controller tại đường dẫn `./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/AnnouncementController.java` với các endpoints tương tự Promotion: GET `/api/v1/announcements` (lọc theo `targetAudience`, `activeOnly`, phân trang), GET `/{id}`, POST `/`, PUT `/{id}`, DELETE `/{id}`. Sử dụng `@Valid` cho `AnnouncementRequest`: `title` max 150 chars, `content` max 2000 chars, `expiryDate` optional, `targetAudience` thuộc tập {ALL, STUDENT, TEACHER, ADMIN}. Implement scheduled task với `@Scheduled(every = "1h")` chạy mỗi giờ để auto-hide announcement có `expiryDate < CURRENT_DATE` (set `is_active=false`). Inject `AnnouncementService`. Annotation `@RolesAllowed({"CENTER_ADMIN", "MANAGER", "SYSTEM_ADMIN"})`. Truy vết [REQ-018].
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Auto-hide expired announcements thông qua scheduled task
+UPDATE Announcements
+SET is_active = false,
+    updated_at = now()
+WHERE expiry_date IS NOT NULL
+  AND expiry_date < CURRENT_DATE
+  AND is_active = true;
+```
+<!--END_DDL_MIGRATION-->
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
 ```json
 {
-  "DUPLICATE_PROMOTION_CODE_HTTP_409": "Bắt ConstraintViolationException khi code trùng lặp, trả message 'Mã khuyến mãi đã tồn tại'",
-  "INVALID_PROMOTION_PERIOD_HTTP_400": "Trả message 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu' khi endDate < startDate"
+  "endpoint": "GET /api/v1/announcements",
+  "query_params": {
+    "targetAudience": "ALL|STUDENT|TEACHER|ADMIN",
+    "activeOnly": true,
+    "page": 0,
+    "size": 20
+  },
+  "response_200": [
+    {
+      "announcementId": "uuid",
+      "title": "Lịch nghỉ lễ 30/4",
+      "content": "Trung tâm nghỉ lễ từ 30/4 đến 1/5",
+      "startDate": "2024-04-25",
+      "expiryDate": "2024-05-02",
+      "isActive": true
+    }
+  ]
+}
+```
+<!--END_API_CONTRACT-->
+
+#### 📝 NHIỆM VỤ PHỤ 5.3: Kiểm thử cho PromotionService và AnnouncementService
+
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/service/PromotionService.java;./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/PromotionServiceTest.java
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-017], [REQ-018], [EXC-004]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh 2 test class JUnit 5 tại các đường dẫn `./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/PromotionServiceTest.java` và `./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/AnnouncementServiceTest.java`. Test PromotionService: (1) `testCreatePromotion_Success` tạo promotion hợp lệ, verify lưu DB và `isPerpetual=false` khi có `endDate`; (2) `testCreatePromotion_Perpetual` không truyền `endDate`, verify `isPerpetual=true`; (3) theo [EXC-004] `testCreatePromotion_DuplicateCode` trùng `code`, verify throw `DuplicatePromotionCodeException` với mã `DUPLICATE_PROMO_CODE_409`; (4) `testGetActivePromotions` chỉ trả về promotion còn hiệu lực; (5) `testCreatePromotion_InvalidDiscount` `discountPercent=0` hoặc `=101`, verify throw `ConstraintViolationException`. Test AnnouncementService: (1) `testCreateAnnouncement_Success`; (2) `testAutoHideExpired` insert announcement với `expiryDate=hôm qua`, chạy scheduled task, verify `is_active=false`; (3) `testGetByTargetAudience` lọc theo `targetAudience=STUDENT`; (4) `testCreateAnnouncement_InvalidTargetAudience` gửi giá trị không hợp lệ, verify throw exception. Truy vết [REQ-017], [REQ-018] và [EXC-004].
+
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
+
+<!--START_EXC_HANDLER-->
+```java
+// Xử lý [EXC-004]: mã khuyến mãi trùng lặp
+public class DuplicatePromotionCodeException extends RuntimeException {
+    private final String code;
+    public DuplicatePromotionCodeException(String code) {
+        super("Mã khuyến mãi '" + code + "' đã tồn tại trong hệ thống");
+        this.code = code;
+    }
+    public String getCode() { return code; }
+}
+
+// Ánh xạ sang HTTP 409 Conflict
+@Provider
+public class DuplicatePromotionCodeExceptionMapper implements ExceptionMapper<DuplicatePromotionCodeException> {
+    @Override
+    public Response toResponse(DuplicatePromotionCodeException ex) {
+        return Response.status(Response.Status.CONFLICT)
+            .entity(Map.of(
+                "error", "DUPLICATE_PROMO_CODE_409",
+                "message", ex.getMessage(),
+                "code", ex.getCode()
+            ))
+            .build();
+    }
 }
 ```
 <!--END_EXC_HANDLER-->
 
-#### 📝 NHIỆM VỤ PHỤ 3.2: Triển khai AnnouncementController với bộ lọc hiệu lực
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/AnnouncementController.java
+### 🌤️ NGÀY 6: <!--DAY_HEADER_START-->TRIỂN KHAI AI CHATBOT VỚI VERTEX AI GEMINI VÀ SESSION MANAGEMENT<!--DAY_HEADER_END-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-018]<!--END_TAGS-->
+#### 📝 NHIỆM VỤ PHỤ 6.1: Xây dựng Vertex AI Client cho Chatbot
 
-* **Low-Level Technical Task Instruction:** Xây dựng class `@Path("/api/v1/announcements")` `AnnouncementController` trong package `org.nlh4j.membershiphub.centerservice` inject `AnnouncementService`. Các endpoint: `GET /active` trả về danh sách thông báo đang hiệu lực với response 200 - bộ lọc JPQL: `SELECT a FROM Announcement a WHERE a.endDate IS NULL OR a.endDate >= :today`; `GET /` trả về tất cả (yêu cầu quyền admin); `POST /` với `@RolesAllowed({"SystemAdmin", "CenterAdmin", "Manager"})` nhận `AnnouncementRequest` chứa `title` (required max 150), `content` (required max 2000), `startDate` (optional), `endDate` (optional). Trả về 201. Endpoint `PUT /{id}` cập nhật; `DELETE /{id}` xóa. Tích hợp cron job hàng ngày (`@Scheduled(cron = "0 0 1 * * ?")`) để tự động đánh dấu thông báo quá hạn.
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/integration/VertexAiClient.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-019]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo class `VertexAiClient` tại đường dẫn `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/integration/VertexAiClient.java` sử dụng Google Cloud Vertex AI Java SDK. Method `query(String question, String sessionContext)` gọi `PredictionServiceClient.predict()` với endpoint config cho Gemini model tại `projects/membership-hub/locations/asia-southeast1/publishers/google/models/gemini-pro`. Xây dựng prompt template bao gồm: system instruction (Membership Hub domain knowledge về khoá học, giáo viên, trung tâm, thẻ thành viên), conversation history từ `sessionContext` JSON, user question. Parse response trích xuất text answer và confidence score (0.0-1.0). Xử lý exception: `StatusRuntimeException` với code `UNAVAILABLE` throw `AiServiceUnavailableException`, code `DEADLINE_EXCEEDED` throw `AiTimeoutException`. Cấu hình timeout 30 giây, retry 1 lần cho lỗi transient. Inject API key/credentials qua MicroProfile Config `@ConfigProperty(name = "gcp.vertexai.credentials.path")`. Truy vết [REQ-019].
 
-* **API and Event Routing Contracts [REQ-018]:** <!--START_API_CONTRACT-->
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Lưu context của session để cung cấp cho AI trong các turn tiếp theo
+UPDATE ChatbotSession
+SET context = :contextJson,
+    message_count = message_count + 1,
+    last_activity_at = now()
+WHERE session_id = :sessionId;
+```
+<!--END_DDL_MIGRATION-->
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
 ```json
 {
-  "POST /api/v1/announcements": {
-    "request": {
-      "title": "Holiday Schedule",
-      "content": "Center closed on December 25",
-      "startDate": "2024-12-20",
-      "endDate": "2024-12-31"
-    },
-    "response_201": {
-      "announcementId": "uuid",
-      "title": "string",
-      "content": "string",
-      "active": true
+  "vertex_ai_request": {
+    "endpoint": "projects/membership-hub/locations/asia-southeast1/publishers/google/models/gemini-pro",
+    "instances": [{
+      "prompt": "Bạn là trợ lý ảo của Membership Hub. Người dùng hỏi: {question}"
+    }],
+    "parameters": {
+      "temperature": 0.2,
+      "maxOutputTokens": 512,
+      "topP": 0.8
     }
   },
-  "GET /api/v1/announcements/active": {
-    "response_200": {
-      "items": [
-        {
-          "announcementId": "uuid",
-          "title": "string",
-          "content": "string",
-          "startDate": "YYYY-MM-DD",
-          "endDate": "YYYY-MM-DD"
+  "vertex_ai_response": {
+    "predictions": [{
+      "content": "string",
+      "confidence": "float"
+    }]
+  }
+}
+```
+<!--END_API_CONTRACT-->
+
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
+
+<!--START_EXC_HANDLER-->
+```java
+// Xử lý khi Vertex AI không khả dụng
+public ChatbotResponse query(String question, String sessionContext) {
+    try {
+        PredictResponse response = predictionServiceClient.predict(endpointName, request);
+        return parseResponse(response);
+    } catch (StatusRuntimeException e) {
+        if (e.getStatus().getCode() == Status.Code.UNAVAILABLE) {
+            throw new AiServiceUnavailableException("AI_SERVICE_UNAVAILABLE", e);
+        } else if (e.getStatus().getCode() == Status.Code.DEADLINE_EXCEEDED) {
+            throw new AiTimeoutException("AI_REQUEST_TIMEOUT", e);
         }
-      ]
+        throw e;
     }
-  }
-}
-```
-<!--END_API_CONTRACT-->
-
-#### 📝 NHIỆM VỤ PHỤ 3.3: Kiểm thử module khuyến mãi và thông báo
-##### Tác Nhân Được Phân Côn: Tester
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/center-service/src/main/java/org/nlh4j/membershiphub/centerservice/controller/AnnouncementController.java;./sources/backend/center-service/src/test/java/org/nlh4j/membershiphub/centerservice/controller/AnnouncementControllerTest.java
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-017], [REQ-018]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Tạo lớp `AnnouncementControllerTest` với `@QuarkusTest`. Test case: (1) `testGetActiveAnnouncements_ExcludesExpired` tạo thông báo với `endDate` trong quá khứ, xác minh endpoint `/active` không trả về; (2) `testGetActiveAnnouncements_IncludesPerpetual` tạo thông báo với `endDate = null`, xác minh được trả về; (3) `testCreateAnnouncement_TitleTooLong` với `title` 151 ký tự, expect HTTP 400 với mã validation; (4) `testCreateAnnouncement_WrongRole` với JWT giả lập vai trò Student, expect HTTP 403; (5) `testCreatePromotion_DuplicateCode` với `code` đã tồn tại, expect HTTP 409 với mã `DUPLICATE_PROMOTION_CODE`. Sử dụng `TestTransaction` để rollback dữ liệu.
-
-#### 📝 NHIỆM VỤ PHỤ 3.4: Triển khai AiChatbotClient với cơ chế leo thang
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/integration/AiChatbotClient.java
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-019]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Xây dựng class `@ApplicationScoped` `AiChatbotClient` trong package `org.nlh4j.membershiphub.userservice.integration` sử dụng MicroProfile Rest Client. Khai báo annotation `@RegisterRestClient(baseUri = "https://api.openai.com")` với interface định nghĩa endpoint `/v1/chat/completions`. Cấu hình API key qua `quarkus.rest-client.openai.api-key=${OPENAI_API_KEY}`. Phương thức `ask(String sessionId, String questionText)` gọi OpenAI Chat Completion API với timeout 10 giây, parse response thành `ChatbotResponse` gồm `answerText` và `confidenceScore`. Nếu `confidenceScore < 0.6`, đặt `escalateToHuman = true` và trả message "Xin lỗi, tôi cần chuyển câu hỏi của bạn đến nhân viên hỗ trợ". Sử dụng `@CircuitBreaker` để xử lý khi AI service không khả dụng. Cache session trong 30 phút thông qua Caffeine cache.
-
-* **API and Event Routing Contracts [REQ-019]:** <!--START_API_CONTRACT-->
-```json
-{
-  "POST /api/v1/chatbot/ask": {
-    "request": {
-      "sessionId": "string",
-      "questionText": "string"
-    },
-    "response_200": {
-      "answerText": "string",
-      "confidenceScore": 0.85,
-      "escalateToHuman": false
-    },
-    "response_503": {
-      "code": "CHATBOT_UNAVAILABLE",
-      "message": "Dịch vụ chatbot tạm thời không khả dụng"
-    }
-  }
-}
-```
-<!--END_API_CONTRACT-->
-
-* **Phase Localized Exception Handlers [EXC-004]:** <!--START_EXC_HANDLER-->
-```json
-{
-  "CHATBOT_UNAVAILABLE_HTTP_503": "Khi AI service trả 5xx hoặc timeout, ném ChatbotUnavailableException, message 'Dịch vụ chatbot tạm thời không khả dụng, vui lòng thử lại sau'",
-  "SESSION_EXPIRED": "Nếu sessionId không hoạt động trong 30 phút, tự động tạo phiên mới và thông báo cho người dùng"
 }
 ```
 <!--END_EXC_HANDLER-->
 
-#### 📝 NHIỆM VỤ PHỤ 3.5: Kiểm thử tích hợp chatbot với WireMock
-##### Tác Nhân Được Phân Côn: Tester
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/user-service/src/main/java/org/nlh4j/membershiphub/userservice/integration/AiChatbotClient.java;./sources/backend/user-service/src/test/java/org/nlh4j/membershiphub/userservice/integration/AiChatbotClientTest.java
+#### 📝 NHIỆM VỤ PHỤ 6.2: Xây dựng ChatbotService với session management
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-019]<!--END_TAGS-->
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/ChatbotService.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-019], [EXC-004]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Triển khai `ChatbotService` tại đường dẫn `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/ChatbotService.java` với các method: (1) `createSession(UUID userId)` tạo `ChatbotSession` mới với `expiresAt = now + 30 phút`, sinh `sessionToken` UUID an toàn sử dụng `SecureRandom`; (2) `query(ChatbotQueryRequest request)` validate session token (throw `SessionExpiredException` theo [EXC-004] nếu quá hạn), gọi `VertexAiClient.query()`, lưu `ChatbotMessage` cho cả USER và BOT vào bảng `ChatbotMessage`, nếu `confidence < 0.6` thì set `escalatedToHuman=true` và thông báo `"Hệ thống sẽ chuyển câu hỏi tới nhân viên hỗ trợ"`, đồng thời publish sự kiện `chatbot-escalation` lên Kafka topic `notification-queue` cho Center Admin xử lý; (3) `cleanupExpiredSessions()` chạy scheduled task `@Scheduled(every = "5m")` xóa session quá hạn 24 giờ. Sử dụng `@Transactional` cho các thao tác DB. Truy vết [REQ-019] và [EXC-004].
 
-* **Low-Level Technical Task Instruction:** Tạo lớp `AiChatbotClientTest` sử dụng WireMock để mô phỏng OpenAI API. Test case: (1) `testAsk_LowConfidence` mô phỏng response với `confidence = 0.4`, xác minh `escalateToHuman = true` và `answerText` chứa thông báo leo thang; (2) `testAsk_HighConfidence` mô phỏng response với `confidence = 0.9`, xác minh `escalateToHuman = false`; (3) `testAsk_ServiceUnavailable` mô phỏng response 500 từ AI, xác minh ném `ChatbotUnavailableException`; (4) `testAsk_Timeout` mô phỏng response chậm 11 giây, xác minh timeout exception được ném. Sử dụng `@QuarkusTestResource(WireMockTestResource.class)` để khởi tạo WireMock server.
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 3.6: Soạn hợp đồng OpenAPI cho notification-service
-##### Tác Nhân Được Phân Côn: Doc
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/contracts/notification-openapi.yaml
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-008], [REQ-016], [REQ-021]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Soạn file `notification-openapi.yaml` chuẩn OpenAPI 3.0.3 tại `./sources/docs/contracts/notification-openapi.yaml`. Mô tả 2 endpoint: `POST /api/v1/notifications/dispatch` với security scheme bearerAuth JWT, nhận `NotificationDispatchRequest` và trả 202 với `NotificationDispatchResponse`; `GET /api/v1/notifications/history` với query parameter `userId` trả 200 với danh sách `NotificationHistoryItem`. Định nghĩa schema `NotificationDispatchRequest` với validation `message` max 1000, `mediaUrl` phải là HTTPS, `priority` enum HIGH/NORMAL/LOW. Schema `NotificationHistoryItem` với `notificationId`, `channel` enum PUSH/ZALO/EMAIL/SMS, `status` enum PENDING/SENT/FAILED/DELIVERED, `sentAt` ISO-8601, `retryCount` integer 0-3. Khai báo response codes 202/400/401/403/503.
-
-#### 📝 NHIỆM VỤ PHỤ 3.7: Soạn sơ đồ Mermaid cho luồng thông báo đa kênh
-##### Tác Nhân Được Phân Côn: Doc
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/diagrams/notification-flow.mmd
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-008], [REQ-016], [REQ-021]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Soạn tệp Mermaid `sequenceDiagram` tại `./sources/docs/diagrams/notification-flow.mmd` mô tả luồng thông báo đa kênh. Các participant: `Admin UI`, `notification-service`, `FcmApnsGatewayClient`, `ZaloGroupWebhookClient`, `Mobile App`, `Zalo Group`. Luồng 1: Admin gửi yêu cầu dispatch -> notification-service nhận và lưu với status PENDING -> gọi FcmApnsGatewayClient gửi push -> FcmApnsGatewayClient thất bại -> notification-service retry với exponential backoff (1s, 5s, 30s) -> sau 3 lần thất bại, status = FAILED. Luồng 2: notification-service gọi ZaloGroupWebhookClient post tin nhắn -> Zalo Group nhận tin nhắn. Sử dụng `Note over` để giải thích cơ chế retry và circuit breaker.
-
-### 🌤️ NGÀY 4: <!--DAY_HEADER_START-->BÁO CÁO CSV, DASHBOARD THỜI GIAN THỰC, I18N VÀ KHÔI PHỤC HỆ THỐNG<!--DAY_HEADER_END-->
-
-#### 📝 NHIỆM VỤ PHỤ 4.1: Triển khai AttendanceReportController và AttendanceCsvExportService
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/reporting-service/src/main/java/org/nlh4j/membershiphub/reportingservice/controller/AttendanceReportController.java
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-024]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Xây dựng class `@Path("/api/v1/reports/attendance")` `AttendanceReportController` trong package `org.nlh4j.membershiphub.reportingservice` inject `AttendanceCsvExportService`. Endpoint `GET /export` với annotation `@RolesAllowed({"SystemAdmin", "CenterAdmin", "Manager"})` nhận query parameters: `centerId` (required UUID), `startDate` (required YYYY-MM-DD), `endDate` (required YYYY-MM-DD, max range 30 ngày). Trả về response 200 với `Content-Type: text/csv; charset=UTF-8` và `Content-Disposition: attachment; filename="attendance-{centerId}-{startDate}-{endDate}.csv"`. Body CSV chứa header `StudentName,CourseName,AttendanceDate,Status` và các dòng dữ liệu từ join bảng `attendance`, `users`, `courses`. Validate `endDate >= startDate` và `endDate - startDate <= 30 days`, nếu không ném `ConstraintViolationException` với HTTP 400.
-
-* **API and Event Routing Contracts [REQ-024]:** <!--START_API_CONTRACT-->
-```json
-{
-  "GET /api/v1/reports/attendance/export": {
-    "parameters": {
-      "centerId": "uuid (required)",
-      "startDate": "YYYY-MM-DD (required)",
-      "endDate": "YYYY-MM-DD (required, max 30 days range)"
-    },
-    "response_200": {
-      "contentType": "text/csv",
-      "headers": {
-        "Content-Disposition": "attachment; filename=attendance-{centerId}-{startDate}-{endDate}.csv"
-      },
-      "body": "StudentName,CourseName,AttendanceDate,Status
-Nguyen Van A,Java Basics,2024-01-15,PRESENT
-..."
-    }
-  }
-}
+<!--START_DDL_MIGRATION-->
+```sql
+-- Cleanup expired chatbot sessions chạy mỗi 5 phút
+DELETE FROM ChatbotSession
+WHERE expires_at < now() - INTERVAL '24' HOUR;
 ```
-<!--END_API_CONTRACT-->
+<!--END_DDL_MIGRATION-->
 
-#### 📝 NHIỆM VỤ PHỤ 4.2: Triển khai EnrollmentDashboardController với cấu hình refresh interval
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/reporting-service/src/main/java/org/nlh4j/membershiphub/reportingservice/controller/EnrollmentDashboardController.java
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-025]<!--END_TAGS-->
+<!--START_EXC_HANDLER-->
+```java
+// Xử lý [EXC-004]: session hết hạn
+public ChatbotResponse query(ChatbotQueryRequest request) {
+    ChatbotSession session = sessionRepository.findByToken(request.getSessionToken())
+        .orElseThrow(() -> new SessionNotFoundException("SESSION_NOT_FOUND"));
 
-* **Low-Level Technical Task Instruction:** Xây dựng class `@Path("/api/v1/reports/dashboard")` `EnrollmentDashboardController` trong package `org.nlh4j.membershiphub.reportingservice` inject `DashboardMetricsService`. Endpoint `GET /summary` với annotation `@RolesAllowed({"SystemAdmin", "CenterAdmin", "Manager"})` nhận query parameter `centerId` (required UUID) và trả về response 200 với `DashboardSummaryResponse` chứa: `totalStudents` (số học viên ACTIVE), `activeCourses` (số khóa học đang diễn ra), `upcomingSessions` (số buổi học trong 7 ngày tới), `refreshIntervalMinutes` (cấu hình từ `system_settings.setting_value` với key `dashboard_refresh_minutes`, mặc định 15). Tích hợp `@CacheResult(cacheName = "dashboard-summary")` với TTL = refreshIntervalMinutes để giảm tải database.
-
-* **API and Event Routing Contracts [REQ-025]:** <!--START_API_CONTRACT-->
-```json
-{
-  "GET /api/v1/reports/dashboard/summary": {
-    "parameters": {
-      "centerId": "uuid (required)"
-    },
-    "response_200": {
-      "centerId": "uuid",
-      "totalStudents": 245,
-      "activeCourses": 18,
-      "upcomingSessions": 42,
-      "refreshIntervalMinutes": 15,
-      "generatedAt": "ISO-8601"
+    if (session.getExpiresAt().isBefore(LocalDateTime.now())) {
+        throw new SessionExpiredException("CHATBOT_SESSION_EXPIRED");
     }
-  }
-}
-```
-<!--END_API_CONTRACT-->
 
-#### 📝 NHIỆM VỤ PHỤ 4.3: Kiểm thử tích hợp cho reporting-service
-##### Tác Nhân Được Phân Côn: Tester
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/reporting-service/src/main/java/org/nlh4j/membershiphub/reportingservice/controller/AttendanceReportController.java;./sources/backend/reporting-service/src/test/java/org/nlh4j/membershiphub/reportingservice/controller/ReportingControllerTest.java
+    ChatbotResponse response = vertexAiClient.query(request.getQuestion(), session.getContext());
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-024], [REQ-025]<!--END_TAGS-->
+    if (response.getConfidence() < 0.6) {
+        response.setEscalated(true);
+        response.setAnswer("Câu hỏi của bạn đang được chuyển tới nhân viên hỗ trợ.");
+        notificationProducer.publishEscalation(session, request.getQuestion());
+    }
 
-* **Low-Level Technical Task Instruction:** Tạo lớp `ReportingControllerTest` với `@QuarkusTest` và Testcontainers. Test case: (1) `testExportCsv_Success` tạo dữ liệu attendance giả lập, gọi endpoint export, xác minh Content-Type là `text/csv` và body chứa header `StudentName,CourseName,AttendanceDate,Status` cùng các dòng dữ liệu đúng; (2) `testExportCsv_DateRangeTooLarge` với khoảng cách 31 ngày, expect HTTP 400 với mã validation; (3) `testDashboardSummary_ReturnsCounts` xác minh response chứa `totalStudents`, `activeCourses`, `upcomingSessions` đúng với dữ liệu test; (4) `testDashboardSummary_RefreshIntervalFromSettings` xác minh `refreshIntervalMinutes` được đọc từ bảng `system_settings`. Sử dụng RestAssured để verify headers và body.
-
-#### 📝 NHIỆM VỤ PHỤ 4.4: Triển khai OutboxRelayScheduler xử lý FIFO khi khôi phục
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/recovery/OutboxRelayScheduler.java
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[EXC-001], [EXC-005]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Xây dựng class `@ApplicationScoped` `OutboxRelayScheduler` trong package `org.nlh4j.membershiphub.attendanceservice.recovery` với method `@Scheduled(every = "30s")` tên `processOutbox()`. Method này truy vấn bảng `attendance_outbox` (đã tạo ở giai đoạn 3) theo `created_at ASC` (FIFO) với status `PENDING`, sử dụng JPQL với named parameters: `SELECT o FROM AttendanceOutbox o WHERE o.status = 'PENDING' ORDER BY o.createdAt ASC`. Với mỗi bản ghi, gọi `AttendanceService.recordAttendance()` để xử lý lại. Nếu thành công, cập nhật `status = PROCESSED`; nếu thất bại, tăng `retry_count` (tối đa 3) trước khi chuyển `status = FAILED`. Tích hợp `RecoveryNotificationService` để gửi thông báo sự kiện đã khôi phục cho người dùng bị ảnh hưởng qua FCM.
-
-* **Phase Localized Exception Handlers [EXC-005]:** <!--START_EXC_HANDLER-->
-```json
-{
-  "RETRY_EXHAUSTED": "Sau 3 lần thất bại, status='FAILED', log cảnh báo và thông báo cho admin",
-  "FIFO_PROCESSING": "Đảm bảo thứ tự xử lý theo created_at ASC, tránh tình trạng attendance ghi nhận không đúng thứ tự thời gian",
-  "RECOVERY_NOTIFICATION_SENT": "Sau khi xử lý FIFO, gửi thông báo 'Yêu cầu điểm danh của bạn đã được xử lý' qua FCM"
+    saveMessages(session, request.getQuestion(), response);
+    return response;
 }
 ```
 <!--END_EXC_HANDLER-->
 
-#### 📝 NHIỆM VỤ PHỤ 4.5: Triển khai giao diện mobile responsive và middleware i18n
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/frontend/web-app/src/middleware.ts
+#### 📝 NHIỆM VỤ PHỤ 6.3: Kiểm thử cho ChatbotService
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-020], [REQ-022], [REQ-023]<!--END_TAGS-->
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** ./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/ChatbotService.java;./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/ChatbotServiceTest.java
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-019], [EXC-004]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh test class JUnit 5 tại đường dẫn `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/ChatbotServiceTest.java`. Test case 1: `testQuery_HighConfidence` mock `VertexAiClient` trả về `confidence=0.9`, verify response không escalated, message được lưu. Test case 2: `testQuery_LowConfidenceEscalation` mock `confidence=0.5`, verify `escalated=true` và answer thông báo chuyển nhân viên, Kafka event được publish. Test case 3 theo [EXC-004]: `testQuery_ExpiredSession` tạo session đã hết hạn, gọi query, verify throw `SessionExpiredException` với mã `CHATBOT_SESSION_EXPIRED`. Test case 4: `testQuery_AiUnavailable` mock `VertexAiClient` throw `AiServiceUnavailableException`, verify exception bubble up với mã `AI_SERVICE_UNAVAILABLE`. Test case 5: `testCreateSession_GenerateUniqueToken` tạo 100 session, verify tokens đều unique. Test case 6: `testQuery_NotFoundSession` gọi với `sessionToken` không tồn tại, verify throw `SessionNotFoundException` với mã `SESSION_NOT_FOUND`. Truy vết [REQ-019] và [EXC-004].
 
-* **Low-Level Technical Task Instruction:** Xây dựng middleware Next.js tại `./sources/frontend/web-app/src/middleware.ts` xử lý phát hiện locale. Middleware chặn mọi request và phát hiện ngôn ngữ theo thứ tự ưu tiên: (1) cookie `NEXT_LOCALE` lưu lựa chọn trước đó; (2) header `Accept-Language` của trình duyệt; (3) fallback `vi`. Khi phát hiện ngôn ngữ phù hợp, thực hiện `NextResponse.rewrite()` để chuyển hướng đến đường dẫn có tiền tố locale tương ứng (ví dụ: `/en/courses`, `/vi/khoa-hoc`). Danh sách locales hỗ trợ: `['en', 'vi', 'es']`. Tạo file `./sources/frontend/web-app/src/app/[locale]/layout.tsx` với `<html lang={locale}>` và thẻ `<link rel="alternate" hreflang={locale} href={absoluteUrl} />` cho mỗi locale. Tạo các file i18n JSON `./sources/frontend/web-app/src/i18n/{en,vi,es}/common.json` với các chuỗi dịch.
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
 
-* **API and Event Routing Contracts [REQ-022], [REQ-023], [NFR-007]:** <!--START_API_CONTRACT-->
-```json
-{
-  "GET /{locale}/dashboard": {
-    "description": "Trang dashboard đa ngôn ngữ",
-    "headers": {
-      "Set-Cookie": "NEXT_LOCALE={locale}; Path=/; Max-Age=31536000"
-    },
-    "response_200": {
-      "htmlLang": "en | vi | es",
-      "hreflangLinks": [
-        { "hreflang": "en", "href": "https://membershiphub.com/en/dashboard" },
-        { "hreflang": "vi", "href": "https://membershiphub.com/vi/dashboard" },
-        { "hreflang": "es", "href": "https://membershiphub.com/es/dashboard" }
-      ]
-    }
-  }
+<!--START_EXC_HANDLER-->
+```java
+// Test xác minh [EXC-004] cho session hết hạn
+@Test
+void testQuery_ExpiredSession() {
+    ChatbotSession expired = new ChatbotSession();
+    expired.setExpiresAt(LocalDateTime.now().minusMinutes(5));
+    when(sessionRepository.findByToken("expired-token")).thenReturn(Optional.of(expired));
+
+    ChatbotQueryRequest request = new ChatbotQueryRequest();
+    request.setSessionToken("expired-token");
+    request.setQuestion("Hỏi gì đó");
+
+    assertThrows(SessionExpiredException.class, () -> chatbotService.query(request));
+}
+```
+<!--END_EXC_HANDLER-->
+
+### 🌤️ NGÀY 7: <!--DAY_HEADER_START-->TÍCH HỢP MOBILE APP API, OFFLINE CACHE VÀ TÀI LIỆU HÓA OPENAPI CONTRACTS<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 7.1: Xây dựng API client cho mobile app
+
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/frontend/web-app/src/lib/api/membershipHubClient.ts`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-009]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh TypeScript class `MembershipHubClient` tại đường dẫn `./sources/frontend/web-app/src/lib/api/membershipHubClient.ts` sử dụng Axios. Cấu hình base URL từ `process.env.NEXT_PUBLIC_API_BASE_URL`. Implement request interceptor để tự động attach Bearer token từ localStorage key `auth_token`. Response interceptor xử lý 401 bằng cách gọi refresh token endpoint `/api/v1/auth/refresh` rồi retry request, nếu refresh fail thì redirect về trang login và xóa token khỏi localStorage. Methods: `getStudentCard(studentId)`, `renewCard(studentId, request)`, `dispatchNotification(request)`, `registerDevice(request)`, `queryChatbot(request)`. Sử dụng TypeScript generics cho response type safety. Xuất instance singleton `export const apiClient = new MembershipHubClient()`. Truy vết [ARC-009].
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Frontend layer không trực tiếp truy cập DB
+-- Tài liệu tham chiếu các endpoint backend đã thiết kế
+```
+<!--END_DDL_MIGRATION-->
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
+```typescript
+// Type definitions cho API contracts
+export interface StudentCardResponse {
+  cardId: string;
+  studentId: string;
+  issueDate: string;
+  endDate: string;
+  totalValidityDays: number;
+  usedDays: number;
+  remainingDays: number;
+  renewalCount: number;
+}
+
+export interface CardRenewalRequest {
+  renewalDays: number;
+  paymentReference: string;
+}
+
+export interface NotificationDispatchRequest {
+  notificationType: 'PUSH' | 'ZALO_GROUP' | 'IN_APP';
+  targetUserId?: string;
+  targetGroupZalo?: string;
+  messageTitle: string;
+  messageBody: string;
+  payload?: Record<string, unknown>;
 }
 ```
 <!--END_API_CONTRACT-->
 
-#### 📝 NHIỆM VỤ PHỤ 4.6: Triển khai RoleBasedNavigation và trang membership card
-##### Tác Nhân Được Phân Côn: Coder
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/frontend/web-app/src/app/[locale]/dashboard/membership-card/page.tsx
+#### 📝 NHIỆM VỤ PHỤ 7.2: Xây dựng offline cache với IndexedDB
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-014], [REQ-020]<!--END_TAGS-->
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/frontend/web-app/src/lib/offline/cacheService.ts`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-009]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Triển khai `CacheService` tại đường dẫn `./sources/frontend/web-app/src/lib/offline/cacheService.ts` sử dụng IndexedDB qua thư viện `idb`. Cung cấp API: `cacheStudentCard(card: StudentCardResponse)`, `getCachedStudentCard(studentId: string)`, `cacheAnnouncements(list: AnnouncementResponse[])`, `getCachedAnnouncements()`, `queueOfflineRequest(request: QueuedRequest)`, `getQueuedRequests()`, `clearExpiredEntries()`. Sử dụng object store với index theo `studentId` và `timestamp`. Implement TTL logic - entries cũ hơn 24 giờ tự động bị xóa thông qua method `clearExpiredEntries()`. Background sync: khi online, lấy queued requests từ IndexedDB và gửi lại qua API thông qua `syncQueuedRequests()`. Lắng nghe sự kiện `online` của `window` để trigger sync. Truy vết [ARC-009].
 
-* **Low-Level Technical Task Instruction:** Xây dựng trang thẻ thành viên tại `./sources/frontend/web-app/src/app/[locale]/dashboard/membership-card/page.tsx`. Trang sử dụng React Query (`useQuery`) để gọi `GET /api/v1/student-cards/me` và hiển thị thông tin: `validityDays`, `remainingDays`, `endDate`, `status` với màu sắc tương ứng (xanh cho ACTIVE, đỏ cho EXPIRED). Bao gồm nút "Gia hạn" mở modal chọn số ngày từ 1-365, gọi `POST /api/v1/student-cards/renew` với `paymentTransactionId` giả lập. Tạo component `./sources/frontend/web-app/src/components/mobile/RoleBasedNavigation.tsx` hiển thị menu điều hướng theo vai trò (Student thấy "Khóa học của tôi", "Thẻ thành viên"; Teacher thấy "Lịch giảng dạy", "Danh sách học viên"). Responsive sử dụng Tailwind CSS với breakpoint `md:` cho desktop, base cho mobile.
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-#### 📝 NHIỆM VỤ PHỤ 4.7: Kiểm thử component React với Vitest
-##### Tác Nhân Được Phân Côn: Tester
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/frontend/web-app/src/components/mobile/RoleBasedNavigation.tsx;./sources/frontend/web-app/src/components/mobile/RoleBasedNavigation.test.tsx
+<!--START_DDL_MIGRATION-->
+```sql
+-- Frontend layer không yêu cầu migration
+-- Dữ liệu cache được lưu trong IndexedDB phía client
+```
+<!--END_DDL_MIGRATION-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-020]<!--END_TAGS-->
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
 
-* **Low-Level Technical Task Instruction:** Tạo lớp kiểm thử `RoleBasedNavigation.test.tsx` sử dụng Vitest và React Testing Library. Test case: (1) `testRendersStudentMenu` với prop `role="Student"`, xác minh hiển thị menu items "Khóa học của tôi" và "Thẻ thành viên", KHÔNG hiển thị "Lịch giảng dạy"; (2) `testRendersTeacherMenu` với `role="Teacher"`, xác minh hiển thị "Lịch giảng dạy" và "Danh sách học viên"; (3) `testMobileBreakpoint` sử dụng `window.matchMedia` mock với `width=375`, xác minh navigation collapse thành hamburger menu; (4) `testNavigationClick` mô phỏng click vào menu item, xác minh callback `onNavigate` được gọi với đúng path.
+<!--START_API_CONTRACT-->
+```typescript
+// Cache schema cho IndexedDB
+interface CachedStudentCard {
+  studentId: string;
+  cardData: StudentCardResponse;
+  cachedAt: number;
+  expiresAt: number;
+}
 
-#### 📝 NHIỆM VỤ PHỤ 4.8: Soạn thảo tài liệu kiến trúc cho thông báo FCM/APNs
-##### Tác Nhân Được Phân Côn: Doc
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/architecture/notifications-fcm-apns.md
+interface QueuedRequest {
+  id: string;
+  endpoint: string;
+  method: 'POST' | 'PUT' | 'DELETE';
+  payload: unknown;
+  retryCount: number;
+  createdAt: number;
+}
+```
+<!--END_API_CONTRACT-->
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[DOC-001], [ARC-008], [REQ-016], [REQ-021]<!--END_TAGS-->
+#### 📝 NHIỆM VỤ PHỤ 7.3: Tài liệu hóa OpenAPI contracts cho Notification Queue và Mobile App
 
-* **Low-Level Technical Task Instruction:** Soạn thảo tài liệu kiến trúc tại `./sources/docs/architecture/notifications-fcm-apns.md`. Tài liệu phải bao gồm: sơ đồ Mermaid `sequenceDiagram` thể hiện luồng từ sự kiện nghiệp vụ (ghi danh, phân công giáo viên, thông báo quảng bá) -> notification-service nhận -> gọi FcmApnsGatewayClient hoặc ZaloGroupWebhookClient -> retry queue với exponential backoff; mô tả chi tiết cơ chế retry với thời gian chờ (1s, 5s, 30s) theo `EXC-003`; hướng dẫn cấu hình biến môi trường `FCM_SERVER_KEY`, `APNS_KEY_ID`, `ZALO_OA_ACCESS_TOKEN` thông qua Google Secret Manager; bảng mã lỗi HTTP với message bản địa hóa tiếng Việt; checklist bảo mật cho việc lưu trữ device token.
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/contracts/notification-queue.openapi.yaml`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-008], [ARC-009], [DOC-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh file OpenAPI 3.1 YAML tại các đường dẫn `./sources/docs/contracts/notification-queue.openapi.yaml` và `./sources/docs/contracts/mobile-app.openapi.yaml` mô tả đầy đủ: (1) Endpoint `POST /api/v1/notifications/dispatch` với request schema, response 202 Accepted; (2) Endpoint `POST /api/v1/devices/register`; (3) Endpoint `POST /api/v1/chatbot/query`; (4) Endpoint `POST /api/v1/students/{id}/card/renew`; (5) Endpoint `GET /api/v1/students/{id}/card`. Bao gồm security scheme BearerAuth, error responses chuẩn (400, 401, 403, 404, 409, 503), ví dụ JSON cho mỗi response, mô tả luồng retry và dead letter queue theo [EXC-003]. Bổ sung section hướng dẫn tích hợp cho mobile team với curl examples và code snippets TypeScript sử dụng `MembershipHubClient`. Truy vết [ARC-008], [ARC-009] và [DOC-001].
 
-#### 📝 NHIỆM VỤ PHỤ 4.9: Soạn thảo tài liệu chiến lược khôi phục FIFO
-##### Tác Nhân Được Phân Côn: Doc
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/architecture/disaster-recovery-fifo.md
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[DOC-001], [EXC-005]<!--END_TAGS-->
+<!--START_DDL_MIGRATION-->
+```sql
+-- Tài liệu tham chiếu các bảng:
+-- StudentCards, CardRenewalHistory, Promotions, Announcements,
+-- NotificationDispatch, DeviceToken, ChatbotSession, ChatbotMessage
+-- Phần này chỉ liệt kê tham chiếu, không sinh migration mới
+```
+<!--END_DDL_MIGRATION-->
 
-* **Low-Level Technical Task Instruction:** Soạn thảo tài liệu tại `./sources/docs/architecture/disaster-recovery-fifo.md` mô tả chi tiết cơ chế xử lý FIFO khi khôi phục dịch vụ theo `EXC-005`. Tài liệu phải bao gồm: sơ đồ Mermaid `sequenceDiagram` thể hiện kịch bản dịch vụ attendance-service ngừng hoạt động -> yêu cầu điểm danh được lưu vào bảng `attendance_outbox` với status PENDING -> khi dịch vụ khôi phục, `OutboxRelayScheduler` xử lý theo `created_at ASC` (FIFO) -> gọi `AttendanceService.recordAttendance()` để ghi nhận -> cập nhật status PROCESSED -> gửi thông báo "Yêu cầu điểm danh của bạn đã được xử lý" qua FCM. Mô tả cấu trúc bảng `attendance_outbox` với các cột `id`, `payload`, `retry_count`, `status`, `created_at`. Hướng dẫn monitoring với alert khi số bản ghi PENDING vượt ngưỡng 1000.
+#### 📝 NHIỆM VỤ PHỤ 7.4: Kiểm thử frontend cho notification module
 
-#### 📝 NHIỆM VỤ PHỤ 4.10: Soạn thảo tài liệu chiến lược I18N và SEO
-##### Tác Nhân Được Phân Côn: Doc
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/architecture/i18n-seo-strategy.md
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/frontend/web-app/src/test/notifications.spec.ts
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-008], [ARC-009]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Sinh test file tại đường dẫn `./sources/frontend/web-app/src/test/notifications.spec.ts` sử dụng Jest và React Testing Library. Test case 1: `testNotificationsLoad_OnMount` render component, mock API success, verify danh sách notification hiển thị đầy đủ thông tin. Test case 2: `testOfflineFallback` giả lập mất mạng thông qua `navigator.onLine = false`, verify component hiển thị dữ liệu từ `cacheService`. Test case 3: `testQueueOfflineRequest` khi offline, gọi `dispatchNotification`, verify request được queue trong IndexedDB. Test case 4: `testBackgroundSync` khi online trở lại `navigator.onLine = true`, dispatch event `online`, verify queued requests được gửi lại qua API. Sử dụng `fake-indexeddb` để mock IndexedDB trong test. Bổ sung test cho `cacheService.spec.ts` tại `./sources/frontend/web-app/src/test/cacheService.spec.ts` kiểm tra TTL 24 giờ, clearExpiredEntries, getCachedStudentCard trả về null khi không có. Truy vết [ARC-008] và [ARC-009].
 
-* **Traceability Tag Tokens:** <!--START_TAGS-->[DOC-001], [REQ-022], [REQ-023], [NFR-007]<!--END_TAGS-->
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
 
-* **Low-Level Technical Task Instruction:** Soạn thảo tài liệu tại `./sources/docs/architecture/i18n-seo-strategy.md` mô tả chiến lược quốc tế hóa và SEO. Tài liệu phải bao gồm: cấu trúc thư mục `src/i18n/{en,vi,es}/` với file `common.json` chứa các chuỗi dịch; hướng dẫn thêm ngôn ngữ mới (tạo folder mới, thêm vào `middleware.ts` locales array, cập nhật sitemap); checklist SEO bao gồm: thẻ `<html lang={locale}>`, thẻ meta `og:locale`, liên kết `hreflang` chéo giữa các phiên bản ngôn ngữ, tạo `sitemap.xml` đa ngôn ngữ tại `./sources/frontend/web-app/src/app/sitemap.xml/route.ts`. Mô tả cơ chế chuyển ngữ không tải lại trang sử dụng `next-intl` với `useTranslations` hook. Danh sách các trang cần dịch: dashboard, membership card, course list, reports.
-
-#### 📝 NHIỆM VỤ PHỤ 4.11: Đánh giá tổng thể mã nguồn giai đoạn 4
-##### Tác Nhân Được Phân Côn: Reviewer
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/notification-service/src/main/java/org/nlh4j/membershiphub/notificationservice/service/NotificationDispatchService.java
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-016], [REQ-024], [REQ-025], [ARC-008], [ARC-009]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Thực hiện đánh giá tổng thể cuối giai đoạn 4. Tập trung vào: (1) Tuân thủ RBAC trên tất cả endpoint admin (dispatch notification, export report, create promotion); (2) Cơ chế retry với exponential backoff đúng theo `EXC-003`; (3) FIFO processing trong `OutboxRelayScheduler` đảm bảo thứ tự thời gian; (4) Xử lý timezone với `Instant` thay vì `LocalDate`; (5) Middleware i18n xử lý đúng thứ tự ưu tiên locale; (6) Responsive UI hoạt động trên mobile breakpoint 375px. Sinh báo cáo đánh giá với bảng tuân thủ cho từng Tag ID `[REQ-014]` đến `[EXC-005]`. Lập danh sách khuyến nghị cải tiến nếu phát hiện bất thường.
-
-#### 📝 NHIỆM VỤ PHỤ 4.12: Soạn thảo tài liệu sơ đồ Mermaid cho luồng khôi phục
-##### Tác Nhân Được Phân Côn: Doc
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/diagrams/recovery-fifo-flow.mmd
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[EXC-005], [REQ-012]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Soạn tệp Mermaid `sequenceDiagram` tại `./sources/docs/diagrams/recovery-fifo-flow.mmd` mô tả chi tiết luồng khôi phục FIFO theo `EXC-005`. Các participant: `Mobile App`, `API Gateway`, `attendance-service`, `attendance_outbox` (Database), `OutboxRelayScheduler`, `notification-service`, `FCM`. Luồng: Mobile App gửi yêu cầu scan QR -> API Gateway định tuyến -> attendance-service nhận nhưng DB tạm thời không khả dụng -> lưu yêu cầu vào bảng `attendance_outbox` với status PENDING -> attendance-service khôi phục -> OutboxRelayScheduler chạy mỗi 30s -> truy vấn bảng theo created_at ASC (FIFO) -> gọi AttendanceService.recordAttendance() cho từng bản ghi -> cập nhật status PROCESSED -> notification-service gửi FCM thông báo "Yêu cầu điểm danh của bạn đã được xử lý" -> Mobile App nhận notification. Sử dụng `Note over` để giải thích cơ chế retry tối đa 3 lần.
-
-#### 📝 NHIỆM VỤ PHỤ 4.13: Soạn thảo hợp đồng OpenAPI cho reporting-service
-##### Tác Nhân Được Phân Côn: Doc
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/contracts/reporting-openapi.yaml
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-008], [REQ-024], [REQ-025]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Soạn file `reporting-openapi.yaml` chuẩn OpenAPI 3.0.3 tại `./sources/docs/contracts/reporting-openapi.yaml`. Mô tả 2 endpoint: `GET /api/v1/reports/attendance/export` với security scheme bearerAuth JWT, query parameters `centerId` (uuid), `startDate` (date), `endDate` (date), trả response 200 với `text/csv` content type hoặc 400 với mã validation khi date range > 30 ngày; `GET /api/v1/reports/dashboard/summary` với query parameter `centerId`, trả response 200 với schema `DashboardSummaryResponse` chứa `totalStudents`, `activeCourses`, `upcomingSessions`, `refreshIntervalMinutes`. Định nghĩa schema chi tiết với validation constraints. Bao gồm response codes 200/400/401/403/500.
-
-#### 📝 NHIỆM VỤ PHỤ 4.14: Soạn thảo hợp đồng OpenAPI cho membership card
-##### Tác Nhân Được Phân Côn: Doc
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/docs/contracts/membership-card-openapi.yaml
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-014], [REQ-015]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Soạn file `membership-card-openapi.yaml` chuẩn OpenAPI 3.0.3 tại `./sources/docs/contracts/membership-card-openapi.yaml`. Mô tả 2 endpoint: `GET /api/v1/student-cards/me` với security scheme bearerAuth JWT và `@RolesAllowed({"Student"})`, trả response 200 với schema `MembershipCardResponse`; `POST /api/v1/student-cards/renew` nhận `RenewalRequest` với `renewalDays` (integer 1-365) và `paymentTransactionId` (string), trả response 200 với `newEndDate` và `newRemainingDays` hoặc 402 với mã `PAYMENT_GATEWAY_FAILED`. Định nghĩa schema `MembershipCardResponse` với `cardId`, `studentId`, `issueDate`, `endDate`, `validityDays`, `remainingDays`, `status` enum ACTIVE/EXPIRED/SUSPENDED. Bao gồm response codes 200/400/401/402/403.
-
-#### 📝 NHIỆM VỤ PHỤ 4.15: Kiểm thử tích hợp cho OutboxRelayScheduler
-##### Tác Nhân Được Phân Côn: Tester
-##### Thành Phần Mục Tiêu & Yêu Cầu Kỹ Thuật:
-* **Đường Dẫn Mục Tiêu:** ./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/recovery/OutboxRelayScheduler.java;./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/recovery/OutboxRelaySchedulerTest.java
-
-* **Traceability Tag Tokens:** <!--START_TAGS-->[EXC-001], [EXC-005]<!--END_TAGS-->
-
-* **Low-Level Technical Task Instruction:** Tạo lớp `OutboxRelaySchedulerTest` với `@QuarkusTest` và Testcontainers. Test case: (1) `testProcessOutbox_FifoOrder` tạo 3 bản ghi outbox với `created_at` tăng dần, trigger method `processOutbox()`, xác minh cả 3 được xử lý đúng thứ tự bằng cách kiểm tra `Mockito.verify` với `InOrder`; (2) `testProcessOutbox_RetryOnFailure` mô phỏng `AttendanceService.recordAttendance()` ném exception ở 2 lần đầu, xác minh `retry_count` được tăng lên 2; (3) `testProcessOutbox_RetryExhausted` mô phỏng lỗi ở 3 lần liên tiếp, xác minh status chuyển thành `FAILED`; (4) `testProcessOutbox_SendsRecoveryNotification` xác minh `RecoveryNotificationService` được gọi với đúng `studentId` sau khi xử lý thành công. Sử dụng `Awaitility` để đợi scheduler chạy.
-
-<!--END_CHUNK_PART_4_FINAL-->
+<!--START_DDL_MIGRATION-->
+```sql
+-- Test scope frontend không yêu cầu migration backend
+-- Dữ liệu test sử dụng mock data
+```
+<!--END_DDL_MIGRATION-->
