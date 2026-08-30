@@ -1,79 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
-================================================================================
-🏛️ ENTERPRISE ARCHITECTURE & SECURITY COMPLIANCE SPECIFICATION
-================================================================================
-Target Project Identity: membership-hub
-Enforced Java Package Prefix Base: org.nlh4j.membershiphub
-Target Component Destination Path: ./sources/backend/center-service/pom.xml
-Traceability Audit Tag: [ARC-000]
-
-DESCRIPTION:
-This is the Maven Build Descriptor (pom.xml) for the 'center-service' microservice.
-It inherits from the parent multi-module POM and defines the precise dependencies
-required to run a high-performance, reactive, and secure Quarkus 3.15 LTS runtime.
-
-OWASP & SECURITY MITIGATIONS IMPLEMENTED VIA DEPENDENCY SELECTION:
-1. Input Sanitization & Validation (OWASP A03:2021 - Injection):
-   - 'quarkus-hibernate-validator' enforces strict Jakarta Bean Validation 3.0
-     on all incoming REST DTOs (e.g., Tax ID formats, email patterns, phone numbers).
-2. Broken Access Control (OWASP A01:2021):
-   - 'quarkus-smallrye-jwt' secures REST endpoints using cryptographically signed
-     JSON Web Tokens (RS256) and maps claims to RBAC roles (SystemAdmin, CenterAdmin).
-3. Secure Database Access (OWASP A03:2021 - SQL Injection):
-   - 'quarkus-hibernate-orm-panache' utilizes parameterized JPQL/HQL queries
-     under the hood, neutralizing SQL injection vectors.
-4. Database Schema Integrity:
-   - 'quarkus-flyway' manages versioned, immutable DDL migrations to prevent
-     unauthorized schema modifications.
-================================================================================
--->
+  ~ Membership Hub - Center Service Build Descriptor
+  ~ Package: org.nlh4j.membershiphub.centerservice
+  ~ Traceability: [ARC-000]
+  ~ Architecture: Microservice build descriptor for center management domain
+  ~ Compliance: Java 17 LTS, Quarkus 3.15.1 LTS, Jakarta EE 10
+  -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- 
-      Khai báo module cha (Parent POM) để kế thừa dependencyManagement, 
-      phiên bản Quarkus BOM, và các cấu hình plugin chung.
-      [ARC-000] - Đảm bảo tính đồng bộ phiên bản trên toàn hệ thống microservices.
-    -->
     <parent>
         <groupId>org.nlh4j.membershiphub</groupId>
         <artifactId>membership-hub-backend</artifactId>
         <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <!-- 
-      Thông tin định danh duy nhất của microservice center-service.
-      Đóng gói dưới dạng JAR để chạy độc lập hoặc container hóa qua Docker.
-    -->
     <artifactId>center-service</artifactId>
-    <packaging>jar</packaging>
     <name>Membership Hub - Center Service</name>
-    <description>Microservice quản lý danh sách trung tâm, thông tin thuế (TaxID) và phân quyền Center Admin</description>
+    <description>Center management microservice for Membership Hub platform</description>
+    <packaging>jar</packaging>
 
     <dependencies>
-        <!-- 
-          ======================================================================
-          TẦNG GIAO TIẾP REST API & CHUYỂN ĐỔI DỮ LIỆU (RESTEASY REACTIVE)
-          ======================================================================
-          Sử dụng RESTEasy Reactive kết hợp Jackson để tối ưu hóa luồng xử lý I/O phi tuần tự,
-          giảm thiểu nghẽn luồng (thread blocking) và tăng throughput cho API Gateway.
-        -->
+        <!-- Quarkus Core Runtime -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
         </dependency>
-
-        <!-- 
-          ======================================================================
-          TẦNG BỀN VỮNG DỮ LIỆU & ORM (HIBERNATE PANACHE & POSTGRESQL)
-          ======================================================================
-          - Panache đơn giản hóa mô hình Active Record / Repository pattern, tự động hóa
-            các câu lệnh CRUD an toàn.
-          - Driver PostgreSQL JDBC hỗ trợ kết nối hiệu năng cao tới Cloud SQL.
-        -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-orm-panache</artifactId>
@@ -82,76 +37,36 @@ OWASP & SECURITY MITIGATIONS IMPLEMENTED VIA DEPENDENCY SELECTION:
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-postgresql</artifactId>
         </dependency>
-
-        <!-- 
-          ======================================================================
-          QUẢN LÝ DI TRÚ LƯỢC ĐỒ CƠ SỞ DỮ LIỆU (FLYWAY)
-          ======================================================================
-          Tự động áp dụng các tệp di trú SQL (V1__init.sql, V2__...) khi khởi động ứng dụng,
-          đảm bảo tính nhất quán cấu trúc bảng giữa các môi trường Dev, Staging và Prod.
-        -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-flyway</artifactId>
         </dependency>
-
-        <!-- 
-          ======================================================================
-          BẢO MẬT, XÁC THỰC & PHÂN QUYỀN (SMALLRYE JWT)
-          ======================================================================
-          - Giải mã và xác thực chữ ký số của JWT Access Token (RS256).
-          - Áp dụng các ràng buộc phân quyền khai báo như @RolesAllowed({"SystemAdmin", "CenterAdmin"})
-            để bảo vệ tài nguyên hệ thống khỏi truy cập trái phép (OWASP A01:2021).
-        -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-jwt</artifactId>
         </dependency>
-
-        <!-- 
-          ======================================================================
-          TÀI LIỆU HÓA API TỰ ĐỘNG (OPENAPI / SWAGGER)
-          ======================================================================
-          Tự động sinh tài liệu chuẩn OpenAPI 3.1 tại endpoint /q/openapi, giúp đội ngũ
-          Frontend (Next.js) và Mobile (React Native) dễ dàng tích hợp và đồng bộ hợp đồng API.
-        -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-openapi</artifactId>
         </dependency>
-
-        <!-- 
-          ======================================================================
-          KIẾN TRÚC PHẢN ỨNG SỰ KIỆN (SMALLRYE KAFKA)
-          ======================================================================
-          Tích hợp Apache Kafka để phát và nhận các sự kiện bất đồng bộ (ví dụ: center.admin.assigned)
-          giúp giảm liên kết cứng (loose coupling) giữa các dịch vụ user-service và center-service.
-        -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
         </dependency>
-
-        <!-- 
-          ======================================================================
-          XÁC THỰC DỮ LIỆU ĐẦU VÀO (HIBERNATE VALIDATOR / JAKARTA VALIDATION)
-          ======================================================================
-          Ngăn chặn dữ liệu rác, định dạng sai hoặc mã độc (OWASP A03:2021 - Injection)
-          bằng cách kiểm tra tính hợp lệ của dữ liệu ngay tại ranh giới API (Controller).
-        -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-validator</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
 
-        <!-- 
-          ======================================================================
-          TẦNG KIỂM THỬ ĐƠN VỊ & TÍCH HỢP (TEST SUITE)
-          ======================================================================
-          - quarkus-junit5: Khung chạy kiểm thử tích hợp sâu với Quarkus context.
-          - rest-assured: Kiểm thử các điểm cuối HTTP REST API một cách trực quan.
-          - mockito-core: Giả lập hành vi của các thành phần phụ thuộc (Services, Repositories).
-        -->
+        <!-- Testing Dependencies -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
@@ -167,65 +82,95 @@ OWASP & SECURITY MITIGATIONS IMPLEMENTED VIA DEPENDENCY SELECTION:
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- 
-              Quarkus Maven Plugin: Chịu trách nhiệm biên dịch mã nguồn, hỗ trợ chế độ
-              phát triển nóng (quarkus:dev) và đóng gói ứng dụng thành JAR tối ưu hoặc Native Image.
-            -->
             <plugin>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
-                <version>${quarkus.platform.version}</version>
+                <version>${quarkus.version}</version>
                 <extensions>true</extensions>
                 <executions>
                     <execution>
                         <goals>
                             <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <uberJar>true</uberJar>
+                    <nativeImageBuilder>${native-image.builder}</nativeImageBuilder>
+                </configuration>
             </plugin>
 
-            <!-- 
-              Compiler Plugin: Thiết lập phiên bản Java 17 LTS đồng bộ cho toàn bộ mã nguồn
-              để tận dụng các tính năng ngôn ngữ mới và tối ưu hóa hiệu năng JVM.
-            -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${compiler-plugin.version}</version>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>UTF-8</encoding>
                     <compilerArgs>
                         <arg>-parameters</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
 
-            <!-- 
-              Surefire Plugin: Thực thi các bài kiểm thử đơn vị (Unit Tests) trong quá trình build,
-              đảm bảo không có lỗi logic nào được đưa lên môi trường production.
-            -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire-plugin.version}</version>
+                <version>${maven.surefire.plugin.version}</version>
                 <configuration>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
+                    <parallel>methods</parallel>
+                    <threadCount>4</threadCount>
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <argLine>-Xmx2g -XX:MaxMetaspaceSize=512m</argLine>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/jacoco-report</outputDirectory>
+                    <excludes>
+                        <exclude>org.nlh4j.membershiphub.centerservice.dto.*</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
     <profiles>
-        <!-- 
-          Profile hỗ trợ biên dịch Native Image thông qua GraalVM.
-          Giúp giảm thời gian khởi động (cold start) xuống mức mili-giây và tối ưu hóa bộ nhớ RAM
-          khi chạy trên môi trường Kubernetes (GKE Autopilot).
-        -->
         <profile>
             <id>native</id>
             <activation>
@@ -233,9 +178,22 @@ OWASP & SECURITY MITIGATIONS IMPLEMENTED VIA DEPENDENCY SELECTION:
                     <name>native</name>
                 </property>
             </activation>
-            <properties>
-                <quarkus.package.type>native</quarkus.package.type>
-            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.quarkus</groupId>
+                        <artifactId>quarkus-maven-plugin</artifactId>
+                        <version>${quarkus.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>native-image</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
