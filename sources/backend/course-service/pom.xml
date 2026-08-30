@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ================================================================================
+  🏛️ ENTERPRISE ARCHITECTURE BUILD DESCRIPTOR
+  ================================================================================
+  Project Identity: membership-hub
+  Component: course-service
+  Path: ./sources/backend/course-service/pom.xml
+  
+  Traceability Audit Tags:
+  - [ARC-000]: Scaffolding & Build Descriptors for the entire system.
+  
+  Security & Compliance Baseline:
+  - Enforces Java 17 LTS compilation standards.
+  - Inherits centralized dependency management from the parent BOM.
+  - Restricts dependencies to the absolute minimum required for the course domain
+    to minimize the attack surface and optimize container image size (< 500MB).
+  ================================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 
+      [ARC-000] Parent Declaration:
+      Inherits global configurations, plugin management, and dependency versions 
+      from the root multi-module Maven project to ensure ecosystem consistency.
+    -->
+    <parent>
+        <groupId>org.nlh4j.membershiphub</groupId>
+        <artifactId>membership-hub-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <!-- Artifact Metadata -->
+    <artifactId>course-service</artifactId>
+    <packaging>jar</packaging>
+    <name>Membership Hub :: Course Service</name>
+    <description>Microservice handling course management, scheduling, and student enrollments</description>
+
+    <!-- 
+      Local Properties:
+      Isolates configuration parameters at the top layer of the descriptor 
+      to prevent hardcoding inside execution blocks.
+    -->
+    <properties>
+        <compiler-plugin.version>3.13.0</compiler-plugin.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- 
+          ============================================================================
+          CORE RUNTIME DEPENDENCIES (Managed by Parent BOM)
+          ============================================================================
+        -->
+
+        <!-- 
+          [ARC-000] RESTEasy Reactive Jackson:
+          Provides high-performance, non-blocking JAX-RS HTTP endpoints 
+          with automated JSON serialization/deserialization.
+        -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+        </dependency>
+
+        <!-- 
+          [ARC-000] Hibernate ORM with Panache:
+          Simplifies active record / repository pattern implementations over JPA,
+          ensuring secure, parameterized database transactions.
+        -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+
+        <!-- 
+          [ARC-000] PostgreSQL JDBC Driver:
+          Enables native, high-throughput relational database connectivity 
+          optimized for PostgreSQL primary/replica workloads.
+        -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+
+        <!-- 
+          [ARC-000] Flyway Database Migration:
+          Automates schema evolution and version control tracking directly 
+          during application startup.
+        -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+
+        <!-- 
+          [ARC-000] SmallRye JWT:
+          Secures REST endpoints using JSON Web Tokens (JWT) for Role-Based 
+          Access Control (RBAC) validation.
+        -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+
+        <!-- 
+          [ARC-000] SmallRye OpenAPI:
+          Generates standardized OpenAPI 3.1 schemas dynamically to maintain 
+          strict API contracts with frontend and mobile clients.
+        -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+
+        <!-- 
+          [ARC-000] SmallRye Reactive Messaging Kafka:
+          Enables asynchronous, event-driven communication via Apache Kafka 
+          for publishing enrollment and course assignment events.
+        -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+        </dependency>
+
+        <!-- 
+          [ARC-000] Hibernate Validator:
+          Enforces Jakarta Bean Validation 3.0 constraints on incoming DTO payloads 
+          to neutralize malformed data injection vectors at the entry gate.
+        -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+
+        <!-- 
+          ============================================================================
+          TEST SUITE DEPENDENCIES (Managed by Parent BOM)
+          ============================================================================
+        -->
+
+        <!-- 
+          [ARC-000] Quarkus JUnit 5:
+          Core testing framework integration for executing unit and integration tests 
+          within the Quarkus runtime environment.
+        -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 
+          [ARC-000] REST Assured:
+          Enables fluent, declarative HTTP endpoint testing to verify API contract 
+          compliance and security constraints.
+        -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 
+          [ARC-000] Mockito Core:
+          Provides robust mocking capabilities to isolate business logic layers 
+          during unit testing, preventing external network/database side effects.
+        -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- 
+              [ARC-000] Quarkus Maven Plugin:
+              Handles compilation, packaging, live-reload development mode, 
+              and native executable generation via GraalVM.
+            -->
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 
+              [ARC-000] Maven Compiler Plugin:
+              Enforces Java 17 compilation standards and binds annotation processors.
+            -->
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler-plugin.version}</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!-- 
+              [ARC-000] Maven Surefire Plugin:
+              Executes unit tests and configures system properties for the test runtime.
+            -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire-plugin.version}</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <maven.home>${maven.home}</maven.home>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- 
+          [ARC-000] Native Build Profile:
+          Compiles the application into a highly optimized native binary using GraalVM,
+          reducing startup time to milliseconds and memory footprint to minimum.
+        -->
+        <profile>
+            <id>native</id>
+            <activation>
+                <property>
+                    <name>native</name>
+                </property>
+            </activation>
+            <properties>
+                <skipITs>false</skipITs>
+                <quarkus.package.type>native</quarkus.package.type>
+            </properties>
+        </profile>
+    </profiles>
+</project>

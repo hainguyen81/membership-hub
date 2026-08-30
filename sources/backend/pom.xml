@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ========================================================================================= -->
+<!-- [TRACEABILITY TAGS]: [ARC-000]                                                           -->
+<!-- ========================================================================================= -->
+<!-- BUSINESS CONTEXT: Root Maven Multi-Module Project Descriptor for Membership Hub Enterprise Platform -->
+<!-- ARCHITECTURAL PATTERN: Quarkus 3.15.1 Enterprise Microservices Parent POM (Java 17 LTS)    -->
+<!-- COMPLIANCE STANDARDS: Enterprise Clean Architecture, Dependency Management Isolation     -->
+<!-- ========================================================================================= -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    
+    <!-- [REQ-ARC-000] Parent Project Model Version Declaration -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- [REQ-ARC-000] Enterprise Maven Coordinates Configuration -->
+    <groupId>org.nlh4j.membershiphub</groupId>
+    <artifactId>membership-hub-backend</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Membership Hub - Backend Enterprise Root Project</name>
+    <description>Master Maven Multi-Module Parent POM for Quarkus 3.15.1 Microservices Infrastructure</description>
+
+    <!-- [REQ-ARC-000] Enterprise Module Declarations (4 Core Microservices) -->
+    <modules>
+        <module>user-service</module>
+        <module>center-service</module>
+        <module>course-service</module>
+        <module>attendance-service</module>
+    </modules>
+
+    <!-- [REQ-ARC-000] Global Environment and Compiler Properties -->
+    <properties>
+        <compiler-plugin.version>3.13.0</compiler-plugin.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <quarkus.platform.version>3.15.1</quarkus.platform.version>
+        <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
+        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
+        <surefire-plugin.version>3.2.5</surefire-plugin.version>
+        <flyway.version>10.10.0</flyway.version>
+        <postgresql.version>42.7.3</postgresql.version>
+        <jacoco.version>0.8.11</jacoco.version>
+        <junit.version>5.10.1</junit.version>
+        <mockito.version>5.7.0</mockito.version>
+        <rest-assured.version>5.4.0</rest-assured.version>
+    </properties>
+
+    <!-- [REQ-ARC-000] Centralized Quarkus BOM Dependency Management Import -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${quarkus.platform.group-id}</groupId>
+                <artifactId>${quarkus.platform.artifact-id}</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- [REQ-ARC-000] Master Build Lifecycle and Plugin Management -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- [REQ-ARC-000] Quarkus Maven Plugin for Dev, Build and Native Image Generation -->
+                <plugin>
+                    <groupId>${quarkus.platform.group-id}</groupId>
+                    <artifactId>quarkus-maven-plugin</artifactId>
+                    <version>${quarkus.platform.version}</version>
+                    <extensions>true</extensions>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>build</goal>
+                                <goal>generate-code</goal>
+                                <goal>generate-code-tests</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- [REQ-ARC-000] Maven Compiler Plugin Configuration for Java 17 LTS -->
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${compiler-plugin.version}</version>
+                    <configuration>
+                        <source>${maven.compiler.release}</source>
+                        <target>${maven.compiler.release}</target>
+                        <compilerArgs>
+                            <arg>-parameters</arg>
+                        </compilerArgs>
+                    </configuration>
+                </plugin>
+
+                <!-- [REQ-ARC-000] Maven Surefire Plugin Configuration for Unit Testing -->
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${surefire-plugin.version}</version>
+                    <configuration>
+                        <systemPropertyVariables>
+                            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                            <maven.home>${maven.home}</maven.home>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+
+                <!-- [REQ-ARC-000] Flyway Database Migration Plugin Configuration -->
+                <plugin>
+                    <groupId>org.flywaydb</groupId>
+                    <artifactId>flyway-maven-plugin</artifactId>
+                    <version>${flyway.version}</version>
+                </plugin>
+
+                <!-- [REQ-ARC-000] JaCoCo Code Coverage Plugin Configuration -->
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>report</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <!-- [REQ-ARC-000] Enterprise Build Profiles for Development and Native Execution -->
+    <profiles>
+        <profile>
+            <id>native</id>
+            <activation>
+                <property>
+                    <name>native</name>
+                </property>
+            </activation>
+            <properties>
+                <skipITs>false</skipITs>
+                <quarkus.native.enabled>true</quarkus.native.enabled>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>${surefire-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
