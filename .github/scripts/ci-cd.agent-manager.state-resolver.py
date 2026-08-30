@@ -35,7 +35,7 @@ def main():
     trigger_event = os.environ.get("TRIGGER_EVENT", "workflow_dispatch")
     is_schedule_event = trigger_event.lower() == "schedule"
     state_exec_mode = state.get("exec_mode", "auto_cron") if state else None
-    exec_mode = state_exec_mode if is_schedule_event and state_exec_mode else os.environ.get("INPUT_EXEC_MODE", state_exec_mode) or "auto_cron"
+    exec_mode = (state_exec_mode or "auto_cron") if is_schedule_event else os.environ.get("INPUT_EXEC_MODE", state_exec_mode) or "auto_cron"
     scope = os.environ.get("INPUT_TARGET_SCOPE", "")
     val_str = os.environ.get("INPUT_VALUE", "")
     print(f"🕒 [ PARAMETERS ] State Execution: BY_SCHEDULE {is_schedule_event}; EXEC_MODE {exec_mode}; SCOPE {scope}")
