@@ -78,3 +78,102 @@ CREATE INDEX IF NOT EXISTS idx_courses_teacher_id ON courses (teacher_id);
 -- Create index on start_date to optimize chronological course searches and range queries
 -- [DAT-003] Speeds up active course filtering and scheduling lookups
 CREATE INDEX IF NOT EXISTS idx_courses_start_date ON courses (start_date);
+
+-- =====================================================================================================================
+-- TRACEABILITY AUDIT METADATA [DAT-003], [DAT-004], [DAT-005]
+-- SYSTEM: membership-hub | MODULE: attendance-service
+-- PATH: ./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_enrollments_attendance.sql
+-- DESCRIPTION: Database migration script to initialize the 'enrollments' and 'attendance' tables with strict constraints, indexes, and FKs.
+-- =====================================================================================================================
+
+-- Create the 'enrollments' table to track student enrollment in courses
+-- [DAT-004] Establishes the enrollment entity linking students to courses
+CREATE TABLE IF NOT EXISTS enrollments (
+    -- Unique identifier for each enrollment record, generated using UUID v4
+    -- [DAT-004] Primary key constraint for entity identification
+    enrollment_id UUID NOT NULL,
+
+    -- Reference to the student (User) enrolling in the course
+    -- [DAT-004] Foreign key referencing the users table in the user-service domain
+    student_id UUID NOT NULL,
+
+    -- Reference to the course being enrolled in
+    -- [DAT-004] Foreign key referencing the courses table in the course-service domain
+    course_id UUID NOT NULL,
+
+    -- Timestamp when the enrollment was recorded
+    enrollment_date TIMESTAMP NOT NULL DEFAULT now(),
+
+    -- Primary Key constraint to enforce uniqueness of enrollment_id
+    CONSTRAINT pk_enrollments PRIMARY KEY (enrollment_id),
+
+    -- Foreign Key constraint linking enrollment to a valid student in the users table
+    CONSTRAINT fk_enrollments_student FOREIGN KEY (student_id) REFERENCES users(user_id),
+
+    -- Foreign Key constraint linking enrollment to a valid course in the courses table
+    CONSTRAINT fk_enrollments_course FOREIGN KEY (course_id) REFERENCES courses(course_id),
+
+    -- Unique constraint to prevent duplicate enrollment of the same student in the same course
+    CONSTRAINT uq_enrollments_student_course UNIQUE (student_id, course_id)
+);
+
+-- Comment on table and columns for database-level documentation and audit compliance
+COMMENT ON TABLE enrollments IS 'Tracks student enrollment records for courses in the membership-hub platform.';
+COMMENT ON COLUMN enrollments.enrollment_id IS 'Unique identifier (UUID v4) of the enrollment record.';
+COMMENT ON COLUMN enrollments.student_id IS 'Reference to the student (User ID) enrolling.';
+COMMENT ON COLUMN enrollments.course_id IS 'Reference to the course being enrolled in.';
+COMMENT ON COLUMN enrollments.enrollment_date IS 'Timestamp when the enrollment was recorded.';
+
+-- Create index on student_id to optimize queries filtering enrollments by student
+CREATE INDEX IF NOT EXISTS idx_enrollments_student_id ON enrollments (student_id);
+
+-- Create index on course_id to optimize queries filtering enrollments by course
+CREATE INDEX IF NOT EXISTS idx_enrollments_course_id ON enrollments (course_id);
+
+-- Create the 'attendance' table to record course attendance scans
+-- [DAT-005] Establishes the attendance entity linking students to course sessions
+CREATE TABLE IF NOT EXISTS attendance (
+    -- Unique identifier for each attendance record, generated using UUID v4
+    -- [DAT-005] Primary key constraint for entity identification
+    attendance_id UUID NOT NULL,
+
+    -- Reference to the student (User) attending the course
+    -- [DAT-005] Foreign key referencing the users table in the user-service domain
+    student_id UUID NOT NULL,
+
+    -- Reference to the course being attended
+    -- [DAT-005] Foreign key referencing the courses table in the course-service domain
+    course_id UUID NOT NULL,
+
+    -- Date of the attendance record (used for idempotent daily scans)
+    attendance_date DATE NOT NULL,
+
+    -- Timestamp when the attendance was recorded
+    timestamp TIMESTAMP NOT NULL DEFAULT now(),
+
+    -- Primary Key constraint to enforce uniqueness of attendance_id
+    CONSTRAINT pk_attendance PRIMARY KEY (attendance_id),
+
+    -- Foreign Key constraint linking attendance to a valid student in the users table
+    CONSTRAINT fk_attendance_student FOREIGN KEY (student_id) REFERENCES users(user_id),
+
+    -- Foreign Key constraint linking attendance to a valid course in the courses table
+    CONSTRAINT fk_attendance_course FOREIGN KEY (course_id) REFERENCES courses(course_id),
+
+    -- Unique constraint to ensure a student can only have one attendance record per course per day
+    CONSTRAINT uq_attendance_student_course_date UNIQUE (student_id, course_id, attendance_date)
+);
+
+-- Comment on table and columns for database-level documentation and audit compliance
+COMMENT ON TABLE attendance IS 'Records course attendance scans for students in the membership-hub platform.';
+COMMENT ON COLUMN attendance.attendance_id IS 'Unique identifier (UUID v4) of the attendance record.';
+COMMENT ON COLUMN attendance.student_id IS 'Reference to the student (User ID) attending.';
+COMMENT ON COLUMN attendance.course_id IS 'Reference to the course being attended.';
+COMMENT ON COLUMN attendance.attendance_date IS 'Date of the attendance record (used for idempotent daily scans).';
+COMMENT ON COLUMN attendance.timestamp IS 'Timestamp when the attendance was recorded.';
+
+-- Create index on course_id and attendance_date for efficient course attendance queries
+CREATE INDEX IF NOT EXISTS idx_attendance_course_date ON attendance (course_id, attendance_date);
+
+-- Create index on student_id and attendance_date for efficient student attendance queries
+CREATE INDEX IF NOT EXISTS idx_attendance_student_date ON attendance (student_id, attendance_date);

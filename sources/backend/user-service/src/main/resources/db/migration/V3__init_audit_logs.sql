@@ -1,5 +1,5 @@
 -- ============================================
--- FILE: V2__init_announcements.sql
+-- FILE: ./sources/backend/course-service/src/main/resources/db/migration/V2__init_announcements.sql
 -- SCOPE: Announcements
 -- TAGS: [DAT-010], [DAT-011], [DAT-012]
 -- DESCRIPTION: Initialize announcements table for center-wide announcements with date range validation
@@ -32,7 +32,7 @@ CREATE TABLE announcements (
 CREATE INDEX idx_announcements_center_id ON announcements(center_id);
 
 -- ============================================
--- FILE: V3__init_system_settings.sql
+-- FILE: ./sources/backend/user-service/src/main/resources/db/migration/V3__init_system_settings.sql
 -- SCOPE: System Settings
 -- TAGS: [DAT-010], [DAT-011], [DAT-012]
 -- DESCRIPTION: Initialize system_settings table for application-wide configuration key-value pairs
@@ -56,7 +56,7 @@ CREATE TABLE system_settings (
 );
 
 -- ============================================
--- FILE: V3__init_audit_logs.sql
+-- FILE: ./sources/backend/user-service/src/main/resources/db/migration/V3__init_audit_logs.sql
 -- SCOPE: Audit Logs
 -- TAGS: [DAT-010], [DAT-011], [DAT-012]
 -- DESCRIPTION: Initialize audit_logs table for security audit trail (NFR-006) - 1 year retention

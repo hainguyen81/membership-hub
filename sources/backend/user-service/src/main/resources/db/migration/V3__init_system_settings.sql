@@ -1,4 +1,28 @@
 -- ============================================
+-- Flyway Migration Script: V2__init_announcements.sql
+-- Project: membership-hub
+-- Service: course-service
+-- Traceability Tags: [DAT-010], [DAT-011], [DAT-012]
+-- SCOPE: Announcements Table Initialization
+-- Description: Creates the announcements table for system-wide broadcast messages.
+-- ============================================
+CREATE TABLE announcements (
+    announcement_id UUID PRIMARY KEY,
+    title VARCHAR(150) NOT NULL,
+    content TEXT NOT NULL,
+    start_date DATE,
+    end_date DATE,
+    center_id UUID NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    CONSTRAINT fk_announcements_center FOREIGN KEY (center_id) REFERENCES centers(center_id),
+    CONSTRAINT ck_announcements_date_range CHECK (end_date IS NULL OR end_date >= start_date)
+);
+-- ============================================
+-- End of Migration V2__init_announcements.sql
+-- Traceability Verification: [DAT-010], [DAT-011], [DAT-012]
+-- ============================================
+
+-- ============================================
 -- Flyway Migration Script: V3__init_system_settings.sql
 -- Project: membership-hub
 -- Service: user-service
@@ -6,39 +30,37 @@
 -- SCOPE: System Settings Table Initialization
 -- Description: Creates the system_settings table for storing application-wide
 --              configuration parameters as key-value pairs with descriptions.
---              This enables dynamic system configuration management without
---              requiring application code changes or redeployments.
---              Supports feature flags, operational thresholds, and system metadata.
 -- ============================================
-
--- [DAT-011] Create system_settings table
--- Business Context: Centralized configuration store for system parameters
--- Architecture: Part of user-service schema, consumed by all microservices via config queries
--- Security Note: Access to this table should be restricted to admin services only
 CREATE TABLE system_settings (
-    -- Primary key: unique configuration key identifier (VARCHAR 50, NOT NULL) [DAT-011]
-    -- Example values: 'security.jwt.access_token_expiry', 'attendance.qr.timeout_seconds'
     setting_key VARCHAR(50) NOT NULL,
-    
-    -- Configuration value stored as TEXT to support JSON, numeric, boolean string representations [DAT-011]
-    -- All values are stored as strings; application layer handles type casting and validation
     setting_value TEXT NOT NULL,
-    
-    -- Human-readable description of the configuration parameter (VARCHAR 200, nullable) [DAT-011]
-    -- Used for admin UI display and documentation purposes
     description VARCHAR(200),
-    
-    -- Primary key constraint ensuring uniqueness and non-null setting_key [DAT-011]
-    -- Automatically creates a unique btree index in PostgreSQL for fast lookups
     CONSTRAINT pk_system_settings PRIMARY KEY (setting_key)
 );
-
--- [DAT-011] Table-level documentation for schema generation tools
--- This table implements a simple key-value store pattern for system configuration
--- No foreign keys required as this is a standalone configuration registry
--- No additional indexes needed beyond the primary key due to expected low row count (<1000 rows)
-
 -- ============================================
 -- End of Migration V3__init_system_settings.sql
+-- Traceability Verification: [DAT-010], [DAT-011], [DAT-012]
+-- ============================================
+
+-- ============================================
+-- Flyway Migration Script: V3__init_audit_logs.sql
+-- Project: membership-hub
+-- Service: user-service
+-- Traceability Tags: [DAT-010], [DAT-011], [DAT-012]
+-- SCOPE: Audit Logs Table Initialization
+-- Description: Creates the audit_logs table for storing system audit events.
+-- ============================================
+CREATE TABLE audit_logs (
+    log_id UUID PRIMARY KEY,
+    user_id UUID,
+    action VARCHAR(100) NOT NULL,
+    details TEXT,
+    occurred_at TIMESTAMP NOT NULL DEFAULT now(),
+    CONSTRAINT fk_audit_logs_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+    INDEX idx_audit_logs_user_id (user_id),
+    INDEX idx_audit_logs_occurred_at (occurred_at)
+);
+-- ============================================
+-- End of Migration V3__init_audit_logs.sql
 -- Traceability Verification: [DAT-010], [DAT-011], [DAT-012]
 -- ============================================
