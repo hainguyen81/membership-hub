@@ -1,12 +1,12 @@
-import os
-import sys
 import importlib
 import importlib.util
-from pathlib import Path
+import os
+import re
+import sys
 from importlib.abc import MetaPathFinder
 from importlib.machinery import ModuleSpec
+from pathlib import Path
 
-import re
 
 # -------------------------------------------------
 # MAPPING SPECIAL CHARACTERS TABLE for PYTHON PACKAGE / MODULE NAME
@@ -66,8 +66,7 @@ class ModuleNameMapper:
             return ""
             
         # 1. for first number character
-        if encoded_text.startswith("_0n_"):
-            encoded_text = encoded_text[4:]
+        encoded_text = encoded_text.removeprefix("_0n_")
             
         # 2. special characters under Hex (_xHH_ hoặc _uHHHH_)
         def replace_hex(match):
@@ -98,7 +97,7 @@ class FolderPackageFinder(MetaPathFinder):
         # 1. Define root Package Alias
         self.root_alias = ModuleNameMapper.encode(self.folder_path.name)
         self.mapping_caches = {}
-        print(f"📦 Custom Finder registered for folder '{self.folder_path.name}' as alias '{self.root_alias}'")
+        # print(f"📦 Custom Finder registered for folder '{self.folder_path.name}' as alias '{self.root_alias}'")
     
     def alias(self) -> str:
         return self.root_alias
@@ -142,10 +141,8 @@ class FolderPackageFinder(MetaPathFinder):
             return self.mapping_caches.get(fullname)
         
         # Support python -m including trap extension .__main__
-        is_main = False
         search_name = fullname
         if fullname.endswith(".__main__"):
-            is_main = True
             search_name = fullname[:-9] # split ".__main__" to calculate relative path
 
         # if module doesn;t start with root alias; then ignoring
@@ -170,7 +167,7 @@ class FolderPackageFinder(MetaPathFinder):
             if current_phys_path.is_dir():
                 # loop folder via sub-folders/files recursively
                 for item in current_phys_path.rglob("*"):
-                    found, cleaned_item_name, found_path = self.is_matched(item=item, part=part)
+                    found, _, found_path = self.is_matched(item=item, part=part)
                     # print(f"- ✅ Package {item.name} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {found}")
                     if found:
                         current_phys_path = found_path
@@ -178,7 +175,7 @@ class FolderPackageFinder(MetaPathFinder):
                         
             # CASE 2: current path is file -> 'part' is Class/Function in file
             elif current_phys_path.is_file() and current_phys_path.suffix == '.py':
-                found, cleaned_item_name, found_path = self.is_matched(item=current_phys_path, part=part)
+                found, _, found_path = self.is_matched(item=current_phys_path, part=part)
                 # print(f"- ✅ Module {found_path.stem} | Alias: {cleaned_item_name} | Matched-Part: {part}?. {found}")
                 if found:
                     break
@@ -206,7 +203,7 @@ def register_packages(packages):
         if package_path and package_path.is_dir():
             packageFinder = FolderPackageFinder(str(package_path))
             sys.meta_path.insert(0, packageFinder)
-            print(f"✅ Registered {package_path} to sys.meta_path for finding with alias: {packageFinder.alias()}")
+            # print(f"✅ Registered {package_path} to sys.meta_path for finding with alias: {packageFinder.alias()}")
         
         else:
             print(f"⛔ Not found package folder path {package} to register package/module finder")

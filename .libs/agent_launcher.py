@@ -1,5 +1,5 @@
-import sys
 import runpy
+import sys
 
 from modules_loader import load_modules
 
