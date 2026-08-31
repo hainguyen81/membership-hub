@@ -4,17 +4,15 @@
 *   Target Component Destination Path: `{{ target_component }}` (Must map to sources/backend/ or sources/frontend/)
 *   Context Module Context Reference Path: `{{ source_component }}`
 
-### SOURCE CODE UNDER AUDIT (VERIFICATION TARGET)
-* **Target Code Component Payload For Comprehensive Review:**
-<EXISTING_CODE_UNDER_AUDIT>
+### 📁 SOURCE CODE UNDER AUDIT (VERIFICATION TARGET)
+The following code block is the implementation that requires direct security review or immediate compilation patch:
 {{ source_component_payload }}
-</EXISTING_CODE_UNDER_AUDIT>
 
-{% if existing_error_logs %}
+{% if compiler_error_logs and compiler_error_logs.strip() != "" %}
 ### ❌ REAL RAW COMPILER ERROR LOGS (CRITICAL FIX TARGET)
 The codebase above triggered the following compiler or runtime exceptions. You MUST analyze this stack trace or log error text to pinpoint and auto-patch the root cause:
 ```text
-{{ existing_error_logs }}
+{{ compiler_error_logs }}
 ```
 *   Operational Modality Activated: COMPILER_FIXER_MODE
 {% else %}

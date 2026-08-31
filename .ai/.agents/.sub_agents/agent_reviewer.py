@@ -207,6 +207,8 @@ class BugFixerAgent(AbstractSubAgent):
             # build new values kwargs
             kwargs = {
                 **kwargs,
+                "existing_error_logs": compiler_log and len(compiler_log.strip()) > 0,
+                "compiler_error_logs": compiler_log,
                 "system_prompt": system_prompt,
                 "user_prompt": user_prompt
             }

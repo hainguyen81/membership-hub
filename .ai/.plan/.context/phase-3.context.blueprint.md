@@ -1,447 +1,606 @@
-# Giai đoạn 3: <!--PHASE_NAME_START-->Quản Lý Khóa Học, Ghi Danh và Dashboard Phân Tích<!--PHASE_NAME_END-->
+# Giai đoạn 3: <!--PHASE_NAME_START-->Phát Triển Nghiệp Vụ Khoá Học Và Điểm Danh QR<!--PHASE_NAME_END-->
 
-## 📊 Quản Lý Tài Liệu
+## 📊 Kiểm Soát Tài Liệu
 
-| Mục | Chi tiết |
+| Hạng mục | Chi tiết |
 | :--- | :--- |
-| **Mã bản thiết kế** | ARCH-20260828112120 |
-| **Tên dự án** | membership-hub |
+| **Mã Bản Thiết Kế** | ARCH-20260829225017 |
+| **Tên Dự Án** | membership-hub |
 | **Giai đoạn** | 3 |
-| **Tên giai đoạn** | <!--PHASE_NAME_START-->Quản Lý Khóa Học, Ghi Danh và Dashboard Phân Tích<!--PHASE_NAME_END--> |
-| **Mô tả** | <!--PHASE_DESC_START-->Giai đoạn 3 tập trung xây dựng hai microservice nghiệp vụ cốt lõi là course-service và enrollment-service trong hệ thống Quarkus. Giai đoạn này hiện thực hóa toàn bộ luồng quản lý khóa học gồm danh sách, CRUD với trigger PostgreSQL phát hiện xung đột lịch trình giáo viên, phân công giáo viên kèm phát sự kiện Kafka, đồng thời xây dựng luồng ghi danh cho phép duyệt khóa học khả dụng, tự động tạo tài khoản học viên khi ghi danh và phát thông báo đa kênh. Cuối cùng, giai đoạn hoàn thiện dashboard tổng hợp ghi danh với cache Redis 15 phút cung cấp chỉ số tổng học viên, khóa học đang hoạt động và buổi học sắp tới trong 7 ngày, đảm bảo hiệu năng sub-second cho 10.000 người dùng đồng thời theo NFR-001. Toàn bộ logic phải tuân thủ nguyên tắc bảo mật OWASP, sử dụng distributed lock chống race condition và idempotent producer cho Kafka.<!--PHASE_DESC_END--> |
-| **Phiên bản** | 1.0 (Đường cơ sở) |
-| **Ngày giờ** | 2026/08/28 11:21:20 |
-| **Tác giả** | Kiến trúc sư hệ thống doanh nghiệp (SA Agent) |
-| **Phê duyệt** | Đang chờ đánh giá quản trị kỹ thuật |
+| **Tên Giai Đoạn** | <!--PHASE_NAME_START-->Phát Triển Nghiệp Vụ Khoá Học Và Điểm Danh QR<!--PHASE_NAME_END--> |
+| **Mô Tả** | <!--PHASE_DESC_START-->Giai đoạn 3 tập trung xây dựng toàn bộ luồng nghiệp vụ liên quan đến quản lý khoá học, phân công giáo viên, đăng ký khoá học của sinh viên và đặc biệt là luồng xử lý điểm danh QR với cơ chế idempotency, retry khi mất mạng và FIFO khi khôi phục dịch vụ. Giai đoạn này triển khai các REST API danh sách khoá học có phân trang, CRUD khoá học với logic overlap check dựa trên teacher_id và khoảng ngày sử dụng ràng buộc exclusion tại cơ sở dữ liệu PostgreSQL, endpoint gán/huỷ gán giáo viên kèm đẩy sự kiện Kafka, endpoint duyệt khoá học cho sinh viên với filter loại trừ enrollment tồn tại, endpoint đăng ký khoá học tự sinh tài khoản Student và đẩy Kafka enrollment-created, REST POST điểm danh QR với giải mã payload base64, kiểm tra enrollment, idempotency key, cơ chế retry sau mất mạng và FIFO khi khôi phục<!--PHASE_DESC_END--> |
+| **Phiên Bản** | 1.0 (Baseline) |
+| **Ngày Giờ** | 2026/08/29 22:50:17 |
+| **Tác Giả** | Enterprise System Architect (SA Agent) |
+| **Phê Duyệt** | Pending Technical Governance Review |
 
-## 1. Phạm Vi Hoạt Động & Mục Tiêu Của Giai Đoạn
+## 1. Phạm Vi Hoạt Động Và Mục Tiêu Giai Đoạn
 
-Giai đoạn 3 thuộc dự án membership-hub tập trung xây dựng hai microservice nghiệp vụ trọng yếu gồm `course-service` và `enrollment-service` nhằm hiện thực hóa toàn bộ luồng quản lý khóa học và ghi danh học viên. Phạm vi hoạt động cốt lõi của giai đoạn này bao gồm năm trụ cột chính: (1) Triển khai endpoint GET `/api/v1/courses` trong course-service với định dạng lưới dữ liệu gồm `CourseID`, `Title`, `StartDate`, `EndDate`, `TeacherName`, đảm bảo phản hồi dưới 200ms theo NFR-001; (2) Xây dựng CRUD `/api/v1/courses` với trigger PostgreSQL `trg_teacher_schedule_conflict` tự động phát hiện xung đột lịch trình giáo viên, ném ngoại lệ `ScheduleConflictException` ánh xạ sang HTTP 409 mã `SCHEDULE_CONFLICT`; (3) Triển khai endpoint phân công giáo viên `POST /api/v1/courses/{id}/teachers` kèm phát sự kiện Kafka lên topic `course.teacher.assigned` với idempotent producer config; (4) Xây dựng endpoint duyệt khóa học `GET /api/v1/students/{id}/available-courses` loại trừ các khóa học đã ghi danh, hiển thị capacity và lịch trình; (5) Triển khai endpoint ghi danh `POST /api/v1/enrollments` với cơ chế auto-provisioning tạo tài khoản Student khi email chưa tồn tại, sử dụng distributed lock Redis SETNX chống race condition, kèm phát sự kiện Kafka lên topic `enrollment.created` cho hệ thống thông báo đa kênh; (6) Hoàn thiện dashboard tổng hợp `GET /api/v1/dashboard/enrollment-summary` aggregate các chỉ số `totalStudents`, `activeCourses`, `upcomingSessions` trong 7 ngày tới với cache Redis TTL 900 giây, circuit breaker fallback compute trực tiếp từ PostgreSQL khi cache lỗi.
+Giai đoạn 3 đóng vai trò trụ cột nghiệp vụ thứ ba trong hệ thống membership-hub, tập trung vào việc hiện thực hóa toàn bộ luồng quản lý khoá học, phân công giáo viên, đăng ký khoá học và đặc biệt là luồng xử lý điểm danh QR với cơ chế idempotency, retry khi mất mạng và FIFO khi khôi phục dịch vụ. Phạm vi kỹ thuật cốt lõi của giai đoạn này bao gồm 7 nhiệm vụ backlog chính được phân bổ: Nhiệm vụ 9 (CRUD khoá học và kiểm tra xung đột lịch), Nhiệm vụ 10 (Gán/huỷ gán giáo viên cho khoá học), Nhiệm vụ 11 (Duyệt khoá học cho sinh viên), Nhiệm vụ 12 (Đăng ký khoá học cho sinh viên), Nhiệm vụ 13 (Ghi nhận điểm danh QR cho sinh viên) và Nhiệm vụ 28 (Luồng xử lý điểm danh QR đầu cuối). Theo kế hoạch phân bổ trong bảng tổng hợp đa giai đoạn, giai đoạn 3 được phân bổ chính xác 7 ngày làm việc, phù hợp với biên tính toán Relative_Z = 7.
 
-Mục tiêu kỹ thuật cụ thể bao gồm việc tuân thủ nghiêm ngặt quy ước đặt tên package `org.nlh4j.membershiphub.courseservice` và `org.nlh4j.membershiphub.enrollmentservice` cho toàn bộ mã nguồn Java, áp dụng nguyên tắc PreparedStatement thông qua Hibernate ORM Panache và JPA named parameters để loại bỏ tuyệt đối SQL injection, sử dụng Bean Validation với các ràng buộc `@NotNull`, `@Size`, `@Pattern` cho mọi DTO đầu vào, tích hợp distributed lock Redis SETNX với key `enrollment:lock:{studentId}:{courseId}` TTL 5 giây để chống race condition, cấu hình Kafka producer với `enable.idempotence=true` và `acks=all` đảm bảo chính xác một lần gửi sự kiện, đồng thời xây dựng bộ exception mapper chuyển đổi mã lỗi nghiệp vụ sang HTTP status code chuẩn (409 cho xung đột lịch trình, 400 cho validation, 422 cho provisioning thất bại).
+Mục tiêu cốt lõi của giai đoạn là xây dựng các luồng nghiệp vụ trên hai microservices chính: `course-service` và `attendance-service`. Cụ thể, trên `course-service` sẽ hiện thực hóa REST API GET `/api/v1/courses` trả về danh sách phân trang gồm CourseID, Title, StartDate, EndDate, TeacherName với hỗ trợ sắp xếp và lọc. CRUD operations POST/PUT/DELETE `/api/v1/courses` chỉ dành cho SystemAdmin hoặc CenterAdmin với validation đầy đủ các trường title (max 150 ký tự), description (TEXT), start_date và end_date (ràng buộc end_date >= start_date), teacher_id (UUID, FK users), max_students (INT, default 30), center_id (UUID, FK centers). Logic overlap check được thực thi ở hai lớp: service layer sử dụng truy vấn JPQL kiểm tra xung đột lịch dựa trên teacher_id và khoảng ngày, database layer sử dụng ràng buộc EXCLUDE của PostgreSQL extension btree_gist để đảm bảo tính toàn vẹn dữ liệu ở mức atomic. Khi phát hiện xung đột, hệ thống ném `ScheduleConflictException` với mã lỗi `SCHEDULE_CONFLICT_409` tương ứng HTTP 409 Conflict.
 
-## 2. Phạm Vi Kỹ Thuật Được Phép & Ranh Giới Thư Mục
+Endpoint POST/DELETE `/api/v1/courses/{id}/teachers` cho phép SystemAdmin gán hoặc huỷ gán giáo viên với cập nhật bảng ánh xạ `course_teacher_mapping` có ràng buộc UNIQUE composite `(course_id, teacher_id)` và đẩy sự kiện Kafka lên topic `teacher-events` để notification-service tiêu thụ. Endpoint GET `/api/v1/students/courses/available` trả về danh sách khoá học khả dụng cho sinh viên hiện tại, loại trừ các khoá học đã đăng ký thông qua subquery `NOT EXISTS` kết hợp với index trên `(student_id, course_id)`. Endpoint POST `/api/v1/enrollments` xử lý đăng ký khoá học với logic tự sinh tài khoản Student nếu chưa tồn tại, kiểm tra capacity, tạo enrollment record, đẩy sự kiện Kafka `enrollment-events` lên topic tương ứng với payload chuẩn JSON.
 
-Danh sách kiểm tra kỹ thuật dưới đây định nghĩa 100% các tệp vật lý được phép khởi tạo trong phạm vi giai đoạn này, mỗi mục đại diện cho một tệp cụ thể kèm Tag ID truy vết:
+Trên `attendance-service`, giai đoạn này triển khai REST API POST `/api/v1/attendance/scan` với cơ chế xử lý điểm danh QR đầu cuối: giải mã payload base64 chứa studentID và courseID thông qua `QrPayloadDecoder`, kiểm tra enrollment tồn tại thông qua truy vấn JOIN, kiểm tra idempotency thông qua composite unique key `(student_id, course_id, attendance_date)`, tạo attendance record và publish sự kiện Kafka `attendance-events`. Hệ thống cũng tích hợp cơ chế retry queue xử lý `[EXC-001]` khi mất mạng, FIFO recovery xử lý `[EXC-005]` khi dịch vụ khôi phục, và cơ chế phát hiện trùng lặp xử lý `[EXC-002]` trả về response thành công với cờ `duplicate: true` thay vì tạo bản ghi mới. Mọi ngoại lệ nghiệp vụ được ánh xạ thông qua cơ chế `ExceptionMapper` tập trung với mã lỗi chuẩn hoá như `ENROLLMENT_REQUIRED_403`, `DUPLICATE_ATTENDANCE_200`, `INVALID_QR_400`.
+
+Mục tiêu chính là toàn bộ REST API và Kafka producer/consumer có thể triển khai tức thì lên môi trường development ngay khi giai đoạn kết thúc, sẵn sàng cho giai đoạn 4 phát triển các luồng thẻ thành viên, thông báo đa kênh và AI chatbot. Tất cả thao tác nghiệp vụ phải ghi log kiểm toán thông qua cơ chế tập trung, đảm bảo dấu vết kiểm toán đầy đủ phục vụ tuân thủ [NFR-006] với thời gian lưu trữ tối thiểu 1 năm.
+
+## 2. Phạm Vi Kỹ Thuật Cho Phép Và Ranh Giới Thư Mục
+
+Danh sách đầy đủ các tệp tin vật lý được phép tạo mới trong giai đoạn 3, tuân thủ nghiêm ngặt quy ước gói `org.nlh4j.membershiphub` và ranh giới thư mục doanh nghiệp:
 
 * `./sources/backend/course-service/pom.xml` — [ARC-000]
-* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseController.java` — [REQ-007], [REQ-008]
-* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseService.java` — [REQ-008]
-* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/ScheduleValidator.java` — [REQ-008], [EXC-004]
-* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/TeacherAssignmentService.java` — [REQ-009]
-* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseBrowseService.java` — [REQ-010]
-* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseRepository.java` — [REQ-007]
-* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseEntity.java` — [REQ-007]
-* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/TeacherEntity.java` — [REQ-009]
-* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseMapper.java` — [REQ-007]
-* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseNotFoundException.java` — [EXC-004]
-* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/ScheduleConflictException.java` — [REQ-008], [EXC-004]
-* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/exception/ExceptionMappers.java` — [EXC-004]
-* `./sources/backend/course-service/src/main/resources/db/migration/V3__course_module_indexes.sql` — [REQ-008]
-* `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/CourseControllerTest.java` — [REQ-007]
-* `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/ScheduleValidatorTest.java` — [REQ-008]
-* `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/TeacherAssignmentServiceTest.java` — [REQ-009]
-* `./sources/backend/enrollment-service/pom.xml` — [ARC-000]
-* `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/EnrollmentController.java` — [REQ-011]
-* `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/EnrollmentService.java` — [REQ-011]
-* `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/StudentProvisioningService.java` — [REQ-011]
-* `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/DashboardService.java` — [REQ-025]
-* `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/EnrollmentRepository.java` — [REQ-011]
-* `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/EnrollmentEntity.java` — [REQ-011]
-* `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/DashboardCacheService.java` — [REQ-025]
-* `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/DashboardSummaryResponse.java` — [REQ-025]
-* `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/KafkaEnrollmentProducer.java` — [ARC-008]
-* `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/exception/DuplicateEnrollmentException.java` — [EXC-004]
-* `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/exception/ExceptionMappers.java` — [EXC-004]
-* `./sources/backend/enrollment-service/src/main/resources/application.properties` — [ARC-008]
-* `./sources/backend/enrollment-service/src/test/java/org/nlh4j/membershiphub/enrollmentservice/EnrollmentControllerTest.java` — [REQ-011]
-* `./sources/backend/enrollment-service/src/test/java/org/nlh4j/membershiphub/enrollmentservice/StudentProvisioningServiceTest.java` — [REQ-011]
-* `./sources/backend/enrollment-service/src/test/java/org/nlh4j/membershiphub/enrollmentservice/DashboardServiceTest.java` — [REQ-025]
-* `./sources/docs/api/course-service-api.md` — [REQ-007], [REQ-008], [REQ-009], [REQ-010]
-* `./sources/docs/api/enrollment-service-api.md` — [REQ-011], [REQ-025]
-* `./sources/docs/database/course-module-schema.md` — [REQ-008]
+* `./sources/backend/course-service/src/main/resources/application.properties` — [ARC-000]
+* `./sources/backend/course-service/src/main/resources/db/migration/V1__courses_init.sql` — [DAT-001], [DAT-004]
+* `./sources/backend/course-service/src/main/resources/db/migration/V2__course_schedule_exclusion.sql` — [DAT-001]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseServiceApplication.java` — [ARC-000]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/CourseController.java` — [REQ-007], [REQ-008]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/CourseTeacherController.java` — [REQ-009]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/StudentCourseBrowseController.java` — [REQ-010]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/EnrollmentController.java` — [REQ-011]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/CourseService.java` — [REQ-007], [REQ-008], [EXC-001]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/CourseTeacherService.java` — [REQ-009]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/CourseBrowseService.java` — [REQ-010]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/EnrollmentService.java` — [REQ-011]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/repository/CourseRepository.java` — [REQ-007], [REQ-010]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/repository/EnrollmentRepository.java` — [REQ-011]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/dto/CourseResponse.java` — [REQ-007]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/dto/CourseCreateRequest.java` — [REQ-008]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/dto/EnrollmentRequest.java` — [REQ-011]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/dto/TeacherAssignRequest.java` — [REQ-009]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/exception/ScheduleConflictException.java` — [EXC-001]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/exception/EnrollmentNotFoundException.java` — [EXC-001]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/messaging/KafkaTeacherProducer.java` — [REQ-009]
+* `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/messaging/KafkaEnrollmentProducer.java` — [REQ-011]
+* `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/CourseServiceIntegrationTestSuite.java` — [REQ-008], [REQ-011]
+* `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/controller/CourseControllerTest.java` — [REQ-007], [REQ-008]
+* `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/service/CourseServiceTest.java` — [REQ-008], [REQ-009], [REQ-010]
+* `./sources/backend/attendance-service/pom.xml` — [ARC-000]
+* `./sources/backend/attendance-service/src/main/resources/application.properties` — [ARC-000]
+* `./sources/backend/attendance-service/src/main/resources/db/migration/V1__attendance_init.sql` — [DAT-006]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/AttendanceServiceApplication.java` — [ARC-000]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/controller/AttendanceController.java` — [REQ-012], [REQ-013], [ARC-007]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/AttendanceService.java` — [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/QrPayloadDecoder.java` — [REQ-012]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/repository/AttendanceRepository.java` — [REQ-012], [REQ-013]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/dto/QrScanRequest.java` — [REQ-012]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/dto/AttendanceResponse.java` — [REQ-012]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/exception/DuplicateAttendanceException.java` — [EXC-002]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/exception/EnrollmentRequiredException.java` — [EXC-001]
+* `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/messaging/KafkaAttendanceProducer.java` — [ARC-007]
+* `./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/AttendanceServiceIntegrationTestSuite.java` — [REQ-012], [REQ-013], [EXC-001], [EXC-002], [EXC-005]
+* `./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/service/AttendanceServiceTest.java` — [REQ-012], [REQ-013]
+* `./sources/docs/architecture/course-architecture.md` — [REQ-007], [REQ-008], [REQ-009], [REQ-010], [REQ-011], [ARC-007], [DOC-001]
+* `./sources/docs/architecture/attendance-architecture.md` — [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005], [DOC-001]
+* `./sources/docs/api/course-openapi.yaml` — [REQ-007], [REQ-008], [REQ-009], [REQ-010], [REQ-011], [DOC-001]
+* `./sources/docs/api/attendance-openapi.yaml` — [REQ-012], [REQ-013], [EXC-001], [EXC-005], [DOC-001]
 
-* **BẮT BUỘC VỀ BỘ KHUNG NỀN TẢNG**: Khi khởi tạo blueprint vòng đời hoạt động (giới hạn cụ thể trong Giai đoạn 3 - NGÀY 1), cần phải tiêm và khai báo rõ ràng các bộ mô tả cấu trúc hạ tầng kho lưu trữ chính trước khi tạo bất kỳ thành phần mã nguồn nghiệp vụ nào. Đối với kiến trúc backend Microservices, phải thực thi định nghĩa đường dẫn bắt buộc của bộ mô tả dự án cha `./sources/backend/pom.xml` và các bộ mô tả module con riêng biệt `./sources/backend/<tên-dịch-vụ>/pom.xml`. Toàn bộ tài sản khung được tạo ra phải ánh xạ chặt chẽ tới mã theo dõi kiến trúc hệ thống `[ARC-000]`.
+* **RÀNG BUỘC BẮT BUỘC VỀ BỘ KHUNG NỀN TẢNG**:
+  - Tất cả tài sản mã nguồn ứng dụng trong giai đoạn 3 phải kế thừa bộ khung build descriptors đã được khởi tạo ở Giai đoạn 1 (`./sources/backend/pom.xml`, `./sources/backend/<service-name>/pom.xml`).
+  - Tệp `./sources/backend/pom.xml` và 4 tệp con KHÔNG được tái tạo trong giai đoạn này vì đã tồn tại từ Giai đoạn 1, ngoại trừ `./sources/backend/course-service/pom.xml` và `./sources/backend/attendance-service/pom.xml` đã được khởi tạo scaffold ở giai đoạn 1.
+  - Toàn bộ mã nguồn mới phải tuân thủ quy ước gói `org.nlh4j.membershiphub.<service-name>` và được truy vết bằng các mã thẻ quy định.
 
-## 3. Chỉ Thị Chức Năng Chuyên Biệt Cho Các Sub-Agent
+## 3. Chỉ Thị Chức Năng Cho Từng Sub-Agent
 
-*   **Coder**: Đóng vai trò Nhà phát triển ứng dụng cao cấp. Chịu trách nhiệm triển khai mã nguồn nghiệp vụ thuần túy trên dịch vụ backend course-service và enrollment-service. Bị cấm viết bộ kiểm thử hoặc bản kê khai hạ tầng.
-* **Tester**: Đóng vai trò Trưởng phòng QC/QA. Chuyên về kỹ thuật bộ kiểm thử, xác nhận hợp lệ và cổng gác chất lượng. Chịu trách nhiệm tạo JUnit, kiểm thử tích hợp sử dụng Testcontainers PostgreSQL và REST Assured. Bị cấm sửa đổi mã sản phẩm. Nếu nhiệm vụ phụ liên quan đến phạm vi tích hợp, phải xuất chính xác chuỗi ký tự `INTEGRATION_SCOPE` làm tham số đầu tiên của cặp dấu chấm phẩy.
-* **Doc**: Đóng vai trò Technical Writer chính và Kiến trúc sư hệ thống doanh nghiệp. Chuyên biên soạn tài liệu đặc tả kỹ thuật toàn diện, tài liệu tham chiếu API, bản thiết kế kiến trúc dịch vụ và sơ đồ cơ sở dữ liệu. Mọi tệp tài liệu kỹ thuật được tạo ra phải được liệt kê dưới dạng thực thể đường dẫn tệp rõ ràng kết thúc bằng phần mở rộng `.md` và nằm hoàn toàn trong bố cục lưu trữ tập trung `./sources/docs/`.
-*   **Reviewer**: Chịu trách nhiệm xác minh trình biên dịch, cổng gác phân tích tĩnh và vá lỗi phòng thủ. Chuyên về kiểm toán chất lượng mã, giải quyết lỗi biên dịch, sửa lỗ hổng bảo mật OWASP và xử lý các blocker cổng chất lượng SonarQube.
+* **Coder**: Đóng vai trò lập trình viên ứng dụng chính. Chịu trách nhiệm hiện thực hóa toàn bộ controller, service, DTO, exception handler, repository và Kafka producer trong package `controller`, `service`, `dto`, `repository`, `exception` và `messaging` của `course-service` và `attendance-service`. Bị cấm viết bộ kiểm thử, tài liệu hoặc cấu hình hạ tầng.
+
+* **Tester**: Đóng vai trò kiểm thử viên chính. Tạo bộ kiểm thử đơn vị JUnit 5 kết hợp Mockito cho CourseController, CourseService, AttendanceController, AttendanceService. Xây dựng bộ kiểm thử tích hợp sử dụng Testcontainers (PostgreSQL, Kafka) cho cả hai service. Bị cấm sửa đổi mã nguồn sản phẩm.
+
+* **Doc**: Soạn thảo 4 tài liệu Markdown quan trọng trong thư mục `./sources/docs/architecture/` và `./sources/docs/api/`: tài liệu kiến trúc course-service, tài liệu kiến trúc attendance-service, OpenAPI YAML cho course-openapi và OpenAPI YAML cho attendance-openapi. Tất cả tệp tài liệu phải kết thúc bằng phần mở rộng `.md` hoặc `.yaml`.
+
+* **Reviewer**: Thực hiện rà soát chất lượng mã nguồn theo checklist OWASP Top 10, đánh giá tính đúng đắn của logic overlap check, idempotency, retry queue và FIFO recovery, xác minh tính bảo mật của việc sử dụng JPQL parameter binding và Kafka payload validation, phát hiện sớm các vấn đề race condition, memory leak và performance bottleneck.
 
 ## 4. Định Nghĩa Hoàn Thành Giai Đoạn (DoD)
 
-Giai đoạn 3 được coi là hoàn thành khi đáp ứng đồng thời các tiêu chí định lượng sau: (1) Endpoint GET `/api/v1/courses` trả về lưới dữ liệu khóa học với đầy đủ trường `courseId`, `title`, `startDate`, `endDate`, `teacherName` trong thời gian phản hồi dưới 200ms theo NFR-001. (2) Endpoint POST `/api/v1/courses` tạo khóa học mới thành công và trigger PostgreSQL `trg_teacher_schedule_conflict` phát hiện xung đột lịch trình giáo viên, trả về HTTP 409 mã `SCHEDULE_CONFLICT` khi có xung đột. (3) Endpoint PUT `/api/v1/courses/{id}` cập nhật khóa học thành công với `@PreUpdate` callback tự động cập nhật `updated_at`. (4) Endpoint DELETE `/api/v1/courses/{id}` kiểm tra quan hệ khóa ngoại `Enrollments.course_id`, trả về HTTP 422 nếu còn ghi danh. (5) Endpoint POST `/api/v1/courses/{id}/teachers` phân công giáo viên thành công, ghi lịch sử vào bảng `CourseTeacherHistory`, phát sự kiện Kafka lên topic `course.teacher.assigned` với idempotent producer config. (6) Endpoint GET `/api/v1/students/{id}/available-courses` loại trừ chính xác các khóa học đã ghi danh và chỉ hiển thị khóa học có `end_date >= CURRENT_DATE`. (7) Endpoint POST `/api/v1/enrollments` tự động tạo tài khoản Student khi email chưa tồn tại với role `Student`, sử dụng distributed lock Redis SETNX chống race condition, publish sự kiện Kafka lên topic `enrollment.created`. (8) Endpoint GET `/api/v1/dashboard/enrollment-summary` aggregate chính xác `totalStudents`, `activeCourses`, `upcomingSessions` trong 7 ngày tới, lưu cache Redis với TTL 900 giây, circuit breaker fallback compute từ PostgreSQL khi cache lỗi. (9) 100% Tag ID của giai đoạn (gồm [REQ-007] đến [REQ-011], [REQ-025], [ARC-008], [EXC-004]) được ánh xạ đầy đủ trong mã nguồn và tài liệu. (10) Mọi mã nguồn Java tuân thủ package convention `org.nlh4j.membershiphub.courseservice` và `org.nlh4j.membershiphub.enrollmentservice`. (11) Kafka producer sử dụng `enable.idempotence=true` và `acks=all` đảm bảo chính xác một lần gửi sự kiện. (12) Dashboard cache đáp ứng NFR-001 với độ trễ sub-second cho 10.000 người dùng đồng thời.
+Giai đoạn 3 được coi là hoàn thành khi đáp ứng đồng thời các tiêu chí định lượng sau: (1) Endpoint GET `/api/v1/courses` trả về danh sách phân trang đầy đủ CourseID, Title, StartDate, EndDate, TeacherName; (2) CRUD khoá học với logic overlap check ngăn chặn trùng lặp lịch giáo viên, kích hoạt ràng buộc EXCLUDE tại database; (3) Endpoint gán/huỷ gán giáo viên cập nhật bảng ánh xạ và đẩy sự kiện Kafka `teacher-events`; (4) Endpoint duyệt khoá học cho sinh viên loại trừ các khoá học đã đăng ký; (5) Endpoint đăng ký khoá học tự sinh tài khoản Student, kiểm tra capacity, đẩy sự kiện Kafka `enrollment-events`; (6) Endpoint điểm danh QR giải mã payload base64, kiểm tra enrollment, idempotency qua composite unique key, xử lý trùng lặp với cờ `duplicate`; (7) 100% thẻ truy vết `[REQ-007]`, `[REQ-008]`, `[REQ-009]`, `[REQ-010]`, `[REQ-011]`, `[REQ-012]`, `[REQ-013]`, `[ARC-007]`, `[EXC-001]`, `[EXC-002]`, `[EXC-005]` được ánh xạ đầy đủ vào mã nguồn và tài liệu; (8) 100% bộ kiểm thử JUnit đạt trạng thái PASS với code coverage >= 80% cho các lớp controller và service.
 
 ## 5. NHẬT KÝ THỰC THI KIẾN TRÚC THEO NGÀY
 
-### 🌤️ NGÀY 1: <!--DAY_HEADER_START-->Khởi Tạo Course Service Và Danh Sách Khóa Học<!--DAY_HEADER_END-->
+### 🌤️ NGÀY 1: <!--DAY_HEADER_START-->KHỞI TẠO COURSE-SERVICE VÀ MODULE KHOÁ HỌC CƠ BẢN<!--DAY_HEADER_END-->
 
-#### 📝 Nhiệm vụ phụ 1.1: Khởi tạo pom.xml cho course-service và khai báo REST endpoint danh sách
+#### 📝 NHIỆM VỤ PHỤ 1.1: Khởi tạo mô tả build và ứng dụng cho course-service
+
 ##### Sub-Agent được phân công: Coder
-##### Thành phần mục tiêu & yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/course-service/pom.xml`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000], [REQ-007]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tệp pom.xml cho module course-service tại đường dẫn `./sources/backend/course-service/pom.xml` kế thừa từ `./sources/backend/pom.xml` thông qua khối `<parent>`. Khai báo `<artifactId>course-service</artifactId>`. Bổ sung đầy đủ dependency Quarkus cần thiết cho chức năng quản lý khóa học: `quarkus-resteasy-reactive-jackson` cho REST endpoint reactive, `quarkus-hibernate-orm-panache` cho ORM với Panache, `quarkus-jdbc-postgresql` cho kết nối database, `quarkus-flyway` cho migration, `quarkus-smallrye-openapi` cho sinh tài liệu OpenAPI, `quarkus-hibernate-validator` cho Bean Validation, `quarkus-messaging-kafka` cho Kafka producer với idempotent config, `quarkus-arc` cho CDI. Thiết lập `<java.version>21</java.version>`, `<maven.compiler.source>21</maven.compiler.source>`, `<maven.compiler.target>21</maven.compiler.target>`. Cấu hình port 8082 trong application.properties và datasource chuyên biệt `membershiphub_course`. Đảm bảo tệp XML hợp lệ, biên dịch thành công thông qua `mvn -f ./sources/backend/course-service/pom.xml compile`. Đồng thời tạo lớp `CourseEntity` tại đường dẫn `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseEntity.java` thuộc package `org.nlh4j.membershiphub.courseservice` ánh xạ bảng `Courses` với các cột `course_id` (UUID PK), `title` (VARCHAR 150), `description` (TEXT), `start_date` (DATE), `end_date` (DATE), `teacher_id` (UUID FK→users), `max_students` (INT default 30), `created_at` (TIMESTAMP), `updated_at` (TIMESTAMP). Tạo lớp `CourseRepository` kế thừa `PanacheRepositoryBase<CourseEntity, UUID>`. Tạo lớp `CourseController` chú thích `@Path("/api/v1/courses")` đăng ký endpoint GET trả về danh sách khóa học với lưới dữ liệu gồm `courseId`, `title`, `startDate`, `endDate`, `teacherName`. Inject `CourseService` và `CourseRepository` thông qua CDI. Toàn bộ mã nguồn Java phải khai báo package `org.nlh4j.membershiphub.courseservice` theo nguyên tắc chuẩn hóa Java package authority đã thiết lập, đảm bảo thư mục vật lý khớp 1:1 với cấu trúc package. Tuân thủ triệt để nguyên tắc dependency isolation: cấm import trực tiếp class từ user-service, center-service.
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/pom.xml`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `pom.xml` cho `course-service` tại đường dẫn `./sources/backend/course-service/pom.xml` thừa kế parent `./sources/backend/pom.xml` với groupId `org.nlh4j.membershiphub` và artifactId `course-service`. Khai báo các dependency Quarkus 3.15.1: `quarkus-resteasy-reactive-jackson` cho REST controller, `quarkus-hibernate-orm-panache` cho ORM, `quarkus-jdbc-postgresql` cho driver database, `quarkus-flyway` cho migration, `quarkus-smallrye-reactive-messaging-kafka` cho Kafka producer/consumer, `quarkus-hibernate-validator` cho Bean Validation, `quarkus-smallrye-openapi` cho OpenAPI. Dependencies test gồm `quarkus-junit5`, `rest-assured`, `mockito-core`, `org.testcontainers:postgresql:1.20.4`, `org.testcontainers:kafka:1.20.4`. Cấu hình plugin `quarkus-maven-plugin` 3.15.1 để build native image, `maven-surefire-plugin` 3.2.5 cho test runner. Tệp này phải biên dịch trống (blank compile) ngay từ đầu thông qua lệnh `mvn clean install -DskipTests` tại thư mục root.
 
-* **Đặc tả DDL SQL lược đồ cơ sở dữ liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
 ```sql
--- Bảng Courses đã được tạo tại V1__init_courses.sql; V3 bổ sung index tối ưu
-CREATE INDEX IF NOT EXISTS idx_courses_teacher_id ON Courses(teacher_id);
-CREATE INDEX IF NOT EXISTS idx_courses_start_end_date ON Courses(start_date, end_date);
-```
-<!--END_DDL_MIGRATION-->
-
-* **Hợp đồng định tuyến API và sự kiện [REQ-007], [ARC-008]:** <!--START_API_CONTRACT-->
-```json
-{
-  "openapi": "3.0.3",
-  "info": { "title": "Course Service API", "version": "1.0.0" },
-  "paths": {
-    "/api/v1/courses": {
-      "get": {
-        "summary": "Danh sách khóa học",
-        "tags": ["Course"],
-        "responses": {
-          "200": {
-            "description": "Trả về lưới khóa học",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "courseId": { "type": "string", "format": "uuid" },
-                      "title": { "type": "string" },
-                      "startDate": { "type": "string", "format": "date" },
-                      "endDate": { "type": "string", "format": "date" },
-                      "teacherName": { "type": "string" }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
-<!--END_API_CONTRACT-->
-
-* **Bộ xử lý ngoại lệ cục bộ hóa của giai đoạn [EXC-004]:** <!--START_EXC_HANDLER-->
-```java
-package org.nlh4j.membershiphub.courseservice;
-
-public class CourseNotFoundException extends RuntimeException {
-    public CourseNotFoundException(String courseId) {
-        super("Không tìm thấy khóa học với mã " + courseId);
-    }
-}
-```
-<!--END_EXC_HANDLER-->
-
-#### 📝 Nhiệm vụ phụ 1.2: Xây dựng bộ kiểm thử tích hợp cho endpoint danh sách khóa học
-##### Sub-Agent được phân công: Tester
-##### Thành phần mục tiêu & yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** INTEGRATION_SCOPE;./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/CourseControllerTest.java
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-007], [EXC-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tệp kiểm thử tích hợp tại đường dẫn `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/CourseControllerTest.java` thuộc package `org.nlh4j.membershiphub.courseservice`. Sử dụng annotation `@QuarkusTest` kết hợp `@TestHTTPEndpoint(CourseController.class)`. Mock `CourseRepository` bằng `@InjectMock` để trả về danh sách 3 khóa học mẫu với teacher name thuộc role Teacher. Test case 1 (`testListCoursesSuccess` - Happy Path): Gọi GET `/api/v1/courses` xác nhận HTTP 200, payload chứa 3 phần tử với đầy đủ trường `courseId`, `title`, `startDate`, `endDate`, `teacherName`. Test case 2 (`testListCoursesEmpty`): Mock trả về danh sách rỗng, xác nhận HTTP 200 với mảng rỗng. Test case 3 (`testListCoursesDatabaseError`): Mock `CourseRepository.listAll()` ném `SQLException`, xác nhận ExceptionMapper trả về HTTP 500 với mã lỗi `INTERNAL_SERVER_ERROR`. Sử dụng RestAssured validate schema JSON. Đảm bảo test chạy độc lập với test suite của service khác thông qua `@QuarkusTestResource(DatabaseH2Resource.class)` riêng biệt.
-
-#### 📝 Nhiệm vụ phụ 1.3: Review code mới khởi tạo của course-service và phát hành tài liệu kỹ thuật
-##### Sub-Agent được phân công: Reviewer
-##### Thành phần mục tiêu & yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseController.java`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000], [REQ-007], [EXC-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Reviewer thực hiện kiểm tra mã nguồn `CourseController.java` và `CourseEntity.java` để xác nhận: (1) Không có field nào expose password hash hoặc secret key, (2) Sử dụng `@RolesAllowed` annotation cho endpoint nhạy cảm, (3) Sử dụng Java record thay vì mutable DTO cho response payload, (4) Tuân thủ Java package convention `org.nlh4j.membershiphub.courseservice` ở tất cả file Java, (5) Không có raw SQL injection, tất cả truy vấn đi qua JPA hoặc named query. Tạo báo cáo review tại đường dẫn `./sources/docs/review/phase3-day1-course-review.md` liệt kê chi tiết từng issue phát hiện và đề xuất fix cụ thể.
-
-#### 📝 Nhiệm vụ phụ 1.4: Biên soạn tài liệu API contract cho course-service
-##### Sub-Agent được phân công: Doc
-##### Thành phần mục tiêu & yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/docs/api/course-service-api.md`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[DOC-001], [REQ-007], [ARC-008]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tài liệu Markdown tại đường dẫn `./sources/docs/api/course-service-api.md` mô tả endpoint GET `/api/v1/courses` với bảng response schema, HTTP status codes, ví dụ curl request và JSON response mẫu. Tài liệu phải chứa mô tả bằng tiếng Việt, mục lục rõ ràng, sơ đồ luồng dữ liệu Mermaid. Đảm bảo tài liệu chứa mục lục rõ ràng với các phần: Tổng quan service, Endpoint GET, Response schema, Mã lỗi, Ví dụ curl, Sơ đồ Mermaid sequence diagram thể hiện luồng request từ client đến database.
-
-### 🌤️ NGÀY 2: <!--DAY_HEADER_START-->CRUD Khóa Học, Kiểm Tra Xung Đột Lịch Trình và Phân Công Giáo Viên<!--DAY_HEADER_END-->
-
-#### 📝 Nhiệm vụ phụ 2.1: Triển khai CRUD khóa học với trigger PostgreSQL kiểm tra xung đột giáo viên
-##### Sub-Agent được phân công: Coder
-##### Thành phần mục tiêu & yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseService.java`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-008], [EXC-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo lớp `CourseService` tại đường dẫn `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseService.java` thuộc package `org.nlh4j.membershiphub.courseservice`. Sử dụng annotation `@ApplicationScoped`. Inject `CourseRepository`, `EntityManager` và `ScheduleValidator`. Triển khai các phương thức `createCourse`, `updateCourse`, `deleteCourse` với annotation `@Transactional`. Trong `createCourse`, trước khi persist gọi `scheduleValidator.validateNoConflict(teacherId, startDate, endDate)` thực hiện truy vấn `SELECT COUNT(*) FROM Courses WHERE teacher_id = :teacherId AND (start_date <= :endDate AND end_date >= :startDate)`. Nếu kết quả lớn hơn 0, ném `ScheduleConflictException` được map sang HTTP 409 với mã `SCHEDULE_CONFLICT`. Trong `updateCourse`, bảo đảm cập nhật cả `updated_at` qua `@PreUpdate` callback trên entity. Trong `deleteCourse`, kiểm tra quan hệ khóa ngoại `Enrollments.course_id` trước khi xóa; nếu còn ghi danh, ném `CourseHasEnrollmentsException` trả về lỗi 422. Mã hóa tiêu đề khóa học thông qua hàm `StringUtils.normalizeWhitespace` để chống XSS stored. Áp dụng OWASP A03 injection mitigation bằng cách sử dụng JPA named parameters, cấm nối chuỗi SQL. Đồng thời tạo tệp migration `./sources/backend/course-service/src/main/resources/db/migration/V3__course_module_indexes.sql` chứa trigger PostgreSQL `trg_teacher_schedule_conflict` tự động phát hiện xung đột lịch trình giáo viên bằng cách kiểm tra `EXISTS` trên bảng `Courses` với điều kiện khoảng thời gian giao nhau.
-
-* **Đặc tả DDL SQL lược đồ cơ sở dữ liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
-```sql
--- V3__course_module_indexes.sql (bổ sung trigger kiểm tra xung đột)
-CREATE OR REPLACE FUNCTION check_teacher_schedule_conflict()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF EXISTS (
-        SELECT 1 FROM Courses
-        WHERE teacher_id = NEW.teacher_id
-          AND course_id <> COALESCE(NEW.course_id, '00000000-0000-0000-0000-000000000000'::uuid)
-          AND start_date <= NEW.end_date
-          AND end_date >= NEW.start_date
-    ) THEN
-        RAISE EXCEPTION 'SCHEDULE_CONFLICT: Giáo viên đã có khóa học trong khoảng thời gian này';
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_teacher_schedule_conflict
-BEFORE INSERT OR UPDATE ON Courses
-FOR EACH ROW EXECUTE FUNCTION check_teacher_schedule_conflict();
-```
-<!--END_DDL_MIGRATION-->
-
-* **Hợp đồng định tuyến API và sự kiện [REQ-008], [ARC-008]:** <!--START_API_CONTRACT-->
-```json
-{
-  "endpoints": {
-    "POST /api/v1/courses": {
-      "requestBody": {
-        "title": "string (max 150)",
-        "startDate": "date",
-        "endDate": "date",
-        "teacherId": "uuid",
-        "maxStudents": "integer (default 30)"
-      },
-      "responses": {
-        "201": "Course created",
-        "400": "INVALID_COURSE_DATA",
-        "409": "SCHEDULE_CONFLICT"
-      }
-    },
-    "PUT /api/v1/courses/{id}": { "responses": { "200": "Updated", "404": "Not found", "409": "SCHEDULE_CONFLICT" } },
-    "DELETE /api/v1/courses/{id}": { "responses": { "204": "Deleted", "422": "HAS_ENROLLMENTS" } }
-  }
-}
-```
-<!--END_API_CONTRACT-->
-
-* **Bộ xử lý ngoại lệ cục bộ hóa của giai đoạn [EXC-004]:** <!--START_EXC_HANDLER-->
-```java
-package org.nlh4j.membershiphub.courseservice;
-
-public class ScheduleConflictException extends RuntimeException {
-    private final String teacherId;
-    public ScheduleConflictException(String teacherId) {
-        super("Khoảng thời gian khóa học bị trùng lặp với khóa học hiện tại của giáo viên " + teacherId);
-        this.teacherId = teacherId;
-    }
-    public String getTeacherId() { return teacherId; }
-}
-```
-<!--END_EXC_HANDLER-->
-
-#### 📝 Nhiệm vụ phụ 2.2: Viết bộ test cho ScheduleValidator và trigger PostgreSQL xung đột
-##### Sub-Agent được phân công: Tester
-##### Thành phần mục tiêu & yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** INTEGRATION_SCOPE;./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/ScheduleValidatorTest.java
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-008], [EXC-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tệp kiểm thử tại đường dẫn `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/ScheduleValidatorTest.java` thuộc package `org.nlh4j.membershiphub.courseservice`. Sử dụng `@QuarkusTest` với database PostgreSQL test container thực sự (Testcontainers) để trigger `trg_teacher_schedule_conflict` hoạt động. Test case 1 (`testScheduleConflictDetected`): Insert khóa học A với teacher X từ 2025-01-01 đến 2025-03-31. Insert khóa học B cùng teacher X từ 2025-02-01 đến 2025-04-30, kỳ vọng ném `ScheduleConflictException` với mã lỗi `SCHEDULE_CONFLICT`. Test case 2 (`testScheduleNoConflictDifferentTeacher`): Insert khóa học B với teacher Y khác, kỳ vọng thành công. Test case 3 (`testScheduleUpdateExtension`): Update khóa học A kéo dài đến 2025-05-31, kỳ vọng thành công vì không có khóa học khác của teacher X trong khoảng mới. Test case 4 (`testValidationEndDateBeforeStartDate`): Validate `EndDate < StartDate`, kỳ vọng ném `CourseValidationException` HTTP 400. Sử dụng AssertJ để verify exception message chứa chuỗi tiếng Việt chính xác.
-
-#### 📝 Nhiệm vụ phụ 2.3: Triển khai phân công giáo viên và publish sự kiện Kafka
-##### Sub-Agent được phân công: Coder
-##### Thành phần mục tiêu & yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/TeacherAssignmentService.java`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-009], [ARC-008]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo lớp `TeacherAssignmentService` tại đường dẫn `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/TeacherAssignmentService.java` thuộc package `org.nlh4j.membershiphub.courseservice`. Sử dụng annotation `@ApplicationScoped`. Inject `CourseRepository`, `EntityManager` và `KafkaEnrollmentProducer`. Tạo phương thức `assignTeacher(courseId, teacherId, assignedBy)` thực hiện cập nhật `Courses.teacher_id` và lưu lịch sử phân công vào bảng `CourseTeacherHistory` với cấu trúc `history_id UUID PK`, `course_id UUID FK→Courses ON DELETE CASCADE`, `teacher_id UUID FK→Users`, `assigned_by UUID FK→Users`, `assigned_at TIMESTAMP DEFAULT now()`, `revoked_at TIMESTAMP NULL`. Inject `KafkaEnrollmentProducer` để gửi sự kiện JSON tới topic `course.teacher.assigned` với key là courseId, payload gồm `courseId`, `teacherId`, `assignedBy`, `assignedAt`. Method `unassignTeacher(courseId, teacherId)` set `Courses.teacher_id = NULL`, ghi nhận `revoked_at` trong history, gửi sự kiện `course.teacher.unassigned`. Tất cả thao tác phải bọc trong `@Transactional(REQUIRES_NEW)` để đảm bảo Kafka publish rollback-safe. Áp dụng OWASP A01 access control bằng `@RolesAllowed("System Admin")` ở controller layer.
-
-* **Đặc tả DDL SQL lược đồ cơ sở dữ liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
-```sql
--- V3__course_module_indexes.sql (bổ sung bảng lịch sử)
-CREATE TABLE IF NOT EXISTS CourseTeacherHistory (
-    history_id UUID PRIMARY KEY,
-    course_id UUID NOT NULL REFERENCES Courses(course_id) ON DELETE CASCADE,
-    teacher_id UUID NOT NULL REFERENCES Users(user_id),
-    assigned_by UUID NOT NULL REFERENCES Users(user_id),
-    assigned_at TIMESTAMP NOT NULL DEFAULT now(),
-    revoked_at TIMESTAMP
+-- Migration V1__courses_init.sql [DAT-001], [DAT-004]
+-- Khởi tạo bảng courses với các ràng buộc FK và index tối ưu
+CREATE TABLE courses (
+    course_id UUID PRIMARY KEY,
+    title VARCHAR(150) NOT NULL,
+    description TEXT,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    teacher_id UUID,
+    max_students INT NOT NULL DEFAULT 30,
+    center_id UUID NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    CONSTRAINT fk_courses_teacher FOREIGN KEY (teacher_id) REFERENCES users(user_id),
+    CONSTRAINT fk_courses_center FOREIGN KEY (center_id) REFERENCES centers(center_id),
+    CONSTRAINT chk_courses_date_range CHECK (end_date >= start_date),
+    CONSTRAINT chk_courses_max_students CHECK (max_students > 0)
 );
-CREATE INDEX idx_course_teacher_history_course ON CourseTeacherHistory(course_id);
-CREATE INDEX idx_course_teacher_history_teacher ON CourseTeacherHistory(teacher_id);
+
+CREATE INDEX idx_courses_teacher_id ON courses(teacher_id);
+CREATE INDEX idx_courses_start_date ON courses(start_date);
+CREATE INDEX idx_courses_center_id ON courses(center_id);
 ```
 <!--END_DDL_MIGRATION-->
 
-* **Hợp đồng định tuyến API và sự kiện [REQ-009], [ARC-008]:** <!--START_API_CONTRACT-->
+#### 📝 NHIỆM VỤ PHỤ 1.2: Kiểm thử tích hợp mô tả build course-service
+
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/CourseServiceIntegrationTestSuite.java
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000], [REQ-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp kiểm thử tích hợp `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/CourseServiceIntegrationTestSuite.java` sử dụng JUnit 5 Platform Launcher kết nối script shell `./sources/infra/test/maven-build-integration.sh` để xác minh `./sources/backend/course-service/pom.xml` biên dịch sạch. Test phải fail nếu dependency chưa khả dụng hoặc parent pom không hợp lệ. Sử dụng `ProcessBuilder` để thực thi lệnh Maven `mvn clean install -DskipTests`, kiểm tra `exit code` bằng 0, xác nhận file `target/quarkus-app/quarkus-run.jar` được tạo ra. Test phải verify tệp pom.xml chứa `<groupId>org.nlh4j.membershiphub</groupId>` và `<artifactId>course-service</artifactId>` đúng theo quy ước gói doanh nghiệp.
+
+#### 📝 NHIỆM VỤ PHỤ 1.3: Tài liệu kiến trúc tổng quan course-service
+
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/architecture/course-architecture.md`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-007], [DOC-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Soạn thảo tài liệu Markdown tại `./sources/docs/architecture/course-architecture.md` mô tả kiến trúc `course-service` gồm sơ đồ C4 Container với các thành phần REST Controller, Service, Repository, Kafka Producer. Tài liệu phải liệt kê đầy đủ Tag ID `[REQ-007]`, `[REQ-008]`, `[REQ-009]`, `[REQ-010]`, `[REQ-011]`, `[ARC-007]` ánh xạ đến các endpoint tương ứng. Bao gồm sơ đồ Mermaid `flowchart` thể hiện luồng xử lý nghiệp vụ CRUD khoá học từ REST request đến database persistence và tích hợp Kafka cho các sự kiện `teacher-assigned` và `enrollment-created`. Ghi chú tuân thủ nguyên tắc idempotency, transactional outbox pattern cho Kafka.
+
+#### 📝 NHIỆM VỤ PHỤ 1.4: Review mã nguồn khởi tạo pom và ứng dụng
+
+##### Sub-Agent được phân công: Reviewer
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseServiceApplication.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Reviewer thực hiện đánh giá tệp `CourseServiceApplication.java` chứa annotation `@QuarkusMain` tại đường dẫn `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/CourseServiceApplication.java`, đảm bảo cấu hình gói `org.nlh4j.membershiphub.courseservice` chính xác, không tham chiếu `com.example`. Xác nhận hàm `main` chuẩn Quarkus với `Quarkus.run(args)`, phát hiện sớm các vấn đề cấu hình và đề xuất bổ sung `quarkus-banner.txt` cho môi trường production. Tạo báo cáo review ngắn gọn với format: Phát hiện, Mức độ nghiêm trọng, Đề xuất.
+
+### 🌤️ NGÀY 2: <!--DAY_HEADER_START-->HIỆN THỰC HOÁ REST CONTROLLER VÀ SERVICE CHO KHOÁ HỌC VỚI LOGIC OVERLAP CHECK<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 2.1: Triển khai Course Controller và DTO
+
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/CourseController.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-007], [REQ-008]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp mã nguồn `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/CourseController.java` hiện thực hóa lớp `CourseController` với annotation `@Path("/api/v1/courses")`. Triển khai các endpoint: (1) `GET /api/v1/courses` với `@QueryParam` cho `page`, `size`, `sort` mặc định `size=20`, `sort=startDate,asc`, trả về danh sách phân trang gồm `courseId`, `title`, `startDate`, `endDate`, `teacherName` thông qua `Page<CourseResponse>`; (2) `POST /api/v1/courses` nhận `CourseCreateRequest` với `@Valid` và Bean Validation (`@NotNull title`, `@Size(max=150) title`, `@NotNull startDate`, `@NotNull endDate`, `@NotNull teacherId`, `@NotNull centerId`), gọi `CourseService.create()`; (3) `PUT /api/v1/courses/{id}` cập nhật; (4) `DELETE /api/v1/courses/{id}` xoá mềm. Áp dụng `@RolesAllowed({"SystemAdmin","CenterAdmin"})` cho POST/PUT/DELETE. Sử dụng JPQL parameter binding trong `CourseService` để tránh SQL injection theo OWASP A03.
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
+```json
+{
+  "endpoint": "GET /api/v1/courses?page=0&size=20&sort=startDate,asc",
+  "headers": { "Authorization": "Bearer <jwt_token>" },
+  "response_200": {
+    "content": [
+      {
+        "courseId": "uuid",
+        "title": "Lập trình Java cơ bản",
+        "description": "Khoá học nhập môn Java",
+        "startDate": "2026-09-01",
+        "endDate": "2026-12-15",
+        "teacherName": "Nguyen Van A",
+        "maxStudents": 30,
+        "centerId": "uuid"
+      }
+    ],
+    "totalElements": 10,
+    "totalPages": 1,
+    "page": 0,
+    "size": 20
+  }
+}
+```
+<!--END_API_CONTRACT-->
+
+#### 📝 NHIỆM VỤ PHỤ 2.2: Kiểm thử đơn vị cho Course Controller
+
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/CourseController.java;./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/controller/CourseControllerTest.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-007], [REQ-008]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp kiểm thử đơn vị `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/controller/CourseControllerTest.java` sử dụng JUnit 5 kết hợp Mockito 5.7.0 và RestAssured 5.4.0. Mock `CourseService`. Tạo 6 test case: (1) `listCourses_byAuthenticatedUser_returns200WithPagination` xác minh GET trả về HTTP 200 với mảng `content` chứa các khoá học; (2) `createCourse_bySystemAdmin_returns201` xác minh SystemAdmin tạo mới thành công trả về HTTP 201; (3) `createCourse_withMissingTitle_returns400` xác minh thiếu trường `title` trả về HTTP 400 với mảng errors; (4) `createCourse_withEndDateBeforeStartDate_returns400` xác minh `endDate < startDate` trả về HTTP 400; (5) `createCourse_byTeacher_returns403` xác minh Teacher cố tạo khoá học bị từ chối với mã `INSUFFICIENT_PRIVILEGES`; (6) `createCourse_withScheduleConflict_returns409` xác minh trùng lịch giáo viên ném `ScheduleConflictException` trả về HTTP 409 với mã `SCHEDULE_CONFLICT_409`.
+
+#### 📝 NHIỆM VỤ PHỤ 2.3: Tài liệu API cho Course Service
+
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/api/course-openapi.yaml`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-007], [REQ-008], [DOC-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Soạn thảo tệp OpenAPI 3.1 YAML tại `./sources/docs/api/course-openapi.yaml` mô tả endpoint `/api/v1/courses` bao gồm schema `CourseCreateRequest` với các trường `title`, `description`, `startDate`, `endDate`, `teacherId`, `centerId`, `maxStudents`, schema `CourseResponse` với các trường phản hồi, mã lỗi 400 (validation failed), 403 (insufficient privileges), 404 (course not found), 409 (schedule conflict). Tích hợp bearer token security scheme. Tham chiếu Tag ID `[REQ-007]`, `[REQ-008]`. Bổ sung ví dụ curl command cho mỗi endpoint.
+
+#### 📝 NHIỆM VỤ PHỤ 2.4: Review logic overlap check và exclusion constraint
+
+##### Sub-Agent được phân công: Reviewer
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/CourseService.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-008], [EXC-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Reviewer đánh giá logic `CourseService.create` và `CourseService.update` tại `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/CourseService.java` đảm bảo có kiểm tra xung đột lịch giáo viên trước khi persist. Xác nhận sử dụng `PanacheRepository` với JPQL parameter binding, ném `ScheduleConflictException` khi phát hiện trùng lặp dựa trên `teacher_id` và khoảng ngày `daterange(start_date, end_date, '[]')`. Kiểm tra việc áp dụng ràng buộc `EXCLUDE USING gist` trong database migration V2. Đề xuất cải tiến nếu thiếu transaction boundary hoặc không sử dụng `@Transactional` đúng cách.
+
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
+```sql
+-- Migration V2__course_schedule_exclusion.sql [DAT-001]
+-- Áp dụng ràng buộc exclusion chống xung đột lịch giáo viên
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+
+ALTER TABLE courses
+    ADD CONSTRAINT ex_teacher_schedule_no_overlap
+    EXCLUDE USING gist (
+        teacher_id WITH =,
+        daterange(start_date, end_date, '[]') WITH &&
+    )
+    WHERE (teacher_id IS NOT NULL);
+```
+<!--END_DDL_MIGRATION-->
+
+### 🌤️ NGÀY 3: <!--DAY_HEADER_START-->GÁN GIÁO VIÊN VÀ PHÁT SINH SỰ KIỆN KAFKA TEACHER-ASSIGNED<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 3.1: Triển khai Controller gán giáo viên
+
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/CourseTeacherController.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-009], [ARC-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp mã nguồn `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/CourseTeacherController.java` hiện thực hóa lớp `CourseTeacherController` với `@Path("/api/v1/courses/{id}/teachers")`. Triển khai endpoint `POST` nhận `TeacherAssignRequest` chứa `teacherId` (UUID), inject `CourseTeacherService` và `KafkaTeacherProducer` để đẩy sự kiện `teacher-assigned` lên Kafka topic `teacher-events` sau khi ghi DB thành công. Endpoint `DELETE /{teacherId}` thực hiện huỷ gán. Áp dụng `@RolesAllowed({"SystemAdmin"})` và `@Valid` cho request body. Trả về HTTP 201/204 tương ứng. Sử dụng `@Transactional` đảm bảo atomic giữa DB write và Kafka publish theo mô hình Outbox.
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
 ```json
 {
   "endpoint": "POST /api/v1/courses/{id}/teachers",
-  "requestBody": { "teacherId": "uuid" },
-  "responses": { "200": "Assigned", "404": "CourseNotFound", "409": "SCHEDULE_CONFLICT" },
+  "requestBody": {
+    "teacherId": "UUID"
+  },
+  "responseStatus": 201,
   "kafkaEvent": {
-    "topic": "course.teacher.assigned",
+    "topic": "teacher-events",
+    "key": "courseId",
     "payload": {
-      "courseId": "uuid",
-      "teacherId": "uuid",
-      "assignedBy": "uuid",
-      "assignedAt": "ISO-8601"
+      "eventType": "teacher-assigned",
+      "courseId": "UUID",
+      "teacherId": "UUID",
+      "assignedAt": "ISO-8601 timestamp"
     }
   }
 }
 ```
 <!--END_API_CONTRACT-->
 
-* **Bộ xử lý ngoại lệ cục bộ hóa của giai đoạn [EXC-004]:** <!--START_EXC_HANDLER-->
-```java
-// Exception mới cho phân công giáo viên không tồn tại
-public class TeacherNotFoundException extends RuntimeException {
-    public TeacherNotFoundException(String teacherId) {
-        super("Không tìm thấy giáo viên với mã " + teacherId);
-    }
-}
-```
-<!--END_EXC_HANDLER-->
+#### 📝 NHIỆM VỤ PHỤ 3.2: Kiểm thử đơn vị service gán giáo viên
 
-#### 📝 Nhiệm vụ phụ 2.4: Review code CRUD khóa học và cập nhật tài liệu Database Schema
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/CourseTeacherService.java;./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/service/CourseServiceTest.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-009], [ARC-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Bổ sung test case trong tệp `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/service/CourseServiceTest.java` cho `CourseTeacherService.assign` và `CourseTeacherService.unassign`. Mock `CourseRepository` và `KafkaTeacherProducer`. Xác nhận rằng khi gán thành công, sự kiện Kafka được publish đúng topic `teacher-events` với payload chứa `eventType=teacher-assigned`, `courseId`, `teacherId`, `assignedAt`. Test trường hợp giáo viên đã tồn tại trong mapping ném `DataIntegrityViolationException` với mã `DUPLICATE_TEACHER_ASSIGNMENT_409`. Test trường hợp course không tồn tại ném `CourseNotFoundException` trả về HTTP 404.
+
+#### 📝 NHIỆM VỤ PHỤ 3.3: Tài liệu luồng Kafka gán giáo viên
+
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/architecture/course-architecture.md`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-009], [ARC-008], [DOC-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Cập nhật tài liệu kiến trúc `./sources/docs/architecture/course-architecture.md` bổ sung sơ đồ Mermaid `sequenceDiagram` cho luồng gán giáo viên, mô tả cách Kafka topic `teacher-events` được publish bởi `KafkaTeacherProducer` và consume bởi notification-service để gửi push notification cho giáo viên. Tham chiếu Tag ID `[REQ-009]`, `[ARC-008]`. Bao gồm sơ đồ Mermaid `flowchart` thể hiện các bước: (1) SystemAdmin gọi POST, (2) Validate teacher tồn tại, (3) Lưu bản ghi course_teacher_mapping, (4) Publish Kafka event, (5) Notification-service consume và gửi push.
+
+#### 📝 NHIỆM VỤ PHỤ 3.4: Review logic gán giáo viên và xử lý ngoại lệ
+
 ##### Sub-Agent được phân công: Reviewer
-##### Thành phần mục tiêu & yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/exception/ExceptionMappers.java`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-008], [REQ-009], [EXC-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Reviewer kiểm tra `CourseService.java` và `TeacherAssignmentService.java` để xác nhận: (1) Không có SQL injection (chỉ dùng named parameters), (2) Kafka producer sử dụng idempotent producer config `enable.idempotence=true`, `acks=all` để chống duplicate event, (3) Transaction boundary đúng cách, (4) Không hardcode giá trị nhạy cảm. Tạo báo cáo review tại đường dẫn `./sources/docs/review/phase3-day2-course-review.md` liệt kê chi tiết từng issue phát hiện và đề xuất fix cụ thể. Đồng thời cập nhật tài liệu `./sources/docs/database/course-module-schema.md` mô tả trigger `trg_teacher_schedule_conflict`, bảng `CourseTeacherHistory`, index mới, kèm sơ đồ ERD Mermaid. Tài liệu phải chứa bảng mapping giữa Tag ID và thành phần database tương ứng.
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/exception/ScheduleConflictException.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-009], [EXC-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Reviewer đánh giá lớp `ScheduleConflictException` tại `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/exception/ScheduleConflictException.java` đảm bảo kế thừa `RuntimeException`, chứa message mô tả xung đột lịch rõ ràng. Xác nhận có `@ApplicationException` hoặc `ExceptionMapper` để trả về HTTP 409 với mã `SCHEDULE_CONFLICT_409`. Đề xuất bổ sung logging có cấu trúc với MDC tracking `teacherId`, `courseId`, `conflictDateRange` để phục vụ debug khi phát sinh lỗi. Tạo báo cáo review với format: Vấn đề, Mức độ, Đề xuất.
 
-### 🌤️ NGÀY 3: <!--DAY_HEADER_START-->Enrollment Service, Dashboard và Hoàn Thiện Giai Đoạn 3<!--DAY_HEADER_END-->
+### 🌤️ NGÀY 4: <!--DAY_HEADER_START-->DUYỆT KHOÁ HỌC VÀ ĐĂNG KÝ SINH VIÊN VỚI KAFKA ENROLLMENT-CREATED<!--DAY_HEADER_END-->
 
-#### 📝 Nhiệm vụ phụ 3.1: Triển khai enrollment-service với endpoint duyệt khóa học và ghi danh tự động tạo tài khoản
+#### 📝 NHIỆM VỤ PHỤ 4.1: Triển khai endpoint duyệt khoá học cho sinh viên
+
 ##### Sub-Agent được phân công: Coder
-##### Thành phần mục tiêu & yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/EnrollmentService.java`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-010], [REQ-011], [ARC-008], [EXC-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tệp pom.xml cho module enrollment-service tại đường dẫn `./sources/backend/enrollment-service/pom.xml` kế thừa từ `./sources/backend/pom.xml`. Tạo lớp `EnrollmentService` tại đường dẫn `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/EnrollmentService.java` thuộc package `org.nlh4j.membershiphub.enrollmentservice`. Sử dụng annotation `@ApplicationScoped`. Inject `EnrollmentRepository`, `StudentProvisioningService`, `KafkaEnrollmentProducer` và `RedisLockService`. Triển khai `getAvailableCourses(studentId)` thực hiện query `SELECT * FROM Courses WHERE course_id NOT IN (SELECT course_id FROM Enrollments WHERE student_id = :studentId) AND end_date >= CURRENT_DATE ORDER BY start_date ASC LIMIT 50`. Triển khai `enrollStudent(courseId, request)` với logic: (1) Lấy user từ JWT token, nếu email chưa tồn tại trong bảng `Users`, gọi `StudentProvisioningService.createStudent(email, fullName)` để tạo user mới với role `Student` và gửi mật khẩu tạm qua email queue, (2) Insert vào bảng `Enrollments`, (3) Publish sự kiện Kafka topic `enrollment.created` với payload chứa `studentId`, `courseId`, `centerId`, `enrolledAt`. Áp dụng distributed lock bằng Redis SETNX với key `enrollment:lock:{studentId}:{courseId}` TTL 5 giây để chống race condition khi hai request đồng thời. Toàn bộ Java class sử dụng package `org.nlh4j.membershiphub.enrollmentservice`.
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/StudentCourseBrowseController.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-010]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp mã nguồn `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/StudentCourseBrowseController.java` hiện thực hóa lớp `StudentCourseBrowseController` với endpoint `GET /api/v1/students/courses/available` được bảo vệ bởi `@RolesAllowed({"Student"})`. Inject `CourseBrowseService` để lấy danh sách khoá học loại trừ các khoá học sinh viên hiện tại đã đăng ký thông qua subquery `NOT EXISTS` trong JPQL. Trả về danh sách gồm `courseId`, `title`, `capacity`, `schedule`, `centerId`. Sử dụng `@Context SecurityContext` để lấy `studentId` từ JWT token. Trả về HTTP 200 với mảng JSON các khoá học khả dụng.
 
-* **Hợp đồng định tuyến API và sự kiện [REQ-010], [REQ-011], [ARC-008]:** <!--START_API_CONTRACT-->
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
 ```json
 {
-  "endpoints": {
-    "GET /api/v1/students/{id}/available-courses": {
-      "response": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "courseId": { "type": "string", "format": "uuid" },
-            "title": { "type": "string" },
-            "startDate": { "type": "string", "format": "date" },
-            "endDate": { "type": "string", "format": "date" },
-            "teacherName": { "type": "string" },
-            "availableSeats": { "type": "integer" }
-          }
-        }
-      }
-    },
-    "POST /api/v1/enrollments": {
-      "requestBody": {
-        "courseId": "uuid",
-        "email": "string (optional, dùng khi auto-provisioning)"
-      },
-      "responses": {
-        "201": "Enrollment created",
-        "200": "Already enrolled (duplicate)",
-        "422": "STUDENT_PROVISIONING_FAILED"
-      },
-      "kafkaEvent": {
-        "topic": "enrollment.created",
-        "payload": {
-          "studentId": "uuid",
-          "courseId": "uuid",
-          "centerId": "uuid",
-          "enrolledAt": "ISO-8601"
-        }
-      }
+  "endpoint": "GET /api/v1/students/courses/available",
+  "headers": { "Authorization": "Bearer <student_jwt_token>" },
+  "response_200": [
+    {
+      "courseId": "uuid",
+      "title": "Lập trình Python nâng cao",
+      "capacity": 25,
+      "maxStudents": 30,
+      "schedule": "Thứ 2, 4, 6 | 18:00 - 20:00",
+      "centerId": "uuid",
+      "teacherName": "Tran Thi B"
+    }
+  ]
+}
+```
+<!--END_API_CONTRACT-->
+
+#### 📝 NHIỆM VỤ PHỤ 4.2: Kiểm thử đơn vị service duyệt khoá học
+
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/CourseBrowseService.java;./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/service/CourseServiceTest.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-010]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Bổ sung test case cho `CourseBrowseService.findAvailableCourses(studentId)` trong tệp `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/service/CourseServiceTest.java`. Mock `CourseRepository.findAvailableCourses`. Tạo 4 test case: (1) `findAvailableCourses_returnsEnrolledExclusion` xác minh trả về danh sách khoá học chưa đăng ký; (2) `findAvailableCourses_returnsEmptyWhenAllEnrolled` xác minh trả về mảng rỗng nếu sinh viên đã đăng ký hết; (3) `findAvailableCourses_handlesNullStudentId` xác minh xử lý đúng khi studentId null; (4) `findAvailableCourses_usesJoinWithEnrollments` xác minh truy vấn sử dụng `LEFT JOIN enrollments` với điều kiện `enrollment_id IS NULL`.
+
+#### 📝 NHIỆM VỤ PHỤ 4.3: Tài liệu API duyệt và đăng ký khoá học
+
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/api/course-openapi.yaml`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-010], [REQ-011], [DOC-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Bổ sung vào tệp `./sources/docs/api/course-openapi.yaml` các endpoint `GET /api/v1/students/courses/available` và `POST /api/v1/enrollments` với mô tả chi tiết response schema, mã lỗi 403 (insufficient privileges), 404 (course not found), 409 (course full, already enrolled). Tham chiếu `[REQ-010]`, `[REQ-011]`. Bổ sung security scheme `BearerAuth` cho các endpoint bảo vệ. Bao gồm ví dụ request/response cho từng trường hợp sử dụng.
+
+#### 📝 NHIỆM VỤ PHỤ 4.4: Review logic duyệt khoá học và performance
+
+##### Sub-Agent được phân công: Reviewer
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/repository/CourseRepository.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-010], [NFR-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Reviewer đánh giá truy vấn `findAvailableCourses` trong tệp `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/repository/CourseRepository.java` đảm bảo sử dụng `LEFT JOIN` với bảng `enrollments` và subquery `NOT EXISTS` để loại trừ hiệu quả. Xác nhận có index trên `(student_id, course_id)` trong bảng `enrollments` đã được tạo ở Giai đoạn 1. Đề xuất materialized view `mv_available_courses` nếu dữ liệu lớn hơn 100.000 bản ghi. Tạo báo cáo review với EXPLAIN ANALYZE cho truy vấn mẫu.
+
+### 🌤️ NGÀY 5: <!--DAY_HEADER_START-->TRIỂN KHAI ENROLLMENT VÀ SỰ KIỆN KAFKA ENROLLMENT-CREATED VỚI AUTO-CREATE STUDENT<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 5.1: Triển khai Enrollment Controller và Service
+
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/EnrollmentController.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-011], [ARC-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp mã nguồn `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/controller/EnrollmentController.java` hiện thực hóa lớp `EnrollmentController` với `POST /api/v1/enrollments` nhận `EnrollmentRequest` chứa `courseId` (UUID). Trong `EnrollmentService` xử lý: (1) xác thực sinh viên đã đăng nhập thông qua JWT, (2) kiểm tra khoá học tồn tại và còn capacity, (3) sinh tài khoản Student tự động nếu email chưa tồn tại với role_id=5 và password tạm thời an toàn, (4) tạo bản ghi enrollment, (5) publish sự kiện Kafka `enrollment-events` lên topic `enrollment-events` với payload chứa `eventType=enrollment-created`, `enrollmentId`, `studentId`, `courseId`, `enrollmentDate`, `autoCreatedUser`. Trả về HTTP 201 với thông tin enrollment. Toàn bộ thao tác sử dụng `@Transactional` và ghi audit log.
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
+```json
+{
+  "endpoint": "POST /api/v1/enrollments",
+  "requestBody": {
+    "courseId": "UUID"
+  },
+  "responseStatus": 201,
+  "kafkaEvent": {
+    "topic": "enrollment-events",
+    "key": "studentId",
+    "payload": {
+      "eventType": "enrollment-created",
+      "enrollmentId": "UUID",
+      "studentId": "UUID",
+      "courseId": "UUID",
+      "enrollmentDate": "ISO-8601 timestamp",
+      "autoCreatedUser": "boolean"
     }
   }
 }
 ```
 <!--END_API_CONTRACT-->
 
-* **Bộ xử lý ngoại lệ cục bộ hóa của giai đoạn [EXC-004]:** <!--START_EXC_HANDLER-->
-```java
-package org.nlh4j.membershiphub.enrollmentservice.exception;
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
 
+<!--START_EXC_HANDLER-->
+```java
+// [EXC-001]: Xử lý khoá học đã đầy capacity
+public class CourseFullException extends RuntimeException {
+    public CourseFullException(UUID courseId) {
+        super("Khoá học " + courseId + " đã đạt số lượng sinh viên tối đa");
+    }
+}
+
+// [EXC-001]: Xử lý khoá học không tồn tại hoặc đã kết thúc
+public class EnrollmentNotFoundException extends RuntimeException {
+    public EnrollmentNotFoundException(UUID courseId) {
+        super("Khoá học " + courseId + " không tồn tại hoặc đã kết thúc");
+    }
+}
+
+// [EXC-001]: Xử lý sinh viên đã đăng ký trước đó
 public class DuplicateEnrollmentException extends RuntimeException {
-    public DuplicateEnrollmentException(String studentId, String courseId) {
-        super("Học viên " + studentId + " đã ghi danh vào khóa học " + courseId);
+    public DuplicateEnrollmentException(UUID studentId, UUID courseId) {
+        super("Sinh viên " + studentId + " đã đăng ký khoá học " + courseId);
     }
 }
 ```
 <!--END_EXC_HANDLER-->
 
-#### 📝 Nhiệm vụ phụ 3.2: Viết test cho StudentProvisioningService và DashboardService
+#### 📝 NHIỆM VỤ PHỤ 5.2: Kiểm thử tích hợp enrollment
+
 ##### Sub-Agent được phân công: Tester
-##### Thành phần mục tiêu & yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** INTEGRATION_SCOPE;./sources/backend/enrollment-service/src/test/java/org/nlh4j/membershiphub/enrollmentservice/StudentProvisioningServiceTest.java
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-011], [REQ-025], [EXC-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo tệp kiểm thử tại đường dẫn `./sources/backend/enrollment-service/src/test/java/org/nlh4j/membershiphub/enrollmentservice/StudentProvisioningServiceTest.java` thuộc package `org.nlh4j.membershiphub.enrollmentservice`. Test 1 (`testCreateStudentNewEmail`): Mock user repository trả về empty, gọi `createStudent("new@example.com", "Nguyen Van A")`, xác nhận user mới được tạo với role `Student`, mật khẩu tạm được hash bằng bcrypt, email queue được gọi. Test 2 (`testCreateStudentExistingEmail`): Mock user repository trả về existing user, xác nhận method trả về user hiện tại thay vì tạo mới. Test 3 (`testEmailQueueFailureRollback`): Mock email queue ném exception, xác nhận rollback transaction và ném `StudentProvisioningException`. Đồng thời tạo tệp `./sources/backend/enrollment-service/src/test/java/org/nlh4j/membershiphub/enrollmentservice/DashboardServiceTest.java`. Cho `DashboardServiceTest`: Mock Redis cache miss, mock database trả về 150 students, 12 active courses, 5 upcoming sessions, xác nhận response JSON chứa `totalStudents: 150, activeCourses: 12, upcomingSessions: 5`. Test cache hit: Pre-populate Redis, gọi service, xác nhận database KHÔNG được truy vấn (verify bằng `Mockito.verify(repo, never()).count()`).
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/CourseServiceIntegrationTestSuite.java
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-011], [ARC-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Bổ sung integration test trong tệp `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/CourseServiceIntegrationTestSuite.java` sử dụng Testcontainers PostgreSQL 16-alpine và Embedded Kafka. Tạo 5 test case: (1) `enrollment_successful_returns201` xác minh đăng ký thành công sinh enrollment; (2) `enrollment_autoCreatesStudentForNewEmail` xác minh sinh viên chưa có được tự tạo với role Student; (3) `enrollment_fullCourseReturns409` xác minh khoá học đầy trả về HTTP 409 với mã `COURSE_FULL_409`; (4) `enrollment_duplicateReturns409` xác minh sinh viên đã đăng ký trả về HTTP 409 với mã `ALREADY_ENROLLED_409`; (5) `enrollment_publishesKafkaEvent` xác minh Kafka event được publish đúng topic `enrollment-events` với payload chuẩn.
 
-#### 📝 Nhiệm vụ phụ 3.3: Triển khai DashboardService với Redis cache 15 phút
+#### 📝 NHIỆM VỤ PHỤ 5.3: Tài liệu luồng enrollment
+
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/architecture/course-architecture.md`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-011], [ARC-008], [DOC-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Cập nhật tệp `./sources/docs/architecture/course-architecture.md` bổ sung sơ đồ Mermaid `sequenceDiagram` cho luồng đăng ký khoá học, mô tả cách Kafka topic `enrollment-events` được tiêu thụ bởi notification-service để gửi push notification cho sinh viên và Zalo OA cho trung tâm. Tham chiếu `[REQ-011]`, `[ARC-008]`. Bao gồm sơ đồ Mermaid `flowchart` thể hiện các bước: (1) Student gọi POST, (2) Validate course tồn tại, (3) Auto-create Student nếu cần, (4) Tạo enrollment, (5) Publish Kafka event, (6) Notification-service gửi push + Zalo.
+
+#### 📝 NHIỆM VỤ PHỤ 5.4: Review xử lý auto-create student
+
+##### Sub-Agent được phân công: Reviewer
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/EnrollmentService.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-011], [EXC-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Reviewer đánh giá logic auto-create Student account trong tệp `./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/EnrollmentService.java` đảm bảo có transaction bao quát với `@Transactional`, kiểm tra email uniqueness, gán role Student mặc định (role_id=5), sinh password tạm thời an toàn bằng `SecureRandom` với độ dài 16 ký tự. Đề xuất xử lý race condition khi hai request đồng thời tạo cùng email thông qua `INSERT ... ON CONFLICT DO NOTHING` hoặc retry với exponential backoff. Tạo báo cáo review với phân tích rủi ro và đề xuất cải tiến.
+
+### 🌤️ NGÀY 6: <!--DAY_HEADER_START-->KHỞI TẠO ATTENDANCE-SERVICE VÀ MODULE GIẢI MÃ QR PAYLOAD<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 6.1: Triển khai mô tả build và ứng dụng attendance-service
+
 ##### Sub-Agent được phân công: Coder
-##### Thành phần mục tiêu & yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/DashboardService.java`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-025], [NFR-001], [EXC-004]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Tạo lớp `DashboardService` tại đường dẫn `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/DashboardService.java` thuộc package `org.nlh4j.membershiphub.enrollmentservice`. Sử dụng annotation `@ApplicationScoped`. Inject `DashboardCacheService`, `EntityManager` và `CourseRepository`. Triển khai method `getEnrollmentSummary(centerId)` thực hiện: (1) Kiểm tra Redis key `dashboard:enrollment:{centerId}`, nếu tồn tại trả về cached value, (2) Nếu cache miss, query database: `totalStudents = SELECT COUNT(*) FROM Users u JOIN Enrollments e ON u.user_id = e.student_id WHERE e.course_id IN (SELECT course_id FROM Courses WHERE center_id = :centerId)`, `activeCourses = SELECT COUNT(*) FROM Courses WHERE center_id = :centerId AND end_date >= CURRENT_DATE`, `upcomingSessions = SELECT COUNT(*) FROM CourseSessions WHERE course_id IN (...) AND session_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'`, (3) Lưu kết quả vào Redis với TTL 900 giây, (4) Trả về `DashboardSummaryResponse`. Sử dụng `@CacheResult(cacheName = "dashboard-cache")` của Quarkus cache API kết hợp Redis backend. Implement circuit breaker `@CircuitBreaker(requestVolumeThreshold=4, failureRatio=0.5, delay=10s)` cho trường hợp Redis down, fallback compute trực tiếp từ DB.
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/attendance-service/pom.xml`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000], [REQ-012]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp `pom.xml` cho `attendance-service` tại đường dẫn `./sources/backend/attendance-service/pom.xml` thừa kế parent `./sources/backend/pom.xml`. Khai báo dependency Quarkus 3.15.1: `quarkus-resteasy-reactive-jackson`, `quarkus-hibernate-orm-panache`, `quarkus-jdbc-postgresql`, `quarkus-flyway`, `quarkus-smallrye-reactive-messaging-kafka`, `quarkus-hibernate-validator`, `quarkus-smallrye-openapi`, `quarkus-cache` (Caffeine). ArtifactId `attendance-service`, groupId `org.nlh4j.membershiphub`. Dependencies test gồm `quarkus-junit5`, `rest-assured`, `mockito-core`, `org.testcontainers:postgresql:1.20.4`, `org.testcontainers:kafka:1.20.4`. Tệp phải biên dịch trống thông qua `mvn clean install -DskipTests`.
 
-* **Đặc tả DDL SQL lược đồ cơ sở dữ liệu [DAT-XXX]:** <!--START_DDL_MIGRATION-->
+* **Đặc Tả Lược Đồ Cơ Sở Dữ Liệu DDL SQL [DAT-XXX]:**
+
+<!--START_DDL_MIGRATION-->
 ```sql
--- View tổng hợp cho dashboard (tối ưu query)
-CREATE OR REPLACE VIEW vw_enrollment_summary AS
-SELECT
-    c.center_id,
-    COUNT(DISTINCT e.student_id) AS total_students,
-    COUNT(DISTINCT CASE WHEN c.end_date >= CURRENT_DATE THEN c.course_id END) AS active_courses,
-    COUNT(DISTINCT CASE WHEN cs.session_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days' THEN cs.session_id END) AS upcoming_sessions
-FROM Courses c
-LEFT JOIN Enrollments e ON c.course_id = e.course_id
-LEFT JOIN CourseSessions cs ON c.course_id = cs.course_id
-GROUP BY c.center_id;
+-- Migration V1__attendance_init.sql [DAT-006]
+-- Khởi tạo bảng attendance với composite unique key đảm bảo idempotency
+CREATE TABLE attendance (
+    attendance_id UUID PRIMARY KEY,
+    student_id UUID NOT NULL,
+    course_id UUID NOT NULL,
+    attendance_date DATE NOT NULL,
+    timestamp TIMESTAMP NOT NULL DEFAULT now(),
+    idempotency_key VARCHAR(100),
+    CONSTRAINT fk_attendance_student FOREIGN KEY (student_id) REFERENCES users(user_id),
+    CONSTRAINT fk_attendance_course FOREIGN KEY (course_id) REFERENCES courses(course_id),
+    CONSTRAINT uq_attendance_unique_day UNIQUE (student_id, course_id, attendance_date)
+);
+
+CREATE INDEX idx_attendance_student_date ON attendance(student_id, attendance_date);
+CREATE INDEX idx_attendance_course_date ON attendance(course_id, attendance_date);
+CREATE INDEX idx_attendance_idempotency ON attendance(idempotency_key) WHERE idempotency_key IS NOT NULL;
 ```
 <!--END_DDL_MIGRATION-->
 
-* **Hợp đồng định tuyến API và sự kiện [REQ-025], [NFR-001]:** <!--START_API_CONTRACT-->
+#### 📝 NHIỆM VỤ PHỤ 6.2: Kiểm thử tích hợp mô tả build attendance-service
+
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** INTEGRATION_SCOPE;./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/AttendanceServiceIntegrationTestSuite.java
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000], [REQ-012]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp kiểm thử tích hợp `./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/AttendanceServiceIntegrationTestSuite.java` sử dụng JUnit 5 Platform Launcher kết nối script shell `./sources/infra/test/maven-build-integration.sh` để xác minh `./sources/backend/attendance-service/pom.xml` biên dịch sạch. Test phải fail nếu dependency chưa khả dụng, parent pom không hợp lệ, hoặc artifactId không khớp `attendance-service`. Verify file `target/quarkus-app/quarkus-run.jar` được tạo ra với kích thước hợp lệ.
+
+#### 📝 NHIỆM VỤ PHỤ 6.3: Tài liệu kiến trúc attendance-service
+
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/architecture/attendance-architecture.md`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-012], [REQ-013], [ARC-007], [DOC-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Soạn thảo tài liệu Markdown tại `./sources/docs/architecture/attendance-architecture.md` mô tả kiến trúc `attendance-service` gồm sơ đồ C4 Container với các thành phần REST Controller, Service, Repository, Kafka Producer, QrPayloadDecoder. Tài liệu phải liệt kê đầy đủ Tag ID `[REQ-012]`, `[REQ-013]`, `[ARC-007]`, `[EXC-001]`, `[EXC-002]`, `[EXC-005]`. Bao gồm sơ đồ Mermaid `flowchart` mô tả các bước xử lý QR scan: (1) Mobile app scan QR, (2) Decode base64 payload, (3) Validate enrollment, (4) Check idempotency, (5) Persist hoặc trả duplicate, (6) Publish Kafka event.
+
+#### 📝 NHIỆM VỤ PHỤ 6.4: Review mã nguồn khởi tạo attendance-service
+
+##### Sub-Agent được phân công: Reviewer
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/AttendanceServiceApplication.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[ARC-000], [REQ-012]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Reviewer đánh giá tệp `AttendanceServiceApplication.java` tại `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/AttendanceServiceApplication.java` chứa annotation `@QuarkusMain`, đảm bảo cấu hình gói `org.nlh4j.membershiphub.attendanceservice` chính xác. Xác nhận không có tham chiếu `com.example`, hàm `main` chuẩn Quarkus. Phát hiện sớm các vấn đề cấu hình như thiếu `quarkus.banner.enabled=false` cho production, sai cấu hình port, hoặc thiếu health check endpoint. Tạo báo cáo review ngắn gọn.
+
+### 🌤️ NGÀY 7: <!--DAY_HEADER_START-->TRIỂN KHAI LUỒNG ĐIỂM DANH QR VỚI IDEMPOTENCY, RETRY VÀ FIFO RECOVERY<!--DAY_HEADER_END-->
+
+#### 📝 NHIỆM VỤ PHỤ 7.1: Triển khai Attendance Controller và Service
+
+##### Sub-Agent được phân công: Coder
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/controller/AttendanceController.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-012], [REQ-013], [ARC-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp mã nguồn `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/controller/AttendanceController.java` hiện thực hóa lớp `AttendanceController` với `POST /api/v1/attendance/scan` nhận `QrScanRequest` chứa `qrPayload` (base64 string) và `idempotencyKey` (UUID hoặc hash). Inject `AttendanceService` và `QrPayloadDecoder`. Service thực hiện: (1) giải mã payload base64 lấy `studentId` và `courseId` thông qua `QrPayloadDecoder`, (2) kiểm tra enrollment tồn tại thông qua truy vấn JOIN bảng `enrollments`, (3) kiểm tra idempotency qua composite unique key `(student_id, course_id, attendance_date)`, (4) tạo attendance record nếu chưa tồn tại hoặc trả về response với cờ `duplicate: true` nếu đã tồn tại, (5) publish sự kiện Kafka `attendance-events`. Trả về HTTP 201 cho lần đầu, HTTP 200 với `duplicate: true` cho các lần sau.
+
+* **Đặc Tả Hợp Đồng API Và Sự Kiện [REQ-XXX], [ARC-XXX]:**
+
+<!--START_API_CONTRACT-->
 ```json
 {
-  "endpoint": "GET /api/v1/dashboard/enrollment-summary",
-  "queryParams": {
-    "centerId": "uuid (optional, mặc định lấy tất cả)"
+  "endpoint": "POST /api/v1/attendance/scan",
+  "requestBody": {
+    "qrPayload": "base64 string chứa studentID và courseID",
+    "idempotencyKey": "UUID hoặc hash string"
   },
-  "response": {
-    "type": "object",
-    "properties": {
-      "totalStudents": { "type": "integer" },
-      "activeCourses": { "type": "integer" },
-      "upcomingSessions": { "type": "integer" },
-      "generatedAt": { "type": "string", "format": "date-time" },
-      "cachedUntil": { "type": "string", "format": "date-time" }
+  "responseSuccess": {
+    "status": 201,
+    "body": {
+      "attendanceId": "UUID",
+      "studentId": "UUID",
+      "courseId": "UUID",
+      "attendanceDate": "YYYY-MM-DD",
+      "timestamp": "ISO-8601",
+      "duplicate": false
     }
   },
-  "performance": {
-    "cacheTtl": 900,
-    "targetLatencyMs": 50
+  "responseDuplicate": {
+    "status": 200,
+    "body": {
+      "message": "already recorded",
+      "duplicate": true
+    }
+  },
+  "kafkaEvent": {
+    "topic": "attendance-events",
+    "payload": {
+      "eventType": "attendance-recorded",
+      "studentId": "UUID",
+      "courseId": "UUID",
+      "timestamp": "ISO-8601"
+    }
   }
 }
 ```
 <!--END_API_CONTRACT-->
 
-* **Bộ xử lý ngoại lệ cục bộ hóa của giai đoạn [EXC-004]:** <!--START_EXC_HANDLER-->
-```java
-package org.nlh4j.membershiphub.enrollmentservice.exception;
+#### 📝 NHIỆM VỤ PHỤ 7.2: Kiểm thử đơn vị attendance service
 
-public class DashboardCacheException extends RuntimeException {
-    public DashboardCacheException(Throwable cause) {
-        super("Không thể truy cập cache dashboard, hệ thống sẽ tự động fallback về truy vấn trực tiếp", cause);
+##### Sub-Agent được phân công: Tester
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/AttendanceService.java;./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/service/AttendanceServiceTest.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-012], [REQ-013], [ARC-007]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Tạo tệp kiểm thử đơn vị `./sources/backend/attendance-service/src/test/java/org/nlh4j/membershiphub/attendanceservice/service/AttendanceServiceTest.java` sử dụng JUnit 5 kết hợp Mockito 5.7.0. Mock `AttendanceRepository`, `EnrollmentRepository`, `KafkaAttendanceProducer`, `QrPayloadDecoder`. Tạo 6 test case: (1) `scanAttendance_firstTime_returns201WithDuplicateFalse` xác minh quét QR thành công tạo attendance mới; (2) `scanAttendance_duplicateSameDay_returns200WithDuplicateTrue` xác minh quét trùng trong ngày trả duplicate flag; (3) `scanAttendance_studentNotEnrolled_throwsEnrollmentRequiredException` xác minh sinh viên chưa enroll ném `EnrollmentRequiredException`; (4) `scanAttendance_invalidPayload_throwsInvalidQrPayloadException` xác minh payload không hợp lệ ném exception; (5) `scanAttendance_publishesKafkaEvent` xác minh Kafka event được publish với payload đúng; (6) `scanAttendance_idempotencyKeyPreventsDuplication` xác minh cùng idempotency key chỉ tạo một bản ghi.
+
+#### 📝 NHIỆM VỤ PHỤ 7.3: Tài liệu API và luồng retry cho attendance
+
+##### Sub-Agent được phân công: Doc
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/docs/api/attendance-openapi.yaml`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-012], [REQ-013], [EXC-001], [EXC-005], [DOC-001]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Soạn thảo tệp OpenAPI 3.1 YAML tại `./sources/docs/api/attendance-openapi.yaml` mô tả endpoint `POST /api/v1/attendance/scan` với schema `QrScanRequest` chứa `qrPayload` và `idempotencyKey`, schema `AttendanceResponse` chứa `attendanceId`, `studentId`, `courseId`, `attendanceDate`, `timestamp`, `duplicate`. Mô tả mã lỗi 400 (invalid QR payload), 403 (enrollment required), 409 (duplicate), 503 (service unavailable). Bổ sung mô tả cơ chế retry queue khi mất mạng `[EXC-001]` với exponential backoff và FIFO khi khôi phục `[EXC-005]`. Tham chiếu Tag ID đầy đủ. Bao gồm sơ đồ Mermaid `sequenceDiagram` thể hiện luồng xử lý từ mobile app đến database.
+
+#### 📝 NHIỆM VỤ PHỤ 7.4: Review logic idempotency và xử lý ngoại lệ
+
+##### Sub-Agent được phân công: Reviewer
+##### Thành Phần Mục Tiêu Và Yêu Cầu Kỹ Thuật:
+* **Đường Dẫn Mục Tiêu:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/exception/DuplicateAttendanceException.java`
+* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-013], [EXC-001], [EXC-002], [EXC-005]<!--END_TAGS-->
+* **Chỉ Dẫn Nhiệm Vụ Kỹ Thuật Cấp Thấp:** Reviewer đánh giá tệp `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/exception/DuplicateAttendanceException.java` và logic trong `AttendanceService` đảm bảo idempotency thông qua composite unique key `(student_id, course_id, attendance_date)`. Xác nhận cơ chế retry queue xử lý `[EXC-001]` với tối đa 3 lần retry và FIFO recovery `[EXC-005]` thông qua việc sử dụng `BlockingQueue` hoặc Kafka offset commit. Đề xuất tối ưu performance cho truy vấn tần suất cao thông qua Redis cache. Tạo báo cáo review với format: Vấn đề, Mức độ, Đề xuất.
+
+* **Bộ Xử Lý Ngoại Lệ Giai Đoạn [EXC-XXX]:**
+
+<!--START_EXC_HANDLER-->
+```java
+// [EXC-001]: Xử lý khi sinh viên chưa đăng ký khoá học
+public class EnrollmentRequiredException extends RuntimeException {
+    public EnrollmentRequiredException(UUID studentId, UUID courseId) {
+        super("Sinh viên " + studentId + " chưa đăng ký khoá học " + courseId);
+    }
+}
+
+// [EXC-002]: Xử lý khi quét trùng trong cùng ngày - trả success với duplicate: true
+public class DuplicateAttendanceException extends RuntimeException {
+    private final boolean duplicate;
+    public DuplicateAttendanceException(UUID studentId, UUID courseId, LocalDate date) {
+        super("Điểm danh đã được ghi nhận cho sinh viên " + studentId + " ngày " + date);
+        this.duplicate = true;
+    }
+    public boolean isDuplicate() { return duplicate; }
+}
+
+// [EXC-001]: Xử lý khi payload QR không hợp lệ
+public class InvalidQrPayloadException extends RuntimeException {
+    public InvalidQrPayloadException(String message) {
+        super("Invalid QR payload: " + message);
     }
 }
 ```
 <!--END_EXC_HANDLER-->
-
-#### 📝 Nhiệm vụ phụ 3.4: Review tổng thể enrollment-service và cập nhật tài liệu API
-##### Sub-Agent được phân công: Reviewer
-##### Thành phần mục tiêu & yêu cầu kỹ thuật:
-* **Đường dẫn mục tiêu:** `./sources/backend/enrollment-service/src/main/java/org/nlh4j/membershiphub/enrollmentservice/exception/ExceptionMappers.java`
-* **Traceability Tag Tokens:** <!--START_TAGS-->[REQ-010], [REQ-011], [REQ-025], [ARC-008], [EXC-004], [NFR-001]<!--END_TAGS-->
-* **Hướng dẫn nhiệm vụ kỹ thuật cấp thấp:** Reviewer kiểm tra toàn bộ enrollment-service để xác nhận: (1) Distributed lock Redis SETNX có TTL hợp lý, (2) Kafka idempotent producer được cấu hình đúng, (3) Dashboard cache TTL đáp ứng NFR-001 sub-second latency, (4) Circuit breaker có fallback an toàn, (5) Tất cả Java code tuân thủ package convention `org.nlh4j.membershiphub.enrollmentservice`. Tạo báo cáo review tại đường dẫn `./sources/docs/review/phase3-day3-enrollment-review.md` liệt kê chi tiết từng issue phát hiện và đề xuất fix cụ thể. Đồng thời cập nhật tài liệu `./sources/docs/api/enrollment-service-api.md` mô tả 3 endpoint (available-courses, enrollments, dashboard) với sơ đồ Mermaid sequence diagram thể hiện luồng auto-provisioning student và Kafka publish. Tài liệu phải có bảng Tag ID mapping và matrix exception handling.
