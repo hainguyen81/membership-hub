@@ -1,66 +1,38 @@
 -- ============================================
--- Flyway Migration Script: V2__init_announcements.sql
--- Project: membership-hub
--- Service: course-service
--- Traceability Tags: [DAT-010], [DAT-011], [DAT-012]
--- SCOPE: Announcements Table Initialization
--- Description: Creates the announcements table for system-wide broadcast messages.
+-- FILE: V3__init_system_settings.sql
+-- SCOPE: System Settings
+-- TAGS: [DAT-011], [DOC-001]
 -- ============================================
-CREATE TABLE announcements (
-    announcement_id UUID PRIMARY KEY,
-    title VARCHAR(150) NOT NULL,
-    content TEXT NOT NULL,
-    start_date DATE,
-    end_date DATE,
-    center_id UUID NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT now(),
-    CONSTRAINT fk_announcements_center FOREIGN KEY (center_id) REFERENCES centers(center_id),
-    CONSTRAINT ck_announcements_date_range CHECK (end_date IS NULL OR end_date >= start_date)
-);
--- ============================================
--- End of Migration V2__init_announcements.sql
--- Traceability Verification: [DAT-010], [DAT-011], [DAT-012]
--- ============================================
+-- ANSI SQL compliant Flyway migration for global system configuration
+-- No database-specific ENUMs or proprietary syntax used
+-- Aligns with audit logging requirements [NFR-006]
 
--- ============================================
--- Flyway Migration Script: V3__init_system_settings.sql
--- Project: membership-hub
--- Service: user-service
--- Traceability Tags: [DAT-010], [DAT-011], [DAT-012]
--- SCOPE: System Settings Table Initialization
--- Description: Creates the system_settings table for storing application-wide
---              configuration parameters as key-value pairs with descriptions.
--- ============================================
 CREATE TABLE system_settings (
     setting_key VARCHAR(50) NOT NULL,
     setting_value TEXT NOT NULL,
     description VARCHAR(200),
-    CONSTRAINT pk_system_settings PRIMARY KEY (setting_key)
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_system_settings PRIMARY KEY (setting_key),
+    CONSTRAINT chk_system_settings_key_not_empty CHECK (setting_key <> ''),
+    CONSTRAINT chk_system_settings_value_not_empty CHECK (setting_value <> '')
 );
--- ============================================
--- End of Migration V3__init_system_settings.sql
--- Traceability Verification: [DAT-010], [DAT-011], [DAT-012]
--- ============================================
 
--- ============================================
--- Flyway Migration Script: V3__init_audit_logs.sql
--- Project: membership-hub
--- Service: user-service
--- Traceability Tags: [DAT-010], [DAT-011], [DAT-012]
--- SCOPE: Audit Logs Table Initialization
--- Description: Creates the audit_logs table for storing system audit events.
--- ============================================
-CREATE TABLE audit_logs (
-    log_id UUID PRIMARY KEY,
-    user_id UUID,
-    action VARCHAR(100) NOT NULL,
-    details TEXT,
-    occurred_at TIMESTAMP NOT NULL DEFAULT now(),
-    CONSTRAINT fk_audit_logs_user FOREIGN KEY (user_id) REFERENCES users(user_id),
-    INDEX idx_audit_logs_user_id (user_id),
-    INDEX idx_audit_logs_occurred_at (occurred_at)
-);
--- ============================================
--- End of Migration V3__init_audit_logs.sql
--- Traceability Verification: [DAT-010], [DAT-011], [DAT-012]
--- ============================================
+-- Insert default system configuration values using ANSI SQL MERGE for idempotency
+MERGE INTO system_settings AS target
+USING (VALUES
+    ('jwt.access.token.expiry', '900', 'JWT access token expiry in seconds (15 minutes)'),
+    ('jwt.refresh.token.expiry', '604800', 'JWT refresh token expiry in seconds (7 days)'),
+    ('max.login.attempts', '5', 'Maximum failed login attempts before account lock'),
+    ('attendance.qr.code.ttl', '300', 'QR code validity period for attendance in seconds'),
+    ('notification.retry.max.attempts', '3', 'Maximum retry attempts for failed notifications'),
+    ('password.bcrypt.cost.factor', '12', 'Bcrypt cost factor for password hashing'),
+    ('kafka.attendance.topic.partitions', '12', 'Number of partitions for attendance scan topic'),
+    ('kafka.notification.topic.partitions', '6', 'Number of partitions for notification outbound topic')
+) AS source (setting_key, setting_value, description)
+ON target.setting_key = source.setting_key
+WHEN MATCHED THEN
+    UPDATE SET setting_value = source.setting_value, description = source.description, updated_at = CURRENT_TIMESTAMP
+WHEN NOT MATCHED THEN
+    INSERT (setting_key, setting_value, description, created_at, updated_at)
+    VALUES (source.setting_key, source.setting_value, source.description, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

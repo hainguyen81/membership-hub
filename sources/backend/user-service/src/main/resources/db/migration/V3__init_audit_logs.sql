@@ -1,96 +1,79 @@
 -- ============================================
--- FILE: ./sources/backend/course-service/src/main/resources/db/migration/V2__init_announcements.sql
--- SCOPE: Announcements
--- TAGS: [DAT-010], [DAT-011], [DAT-012]
--- DESCRIPTION: Initialize announcements table for center-wide announcements with date range validation
--- BUSINESS RULES:
---   - Announcements are scoped to a specific center via center_id foreign key
---   - start_date and end_date are nullable to support perpetual announcements
---   - CHECK constraint ensures end_date >= start_date when end_date is provided
---   - created_at defaults to current timestamp for accurate creation tracking
--- SECURITY:
---   - Foreign key to centers table ensures referential integrity
---   - Center isolation enforced at application layer via RBAC
--- COMPLIANCE:
---   - Supports auto-hide functionality for expired announcements per REQ-018
--- ============================================
-
-CREATE TABLE announcements (
-    announcement_id UUID NOT NULL,
-    title VARCHAR(150) NOT NULL,
-    content TEXT NOT NULL,
-    start_date DATE,
-    end_date DATE,
-    center_id UUID NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT now(),
-    CONSTRAINT pk_announcements PRIMARY KEY (announcement_id),
-    CONSTRAINT fk_announcements_center FOREIGN KEY (center_id) REFERENCES centers(center_id),
-    CONSTRAINT ck_announcements_date_range CHECK (end_date IS NULL OR end_date >= start_date)
-);
-
--- Index for efficient querying of announcements by center
-CREATE INDEX idx_announcements_center_id ON announcements(center_id);
-
--- ============================================
--- FILE: ./sources/backend/user-service/src/main/resources/db/migration/V3__init_system_settings.sql
--- SCOPE: System Settings
--- TAGS: [DAT-010], [DAT-011], [DAT-012]
--- DESCRIPTION: Initialize system_settings table for application-wide configuration key-value pairs
--- BUSINESS RULES:
---   - setting_key serves as primary key for O(1) lookups
---   - setting_value stores configuration data as text (JSON or plain text format)
---   - description provides human-readable context for administrative purposes
---   - No sensitive credentials should be stored here; use Secret Manager instead
--- SECURITY:
---   - Primary key constraint prevents duplicate setting keys
---   - Application layer must validate setting_value format before persistence
--- COMPLIANCE:
---   - Supports dynamic feature flags and system-wide configuration per NFR-007
--- ============================================
-
-CREATE TABLE system_settings (
-    setting_key VARCHAR(50) NOT NULL,
-    setting_value TEXT NOT NULL,
-    description VARCHAR(200),
-    CONSTRAINT pk_system_settings PRIMARY KEY (setting_key)
-);
-
--- ============================================
--- FILE: ./sources/backend/user-service/src/main/resources/db/migration/V3__init_audit_logs.sql
+-- FILE: V3__init_audit_logs.sql
 -- SCOPE: Audit Logs
--- TAGS: [DAT-010], [DAT-011], [DAT-012]
--- DESCRIPTION: Initialize audit_logs table for security audit trail (NFR-006) - 1 year retention
--- BUSINESS RULES:
---   - Records all security-relevant actions: LOGIN_SUCCESS, LOGIN_FAILED, LOGOUT, ROLE_CHANGED, etc.
---   - user_id is nullable to support system-level actions without user context (e.g., scheduled tasks)
---   - action field stores standardized action codes for consistent filtering
---   - details field stores JSON payload with context: IP address, User-Agent, old/new values
---   - occurred_at defaults to current timestamp for accurate event ordering
---   - Retention policy: 1 year as per NFR-006 (partitioning recommended for large datasets)
--- SECURITY:
---   - Foreign key to users ensures referential integrity
---   - Index on user_id enables efficient audit trail queries per user
---   - Index on occurred_at enables time-range queries for compliance reporting
---   - Hash chain implementation recommended at application layer for tamper detection
---   - Write-once semantics enforced; no UPDATE or DELETE operations allowed
--- COMPLIANCE:
---   - Supports GDPR/CCPA audit requirements and forensic analysis
---   - Enables real-time security monitoring via ELK/GCP Cloud Logging integration
---   - Partitioning by occurred_at recommended when exceeding 10M records
+-- TAGS: [DAT-001], [DAT-002], [DAT-003], [DAT-004], [DAT-005], [DAT-006], [DAT-007], [DAT-008], [DAT-009], [DAT-010], [DAT-011], [DAT-012]
 -- ============================================
+
+-- Bảng AuditLogs ghi lại toàn bộ hành động kiểm toán trong hệ thống Membership Hub
+-- Tuân thủ 100% ANSI SQL, không sử dụng ENUM đặc thù database
+-- Thiết kế tối ưu cho các pattern truy vấn: RBAC, báo cáo thời gian thực, truy vấn log theo khoảng thời gian
+-- Khuyến nghị partitioning khi dữ liệu vượt 10 triệu bản ghi (xem cuối file)
 
 CREATE TABLE audit_logs (
     log_id UUID NOT NULL,
     user_id UUID,
     action VARCHAR(100) NOT NULL,
-    details TEXT,
+    target_entity VARCHAR(50) NOT NULL,
+    target_id UUID,
+    old_value TEXT,
+    new_value TEXT,
+    ip_address VARCHAR(45),
+    user_agent VARCHAR(500),
     occurred_at TIMESTAMP NOT NULL DEFAULT now(),
     CONSTRAINT pk_audit_logs PRIMARY KEY (log_id),
-    CONSTRAINT fk_audit_logs_user FOREIGN KEY (user_id) REFERENCES users(user_id)
+    CONSTRAINT fk_audit_logs_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    CONSTRAINT ck_audit_action CHECK (action IN (
+        'LOGIN_SUCCESS', 'LOGIN_FAILED', 'LOGOUT', 'SOCIAL_AUTH_SUCCESS', 'SOCIAL_AUTH_FAILED',
+        'TOKEN_REFRESH', 'ROLE_CHANGED', 'USER_CREATED', 'USER_UPDATED', 'USER_DELETED',
+        'CENTER_CREATED', 'CENTER_UPDATED', 'CENTER_DELETED', 'CENTER_ADMIN_ASSIGNED', 'CENTER_ADMIN_UNASSIGNED',
+        'COURSE_CREATED', 'COURSE_UPDATED', 'COURSE_DELETED', 'TEACHER_ASSIGNED', 'TEACHER_UNASSIGNED',
+        'ENROLLMENT_CREATED', 'ENROLLMENT_CANCELLED',
+        'ATTENDANCE_SCANNED', 'ATTENDANCE_MANUAL',
+        'CARD_RENEWED', 'CARD_ISSUED',
+        'PROMOTION_CREATED', 'PROMOTION_UPDATED', 'PROMOTION_DELETED',
+        'ANNOUNCEMENT_CREATED', 'ANNOUNCEMENT_UPDATED', 'ANNOUNCEMENT_DELETED',
+        'NOTIFICATION_SENT', 'NOTIFICATION_FAILED',
+        'CHATBOT_QUERY', 'CHATBOT_ESCALATED', 'SYSTEM_CONFIG_CHANGED'
+    )),
+    CONSTRAINT ck_audit_target_entity CHECK (target_entity IN (
+        'USER', 'CENTER', 'COURSE', 'ENROLLMENT', 'ATTENDANCE', 'STUDENT_CARD',
+        'PROMOTION', 'ANNOUNCEMENT', 'NOTIFICATION', 'CHATBOT_SESSION', 'SYSTEM_SETTING', 'AUTH'
+    ))
 );
 
--- Index for efficient user-specific audit trail queries
+-- Index tối ưu cho truy vấn RBAC: lấy lịch sử hành động của user cụ thể
 CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
 
--- Index for time-range queries and compliance reporting
+-- Index tối ưu cho truy vấn log theo thời gian (báo cáo, dashboard, compliance audit)
 CREATE INDEX idx_audit_logs_occurred_at ON audit_logs(occurred_at);
+
+-- Index tối ưu cho truy vấn theo đối tượng nghiệp vụ cụ thể (ví dụ: theo dõi thay đổi của một khoá học)
+CREATE INDEX idx_audit_logs_target ON audit_logs(target_entity, target_id);
+
+-- Index tối ưu cho lọc theo loại hành động (ví dụ: tất cả login success/failed)
+CREATE INDEX idx_audit_logs_action ON audit_logs(action);
+
+-- Composite index cho truy vấn thời gian thực real-time dashboard theo user và action
+CREATE INDEX idx_audit_logs_user_action_time ON audit_logs(user_id, action, occurred_at);
+
+-- Composite index cho truy vấn audit log theo khoảng thời gian và đối tượng
+CREATE INDEX idx_audit_logs_entity_time ON audit_logs(target_entity, occurred_at);
+
+-- ============================================
+-- KHUYẾN NGHỊ PARTITIONING CHO BẢNG AUDIT_LOGS
+-- Khi dữ liệu vượt 10 triệu bản ghi, áp dụng một trong các chiến lược:
+-- ============================================
+-- 1. RANGE PARTITIONING theo tháng (phù hợp cho truy vấn theo khoảng thời gian):
+--    CREATE TABLE audit_logs_2024_01 PARTITION OF audit_logs
+--    FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
+--
+-- 2. HASH PARTITIONING nếu truy vấn chủ yếu theo user_id:
+--    CREATE TABLE audit_logs_part_0 PARTITION OF audit_logs
+--    FOR VALUES WITH (MODULUS 4, REMAINDER 0);
+--
+-- 3. Kết hợp BRIN index nếu dữ liệu có thứ tự thời gian tự nhiên:
+--    CREATE INDEX idx_audit_logs_brin_time ON audit_logs USING BRIN(occurred_at);
+--
+-- 4. Chính sách lưu trữ: Tạo job định kỳ xóa/archive các bản ghi cũ hơn 1 năm vào cold storage
+--    để đảm bảo hiệu năng truy vấn và tuân thủ [NFR-006] lưu trữ 1 năm.
+-- ============================================

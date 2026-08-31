@@ -1,26 +1,26 @@
 -- ============================================
--- FILE: V2__init_student_cards.sql
--- SCOPE: Student Cards - Quản lý thẻ học viên
--- Traceability Tags: [DAT-006], [DAT-007], [DAT-009]
--- Phase: 1 - Day 2
--- Sub-Agent: Coder
--- Description: Khởi tạo bảng student_cards lưu trữ thông tin thẻ học viên,
---              bao gồm issue_date, validity_days, remaining_days, end_date.
---              Ràng buộc UNIQUE trên student_id đảm bảo mỗi học viên chỉ có một thẻ.
+-- FILE: V2__init_promotions.sql
+-- SCOPE: Promotions
+-- TAG: [DAT-009]
 -- ============================================
 
-CREATE TABLE student_cards (
-    card_id UUID NOT NULL,
-    student_id UUID NOT NULL,
-    issue_date DATE NOT NULL,
-    validity_days INT NOT NULL,
-    remaining_days INT NOT NULL,
-    end_date DATE NOT NULL,
-    CONSTRAINT pk_student_cards PRIMARY KEY (card_id),
-    CONSTRAINT uq_student_cards_student UNIQUE (student_id),
-    CONSTRAINT fk_student_cards_student FOREIGN KEY (student_id) REFERENCES users(user_id),
-    CONSTRAINT ck_student_cards_validity CHECK (validity_days > 0),
-    CONSTRAINT ck_student_cards_remaining CHECK (remaining_days >= 0)
+CREATE TABLE promotions (
+    promo_id UUID NOT NULL,
+    code VARCHAR(30) NOT NULL,
+    discount_percent SMALLINT NOT NULL,
+    start_date DATE,
+    end_date DATE,
+    description TEXT,
+    center_id UUID NOT NULL,
+    CONSTRAINT pk_promotions PRIMARY KEY (promo_id),
+    CONSTRAINT uq_promotions_code UNIQUE (code),
+    CONSTRAINT fk_promotions_center FOREIGN KEY (center_id) REFERENCES centers(center_id) ON DELETE RESTRICT,
+    CONSTRAINT ck_promotions_discount CHECK (discount_percent BETWEEN 1 AND 100),
+    CONSTRAINT ck_promotions_date_range CHECK (end_date IS NULL OR end_date >= start_date)
 );
 
-CREATE INDEX idx_student_cards_student_id ON student_cards(student_id);
+-- Index cho truy vấn khuyến mãi theo trung tâm
+CREATE INDEX idx_promotions_center_id ON promotions(center_id);
+
+-- Index cho truy vấn khuyến mãi đang hoạt động theo khoảng ngày
+CREATE INDEX idx_promotions_date_range ON promotions(start_date, end_date);
