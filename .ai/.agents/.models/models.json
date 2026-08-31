@@ -3,16 +3,6 @@
         "separator": "------------------ OPENROUTER ENDPOINTS BOUNDARY ------------------"
     },
     {
-        "model_name": "poolside/laguna-s-2.1:free",
-        "provider": "OpenRouter AI",
-        "api_endpoint": "https://openrouter.ai/api/v1"
-    },
-    {
-        "model_name": "poolside/laguna-xs-2.1:free",
-        "provider": "OpenRouter AI",
-        "api_endpoint": "https://integrate.api.nvidia.com/v1"
-    },
-    {
         "model_name": "google/gemma-4-26b-a4b-it:free",
         "provider": "OpenRouter AI",
         "api_endpoint": "https://openrouter.ai/api/v1"
@@ -23,37 +13,7 @@
         "api_endpoint": "https://openrouter.ai/api/v1"
     },
     {
-        "model_name": "nvidia/nemotron-3-super-120b-a12b:free",
-        "provider": "OpenRouter AI",
-        "api_endpoint": "https://openrouter.ai/api/v1"
-    },
-    {
         "model_name": "cohere/north-mini-code:free",
-        "provider": "OpenRouter AI",
-        "api_endpoint": "https://openrouter.ai/api/v1"
-    },
-    {
-        "model_name": "minimax/minimax-m2.7:free",
-        "provider": "OpenRouter AI",
-        "api_endpoint": "https://openrouter.ai/api/v1"
-    },
-    {
-        "model_name": "minimax/minimax-m3:free",
-        "provider": "OpenRouter AI",
-        "api_endpoint": "https://openrouter.ai/api/v1"
-    },
-    {
-        "model_name": "nvidia/nemotron-3.5-content-safety:free",
-        "provider": "OpenRouter AI",
-        "api_endpoint": "https://openrouter.ai/api/v1"
-    },
-    {
-        "model_name": "z-ai/glm-5.2:free",
-        "provider": "OpenRouter AI",
-        "api_endpoint": "https://openrouter.ai/api/v1"
-    },
-    {
-        "model_name": "thinkingmachines/inkling:free",
         "provider": "OpenRouter AI",
         "api_endpoint": "https://openrouter.ai/api/v1"
     },
@@ -68,12 +28,22 @@
         "api_endpoint": "https://openrouter.ai/api/v1"
     },
     {
+        "model_name": "poolside/laguna-s-2.1:free",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
         "model_name": "nvidia/nemotron-3-ultra-550b-a55b:free",
         "provider": "OpenRouter AI",
         "api_endpoint": "https://openrouter.ai/api/v1"
     },
     {
         "model_name": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "provider": "OpenRouter AI",
+        "api_endpoint": "https://openrouter.ai/api/v1"
+    },
+    {
+        "model_name": "nvidia/nemotron-3-super-120b-a12b:free",
         "provider": "OpenRouter AI",
         "api_endpoint": "https://openrouter.ai/api/v1"
     },
@@ -91,12 +61,12 @@
         "api_endpoint": "https://api.groq.com/openai/v1"
     },
     {
-        "model_name": "meta-llama/llama-prompt-guard-2-22m",
+        "model_name": "llama-3.3-70b-versatile",
         "provider": "Groq Console",
         "api_endpoint": "https://api.groq.com/openai/v1"
     },
     {
-        "model_name": "meta-llama/llama-prompt-guard-2-86m",
+        "model_name": "llama-3.1-8b-instant",
         "provider": "Groq Console",
         "api_endpoint": "https://api.groq.com/openai/v1"
     },
@@ -513,6 +483,11 @@
     },
     {
         "model_name": "meta/muse-glimmer-30b",
+        "provider": "nvidia_lepton_ai",
+        "api_endpoint": "https://integrate.api.nvidia.com/v1"
+    },
+    {
+        "model_name": "poolside/laguna-xs-2.1",
         "provider": "nvidia_lepton_ai",
         "api_endpoint": "https://integrate.api.nvidia.com/v1"
     },
