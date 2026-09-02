@@ -1,0 +1,458 @@
+```markdown
+# 📘 Enterprise OpenAPI 3.1 & Architecture Specification: Course Service
+*(Global Task Enforcement & Technical Constraint Framework for Project Agents Pipeline)*
+
+## 📊 0. TRACEABILITY & METADATA DECLARATION LAW
+- **Target Project Identity Safe Name**: `membership-hub`
+- **Enforced Java Package Prefix Base**: `org.nlh4j.membershiphub`
+- **Target Documentation Destination Path**: `./sources/docs/api/course-openapi.yaml`
+- **Active Traceability Tag IDs Injected**: `[REQ-007]`, `[REQ-008]`, `[DOC-001]`
+
+---
+
+## 📑 1. SYSTEM ARCHITECTURE OVERVIEW & TRACEABILITY MATRIX
+
+The Course Service is a core microservice built on Quarkus 3.15 LTS, managing the creation, reading, updating, deletion, and teacher assignments of academic courses within the `membership-hub` multi-tenant architecture [ARC-000]. It enforces strict schedule overlap validations using PostgreSQL GIST indexes and btree_gist extensions [DAT-003].
+
+### 🏛️ Traceability Matrix Reference
+| Architectural Module / Endpoint | Source Requirement / Tag ID | Business Purpose & Technical Scope |
+| :--- | :--- | :--- |
+| **GET `/api/v1/courses`** | `[REQ-007]`, `[DOC-001]` | Provides paginated course listings for authenticated users, filtering by center and date range. |
+| **POST `/api/v1/courses`** | `[REQ-008]`, `[DOC-001]` | Creates new courses with exclusion constraint validation preventing teacher schedule conflicts. |
+| **PUT `/api/v1/courses/{id}`** | `[REQ-008]`, `[DOC-001]` | Updates course metadata while maintaining temporal integrity and capacity limits. |
+| **DELETE `/api/v1/courses/{id}`** | `[REQ-008]`, `[DOC-001]` | Soft-deletes or removes unassigned courses with active enrollment checks. |
+
+---
+
+## 🔄 2. ARCHITECTURAL DATA FLOW & SEQUENCE SPECIFICATION
+
+The following Mermaid diagram illustrates the end-to-end request processing lifecycle for course creation, highlighting the database exclusion constraint verification and security gating.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client as Frontend Client (Next.js)
+    participant Gateway as API Gateway (REST)
+    participant CourseSvc as Course Service (Quarkus)
+    participant DB as PostgreSQL 16 (GIST Engine)
+
+    Client->>Gateway: POST /api/v1/courses (Bearer JWT)
+    Note over Client,Gateway: Payload: title, startDate, endDate, teacherId, maxStudents
+    Gateway->>CourseSvc: Forward validated request + Claims
+    CourseSvc->>CourseSvc: Validate Jakarta Bean Validation annotations
+    CourseSvc->>DB: INSERT INTO courses (teacher_id, daterange) EXCLUDE USING gist
+    alt Schedule Conflict Detected
+        DB--->CourseSvc: Exclude Constraint Violation (409)
+        CourseSvc--->Gateway: ScheduleConflictException (HTTP 409)
+        Gateway--->Client: Error JSON { "errorCode": "SCHEDULE_CONFLICT" }
+    else Success
+        DB--->CourseSvc: Persisted Entity (Course ID)
+        CourseSvc--->Gateway: CourseResponse DTO (HTTP 201)
+        Gateway--->Client: JSON Response + Location Header
+    end
+```
+
+---
+
+## 📜 3. OPENAPI 3.1 YAML SPECIFICATION (`./sources/docs/api/course-openapi.yaml`)
+
+```yaml
+openapi: 3.1.0
+info:
+  title: Membership Hub - Course Management Service
+  version: 1.0.0
+  description: |
+    Enterprise OpenAPI 3.1 specification for Course Service operations.
+    Enforces JWT Bearer authentication, role-based access control, and strict date-range overlap validations.
+    Traceability Tag IDs: [REQ-007], [REQ-008], [DOC-001]
+servers:
+  - url: https://api.membershiphub.vn/api/v1
+    description: Production Enterprise Gateway Cluster
+  - url: http://localhost:8082/api/v1
+    description: Local Development Microservice Node
+
+paths:
+  /courses:
+    get:
+      tags:
+        - Course Management
+      summary: List courses with pagination and optional filters [REQ-007]
+      description: Returns a paginated list of active courses available to the authenticated user.
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Zero-based page index
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: centerId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filter courses by specific training center ID
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved paginated course list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CourseResponse'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  size:
+                    type: integer
+                  number:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Course Management
+      summary: Create a new course with teacher schedule conflict check [REQ-008]
+      description: |
+        Persists a new course entity. Automatically verifies that the assigned teacher 
+        does not have overlapping active course dates using PostgreSQL GIST exclusion constraints.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+      responses:
+        '201':
+          description: Course created successfully
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: URI of the newly created course resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResponse'
+        '400':
+          description: Validation failed (e.g., end date precedes start date, missing fields)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Insufficient privileges (Requires SystemAdmin, CenterAdmin, or Manager role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Schedule conflict detected for the assigned teacher
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                timestamp: "2026-08-29T22:34:21Z"
+                status: 409
+                errorCode: "SCHEDULE_CONFLICT"
+                message: "Teacher already has an active course overlapping with the specified date range."
+                path: "/api/v1/courses"
+
+  /courses/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Unique Course UUID identifier
+    get:
+      tags:
+        - Course Management
+      summary: Get course details by ID [REQ-007]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Course details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Course Management
+      summary: Update existing course metadata [REQ-008]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+      responses:
+        '200':
+          description: Course updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Schedule conflict detected during update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Course Management
+      summary: Delete course by ID [REQ-008]
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Course successfully deleted (No Content)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter JWT token obtained from /api/v1/auth/login
+
+  schemas:
+    CourseCreateRequest:
+      type: object
+      required:
+        - title
+        - startDate
+        - endDate
+        - teacherId
+        - centerId
+      properties:
+        title:
+          type: string
+          maxLength: 150
+          example: "Advanced Enterprise Architecture with Quarkus"
+        description:
+          type: string
+          example: "Comprehensive training on building reactive microservices using Quarkus 3.15 LTS."
+        startDate:
+          type: string
+          format: date
+          example: "2026-09-01"
+        endDate:
+          type: string
+          format: date
+          example: "2026-12-01"
+        teacherId:
+          type: string
+          format: uuid
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        centerId:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef0123456789"
+        maxStudents:
+          type: integer
+          minimum: 1
+          default: 30
+          example: 35
+
+    CourseResponse:
+      type: object
+      properties:
+        courseId:
+          type: string
+          format: uuid
+          example: "770e8400-e29b-41d4-a716-446655440000"
+        title:
+          type: string
+          example: "Advanced Enterprise Architecture with Quarkus"
+        description:
+          type: string
+          example: "Comprehensive training on building reactive microservices using Quarkus 3.15 LTS."
+        startDate:
+          type: string
+          format: date
+          example: "2026-09-01"
+        endDate:
+          type: string
+          format: date
+          example: "2026-12-01"
+        teacherId:
+          type: string
+          format: uuid
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        centerId:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef0123456789"
+        maxStudents:
+          type: integer
+          example: 35
+        enrolledCount:
+          type: integer
+          example: 12
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-08-29T22:34:21Z"
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-08-29T22:34:21Z"
+        status:
+          type: integer
+          example: 400
+        errorCode:
+          type: string
+          example: "VALIDATION_FAILED"
+        message:
+          type: string
+          example: "Input validation failed for course payload."
+        path:
+          type: string
+          example: "/api/v1/courses"
+
+  responses:
+    BadRequest:
+      description: Bad Request - Validation or parameter parsing failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Unauthorized - Missing or invalid JWT access token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Forbidden - Insufficient role permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Internal Server Error - Unexpected runtime exception
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+```
+
+---
+
+## 🚀 4. PRACTICAL CURL COMMAND EXAMPLES (`[DOC-001]`)
+
+### 1. Retrieve Paginated Course List (`[REQ-007]`)
+```bash
+curl -X GET "https://api.membershiphub.vn/api/v1/courses?page=0&size=10" \
+     -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." \
+     -H "Content-Type: application/json"
+```
+
+### 2. Create a New Course (`[REQ-008]`)
+```bash
+curl -X POST "https://api.membershiphub.vn/api/v1/courses" \
+     -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." \
+     -H "Content-Type: application/json" \
+     -d '{
+       "title": "Cloud Native Microservices with Quarkus",
+       "description": "Deep dive into GraalVM native compilation and reactive messaging.",
+       "startDate": "2026-10-01",
+       "endDate": "2026-12-31",
+       "teacherId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+       "centerId": "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
+       "maxStudents": 30
+     }'
+```
+
+### 3. Update Existing Course Metadata (`[REQ-008]`)
+```bash
+curl -X PUT "https://api.membershiphub.vn/api/v1/courses/770e8400-e29b-41d4-a716-446655440000" \
+     -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." \
+     -H "Content-Type: application/json" \
+     -d '{
+       "title": "Advanced Cloud Native Microservices",
+       "description": "Updated syllabus with Kafka streaming and Knative autoscaling.",
+       "startDate": "2026-10-01",
+       "endDate": "2026-12-31",
+       "teacherId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+       "centerId": "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
+       "maxStudents": 40
+     }'
+```
+
+### 4. Delete Course by ID (`[REQ-008]`)
+```bash
+curl -X DELETE "https://api.membershiphub.vn/api/v1/courses/770e8400-e29b-41d4-a716-446655440000" \
+     -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+```
