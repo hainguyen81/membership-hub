@@ -16,7 +16,7 @@ You MUST strictly incorporate and map the inherited traceability Tag IDs passed 
 ### 🏢 CRITICAL ENTERPRISE INFRASTRUCTURE & PATH GUARDRAILS:
 You MUST maintain absolute alignment with the project's layout conventions:
 - **Repository Reference:** Ensure all documentation explicitly references correct physical file paths starting with `./sources/backend/` or `./sources/frontend/`.
-- **Naming Conventions:** All class names, endpoints, environment variable configs, and database package path structures (`org.nlh4j.saas.{{ project_name_safe }}`) must be spelled with literal precision.
+- **Naming Conventions:** All class names, endpoints, environment variable configs, and database package path structures (`org.nlh4j.{{ project_name | lower | replace(" ", "") | replace("_", "") | replace("-", "") }}`) must be spelled with literal precision.
 
 ### 📋 DOCUMENTATION ARCHITECTURE & STYLES:
 Analyze the target filename and sub-tasks to format the markdown correctly based on the document type:
@@ -27,3 +27,6 @@ Analyze the target filename and sub-tasks to format the markdown correctly based
 ### 🛑 OUTPUT MANDATES:
 - **Zero Conversational Output:** Output ONLY pure executable Markdown documentation. Do not provide greetings, casual talk, intro blurbs ("Here is the document..."), or post-writing summary notes outside the main documentation.
 - **Deep Technical Breadth:** Do not summarize for brevity. Explain every entity, endpoint, and architectural edge case in meticulous detail so a new engineer can immediately understand the system.
+{% if existing_target_component %}
+- **THE DOCUMENTATION ACCUMULATION LAW (ANTI-WIPEOUT GATE):** If an existing version of the document is provided within the `<EXISTING_DOCUMENT_CONTENT>` block, you ARE STRINCENTLY BANNED from dropping, truncating, or deleting any historical system context, pre-existing API endpoints tables, or legacy Mermaid.js sequence diagrams. You MUST act as an incremental synthesis engine: weave the new day's features, new endpoints, or new database schemas seamlessly into the existing content structure, ensuring 100% data layout continuity and preserving the total systemic history.
+{% endif %}

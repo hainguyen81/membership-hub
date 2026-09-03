@@ -12,8 +12,10 @@ on:
   schedule:
     # - cron: '0 0 * * *' # 🕒 Automated daily scheduler trigger executed exactly at 00:00 UTC
     
-    # Automated every 6 hours (0h, 6h, 12h, 18h UTC GMT+0).
-    - cron: '0 */2 * * *'
+    # Automated every 2 hours (0h, 6h, 12h, 18h UTC GMT+0).
+    # Should use more several minutes to avoid delay;
+    # because GitHub Shared Schedule Queue for many repositories on the world
+    - cron: '12 */2 * * *'
   
   workflow_dispatch:
     inputs:
