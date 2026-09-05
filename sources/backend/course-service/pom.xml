@@ -1,42 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Membership Hub Course Service Maven Build Descriptor
-  Traceability Tags: [ARC-000], [REQ-007], [REQ-008], [REQ-009], [REQ-010], [REQ-011], [REQ-012], [REQ-013], [DAT-003], [DAT-004], [DAT-005], [DAT-009], [DAT-010], [EXC-001], [EXC-002], [EXC-005]
-  Package Convention: org.nlh4j.membershiphub.courseservice
-  Java Version: 17 LTS
-  Quarkus Version: 3.15.1 (Stable Enterprise)
+  [ARC-000] Course Service Module – Core Microservice for Course Management
+  This Maven module implements the course-service component of the Membership Hub platform.
+  It provides REST endpoints for CRUD operations on courses, teacher assignments, enrollment browsing,
+  and integrates with PostgreSQL via Hibernate Panache, Kafka for event streaming, and Flyway for DB migrations.
+  All traceability tags are preserved for audit compliance.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!--
+      [ARC-000] Parent pom defines common dependencies, plugin configuration, and project defaults.
+    -->
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.nlh4j.membershiphub</groupId>
         <artifactId>membership-hub-backend</artifactId>
         <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <!--
+      [ARC-000] Unique identifier for this microservice within the multi‑module build.
+    -->
     <artifactId>course-service</artifactId>
-    <packaging>jar</packaging>
-    <name>Membership Hub Course Service</name>
-    <description>Microservice for course management, enrollment, and teacher assignment in Membership Hub</description>
+    <name>Course Service</name>
+    <description>Quarkus‑based microservice for managing courses, teachers, and enrollment browsing</description>
 
+    <!--
+      [ARC-000] Build configuration – Java version, compiler settings, and packaging.
+    -->
+    <properties>
+        <!-- Enforce Java 17 LTS for compatibility with Quarkus 3.15.1 -->
+        <java.version>17</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Quarkus version alignment -->
+        <quarkus.platform.version>3.15.1</quarkus.platform.version>
+        <quarkus-plugin.version>${quarkus.platform.version}</quarkus-plugin.version>
+    </properties>
+
+    <!--
+      [ARC-000] Dependency management – isolates versions and imports Quarkus BOM.
+    -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- Quarkus platform BOM – defines all Quarkus artifact versions -->
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-bom</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!--
+      [ARC-000] Core runtime dependencies for the course service.
+    -->
     <dependencies>
-        <!-- Quarkus Core Extensions (versions inherited from parent BOM) -->
+        <!-- RESTEasy Reactive with Jackson for JSON handling -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
         </dependency>
+
+        <!-- Hibernate ORM with Panache – simplifies JPA and provides repository support -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-orm-panache</artifactId>
         </dependency>
+
+        <!-- PostgreSQL JDBC driver – required for Hibernate connection -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-postgresql</artifactId>
         </dependency>
+
+        <!-- Flyway – database migration and schema versioning -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-flyway</artifactId>
@@ -49,48 +95,154 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-openapi</artifactId>
         </dependency>
+
+        <!-- SmallRye Reactive Messaging – Kafka integration for event streaming -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
         </dependency>
+
+        <!-- Hibernate Validator – Jakarta Bean Validation implementation -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-validator</artifactId>
         </dependency>
 
-        <!-- Test Dependencies (versions inherited from parent BOM) -->
+        <!-- OpenAPI (Swagger) generation -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+
+        <!-- Test framework – Quarkus JUnit 5 support -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- REST Assured for contract testing -->
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Mockito for unit testing -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Testcontainers for PostgreSQL and Kafka integration in tests -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
+    <!--
+      [ARC-000] Build plugins – Quarkus Maven plugin, Surefire, Flyway, and JaCoCo.
+    -->
     <build>
         <plugins>
-            <!-- Quarkus Maven Plugin configured for dev mode and native image build support -->
+            <!-- Quarkus Maven plugin – provides packaging (jar, native), dev‑mode, and build lifecycle -->
             <plugin>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus-plugin.version}</version>
                 <executions>
                     <execution>
                         <goals>
                             <goal>build</goal>
                             <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven Surefire plugin – executes unit tests -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <systemProperties>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+
+            <!-- Flyway Maven plugin – manages schema migrations -->
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>10.10.0</version>
+                <configuration>
+                    <!-- Points to the resources under src/main/resources/db/migration -->
+                    <locations>
+                        <location>classpath:db/migration</location>
+                    </locations>
+                </configuration>
+            </plugin>
+
+            <!-- JaCoCo plugin – code coverage reporting -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                            <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
+
+    <!--
+      [ARC-000] Additional properties for plugin configuration and test environment.
+    -->
+    <profiles>
+        <!-- Profile for native image build (optional) -->
+        <profile>
+            <id>native</id>
+            <activation>
+                <property>
+                    <name>native</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.quarkus</groupId>
+                        <artifactId>quarkus-maven-plugin</artifactId>
+                        <version>${quarkus-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>native-image</goal>
+                                </goals>
+                                <configuration>
+                                    <quarkus.native.container-build>true</quarkus.native.container-build>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
