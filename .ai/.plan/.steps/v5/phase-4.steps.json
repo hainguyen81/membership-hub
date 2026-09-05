@@ -1,0 +1,153 @@
+{
+    "phase_id": 4,
+    "phase_name": "Tích hợp Chatbot AI, Báo cáo Điểm danh và Quản lý Khuyến mãi",
+    "phase_description": "Giai đoạn này triển khai các tính năng bổ sung bao gồm quản lý khuyến mãi và thông báo hệ thống có thời hạn hiệu lực, tích hợp chatbot AI hỗ trợ khách hàng với cơ chế chuyển tiếp hỗ trợ con người khi độ tin cậy thấp, xây dựng dịch vụ báo cáo điểm danh định dạng CSV và dashboard tổng quan ghi danh thời gian thực, đảm bảo tích hợp liền mạch với các dịch vụ backend hiện có và tuân thủ các yêu cầu nghiệp vụ",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
+            "context_section": "Triển khai quản lý khuyến mãi và thông báo hệ thống",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Triển khai toàn bộ logic nghiệp vụ cho module quản lý khuyến mãi và thông báo hệ thống. Đối với khuyến mãi, xây dựng các phương thức CRUD với kiểm tra xác thực đầu vào nghiêm ngặt: phần trăm giảm giá phải nằm trong khoảng 0-100, ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu, mã khuyến mãi phải duy nhất. Đối với thông báo, triển khai logic lọc thông báo đang hoạt động dựa trên ngày hiện tại và cơ chế tự động ẩn thông báo sau ngày kết thúc thông qua scheduled job chạy hàng ngày. Tất cả các endpoint phải được bảo vệ bằng bộ lọc RBAC, chỉ cho phép Center Admin và Manager truy cập. Sử dụng prepared statements của Hibernate ORM để ngăn chặn SQL injection. Áp dụng làm sạch dữ liệu đầu vào để chống XSS.",
+                    "targeted_tags": [
+                        "[REQ-017]",
+                        "[REQ-018]",
+                        "[DAT-009]"
+                    ],
+                    "components": [
+                        "./sources/backend/promotion-service/src/main/java/org/nlh4j/membership_hub/promotion/PromotionService.java",
+                        "./sources/backend/promotion-service/src/main/java/org/nlh4j/membership_hub/promotion/PromotionController.java",
+                        "./sources/backend/promotion-service/src/main/java/org/nlh4j/membership_hub/promotion/AnnouncementService.java",
+                        "./sources/backend/promotion-service/src/main/java/org/nlh4j/membership_hub/promotion/AnnouncementController.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Tester",
+                    "desc": "Viết các trường hợp kiểm thử tích hợp sử dụng JUnit 5 và RestAssured để xác minh toàn bộ luồng CRUD của khuyến mãi và thông báo. Các kịch bản test bao gồm: (1) Tạo khuyến mãi thành công với dữ liệu hợp lệ và kiểm tra mã 201; (2) Gửi request tạo khuyến mãi với discount_percent = 150, kiểm tra trả về lỗi 400 với mã lỗi PROMOTION_VALIDATION_ERROR; (3) Tạo thông báo có end_date nhỏ hơn start_date, kiểm tra lỗi 400; (4) Truy vấn danh sách khuyến mãi khi có nhiều bản ghi hết hạn, kiểm tra chỉ trả về các bản ghi đang hoạt động nhờ chỉ mục partial index; (5) Kiểm tra quyền truy cập RBAC bằng cách gọi endpoint với token của Student, đảm bảo trả về 403 Forbidden. Đảm bảo các test case chạy thành công trên môi trường staging với cơ sở dữ liệu thực và đạt độ bao phủ mã trên 85%.",
+                    "targeted_tags": [
+                        "[REQ-017]",
+                        "[REQ-018]"
+                    ],
+                    "components": [
+                        "./sources/backend/promotion-service/src/main/java/org/nlh4j/membership_hub/promotion/PromotionService.java",
+                        "./sources/backend/promotion-service/src/test/java/org/nlh4j/membership_hub/promotion/PromotionAnnouncementResourceTest.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Doc",
+                    "desc": "Biên soạn tài liệu từ điển dữ liệu chuẩn doanh nghiệp cho hai bảng promotions và announcements. Tài liệu phải bao gồm: (1) Mô tả chi tiết từng trường dữ liệu bao gồm tên trường, kiểu dữ liệu, ràng buộc NOT NULL/UNIQUE/CHECK, mô tả nghiệp vụ; (2) Sơ đồ ERD mô tả cấu trúc bảng và mối quan hệ (nếu có); (3) Danh sách chỉ mục (index) được tạo trên từng bảng cùng mục đích tối ưu truy vấn; (4) Các ràng buộc toàn vẹn dữ liệu và cách xử lý vi phạm. Định dạng tài liệu theo chuẩn Markdown với cấu trúc rõ ràng, dễ đọc và dễ bảo trì cho cả đội phát triển và quản trị cơ sở dữ liệu.",
+                    "targeted_tags": [
+                        "[DAT-009]"
+                    ],
+                    "components": [
+                        "./sources/docs/data-dictionary/promotions-announcements.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
+            "context_section": "Tích hợp chatbot AI và cơ sở dữ liệu hệ thống",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Coder",
+                    "desc": "Triển khai kiến trúc tách biệt các thành phần chatbot: ChatbotController xử lý HTTP request và xác thực JWT; ChatbotService chứa logic nghiệp vụ; AIServiceClient tích hợp với mô hình AI bên thứ ba (ví dụ: Google Dialogflow) qua REST API; EscalationService xử lý chuyển tiếp hỗ trợ con người. Endpoint POST /api/v1/chatbot/message nhận payload {message, sessionId}, gọi AIServiceClient để nhận phản hồi và confidence score. Nếu confidence >= 0.7, trả về phản hồi AI trực tiếp; nếu confidence < 0.7, kích hoạt EscalationService để tạo ticket hỗ trợ và trả về escalate = true. Tất cả tương tác phải được ghi log chi tiết vào bảng audit_log với user_id, action, details và timestamp để phục vụ kiểm tra và cải tiến mô hình.",
+                    "targeted_tags": [
+                        "[REQ-019]"
+                    ],
+                    "components": [
+                        "./sources/backend/chatbot-service/src/main/java/org/nlh4j/membership_hub/chatbot/ChatbotService.java",
+                        "./sources/backend/chatbot-service/src/main/java/org/nlh4j/membership_hub/chatbot/ChatbotController.java",
+                        "./sources/backend/chatbot-service/src/main/java/org/nlh4j/membership_hub/chatbot/AIServiceClient.java",
+                        "./sources/backend/chatbot-service/src/main/java/org/nlh4j/membership_hub/chatbot/EscalationService.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST2",
+                    "agent": "Coder",
+                    "desc": "Viết migration SQL ANSI tạo hai bảng: audit_log và system_settings. Bảng audit_log lưu trữ toàn bộ hành động người dùng với các trường: audit_id (PK), user_id (FK đến users, ON DELETE SET NULL), action (VARCHAR 100, NOT NULL), details (JSONB linh hoạt), ip_address (INET), user_agent (TEXT), timestamp (TIMESTAMP, NOT NULL, DEFAULT CURRENT_TIMESTAMP). Bảng system_settings lưu cấu hình hệ thống với các trường: setting_key (VARCHAR 100, PK), setting_value (TEXT, NOT NULL), description (TEXT), updated_at (TIMESTAMP). Tạo chỉ mục cho audit_log trên user_id và timestamp để tối ưu truy vấn lịch sử. Tạo chỉ mục cho system_settings trên setting_key. Đảm bảo tất cả ràng buộc khóa ngoại và CHECK được định nghĩa chính xác.",
+                    "targeted_tags": [
+                        "[DAT-010]",
+                        "[DAT-011]",
+                        "[NFR-006]"
+                    ],
+                    "components": [
+                        "./sources/backend/chatbot-service/src/main/resources/db/migration/V7__create_audit_system_settings.sql"
+                    ]
+                },
+                {
+                    "id": "D2_ST3",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử đơn vị sử dụng JUnit 5 và Mockito để kiểm tra toàn bộ logic của ChatbotService. Các trường hợp test bắt buộc: (1) Truy vấn hợp lệ với confidence >= 0.7, kiểm tra trả về reply từ AI và escalate = false; (2) Truy vấn có confidence = 0.5, kiểm tra escalate = true và ticket hỗ trợ được tạo thông qua EscalationService; (3) Request thiếu trường message hoặc sessionId, kiểm tra ném ra IllegalArgumentException với thông báo rõ ràng; (4) Request với JWT token hết hạn, kiểm tra trả về lỗi 401 Unauthorized; (5) Kiểm tra phương thức ghi log audit được gọi đúng với đầy đủ tham số. Đảm bảo độ bao phủ mã đạt trên 90% bằng JaCoCo và tất cả test case pass trên môi trường CI/CD.",
+                    "targeted_tags": [
+                        "[REQ-019]"
+                    ],
+                    "components": [
+                        "./sources/backend/chatbot-service/src/main/java/org/nlh4j/membership_hub/chatbot/ChatbotService.java",
+                        "./sources/backend/chatbot-service/src/test/java/org/nlh4j/membership_hub/chatbot/ChatbotServiceTest.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST4",
+                    "agent": "Doc",
+                    "desc": "Biên soạn tài liệu tích hợp chatbot AI theo chuẩn kỹ thuật doanh nghiệp. Tài liệu phải bao gồm: (1) Kiến trúc tổng quan hệ thống chatbot, sơ đồ luồng dữ liệu từ người dùng đến mô hình AI và quay lại; (2) Cấu hình mô hình AI: tên endpoint, khóa xác thực, tham số nhiệt độ, max_tokens, ngôn ngữ hỗ trợ; (3) Cơ chế chuyển tiếp hỗ trợ con người: điều kiện kích hoạt (confidence < 0.7), luồng tạo ticket, thông báo cho hỗ trợ viên; (4) Xử lý ngoại lệ: lỗi kết nối API AI, lỗi xác thực, timeout, giới hạn tần suất; (5) Hướng dẫn tích hợp frontend: cấu trúc payload request/response, xử lý trạng thái loading và lỗi, hiển thị tin nhắn đang soạn thảo. Tài liệu phải được lưu trữ tại `./sources/docs/integrations/ai-chatbot.md` với định dạng Markdown chuẩn.",
+                    "targeted_tags": [
+                        "[REQ-019]"
+                    ],
+                    "components": [
+                        "./sources/docs/integrations/ai-chatbot.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-4.context.blueprint.md",
+            "context_section": "Triển khai báo cáo điểm danh và dashboard ghi danh thời gian thực",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "Coder",
+                    "desc": "Xây dựng endpoint GET /api/v1/reports/attendance/csv cho phép lọc theo centerId, startDate và endDate. Triển khai logic truy vấn dữ liệu điểm danh bằng cách JOIN các bảng users, courses, enrollments và attendance để lấy đầy đủ thông tin StudentName, CourseName, AttendanceDate, Status. Trước khi tạo báo cáo, kiểm tra và xử lý tất cả các bản ghi điểm danh pending (trạng thái chưa xử lý sau sự cố) theo thứ tự FIFO để đảm bảo không bỏ sót dữ liệu. Sử dụng thư viện OpenCSV để tạo file CSV với encoding UTF-8 hỗ trợ tiếng Việt, thiết lập header Content-Disposition để trình duyệt tự động tải file. Tối ưu truy vấn với chỉ mục phù hợp và cân nhắc sử dụng bản sao đọc PostgreSQL để giảm tải cho cơ sở dữ liệu chính, đảm bảo thời gian phản hồi dưới 200ms.",
+                    "targeted_tags": [
+                        "[REQ-024]",
+                        "[EXC-005]"
+                    ],
+                    "components": [
+                        "./sources/backend/report-service/src/main/java/org/nlh4j/membership_hub/report/AttendanceReportController.java",
+                        "./sources/backend/report-service/src/main/java/org/nlh4j/membership_hub/report/CSVExportService.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST2",
+                    "agent": "Coder",
+                    "desc": "Xây dựng endpoint GET /api/v1/dashboard/enrollment trả về dữ liệu tổng hợp: totalStudents (tổng số học viên đã đăng ký ít nhất một khóa học), activeCourses (số khóa học có startDate <= CURRENT_DATE và endDate >= CURRENT_DATE), upcomingSessions (số buổi học sắp tới trong 7 ngày tiếp theo dựa trên lịch trình khóa học). Tích hợp WebSocket để đẩy cập nhật thời gian thực đến frontend khi có sự kiện đăng ký mới, hủy đăng ký hoặc tạo khóa học mới. Áp dụng caching với Redis, đặt thời gian hết hạn cache 5 phút để giảm tải truy vấn. Đảm bảo endpoint có kiểm tra quyền RBAC toàn diện: Center Admin chỉ xem được dashboard của trung tâm mình quản lý, System Admin xem được toàn hệ thống.",
+                    "targeted_tags": [
+                        "[REQ-025]"
+                    ],
+                    "components": [
+                        "./sources/backend/report-service/src/main/java/org/nlh4j/membership_hub/report/EnrollmentDashboardController.java",
+                        "./sources/backend/report-service/src/main/java/org/nlh4j/membership_hub/report/DashboardMetricsService.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST3",
+                    "agent": "Tester",
+                    "desc": "Viết integration test sử dụng Testcontainers để khởi động cơ sở dữ liệu PostgreSQL thực và kiểm tra toàn bộ luồng báo cáo và dashboard. Các kịch bản test: (1) Chèn 10.000 bản ghi điểm danh giả lập, gọi endpoint báo cáo CSV và kiểm tra thời gian phản hồi dưới 200ms, nội dung file CSV chính xác với các cột StudentName, CourseName, AttendanceDate, Status; (2) Kiểm tra dashboard phản ánh đúng số liệu sau khi có đăng ký mới thông qua WebSocket; (3) Giả lập sự cố hệ thống bằng cách chèn điểm danh pending, khôi phục và kiểm tra xử lý FIFO đúng thứ tự không bị mất dữ liệu; (4) Kiểm tra quyền truy cập RBAC từ chối Student truy cập dashboard với mã 403. Đảm bảo tất cả test case đều pass trên môi trường CI/CD và đạt độ bao phủ mã trên 85%.",
+                    "targeted_tags": [],
+                    "components": []
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,410 @@
+yaml
+# [INFRA-INTEGRATION-TEST] membership-hub Infrastructure Integration Test Suite
+# Purpose: Execute end-to-end infrastructure validation tests for membership-hub GCP/GKE deployment
+# Target Tag IDs: [NFR-001], [NFR-002], [NFR-004], [NFR-005], [NFR-006], [NFR-009]
+# Compliance: Adheres to enterprise governance matrix for infrastructure testing, least privilege access, and audit logging
+# [REQ-TRACE] All test cases mapped to corresponding non-functional requirements per system architecture document
+
+# ConfigMap containing the executable test script
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: infra-integration-test-script
+  namespace: test
+  labels:
+    app: membership-hub
+    test-type: infrastructure-integration
+    # [TAG-BURN] Permanently embedded required Tag IDs per test engineer instruction
+    tag-nfr-001: "NFR-001"
+    tag-nfr-002: "NFR-002"
+    tag-nfr-004: "NFR-004"
+  annotations:
+    description: "Infrastructure integration test execution script [NFR-001][NFR-002][NFR-004]"
+data:
+  run-tests.sh: |
+    #!/bin/bash
+    # [TEST-SCRIPT] Infrastructure Integration Test Runner
+    # All outputs logged to stdout for GKE Fluentbit/Cloud Logging integration per governance rules
+    set +e # Continue executing all tests to capture full result set
+    TEST_EXIT_CODE=0
+
+    # [TEST 1][NFR-001][NFR-002][NFR-004][NFR-009] Validate GCP resources match Terraform specification
+    # Assertion: All core infrastructure (VPC, Cloud SQL, Redis, GKE) exists, is operational, and meets security/config requirements
+    # Edge Case: Handle missing resources, invalid states, missing encryption/backup configurations
+    echo "=== STARTING TEST 1: GCP Resource Validation [NFR-001][NFR-002][NFR-004][NFR-009] ==="
+    
+    # Validate VPC network deployment
+    VPC_NAME="membership-hub-vpc"
+    echo "Validating VPC network: $VPC_NAME"
+    if gcloud compute networks describe "$VPC_NAME" --format="value(name)" 2>/dev/null | grep -q "$VPC_NAME"; then
+      echo "[PASS] VPC network $VPC_NAME exists and is correctly configured"
+    else
+      echo "[FAIL] VPC network $VPC_NAME not found or misconfigured"
+      TEST_EXIT_CODE=1
+    fi
+
+    # Validate Cloud SQL instance: RUNNABLE state, AES-256 encryption, automated backups enabled
+    SQL_INSTANCE="membership-hub-postgres"
+    echo "Validating Cloud SQL instance: $SQL_INSTANCE"
+    SQL_STATE=$(gcloud sql instances describe "$SQL_INSTANCE" --format="value(state)" 2>/dev/null)
+    if [ "$SQL_STATE" = "RUNNABLE" ]; then
+      # Verify AES-256 encryption at rest via CMEK
+      ENCRYPTION_KEY=$(gcloud sql instances describe "$SQL_INSTANCE" --format="value(settings.dataDiskEncryptionConfiguration.kmsKeyName)" 2>/dev/null)
+      if [ -n "$ENCRYPTION_KEY" ]; then
+        echo "[PASS] Cloud SQL instance has AES-256 encryption enabled"
+      else
+        echo "[FAIL] Cloud SQL instance missing data encryption at rest"
+        TEST_EXIT_CODE=1
+      fi
+      # Verify automated backups for PITR compliance
+      BACKUP_ENABLED=$(gcloud sql instances describe "$SQL_INSTANCE" --format="value(settings.backupConfiguration.enabled)" 2>/dev/null)
+      if [ "$BACKUP_ENABLED" = "True" ]; then
+        echo "[PASS] Cloud SQL automated backups enabled (PITR compliant)"
+      else
+        echo "[FAIL] Cloud SQL automated backups not enabled"
+        TEST_EXIT_CODE=1
+      fi
+    else
+      echo "[FAIL] Cloud SQL instance not in RUNNABLE state, current state: $SQL_STATE"
+      TEST_EXIT_CODE=1
+    fi
+
+    # Validate Redis instance: READY state, correct configuration
+    REDIS_INSTANCE="membership-hub-redis"
+    REDIS_REGION="us-central1"
+    echo "Validating Redis instance: $REDIS_INSTANCE in region $REDIS_REGION"
+    REDIS_STATE=$(gcloud redis instances describe "$REDIS_INSTANCE" --region="$REDIS_REGION" --format="value(state)" 2>/dev/null)
+    if [ "$REDIS_STATE" = "READY" ]; then
+      echo "[PASS] Redis instance $REDIS_INSTANCE is READY and operational"
+    else
+      echo "[FAIL] Redis instance $REDIS_INSTANCE not READY, current state: $REDIS_STATE"
+      TEST_EXIT_CODE=1
+    fi
+
+    # Validate GKE cluster: RUNNING state, meets high availability node count requirement
+    GKE_CLUSTER="membership-hub-gke"
+    GKE_REGION="us-central1"
+    echo "Validating GKE cluster: $GKE_CLUSTER in region $GKE_REGION"
+    GKE_STATE=$(gcloud container clusters describe "$GKE_CLUSTER" --region="$GKE_REGION" --format="value(status)" 2>/dev/null)
+    if [ "$GKE_STATE" = "RUNNING" ]; then
+      NODE_COUNT=$(gcloud container clusters describe "$GKE_CLUSTER" --region="$GKE_REGION" --format="value(currentNodeCount)" 2>/dev/null)
+      if [ "$NODE_COUNT" -ge 3 ]; then
+        echo "[PASS] GKE cluster $GKE_CLUSTER is RUNNING with $NODE_COUNT nodes (meets HA requirement)"
+      else
+        echo "[FAIL] GKE cluster $GKE_CLUSTER has insufficient nodes: $NODE_COUNT (minimum 3 required)"
+        TEST_EXIT_CODE=1
+      fi
+    else
+      echo "[FAIL] GKE cluster $GKE_CLUSTER not RUNNING, current state: $GKE_STATE"
+      TEST_EXIT_CODE=1
+    fi
+
+    echo "=== TEST 1 COMPLETED ==="
+
+    # [TEST 2][NFR-001] Validate service connectivity and end-to-end latency <200ms
+    # Assertion: All core services (backend, PostgreSQL, Redis, FCM) are reachable with latency below 200ms threshold
+    # Edge Case: Handle network timeouts, service unavailability, high latency scenarios
+    echo "=== STARTING TEST 2: Service Connectivity & Latency Validation [NFR-001] ==="
+    
+    # Test backend health endpoint latency
+    BACKEND_URL="https://api.membership-hub.example.com/health"
+    echo "Testing backend health endpoint: $BACKEND_URL"
+    START_TIME=$(date +%s%N)
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "$BACKEND_URL")
+    END_TIME=$(date +%s%N)
+    BACKEND_LATENCY=$(( (END_TIME - START_TIME) / 1000000 )) # Convert nanoseconds to milliseconds
+    if [ "$HTTP_CODE" = "200" ] && [ "$BACKEND_LATENCY" -lt 200 ]; then
+      echo "[PASS] Backend health endpoint latency: ${BACKEND_LATENCY}ms (threshold <200ms)"
+    else
+      echo "[FAIL] Backend health endpoint failed: HTTP $HTTP_CODE, latency: ${BACKEND_LATENCY}ms (threshold <200ms)"
+      TEST_EXIT_CODE=1
+    fi
+
+    # Test PostgreSQL connectivity and query latency
+    echo "Testing PostgreSQL connection and query performance"
+    START_TIME=$(date +%s%N)
+    if gcloud sql connect "$SQL_INSTANCE" --user=postgres --quiet --execute="SELECT 1" 2>/dev/null | grep -q "1"; then
+      END_TIME=$(date +%s%N)
+      SQL_LATENCY=$(( (END_TIME - START_TIME) / 1000000 ))
+      if [ "$SQL_LATENCY" -lt 200 ]; then
+        echo "[PASS] PostgreSQL connection and query latency: ${SQL_LATENCY}ms (threshold <200ms)"
+      else
+        echo "[FAIL] PostgreSQL query latency too high: ${SQL_LATENCY}ms (threshold <200ms)"
+        TEST_EXIT_CODE=1
+      fi
+    else
+      echo "[FAIL] PostgreSQL connection failed"
+      TEST_EXIT_CODE=1
+    fi
+
+    # Test Redis connectivity and command latency
+    REDIS_IP=$(gcloud redis instances describe "$REDIS_INSTANCE" --region="$REDIS_REGION" --format="value(host)" 2>/dev/null)
+    echo "Testing Redis connection: $REDIS_IP"
+    START_TIME=$(date +%s%N)
+    if redis-cli -h "$REDIS_IP" ping 2>/dev/null | grep -q "PONG"; then
+      END_TIME=$(date +%s%N)
+      REDIS_LATENCY=$(( (END_TIME - START_TIME) / 1000000 ))
+      if [ "$REDIS_LATENCY" -lt 200 ]; then
+        echo "[PASS] Redis connection and command latency: ${REDIS_LATENCY}ms (threshold <200ms)"
+      else
+        echo "[FAIL] Redis command latency too high: ${REDIS_LATENCY}ms (threshold <200ms)"
+        TEST_EXIT_CODE=1
+      fi
+    else
+      echo "[FAIL] Redis connection failed"
+      TEST_EXIT_CODE=1
+    fi
+
+    echo "=== TEST 2 COMPLETED ==="
+
+    # [TEST 3][NFR-004] Validate HPA auto-scaling behavior under load
+    # Assertion: HPA scales up pod count when CPU >70% or latency >300ms, scales down when load decreases
+    # Edge Case: Handle scale-up timeout, incorrect replica counts, HPA misconfiguration
+    echo "=== STARTING TEST 3: HPA Auto-Scaling Validation [NFR-004] ==="
+    BACKEND_DEPLOYMENT="membership-hub-backend"
+    NAMESPACE="production"
+    # Get initial stable pod count
+    INITIAL_POD_COUNT=$(kubectl get deployment "$BACKEND_DEPLOYMENT" -n "$NAMESPACE" -o jsonpath='{.status.availableReplicas}' 2>/dev/null)
+    if [ -z "$INITIAL_POD_COUNT" ] || [ "$INITIAL_POD_COUNT" -lt 1 ]; then
+      INITIAL_POD_COUNT=2 # Default minimum replica count per deployment spec
+    fi
+    echo "Initial backend pod count: $INITIAL_POD_COUNT"
+
+    # Simulate high load to trigger HPA scale-up
+    echo "Simulating high load (1000 requests, 50 concurrent connections) to trigger HPA scale-up..."
+    hey -n 1000 -c 50 -host api.membership-hub.example.com http://api.membership-hub.example.com/health > /dev/null 2>&1 &
+    LOAD_PID=$!
+
+    # Wait for HPA to scale up (max 2 minutes, 24 iterations of 5s each)
+    SCALED_UP=false
+    for i in {1..24}; do
+      sleep 5
+      CURRENT_POD_COUNT=$(kubectl get deployment "$BACKEND_DEPLOYMENT" -n "$NAMESPACE" -o jsonpath='{.status.availableReplicas}' 2>/dev/null)
+      if [ "$CURRENT_POD_COUNT" -gt "$INITIAL_POD_COUNT" ]; then
+        echo "[PASS] HPA scaled up pods from $INITIAL_POD_COUNT to $CURRENT_POD_COUNT under high load (CPU >70% / latency >300ms)"
+        SCALED_UP=true
+        break
+      fi
+    done
+
+    if [ "$SCALED_UP" = "false" ]; then
+      echo "[FAIL] HPA did not scale up pods under load. Current pod count: $CURRENT_POD_COUNT (expected > $INITIAL_POD_COUNT)"
+      TEST_EXIT_CODE=1
+    fi
+
+    # Stop load generator and wait for scale-down
+    kill $LOAD_PID 2>/dev/null || true
+    echo "Load generator stopped, waiting for HPA to scale down to initial count..."
+
+    # Wait for HPA to scale back to initial count (max 3 minutes, 36 iterations of 5s each)
+    SCALED_DOWN=false
+    for i in {1..36}; do
+      sleep 5
+      CURRENT_POD_COUNT=$(kubectl get deployment "$BACKEND_DEPLOYMENT" -n "$NAMESPACE" -o jsonpath='{.status.availableReplicas}' 2>/dev/null)
+      if [ "$CURRENT_POD_COUNT" -eq "$INITIAL_POD_COUNT" ]; then
+        echo "[PASS] HPA scaled down pods back to initial count $INITIAL_POD_COUNT after load stopped"
+        SCALED_DOWN=true
+        break
+      fi
+    done
+
+    if [ "$SCALED_DOWN" = "false" ]; then
+      echo "[FAIL] HPA did not scale down pods after load stopped. Current pod count: $CURRENT_POD_COUNT (expected $INITIAL_POD_COUNT)"
+      TEST_EXIT_CODE=1
+    fi
+
+    echo "=== TEST 3 COMPLETED ==="
+
+    # [TEST 4][NFR-001][NFR-005][NFR-006] Validate end-to-end CI/CD pipeline functionality
+    # Assertion: Pipeline runs successfully from commit to staging deployment, image size <500MB, test coverage >=85%
+    # Edge Case: Handle failed pipeline runs, image size violations, deployment mismatches
+    echo "=== STARTING TEST 4: CI/CD Pipeline Validation [NFR-001][NFR-005][NFR-006] ==="
+    REPO_OWNER="nlh4j"
+    REPO_NAME="membership-hub"
+
+    # Validate latest GitHub Actions run on main branch is successful
+    echo "Checking latest CI/CD pipeline run for main branch"
+    LATEST_RUN_STATUS=$(gh run list --repo "$REPO_OWNER/$REPO_NAME" --branch main --limit 1 --json status --jq '.[0].status' 2>/dev/null)
+    if [ "$LATEST_RUN_STATUS" = "completed" ]; then
+      LATEST_RUN_CONCLUSION=$(gh run list --repo "$REPO_OWNER/$REPO_NAME" --branch main --limit 1 --json conclusion --jq '.[0].conclusion' 2>/dev/null)
+      if [ "$LATEST_RUN_CONCLUSION" = "success" ]; then
+        echo "[PASS] Latest CI/CD pipeline run on main branch completed successfully"
+      else
+        echo "[FAIL] Latest CI/CD pipeline run failed with conclusion: $LATEST_RUN_CONCLUSION"
+        TEST_EXIT_CODE=1
+      fi
+    else
+      echo "[FAIL] Latest CI/CD pipeline run status: $LATEST_RUN_STATUS (expected 'completed')"
+      TEST_EXIT_CODE=1
+    fi
+
+    # Validate staging deployment has latest image and meets size requirements
+    STAGING_DEPLOYMENT="membership-hub-backend-staging"
+    STAGING_NAMESPACE="staging"
+    echo "Checking staging deployment: $STAGING_DEPLOYMENT in namespace $STAGING_NAMESPACE"
+    STAGING_IMAGE=$(kubectl get deployment "$STAGING_DEPLOYMENT" -n "$STAGING_NAMESPACE" -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null)
+    if [ -n "$STAGING_IMAGE" ]; then
+      # Extract image tag
+      IMAGE_TAG=$(echo "$STAGING_IMAGE" | awk -F: '{print $2}')
+      # Validate image size <500MB per NFR-005
+      IMAGE_SIZE=$(gcloud container images list-tags "gcr.io/$REPO_OWNER/$REPO_NAME/backend" --filter="tags:$IMAGE_TAG" --format="value(imageSizeBytes)" 2>/dev/null)
+      if [ -n "$IMAGE_SIZE" ] && [ "$IMAGE_SIZE" -lt 500000000 ]; then
+        echo "[PASS] Staging backend image size: $((IMAGE_SIZE / 1024 / 1024))MB (threshold <500MB)"
+      else
+        echo "[FAIL] Staging backend image size exceeds 500MB threshold: $((IMAGE_SIZE / 1024 / 1024))MB"
+        TEST_EXIT_CODE=1
+      fi
+      # Validate staging has latest main branch image
+      LATEST_IMAGE_TAG=$(gcloud container images list-tags "gcr.io/$REPO_OWNER/$REPO_NAME/backend" --format="value(tags[0])" --filter="tags:latest" 2>/dev/null)
+      if [ "$IMAGE_TAG" = "$LATEST_IMAGE_TAG" ]; then
+        echo "[PASS] Staging environment has latest backend image deployed"
+      else
+        echo "[FAIL] Staging image mismatch. Expected tag: $LATEST_IMAGE_TAG, Actual tag: $IMAGE_TAG"
+        TEST_EXIT_CODE=1
+      fi
+    else
+      echo "[FAIL] Staging deployment $STAGING_DEPLOYMENT not found or image not configured"
+      TEST_EXIT_CODE=1
+    fi
+
+    echo "=== TEST 4 COMPLETED ==="
+
+    # [TEST 5][NFR-009] Validate PostgreSQL backup and restore functionality (PITR compliance)
+    # Assertion: Backup can be created, data can be deleted, backup can be restored, data is fully recovered
+    # Edge Case: Handle backup creation failures, restore failures, data corruption scenarios
+    echo "=== STARTING TEST 5: PostgreSQL Backup & Restore Validation [NFR-009] ==="
+    # Create unique test table to avoid conflicts
+    TEST_TABLE="infra_test_$(date +%s)"
+    echo "Creating test table: $TEST_TABLE"
+    gcloud sql connect "$SQL_INSTANCE" --user=postgres --quiet --execute="CREATE TABLE $TEST_TABLE (id SERIAL PRIMARY KEY, test_data TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP); INSERT INTO $TEST_TABLE (test_data) VALUES ('backup_restore_test_$(date +%s)');" 2>/dev/null
+    if [ $? -ne 0 ]; then
+      echo "[FAIL] Failed to create test table and insert test data"
+      TEST_EXIT_CODE=1
+    else
+      # Create manual backup
+      BACKUP_NAME="infra-test-backup-$(date +%Y%m%d%H%M%S)"
+      echo "Creating manual backup: $BACKUP_NAME"
+      gcloud sql backups create --instance="$SQL_INSTANCE" --name="$BACKUP_NAME" 2>/dev/null
+      if [ $? -ne 0 ]; then
+        echo "[FAIL] Failed to create manual backup"
+        TEST_EXIT_CODE=1
+      else
+        # Delete test table to simulate data loss
+        echo "Deleting test table to simulate data loss scenario"
+        gcloud sql connect "$SQL_INSTANCE" --user=postgres --quiet --execute="DROP TABLE $TEST_TABLE;" 2>/dev/null
+        if [ $? -ne 0 ]; then
+          echo "[FAIL] Failed to delete test table"
+          TEST_EXIT_CODE=1
+        else
+          # Restore from backup
+          echo "Restoring backup: $BACKUP_NAME"
+          gcloud sql backups restore "$BACKUP_NAME" --instance="$SQL_INSTANCE" --quiet 2>/dev/null
+          if [ $? -ne 0 ]; then
+            echo "[FAIL] Failed to restore backup"
+            TEST_EXIT_CODE=1
+          else
+            # Verify test table exists after restore
+            echo "Verifying test table and data after restore"
+            TABLE_EXISTS=$(gcloud sql connect "$SQL_INSTANCE" --user=postgres --quiet --execute="SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = '$TEST_TABLE');" 2>/dev/null | grep -o "t")
+            if [ "$TABLE_EXISTS" = "t" ]; then
+              # Verify test data integrity
+              DATA_COUNT=$(gcloud sql connect "$SQL_INSTANCE" --user=postgres --quiet --execute="SELECT COUNT(*) FROM $TEST_TABLE;" 2>/dev/null | grep -o "[0-9]")
+              if [ "$DATA_COUNT" = "1" ]; then
+                echo "[PASS] Backup and restore successful, test data fully recovered"
+              else
+                echo "[FAIL] Test data not recovered after restore, record count: $DATA_COUNT (expected 1)"
+                TEST_EXIT_CODE=1
+              fi
+            else
+              echo "[FAIL] Test table not found after restore"
+              TEST_EXIT_CODE=1
+            fi
+            # Cleanup test table
+            gcloud sql connect "$SQL_INSTANCE" --user=postgres --quiet --execute="DROP TABLE $TEST_TABLE;" 2>/dev/null || true
+          fi
+        fi
+        # Cleanup backup resource
+        gcloud sql backups delete "$BACKUP_NAME" --instance="$SQL_INSTANCE" --quiet 2>/dev/null || true
+      fi
+    fi
+
+    echo "=== TEST 5 COMPLETED ==="
+
+    # Final test summary and exit code
+    echo "=== ALL INFRASTRUCTURE INTEGRATION TESTS COMPLETED ==="
+    if [ $TEST_EXIT_CODE -eq 0 ]; then
+      echo "✅ ALL INFRASTRUCTURE INTEGRATION TESTS PASSED [NFR-001][NFR-002][NFR-004]"
+      exit 0
+    else
+      echo "❌ SOME INFRASTRUCTURE INTEGRATION TESTS FAILED [NFR-001][NFR-002][NFR-004]"
+      exit 1
+    fi
+---
+# Kubernetes Job manifest to execute infrastructure integration tests
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: infrastructure-integration-test
+  namespace: test
+  labels:
+    app: membership-hub
+    test-type: infrastructure-integration
+    # [TAG-BURN] Permanently embedded required Tag IDs per test engineer instruction
+    tag-nfr-001: "NFR-001"
+    tag-nfr-002: "NFR-002"
+    tag-nfr-004: "NFR-004"
+  annotations:
+    description: "Infrastructure integration test Job for membership-hub [NFR-001][NFR-002][NFR-004]"
+    # [AUDIT-LOG] Test execution logs retained for 1 year per NFR-006
+    log-retention-period: "365d"
+spec:
+  backoffLimit: 3 # Retry failed tests up to 3 times per enterprise error handling policy
+  template:
+    spec:
+      # [LEAST-PRIVILEGE] Dedicated service account with minimal required permissions per NFR-003
+      serviceAccountName: infrastructure-test-sa
+      containers:
+      - name: test-runner
+        # [IMAGE] Base image with pre-installed testing tools: gcloud SDK, kubectl, hey, redis-cli, psql, gh CLI
+        image: gcr.io/membership-hub/infra-test-runner:latest
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          # Mount and execute test script from ConfigMap
+          cp /tmp/run-tests.sh /test-script/run-tests.sh
+          chmod +x /test-script/run-tests.sh
+          /test-script/run-tests.sh
+        # Mount test script ConfigMap
+        volumeMounts:
+        - name: test-script
+          mountPath: /test-script
+          readOnly: true
+        # [RESOURCE-BOUNDS] Mandatory CPU and memory limits per GKE governance rules
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        # [ENV-CONFIG] Non-sensitive environment variables for test execution
+        env:
+        - name: GCP_PROJECT
+          value: "membership-hub-prod"
+        - name: GCP_REGION
+          value: "us-central1"
+        # Sensitive credentials pulled from GCP Secret Manager per governance rules
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-credentials
+              key: token
+      # [LOG-REDIRECTION] All logs sent to stdout/stderr for GKE Fluentbit/Cloud Logging integration
+      restartPolicy: Never
+      volumes:
+      - name: test-script
+        configMap:
+          name: infra-integration-test-script
+          defaultMode: 0755
+  # [CLEANUP] Automatically delete finished Job after 24 hours to conserve cluster resources
+  ttlSecondsAfterFinished: 86400

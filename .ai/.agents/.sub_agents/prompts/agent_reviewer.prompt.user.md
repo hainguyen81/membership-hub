@@ -1,18 +1,20 @@
 ### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
 *   Target Project Identity Safe Name: {{ project_name }}
-*   Enforced Java Package Prefix Base: org.nlh4j.saas.{{ project_name }}
+*   Enforced Java Package Prefix Base: org.nlh4j.{{ project_name | lower | replace(" ", "") | replace("_", "") | replace("-", "") }}
 *   Target Component Destination Path: `{{ target_component }}` (Must map to sources/backend/ or sources/frontend/)
 *   Context Module Context Reference Path: `{{ source_component }}`
 
-### 📁 SOURCE CODE UNDER AUDIT (VERIFICATION TARGET)
-The following code block is the implementation that requires direct security review or immediate compilation patch:
-{{ source_payload }}
+### SOURCE CODE UNDER AUDIT (VERIFICATION TARGET)
+* **Target Code Component Payload For Comprehensive Review:**
+<EXISTING_CODE_UNDER_AUDIT>
+{{ source_component_payload }}
+</EXISTING_CODE_UNDER_AUDIT>
 
-{% if compiler_error_logs and compiler_error_logs.strip() != "" %}
+{% if existing_error_logs %}
 ### ❌ REAL RAW COMPILER ERROR LOGS (CRITICAL FIX TARGET)
 The codebase above triggered the following compiler or runtime exceptions. You MUST analyze this stack trace or log error text to pinpoint and auto-patch the root cause:
 ```text
-{{ compiler_error_logs }}
+{{ existing_error_logs }}
 ```
 *   Operational Modality Activated: COMPILER_FIXER_MODE
 {% else %}
