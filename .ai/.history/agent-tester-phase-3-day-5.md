@@ -1,3 +1,33 @@
+# Day 5: model nvidia/nemotron-3.5-lightning:free - API Endpoint https://openrouter.ai/api/v1
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/CourseServiceIntegrationTestSuite.java
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Test Component Destination Path: `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/CourseServiceIntegrationTestSuite.java` (Must map to sources/backend/ or sources/frontend/)
+
+
+
+
+### 🚀 SYSTEM INTEGRATION TESTING CONTEXT (E2E PIPELINE)
+INTEGRATION_SCOPE: Multi-component workflow validation required for target destination: ./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/CourseServiceIntegrationTestSuite.java. 
+[INSTRUCTION FOR AI: This is a system integration/E2E test suite. No single class code context is provided. You MUST write the test to bootstrap the full runtime infrastructure context, handle live network APIs, or database relational calculation states.]
+
+
+### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY TESTER AGENT
+['Bổ sung integration test trong tệp ./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/CourseServiceIntegrationTestSuite.java sử dụng Testcontainers PostgreSQL 16-alpine và Embedded Kafka. Tạo 5 test case: (1) enrollment_successful_returns201 xác minh đăng ký thành công sinh enrollment; (2) enrollment_autoCreatesStudentForNewEmail xác minh sinh viên chưa có được tự tạo với role Student; (3) enrollment_fullCourseReturns409 xác minh khoá học đầy trả về HTTP 409 với mã COURSE_FULL_409; (4) enrollment_duplicateReturns409 xác minh sinh viên đã đăng ký trả về HTTP 409 với mã ALREADY_ENROLLED_409; (5) enrollment_publishesKafkaEvent xác minh Kafka event được publish đúng topic enrollment-events với payload chuẩn.']
+
+---
+
+### ⚙️ TEST ENGINEER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided away. Automatically evaluate the extension profile of the target test component path to construct either an isolated backend unit/integration suite or a frontend E2E/Unit suite.
+
+
+Verify that any Java file generated strictly begins with the required `org.nlh4j.membershiphub` structure. Ensure that you read the exact Tag IDs from the `['[REQ-011]', '[ARC-007]']` variable, and permanently burn those codes into the Javadoc metadata blocks (for Java) or the test case description strings (for TypeScript/JavaScript). Emit the final compiler-ready production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```java
 /**
  * CourseServiceIntegrationTestSuite - Integration test suite for course enrollment service.
  * Validates multi-component workflows: enrollment creation, auto-student provisioning,
@@ -122,3 +152,5 @@ public class CourseServiceIntegrationTestSuite {
         // Business requirement: ARC-008 - Multi-channel notification integration via Kafka
     }
 }
+```
+
