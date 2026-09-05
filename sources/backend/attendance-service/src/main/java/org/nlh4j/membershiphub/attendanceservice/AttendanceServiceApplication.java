@@ -11,7 +11,7 @@ import java.util.Optional;
 
 /**
  * Enterprise Application Entry Point for Attendance Service.
- *
+ * 
  * <p>Traceability Matrix Metadata:
  * <ul>
  *   <li>[ARC-000]: Multi-Module Maven architecture and service bootstrapping.</li>
@@ -67,6 +67,7 @@ public class AttendanceServiceApplication {
 
         @Override
         public int run(String... args) throws Exception {
+            // [NFR-003] Standardized logging entry gate
             RUNNER_LOGGER.info("================================================================================");
             RUNNER_LOGGER.info("Starting Service: {} (v{})", applicationName, applicationVersion);
             RUNNER_LOGGER.info("Active Profile  : {}", activeProfile);
@@ -75,10 +76,12 @@ public class AttendanceServiceApplication {
             RUNNER_LOGGER.info("Enterprise Base : org.nlh4j.membershiphub");
             RUNNER_LOGGER.info("================================================================================");
 
+            // [NFR-003] Production security check
             if ("prod".equalsIgnoreCase(activeProfile) && bannerEnabled.orElse(true)) {
                 RUNNER_LOGGER.warn("SECURITY/PERF WARNING: Production profile detected but quarkus.banner.enabled is active. Recommend setting to false.");
             }
 
+            // [NFR-004] Graceful shutdown hook registration
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 RUNNER_LOGGER.info("Graceful shutdown initiated for {}...", applicationName);
             }));

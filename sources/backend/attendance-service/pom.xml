@@ -2,19 +2,23 @@
 <!-- ================================================================================ -->
 <!-- FILE: ./sources/backend/attendance-service/pom.xml -->
 <!-- TRACEABILITY TAGS: [ARC-000], [REQ-012] -->
+<!-- BUSINESS CONTEXT: Enterprise Maven build descriptor for attendance-service microservice -->
+<!-- ARCHITECTURAL COMPLIANCE: Quarkus 3.15 LTS, Panache ORM, Kafka Messaging, Testcontainers -->
 <!-- ================================================================================ -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven:pom.4.0.0">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- [ARC-000] Enterprise Project Group and Artifact Identification -->
     <groupId>org.nlh4j.membershiphub</groupId>
     <artifactId>attendance-service</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>attendance-service</name>
-    <description>Microservice for managing attendance operations</description>
+    <description>Microservice for managing attendance operations and QR payload decoding</description>
 
+    <!-- [ARC-000] Parent POM inheritance for multi-module dependency management -->
     <parent>
         <groupId>org.nlh4j.membershiphub</groupId>
         <artifactId>membership-hub-backend</artifactId>
@@ -22,6 +26,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <!-- [ARC-000] Compilation Properties and Encoding Standards -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
@@ -29,64 +34,90 @@
     </properties>
 
     <dependencies>
+        <!-- [ARC-000] Quarkus RESTEasy Reactive with Jackson JSON Binding -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
         </dependency>
+
+        <!-- [ARC-000] Hibernate ORM with Panache for Active Record/Repository pattern -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-orm-panache</artifactId>
         </dependency>
+
+        <!-- [ARC-000] PostgreSQL JDBC Driver for relational persistence -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-postgresql</artifactId>
         </dependency>
+
+        <!-- [ARC-000] Flyway migration extension for database schema versioning -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-flyway</artifactId>
         </dependency>
+
+        <!-- [ARC-000] SmallRye JWT extension for secure token parsing -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-jwt</artifactId>
         </dependency>
+
+        <!-- [ARC-000] OpenAPI extension for Swagger documentation generation -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-openapi</artifactId>
         </dependency>
+
+        <!-- [REQ-012], [ARC-000] SmallRye Reactive Messaging for Apache Kafka integration -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
         </dependency>
+
+        <!-- [ARC-000] Hibernate Validator for Bean Validation 3.0 input checks -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-validator</artifactId>
         </dependency>
+
+        <!-- [ARC-000] Quarkus Cache extension backed by Caffeine -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-cache</artifactId>
         </dependency>
 
+        <!-- [ARC-000] Quarkus JUnit 5 testing extension -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- [ARC-000] REST Assured for endpoint integration testing -->
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- [ARC-000] Mockito core for unit test mocking -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- [ARC-000] Testcontainers PostgreSQL container for integration tests -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
             <version>1.20.4</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- [REQ-012], [ARC-000] Testcontainers Kafka container for messaging tests -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>kafka</artifactId>
