@@ -12,13 +12,13 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
-import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -39,8 +39,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Attendance Service Integration Test Suite.
- * Validates multi-component workflows: QR scan idempotency, enrollment prerequisites,
- * retry queues on network failure, and FIFO recovery after service outage.
+ * Validates multi-component workflows: build descriptor validation, clean maven packaging,
+ * QR scan idempotency, active enrollment prerequisites, retry queues on network failure,
+ * and FIFO recovery after service outage.
  * Embedded traceability Tag IDs for enterprise audit compliance.
  *
  * @verifies [ARC-000], [REQ-012]
@@ -64,7 +65,15 @@ public class AttendanceServiceIntegrationTestSuite {
     // [0.2] Top-of-Class Constants Declaration: Artifact paths and capacity limits
     public static final String QUARKUS_RUN_JAR_PATH = "target/quarkus-app/quarkus-run.jar";
     public static final String TARGET_POM_PATH = "./sources/backend/attendance-service/pom.xml";
+    public static final String EXPECTED_GROUP_ID = "org.nlh4j.membershiphub";
     public static final String EXPECTED_ARTIFACT_ID = "attendance-service";
+    public static final String EXPECTED_PARENT_ARTIFACT_ID = "membership-hub-backend";
+    public static final String EXPECTED_PARENT_VERSION = "1.0.0-SNAPSHOT";
+    public static final String DEPENDENCY_RESTEASY = "quarkus-resteasy-reactive-jackson";
+    public static final String DEPENDENCY_HIBERNATE = "quarkus-hibernate-orm-panache";
+    public static final String DEPENDENCY_POSTGRESQL = "quarkus-jdbc-postgresql";
+    public static final String DEPENDENCY_KAFKA = "quarkus-smallrye-reactive-messaging-kafka";
+    public static final String DEPENDENCY_VALIDATOR = "quarkus-hibernate-validator";
     public static final long MAX_ALLOWED_JAR_SIZE_BYTES = 500L * 1024 * 1024; // 500MB per [NFR-005]
     public static final int PROCESS_TIMEOUT_SECONDS = 180;
 
@@ -152,8 +161,8 @@ public class AttendanceServiceIntegrationTestSuite {
         String pomXmlContent = Files.readString(pomFilePath);
         assertTrue(pomXmlContent.contains("<artifactId>" + EXPECTED_ARTIFACT_ID + "</artifactId>"),
                 "pom.xml must declare the expected artifactId: " + EXPECTED_ARTIFACT_ID);
-        assertTrue(pomXmlContent.contains("<groupId>org.nlh4j.membershiphub</groupId>"),
-                "pom.xml must reference root groupId org.nlh4j.membershiphub");
+        assertTrue(pomXmlContent.contains("<groupId>" + EXPECTED_GROUP_ID + "</groupId>"),
+                "pom.xml must reference root groupId " + EXPECTED_GROUP_ID);
 
         // Construct JUnit 5 Launcher discovery request targeting this test class // [ARC-000]
         LauncherDiscoveryRequest discoveryRequest = LauncherDiscoveryRequestBuilder.request()
@@ -175,6 +184,52 @@ public class AttendanceServiceIntegrationTestSuite {
     }
 
     /**
+     * Verifies pom.xml parent configuration, essential dependency availability, and artifact naming consistency.
+     * Enforces enterprise compliance ensuring parent pom inheritance, correct module packaging, and database drivers.
+     *
+     * @verifies [ARC-000], [REQ-012]
+     */
+    @Test
+    @Order(3)
+    @DisplayName("Verify pom.xml parent pom reference and core microservice dependencies [ARC-000]")
+    void verifyPomXmlParentAndDependenciesIntegrity() throws Exception {
+        // [0.3] Process start audit logging
+        LOGGER.info("[TEST_START] [ARC-000] Executing verifyPomXmlParentAndDependenciesIntegrity test");
+
+        // Arrange: Locate target pom.xml path for attendance-service // [ARC-000]
+        Path pomPath = Paths.get(TARGET_POM_PATH);
+        assertTrue(Files.exists(pomPath), "attendance-service pom.xml must exist at " + TARGET_POM_PATH);
+
+        // Act: Read entire descriptor text // [ARC-000]
+        String pomContent = Files.readString(pomPath);
+
+        // Assert 1: Parent pom inheritance declaration // [ARC-000]
+        assertTrue(pomContent.contains("<artifactId>" + EXPECTED_PARENT_ARTIFACT_ID + "</artifactId>"),
+                "pom.xml must declare parent artifactId: " + EXPECTED_PARENT_ARTIFACT_ID);
+        assertTrue(pomContent.contains("<version>" + EXPECTED_PARENT_VERSION + "</version>"),
+                "pom.xml must declare parent version: " + EXPECTED_PARENT_VERSION);
+
+        // Assert 2: Artifact ID strict matching // [ARC-000]
+        assertTrue(pomContent.contains("<artifactId>" + EXPECTED_ARTIFACT_ID + "</artifactId>"),
+                "pom.xml artifactId must be exactly: " + EXPECTED_ARTIFACT_ID);
+
+        // Assert 3: Core reactive REST, persistence, validator, and Kafka dependencies // [ARC-000]
+        assertTrue(pomContent.contains(DEPENDENCY_RESTEASY),
+                "Missing required dependency: " + DEPENDENCY_RESTEASY);
+        assertTrue(pomContent.contains(DEPENDENCY_HIBERNATE),
+                "Missing required dependency: " + DEPENDENCY_HIBERNATE);
+        assertTrue(pomContent.contains(DEPENDENCY_POSTGRESQL),
+                "Missing required dependency: " + DEPENDENCY_POSTGRESQL);
+        assertTrue(pomContent.contains(DEPENDENCY_KAFKA),
+                "Missing required dependency: " + DEPENDENCY_KAFKA);
+        assertTrue(pomContent.contains(DEPENDENCY_VALIDATOR),
+                "Missing required dependency: " + DEPENDENCY_VALIDATOR);
+
+        // [0.3] Process exit audit logging
+        LOGGER.info("[TEST_EXIT] [ARC-000] pom.xml parent and dependency integrity verified successfully");
+    }
+
+    /**
      * Valid QR scan attendance recording with idempotency enforcement [REQ-012].
      * Business flow: Mobile app scans QR -> backend decodes student_id and course_id from base64 payload ->
      * checks enrollment existence -> creates attendance record if (student_id, course_id, attendance_date) not duplicate ->
@@ -183,7 +238,7 @@ public class AttendanceServiceIntegrationTestSuite {
      * @verifies [ARC-000], [REQ-012]
      */
     @Test
-    @Order(3)
+    @Order(4)
     @DisplayName("Scan QR attendance valid records attendance with idempotency [REQ-012]")
     void scanQrValid_ReturnsAttendanceRecord() throws Exception {
         // [0.3] Process entry audit logging
@@ -235,7 +290,7 @@ public class AttendanceServiceIntegrationTestSuite {
      * @verifies [ARC-000], [REQ-012]
      */
     @Test
-    @Order(4)
+    @Order(5)
     @DisplayName("Scan QR duplicate within same day sets duplicate flag [REQ-013]")
     void scanQrDuplicate_SetsDuplicateFlag() throws Exception {
         // [0.3] Process entry audit logging
@@ -281,7 +336,7 @@ public class AttendanceServiceIntegrationTestSuite {
      * @verifies [ARC-000], [REQ-012]
      */
     @Test
-    @Order(5)
+    @Order(6)
     @DisplayName("Scan QR without enrollment throws EnrollmentRequiredException [EXC-002]")
     void scanQrWithoutEnrollment_ThrowsEnrollmentRequiredException() throws Exception {
         // [0.3] Process entry audit logging
@@ -322,7 +377,7 @@ public class AttendanceServiceIntegrationTestSuite {
      * @verifies [ARC-000], [REQ-012]
      */
     @Test
-    @Order(6)
+    @Order(7)
     @DisplayName("Scan QR network failure triggers retry queue [EXC-001]")
     void scanQrNetworkFailure_RetryScheduled() throws Exception {
         // [0.3] Process entry audit logging
@@ -359,7 +414,7 @@ public class AttendanceServiceIntegrationTestSuite {
      * @verifies [ARC-000], [REQ-012]
      */
     @Test
-    @Order(7)
+    @Order(8)
     @DisplayName("FIFO recovery on service restore after outage [EXC-005]")
     void scanQrFifoRecovery_ProcessesInOrder() throws Exception {
         // [0.3] Process entry audit logging
