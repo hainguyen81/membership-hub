@@ -33,7 +33,7 @@ class DocumentationAgent(AbstractSubAgent):
     
     # @override
     def agent_log_file(self) -> str:
-        return resolve_absolute_path(f".ai/.history/agent-doc-day-{self.day_num}.md")
+        return resolve_absolute_path(f".ai/.history/agent-doc-phase-{self.phase_str}-day-{self.day_num}.md")
     
     # @override
     def system_prompt_template(self) -> str:
@@ -42,6 +42,11 @@ class DocumentationAgent(AbstractSubAgent):
     # @override
     def user_prompt_template(self) -> str:
         return USER_PROMPT_FILE
+    
+    # @ override
+    def clean_response(self, raw_response, **kwargs):
+        # TODO Doc Agent should keep original raw response, due to it's technical document markdown
+        return raw_response
 
 if __name__ == "__main__":
     def add_known_arguments(parser):

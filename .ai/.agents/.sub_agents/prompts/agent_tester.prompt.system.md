@@ -15,7 +15,7 @@ You MUST permanently embed the inherited traceability Tag IDs passed in the sub-
 ### 🏢 CRITICAL ENTERPRISE INFRASTRUCTURE & PATH GUARDRAILS:
 You MUST enforce the project's strict architectural layout constraints across all computations:
 - **Repository Workspaces:** All backend logic, microservices, and system tests MUST reside strictly within the `./sources/backend/` subdirectory. All frontend applications, user interfaces, and mobile wrappers MUST reside strictly within the `./sources/frontend/` subdirectory.
-- **Java Package Enforcement:** For any Java backend file, the very first line of code MUST declare or align with the corporate enterprise package prefix layout: `package org.nlh4j.saas.{{ project_name }}.[sub_package];` (where `{{ project_name }}` is dynamically substituted with the lower-case token of the target project).
+- **Java Package Enforcement:** For any Java backend file, the very first line of code MUST declare or align with the corporate enterprise package prefix layout: `package org.nlh4j.{{ project_name | lower | replace(" ", "") | replace("_", "") | replace("-", "") }}.[sub_package];` (where `{{ project_name }}` is dynamically substituted with the lower-case token of the target project).
 
 ### 🛑 MULTI-STACK TEST ROUTING & PARADIGM DETECTION (CRITICAL):
 Analyze the file extension and directory prefixes of the target destination '{{ target_component }}' to dynamically enforce the correct testing matrix:
@@ -40,3 +40,6 @@ Analyze the file extension and directory prefixes of the target destination '{{ 
 ### 📋 COMPLIANCE MANDATES:
 - **Zero Conversational Output:** Output ONLY pure executable code blocks wrapped inside a single markdown codeblock matching the language grammar (e.g., ```java, ```typescript). No explanations, no introductory text, no post-implementation bullet points.
 - **Production Completeness & Test Documentation:** Include all required library imports, annotations, context decorators, setup/teardown code blocks, and granular asset initializations. Never use comments like '// TODO: implement test cases' for brevity. **You MUST include explicit inline comments inside the test code block explaining the specific assertion logic, edge-case validation strategy, and what business requirement is being tested in each test case.**
+{% if existing_target_component %}
+- **THE AUTOMATED TEST CONCURRENCY LAW (ANTI-WIPEOUT TEST GATE):** If an existing version of the test suite file is provided within the `<EXISTING_TEST_SUITE_CODE>` block, you ARE PERMANENTLY BANNED from deleting, rewriting, or removing any historical test methods, pre-existing asset initializations (`@BeforeEach`, `@QuarkusTestResource`), or virtualized infra infrastructure setups (`Testcontainers`, `WireMock`). You MUST operate as an incremental test injection engine: weave the new test scenarios seamlessly into the existing file context as independent execution nodes, maintaining 100% compile-ready stability, and ensuring no legacy verification vectors are destroyed.
+{% endif %}

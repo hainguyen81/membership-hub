@@ -146,7 +146,7 @@ class BugFixerAgent(AbstractSubAgent):
 
     # @override
     def agent_log_file(self) -> str:
-        return resolve_absolute_path(f".ai/.history/agent-reviewer-day-{self.day_num}.md")
+        return resolve_absolute_path(f".ai/.history/agent-reviewer-phase-{self.phase_str}-day-{self.day_num}.md")
     
     # @override
     def system_prompt_template(self) -> str:
@@ -207,6 +207,8 @@ class BugFixerAgent(AbstractSubAgent):
             # build new values kwargs
             kwargs = {
                 **kwargs,
+                "existing_error_logs": compiler_log and len(compiler_log.strip()) > 0,
+                "compiler_error_logs": compiler_log,
                 "system_prompt": system_prompt,
                 "user_prompt": user_prompt
             }

@@ -1,0 +1,232 @@
+{
+    "phase_id": 5,
+    "phase_name": "Triển khai Hạ tầng DevOps, Bảo mật Toàn hệ thống và Tài liệu Doanh nghiệp",
+    "phase_description": "Giai đoạn này triển khai lớp kiểm soát truy cập dựa trên vai trò (RBAC) toàn hệ thống đảm bảo tuân thủ OWASP Top 10, xây dựng toàn bộ hạ tầng DevOps (Docker đa giai đoạn, Terraform provisioning tài nguyên GCP, GKE orchestration với HPA tự động scale, pipeline CI/CD GitHub Actions), và hoàn thiện toàn bộ tài liệu doanh nghiệp (bản vẽ kiến trúc, tài liệu tham chiếu API, hướng dẫn vận hành) để đáp ứng tất cả các yêu cầu phi chức năng về hiệu suất, khả năng sẵn sàng, bảo mật và khả năng mở rộng.",
+    "project_name": "membership-hub",
+    "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
+    "source_target_dir": "sources/",
+    "days": [
+        {
+            "day": 1,
+            "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
+            "context_section": "Triển khai lớp trung gian RBAC toàn cục và kiểm thử đơn vị quyền truy cập",
+            "sub_tasks": [
+                {
+                    "id": "D1_ST1",
+                    "agent": "Coder",
+                    "desc": "Triển khai lớp trung gian RBAC dưới dạng JAX-RS ContainerRequestFilter để xác thực quyền truy cập của người dùng dựa trên vai trò được lưu trong JWT token. Áp dụng ma trận quyền truy cập: System Admin (toàn quyền trên tất cả trung tâm), Center Admin (toàn quyền trong trung tâm được phân công), Manager (quyền quản lý học viên, thông báo, không chỉnh sửa khóa học), Teacher (quyền xem khóa học, danh sách học viên, lịch dạy - chỉ đọc), Student (quyền duyệt khóa học, đăng ký, xem thẻ hội viên). Lớp trung gian phải trích xuất vai trò từ JWT token, so khớp với endpoint được yêu cầu và phương thức HTTP, trả về lỗi 403 Forbidden với thông báo chi tiết nếu người dùng không có quyền. Đảm bảo kiểm tra quyền được áp dụng cho tất cả endpoint trước khi xử lý yêu cầu. Sử dụng prepared statements của Hibernate ORM để truy vấn thông tin vai trò, ngăn chặn SQL injection. Áp dụng làm sạch dữ liệu đầu vào để chống XSS. Đảm bảo không có lỗ hổng bypass quyền truy cập.",
+                    "targeted_tags": [
+                        "[REQ-003]",
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth/src/main/java/org/nlh4j/membership_hub/security/RbacMiddleware.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST2",
+                    "agent": "Tester",
+                    "desc": "Viết bộ kiểm thử đơn vị toàn diện cho lớp RbacMiddleware sử dụng JUnit 5 và Mockito. Các kịch bản test bắt buộc: (1) Người dùng có vai trò System Admin truy cập endpoint quản lý trung tâm thành công; (2) Người dùng có vai trò Student truy cập endpoint quản lý khóa học bị từ chối với mã 403; (3) Center Admin truy cập tài nguyên của trung tâm khác bị từ chối; (4) Manager truy cập endpoint chỉnh sửa khóa học bị từ chối; (5) Teacher truy cập endpoint đăng ký khóa học bị từ chối; (6) JWT token hết hạn hoặc không hợp lệ bị từ chối truy cập với mã 401; (7) Kiểm tra độ trễ xác thực quyền dưới 10ms. Đảm bảo độ bao phủ mã đạt trên 90% bằng JaCoCo và tất cả test case pass trên môi trường CI/CD.",
+                    "targeted_tags": [
+                        "[REQ-003]",
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth/src/test/java/org/nlh4j/membership_hub/RbacMiddlewareTest.java",
+                        "./sources/backend/auth/src/main/java/org/nlh4j/membership_hub/security/RbacMiddleware.java"
+                    ]
+                },
+                {
+                    "id": "D1_ST3",
+                    "agent": "Doc",
+                    "desc": "Khởi tạo cấu trúc thư mục và khung tài liệu kỹ thuật cho toàn bộ hạ tầng DevOps của giai đoạn 5. Tạo tài liệu tổng quan hạ tầng mô tả kiến trúc đám mây GCP, cấu hình VPC, Cloud SQL, Redis, GKE. Tạo từ điển dữ liệu cho các tài nguyên hạ tầng (terraform modules, variables, outputs). Tạo hướng dẫn cấu trúc manifest GKE (deployment, service, HPA). Đảm bảo tất cả tài liệu tuân thủ chuẩn Markdown doanh nghiệp, có mục lục, liên kết chéo, và được đặt trong đúng vị trí thư mục ./sources/docs/operations/. Tài liệu phải phục vụ làm cơ sở cho các tác vụ phát triển và vận hành sau này.",
+                    "targeted_tags": [
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-004]",
+                        "[NFR-005]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/docs/operations/infrastructure-overview.md",
+                        "./sources/docs/operations/terraform-modules.md",
+                        "./sources/docs/operations/gke-manifests.md"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
+            "context_section": "Rà soát mã RBAC và xây dựng Dockerfile đa giai đoạn",
+            "sub_tasks": [
+                {
+                    "id": "D2_ST1",
+                    "agent": "Reviewer",
+                    "desc": "Thực hiện rà soát toàn bộ mã nguồn lớp RbacMiddleware để phát hiện và sửa các lỗ hổng bảo mật tiềm ẩn. Kiểm tra các điểm: (1) Không có lỗi so khớp vai trò không phân biệt chữ hoa chữ thường; (2) Không có lỗi thiếu kiểm tra quyền trên các endpoint ẩn hoặc HTTP methods không phải GET; (3) Không có lỗi bypass quyền qua tham số URL hoặc header đặc biệt; (4) Đảm bảo tuân thủ đầy đủ OWASP Top 10, đặc biệt là kiểm soát truy cập và xác thực đầu vào; (5) Tối ưu hiệu suất xác thực quyền để độ trễ xác thực <10ms; (6) Đảm bảo mã nguồn tuân thủ tiêu chuẩn mã hóa doanh nghiệp và quy tắc đặt tên biến. Ghi nhận tất cả lỗi nghiêm trọng và đề xuất giải pháp sửa chữa.",
+                    "targeted_tags": [
+                        "[REQ-003]",
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]",
+                        "[NFR-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/auth/src/main/java/org/nlh4j/membership_hub/security/RbacMiddleware.java"
+                    ]
+                },
+                {
+                    "id": "D2_ST2",
+                    "agent": "Docker",
+                    "desc": "Xây dựng Dockerfile đa giai đoạn cho tất cả dịch vụ backend (Quarkus) và frontend (Next.js). Sử dụng base image nhẹ (alpine hoặc distroless) cho giai đoạn cuối. Loại bỏ các tệp không cần thiết (tệp nguồn, tệp test, công cụ build, Maven/Gradle cache) trong giai đoạn cuối để tối ưu kích thước hình ảnh. Tối ưu cấu hình layer caching bằng cách sao chép tệp phụ thuộc trước khi sao chép mã nguồn. Đảm bảo kích thước hình ảnh cuối cùng dưới 500MB cho tất cả dịch vụ, tuân thủ yêu cầu NFR-005. Tạo file `.dockerignore` để loại bỏ các tệp không cần thiết khỏi ngữ cảnh build.",
+                    "targeted_tags": [
+                        "[NFR-005]"
+                    ],
+                    "components": [
+                        "./sources/infra/docker/Dockerfile",
+                        "./sources/infra/docker/.dockerignore"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
+            "context_section": "Provisioning hạ tầng GCP và tạo manifest GKE",
+            "sub_tasks": [
+                {
+                    "id": "D3_ST1",
+                    "agent": "GCP",
+                    "desc": "Cấu hình và triển khai toàn bộ hạ tầng GCP cần thiết cho hệ thống bằng Terraform. Tạo VPC với subnet riêng cho các dịch vụ backend và frontend, đảm bảo không có kết nối công cộng trực tiếp đến cơ sở dữ liệu. Cấu hình IAM roles với nguyên tắc đặc quyền tối thiểu cho từng dịch vụ. Provisioning Cloud SQL (PostgreSQL) với cấu hình sao lưu tự động hàng ngày, mã hóa dữ liệu lưu trữ AES-256, và kết nối TLS 1.3. Tạo Redis cluster cho caching phiên làm việc với chính sách hết hạn 24 giờ và LRU eviction. Cấu hình Cloud Storage cho lưu trữ tệp báo cáo. Thiết lập Firewall rules chỉ mở các cổng cần thiết (80, 443, 5432, 6379). Đảm bảo tất cả tài nguyên được định nghĩa dưới dạng mã (IaC), có thể reproduce và version control. Tích hợp monitoring và logging từ đầu.",
+                    "targeted_tags": [
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-004]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/infra/terraform/main.tf",
+                        "./sources/infra/terraform/variables.tf",
+                        "./sources/infra/terraform/outputs.tf"
+                    ]
+                },
+                {
+                    "id": "D3_ST2",
+                    "agent": "GKE",
+                    "desc": "Tạo manifest Kubernetes triển khai cho tất cả dịch vụ backend và frontend lên GKE. Cấu hình resource limits (CPU, memory) cho từng dịch vụ dựa trên khối lượng công việc dự kiến. Thiết lập readiness và liveness probes với các ngưỡng phù hợp để đảm bảo khả năng chịu lỗi. Cấu hình Horizontal Pod Autoscaler (HPA) tự động scale số lượng pod dựa trên ngưỡng CPU >70% hoặc độ trễ yêu cầu >300ms. Cấu hình rolling update strategy với maxSurge và maxUnavailable để đảm bảo không có thời gian chết trong quá trình triển khai phiên bản mới. Tạo Service manifest cho từng dịch vụ với LoadBalancer hoặc NodePort tùy theo nhu cầu. Đảm bảo tất cả dịch vụ có thể giao tiếp với nhau trong cluster thông qua DNS nội bộ.",
+                    "targeted_tags": [
+                        "[NFR-002]",
+                        "[NFR-004]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/infra/gke/deployment.yaml",
+                        "./sources/infra/gke/hpa.yaml",
+                        "./sources/infra/gke/service.yaml"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 4,
+            "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
+            "context_section": "Thiết lập pipeline CI/CD và kiểm thử tích hợp hạ tầng",
+            "sub_tasks": [
+                {
+                    "id": "D4_ST1",
+                    "agent": "Coder",
+                    "desc": "Xây dựng pipeline CI/CD tự động với GitHub Actions bao gồm các stages: (1) Checkout mã nguồn và thiết lập môi trường Java 21 và Node.js; (2) Build backend Quarkus với Maven và kiểm tra kích thước artifact; (3) Build frontend Next.js và kiểm tra kích thước bundle; (4) Chạy bộ kiểm thử đơn vị và tích hợp với mục tiêu độ bao phủ >=85%; (5) Quét lỗ hổng bảo mật phụ thuộc bằng OWASP Dependency Check; (6) Kiểm tra kích thước hình ảnh Docker đảm bảo dưới 500MB; (7) Push hình ảnh đã build lên Google Container Registry (GCR); (8) Triển khai tự động lên GKE khi commit vào nhánh main. Tích hợp ghi log audit cho tất cả sự kiện pipeline (build, test, deploy) với timestamp, user ID, và chi tiết hành động, lưu trữ log trong 1 năm theo yêu cầu NFR-006. Cấu hình thông báo lỗi qua email và Slack cho đội ngũ DevOps.",
+                    "targeted_tags": [
+                        "[NFR-001]",
+                        "[NFR-005]",
+                        "[NFR-006]"
+                    ],
+                    "components": [
+                        "./sources/infra/.github/workflows/ci-cd-pipeline.yaml"
+                    ]
+                },
+                {
+                    "id": "D4_ST2",
+                    "agent": "Tester",
+                    "desc": "Thực hiện kiểm thử tích hợp toàn bộ hạ tầng để xác minh tất cả thành phần hoạt động đúng như đặc tả. Các kịch bản test: (1) Xác minh tất cả tài nguyên GCP được triển khai chính xác theo đặc tả Terraform (VPC, Cloud SQL, Redis, GKE clusters); (2) Kiểm tra kết nối giữa các dịch vụ (backend, PostgreSQL, Redis, FCM) hoạt động ổn định với độ trễ dưới 200ms; (3) Kiểm tra HPA tự động scale pod khi tải tăng (giả lập tải cao và kiểm tra số lượng pod tăng lên); (4) Kiểm tra pipeline CI/CD chạy thành công từ commit đến triển khai trên môi trường staging; (5) Kiểm tra tính năng sao lưu và phục hồi PostgreSQL hoạt động chính xác (thực hiện backup, xóa bảng, restore và xác minh dữ liệu được khôi phục). Ghi nhận tất cả lỗi phát sinh và đề xuất giải pháp khắc phục. Đảm bảo tất cả test case pass trước khi chuyển sang giai đoạn vận hành.",
+                    "targeted_tags": [
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-004]"
+                    ],
+                    "components": [
+                        "INTEGRATION_SCOPE;./sources/infra/test/infrastructure-integration-test.yaml"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 5,
+            "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
+            "context_section": "Hoàn thiện tài liệu doanh nghiệp và rà soát cuối cùng",
+            "sub_tasks": [
+                {
+                    "id": "D5_ST1",
+                    "agent": "Doc",
+                    "desc": "Soạn thảo bản vẽ kiến trúc hệ thống tổng thể theo chuẩn doanh nghiệp. Tài liệu phải bao gồm: (1) Sơ đồ kiến trúc tổng thể thể hiện các lớp: Frontend (Next.js, React Native), Backend (Quarkus microservices), Data Layer (PostgreSQL, Redis), Infrastructure (GKE, Terraform, Docker); (2) Mô tả chi tiết cấu trúc microservices và tương tác giữa các dịch vụ qua REST API và Kafka events; (3) Ma trận RBAC với 5 vai trò người dùng và ma trận quyền truy cập chi tiết; (4) Sơ đồ luồng dữ liệu chính: xác thực OAuth2/JWT, điểm danh QR, thông báo đa kênh, đăng ký khóa học, gia hạn thẻ hội viên; (5) Sơ đồ tương tác giữa các thành phần kiến trúc trong các luồng nghiệp vụ chính; (6) Danh sách các thư viện và phiên bản công nghệ được sử dụng; (7) Sơ đồ hạ tầng GCP và GKE. Đảm bảo tài liệu phản ánh chính xác kiến trúc đã triển khai và tuân thủ tất cả yêu cầu kiến trúc đã định nghĩa.",
+                    "targeted_tags": [
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]",
+                        "[ARC-006]",
+                        "[ARC-007]",
+                        "[ARC-008]",
+                        "[ARC-009]",
+                        "[ARC-010]"
+                    ],
+                    "components": [
+                        "./sources/docs/architecture/system-architecture.md"
+                    ]
+                },
+                {
+                    "id": "D5_ST2",
+                    "agent": "Doc",
+                    "desc": "Soạn thảo bộ tài liệu doanh nghiệp hoàn chỉnh. Tài liệu API REST phải mô tả đầy đủ tất cả endpoint công khai và nội bộ, bao gồm đường dẫn, phương thức HTTP, schema yêu cầu/phản hồi, mã lỗi, ví dụ sử dụng, và yêu cầu xác thực. Tài liệu hướng dẫn cài đặt phải mô tả chi tiết quy trình triển khai hệ thống trên môi trường GKE, bao gồm cấu hình biến môi trường, khởi tạo cơ sở dữ liệu, triển khai dịch vụ, và cấu hình DNS. Tài liệu hướng dẫn vận hành phải bao gồm quy trình giám sát, xử lý sự cố thường gặp, quy trình sao lưu và phục hồi thảm họa PostgreSQL (bao gồm PITR), quy trình scale dịch vụ, và quy trình cập nhật phiên bản. Đảm bảo tất cả yêu cầu phi chức năng về hiệu suất, bảo mật, khả năng sẵn sàng, tuân thủ GDPR/CCPA được ghi chú đầy đủ trong tài liệu.",
+                    "targeted_tags": [
+                        "[ARC-001]",
+                        "[ARC-002]",
+                        "[ARC-003]",
+                        "[ARC-004]",
+                        "[ARC-005]",
+                        "[ARC-006]",
+                        "[ARC-007]",
+                        "[ARC-008]",
+                        "[ARC-009]",
+                        "[ARC-010]",
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-003]",
+                        "[NFR-004]",
+                        "[NFR-005]",
+                        "[NFR-006]",
+                        "[NFR-007]",
+                        "[NFR-008]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/docs/api/rest-api-reference.md",
+                        "./sources/docs/operations/installation-guide.md",
+                        "./sources/docs/operations/backup-recovery-guide.md"
+                    ]
+                }
+            ]
+        }
+    ]
+}

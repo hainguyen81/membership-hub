@@ -1,4 +1,9 @@
 # .ai/.agents/.sub-agents/agent-coder.py
+import os
+
+# super agent
+from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
+
 # ==============================================================================
 # 🏢 ENTERPRISE INTER-PACKAGE ROUTING LAYER
 # ==============================================================================
@@ -7,12 +12,9 @@
 # ==============================================================================
 # request agent_helper from `.libs/project_agents_package_loader.py`
 from _0d_ai._0d_agents.agent_0u_helper import (
+    parse_args,
     resolve_absolute_path,
-    parse_args
 )
-
-# super agent
-from _0d_ai._0d_agents._0d_sub_0u_agents.agent_0u_super import AbstractSubAgent
 
 # ==============================================================================
 # GLOBAL CONFIGURATION PATHS - CONFIG HERE TO CUSTOMIZE DIRECTORY STRUCTURE
@@ -37,7 +39,7 @@ class CoderAgent(AbstractSubAgent):
 
     # @override
     def agent_log_file(self) -> str:
-        return resolve_absolute_path(f".ai/.history/agent-coder-day-{self.day_num}.md")
+        return resolve_absolute_path(f".ai/.history/agent-coder-phase-{self.phase_str}-day-{self.day_num}.md")
     
     # @override
     def system_prompt_template(self) -> str:

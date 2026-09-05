@@ -19,6 +19,7 @@ from _0d_ai._0d_agents.agent_0u_helper import (
     read_file_raw,
     read_json_file,
     resolve_absolute_path,
+    splitAIResponseData,
     write_file,
 )
 from _0d_ai._0d_agents.agent_0u_super import AbstractAgent
@@ -60,26 +61,45 @@ class AbstractSubAgent(AbstractAgent):
                 components.append(component)
         return components
     
-    # @override
-    def build_user_prompt_context(self, **kwargs):
-        source_component = self.get_kwargs_by_key(key="source_component", **kwargs)
-        if os.path.exists(source_component):
-            lang_code = "typescript" if source_component.endswith(('.ts', '.tsx', '.js')) else "java"
-            _, source_payload = read_file_raw(source_component.strip())
-            source_payload = f"```{lang_code}\n{source_payload.strip()}\n```"
-        else:
-            source_component = "INTEGRATION_SCOPE"
-            source_payload = None
-        kwargs = {
-            **kwargs,
-            "source_component": source_component,
-            "source_payload": source_payload
-        }
-        return super().build_user_prompt_context(**kwargs)
+    def __component_language_code__(self, component_key: str, **kwargs):
+        component_path = self.get_kwargs_by_key(key=component_key, **kwargs)
+        if os.path.exists(component_path):
+            return (
+                "typescript"
+                if component_path.endswith((".ts", ".tsx", ".js"))
+                else "java"
+                if component_path.endswith(".java")
+                else "markdown"
+                if component_path.endswith(".md")
+                else "yaml"
+                if component_path.endswith((".yaml", ".yml"))
+                else "sql"
+                if component_path.endswith(".sql")
+                else "json"
+                if component_path.endswith(".json")
+                else "properties"
+                if component_path.endswith(".properties")
+                else "bash"
+                if component_path.endswith(".sh")
+                else "text"
+            )
+        return "text"
+
+    def __read_component_metadata__(self, component_key: str, **kwargs):
+        component_path = self.get_kwargs_by_key(key=component_key, **kwargs)
+        raw_component_content = None
+        component_payload = None
+        lang_code = None
+        if component_path and os.path.exists(component_path):
+            lang_code = self.__component_language_code__(component_key, **kwargs)
+            _, raw_content = read_file_raw(component_path)
+            raw_component_content = raw_content.strip()
+            component_payload = f"```{lang_code}\n{raw_component_content}\n```" if raw_component_content else None
+        return (lang_code, component_payload, raw_component_content)
     
     # @ override
     def clean_response(self, raw_response, **kwargs):
-        return raw_response.replace("```java", "").replace("```ts", "").replace("```tsx", "").replace("```", "").strip() if raw_response else None
+        return splitAIResponseData(raw_response)
     
     # @ override
     def process_communication(self, **kwargs):
@@ -142,6 +162,7 @@ class AbstractSubAgent(AbstractAgent):
             "agent_tasks": agent_tasks,
             "global_context": global_context,
             "phase_context": phase_context,
+            "plan_steps": steps_data,
             "day_context": target_day['context_section']
         }
     
@@ -157,6 +178,30 @@ class AbstractSubAgent(AbstractAgent):
             data=exception_stacktrace(e),
             append=True
         )
+
+    # @override
+    def __execute__(self, **kwargs):
+        # adapt existing component source
+        source_comp_lang, source_comp_payload, source_comp_raw = (
+            self.__read_component_metadata__("source_component", **kwargs)
+        )
+        target_comp_lang, target_comp_payload, target_comp_raw = (
+            self.__read_component_metadata__("target_component", **kwargs)
+        )
+        execute_kwargs = {
+            **kwargs,
+            "existing_source_component": source_comp_raw and len(source_comp_raw) > 0,
+            "source_component_lang": source_comp_lang,
+            "source_component_payload": source_comp_payload,
+            "source_component_content": source_comp_raw,
+            "existing_target_component": target_comp_raw and len(target_comp_raw) > 0,
+            "target_component_lang": target_comp_lang,
+            "target_component_payload": target_comp_payload,
+            "target_component_content": target_comp_raw,
+        }
+        
+        # execute as super
+        return super().__execute__(**execute_kwargs)
     
     # @ override
     def __do_execute__(self, **kwargs):

@@ -1,7 +1,8 @@
 {
     "phase_id": 5,
-    "phase_name": "Triển khai Hạ tầng DevOps, Bảo mật Toàn hệ thống và Tài liệu Doanh nghiệp",
-    "phase_description": "Giai đoạn này triển khai lớp kiểm soát truy cập dựa trên vai trò (RBAC) toàn hệ thống đảm bảo tuân thủ OWASP Top 10, xây dựng toàn bộ hạ tầng DevOps (Docker đa giai đoạn, Terraform provisioning tài nguyên GCP, GKE orchestration với HPA tự động scale, pipeline CI/CD GitHub Actions), và hoàn thiện toàn bộ tài liệu doanh nghiệp (bản vẽ kiến trúc, tài liệu tham chiếu API, hướng dẫn vận hành) để đáp ứng tất cả các yêu cầu phi chức năng về hiệu suất, khả năng sẵn sàng, bảo mật và khả năng mở rộng.",
+    "phase_name": "Tích Hợp Giao Diện Responsive, Báo Cáo Dashboard, Hạ Tầng DevOps và Tài Liệu Doanh Nghiệp",
+    "phase_description": "Giai đoạn 5 hoàn thiện tầng giao diện responsive đa vai trò trên Next.js kết hợp NativeWind, tích hợp phát hiện ngôn ngữ thông qua next-intl, hỗ trợ SEO đa ngôn ngữ với hreflang, triển khai microservice báo cáo điểm danh CSV với giới hạn 30 ngày, dashboard tổng hợp tuyển sinh thời gian thực với cache 15 phút, đóng gói toàn bộ image Docker đa giai đoạn dưới 500MB, cung cấp hạ tầng GCP thông qua Terraform (VPC, GKE Autopilot, Cloud SQL PostgreSQL, IAM, KMS), triển khai manifest GKE với HPA theo CPU/latency, và hoàn thiện bộ tài liệu kiến trúc doanh nghiệp (C4, OpenAPI, GDPR/CCPA, SEO/i18n) đặt tại ./sources/docs/",
+    "objectives": "Hoàn thiện toàn bộ tầng giao diện responsive đa vai trò trên Next.js kết hợp next-intl và hreflang SEO; triển khai microservice report-service (CSV điểm danh giới hạn 30 ngày) và dashboard-service (cache Redis 15 phút, view materialized); đóng gói 7 Dockerfile đa giai đoạn dưới 500MB; cung cấp hạ tầng GCP bằng Terraform (VPC, GKE Autopilot, Cloud SQL, IAM, KMS, Storage); triển khai manifest GKE với HPA, Ingress TLS 1.3, NetworkPolicy; hoàn thiện bộ tài liệu kiến trúc doanh nghiệp tại ./sources/docs/.",
     "project_name": "membership-hub",
     "global_context_file": ".ai/.context/membership-hub.global.blueprint.md",
     "source_target_dir": "sources/",
@@ -9,56 +10,63 @@
         {
             "day": 1,
             "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
-            "context_section": "Triển khai lớp trung gian RBAC toàn cục và kiểm thử đơn vị quyền truy cập",
+            "context_section": "NGÀY 1: KHỞI TẠO LAYOUT RESPONSIVE, ĐIỀU HƯỚNG THEO ROLE VÀ HẠ TẦNG I18N",
             "sub_tasks": [
                 {
                     "id": "D1_ST1",
                     "agent": "Coder",
-                    "desc": "Triển khai lớp trung gian RBAC dưới dạng JAX-RS ContainerRequestFilter để xác thực quyền truy cập của người dùng dựa trên vai trò được lưu trong JWT token. Áp dụng ma trận quyền truy cập: System Admin (toàn quyền trên tất cả trung tâm), Center Admin (toàn quyền trong trung tâm được phân công), Manager (quyền quản lý học viên, thông báo, không chỉnh sửa khóa học), Teacher (quyền xem khóa học, danh sách học viên, lịch dạy - chỉ đọc), Student (quyền duyệt khóa học, đăng ký, xem thẻ hội viên). Lớp trung gian phải trích xuất vai trò từ JWT token, so khớp với endpoint được yêu cầu và phương thức HTTP, trả về lỗi 403 Forbidden với thông báo chi tiết nếu người dùng không có quyền. Đảm bảo kiểm tra quyền được áp dụng cho tất cả endpoint trước khi xử lý yêu cầu. Sử dụng prepared statements của Hibernate ORM để truy vấn thông tin vai trò, ngăn chặn SQL injection. Áp dụng làm sạch dữ liệu đầu vào để chống XSS. Đảm bảo không có lỗ hổng bypass quyền truy cập.",
+                    "desc": "Sinh layout gốc của ứng dụng Next.js 14 với App Router tại đường dẫn ./sources/frontend/web-app/src/app/layout.tsx. Tích hợp next-intl provider thông qua NextIntlClientProvider, LocaleProvider và cấu hình font Inter đa ngôn ngữ thông qua next/font/google. Liên kết <RoleNavMenu /> để hiển thị menu điều hướng theo 5 role (Student, Teacher, Manager, Center Admin, System Admin) thông qua prop session.role lấy từ server component thông qua getServerSession(). Đảm bảo semantic HTML với <html lang={locale}> tuân thủ REQ-023 và NFR-007. Cấu hình metadata API để sinh thẻ og:locale, og:title, og:description tự động. Hợp đồng component RoleNavMenu với props locale (string), session {userId: uuid, role: STUDENT|TEACHER|MANAGER|CENTER_ADMIN|SYSTEM_ADMIN, centerId: uuid?}, menuItems [{labelKey, href, roles}]. Bộ xử lý ngoại lệ: resolveMenuForRole lọc menu theo role.",
                     "targeted_tags": [
-                        "[REQ-003]",
-                        "[ARC-001]",
-                        "[ARC-002]",
-                        "[ARC-003]",
-                        "[ARC-004]",
-                        "[ARC-005]"
+                        "[REQ-020]",
+                        "[NFR-007]"
                     ],
                     "components": [
-                        "./sources/backend/auth/src/main/java/org/nlh4j/membership_hub/security/RbacMiddleware.java"
+                        "./sources/frontend/web-app/src/app/layout.tsx",
+                        "./sources/frontend/web-app/src/components/navigation/RoleNavMenu.tsx"
                     ]
                 },
                 {
                     "id": "D1_ST2",
                     "agent": "Tester",
-                    "desc": "Viết bộ kiểm thử đơn vị toàn diện cho lớp RbacMiddleware sử dụng JUnit 5 và Mockito. Các kịch bản test bắt buộc: (1) Người dùng có vai trò System Admin truy cập endpoint quản lý trung tâm thành công; (2) Người dùng có vai trò Student truy cập endpoint quản lý khóa học bị từ chối với mã 403; (3) Center Admin truy cập tài nguyên của trung tâm khác bị từ chối; (4) Manager truy cập endpoint chỉnh sửa khóa học bị từ chối; (5) Teacher truy cập endpoint đăng ký khóa học bị từ chối; (6) JWT token hết hạn hoặc không hợp lệ bị từ chối truy cập với mã 401; (7) Kiểm tra độ trễ xác thực quyền dưới 10ms. Đảm bảo độ bao phủ mã đạt trên 90% bằng JaCoCo và tất cả test case pass trên môi trường CI/CD.",
+                    "desc": "Biên soạn bộ kiểm thử React Testing Library tại đường dẫn ./sources/frontend/web-app/src/test/layout-role-menu.spec.tsx cho RoleNavMenu xác nhận danh sách menu hiển thị đúng theo từng role (Student thấy 3 menu items, Center Admin thấy 6 menu items), locale switch cập nhật nhãn thông qua next-intl, và thuộc tính lang trên thẻ <html> phản ánh locale hiện tại. Tích hợp snapshot test cho layout gốc. Mock getServerSession() trả về session với role tương ứng.",
                     "targeted_tags": [
-                        "[REQ-003]",
-                        "[ARC-001]",
-                        "[ARC-002]",
-                        "[ARC-003]",
-                        "[ARC-004]",
-                        "[ARC-005]"
+                        "[REQ-020]",
+                        "[NFR-007]"
                     ],
                     "components": [
-                        "./sources/backend/auth/src/test/java/org/nlh4j/membership_hub/RbacMiddlewareTest.java",
-                        "./sources/backend/auth/src/main/java/org/nlh4j/membership_hub/security/RbacMiddleware.java"
+                        "INTEGRATION_SCOPE;./sources/frontend/web-app/src/test/layout-role-menu.spec.tsx"
                     ]
                 },
                 {
                     "id": "D1_ST3",
-                    "agent": "Doc",
-                    "desc": "Khởi tạo cấu trúc thư mục và khung tài liệu kỹ thuật cho toàn bộ hạ tầng DevOps của giai đoạn 5. Tạo tài liệu tổng quan hạ tầng mô tả kiến trúc đám mây GCP, cấu hình VPC, Cloud SQL, Redis, GKE. Tạo từ điển dữ liệu cho các tài nguyên hạ tầng (terraform modules, variables, outputs). Tạo hướng dẫn cấu trúc manifest GKE (deployment, service, HPA). Đảm bảo tất cả tài liệu tuân thủ chuẩn Markdown doanh nghiệp, có mục lục, liên kết chéo, và được đặt trong đúng vị trí thư mục ./sources/docs/operations/. Tài liệu phải phục vụ làm cơ sở cho các tác vụ phát triển và vận hành sau này.",
+                    "agent": "Reviewer",
+                    "desc": "Reviewer đánh giá cấu trúc layout gốc tại đường dẫn ./sources/frontend/web-app/src/app/layout.tsx và component RoleNavMenu tại ./sources/frontend/web-app/src/components/navigation/RoleNavMenu.tsx: xác nhận tách biệt server/client component đúng chuẩn Next.js App Router, kiểm tra SEO meta tags (title, description, og:*), phân tích khả năng mở rộng khi thêm role mới, đề xuất lazy-load icon và giảm re-render không cần thiết. Ghi nhận phát hiện vào biên bản review để Coder xử lý. Kiểm tra tuân thủ OWASP A05 Security Misconfiguration thông qua header CSP.",
                     "targeted_tags": [
-                        "[NFR-001]",
-                        "[NFR-002]",
-                        "[NFR-004]",
-                        "[NFR-005]",
-                        "[NFR-009]"
+                        "[REQ-020]",
+                        "[NFR-007]"
                     ],
                     "components": [
-                        "./sources/docs/operations/infrastructure-overview.md",
-                        "./sources/docs/operations/terraform-modules.md",
-                        "./sources/docs/operations/gke-manifests.md"
+                        "./sources/frontend/web-app/src/app/layout.tsx",
+                        "./sources/frontend/web-app/src/components/navigation/RoleNavMenu.tsx"
+                    ]
+                },
+                {
+                    "id": "D1_ST4",
+                    "agent": "Doc",
+                    "desc": "Soạn thảo tài liệu kiến trúc frontend responsive tại đường dẫn ./sources/docs/frontend/01-responsive-design.md gồm: nguyên tắc Mobile-First, bảng breakpoint (sm/md/lg/xl), cấu trúc NativeWind tokens, danh sách component dùng chung, hướng dẫn kiểm thử trên thiết bị thật. Đính kèm sơ đồ Mermaid phân cấp layout và mô tả luồng điều hướng theo role. Tài liệu phải chứa checklist tuân thủ WCAG 2.1 AA cho accessibility.",
+                    "targeted_tags": [
+                        "[DOC-001]",
+                        "[REQ-020]"
+                    ],
+                    "components": [
+                        "./sources/docs/frontend/01-responsive-design.md",
+                        "./sources/docs/architecture/01-system-overview.md",
+                        "./sources/docs/architecture/02-c4-context.md",
+                        "./sources/docs/architecture/03-c4-container.md",
+                        "./sources/docs/architecture/04-microservices-decomposition.md",
+                        "./sources/docs/api/openapi.yaml",
+                        "./sources/docs/security/ENTERPRISE_SECURITY_OWASP_COMPLIANCE_MATRIX.md",
+                        "./sources/docs/security/CENTRAL_MONITORING_LOGGING_ARCHITECTURE.md"
                     ]
                 }
             ]
@@ -66,35 +74,66 @@
         {
             "day": 2,
             "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
-            "context_section": "Rà soát mã RBAC và xây dựng Dockerfile đa giai đoạn",
+            "context_section": "NGÀY 2: TÍCH HỢP NEXT-INTL, MIDDLEWARE PHÁT HIỆN NGÔN NGỮ VÀ HỖ TRỢ SEO ĐA NGÔN NGỮ",
             "sub_tasks": [
                 {
                     "id": "D2_ST1",
-                    "agent": "Reviewer",
-                    "desc": "Thực hiện rà soát toàn bộ mã nguồn lớp RbacMiddleware để phát hiện và sửa các lỗ hổng bảo mật tiềm ẩn. Kiểm tra các điểm: (1) Không có lỗi so khớp vai trò không phân biệt chữ hoa chữ thường; (2) Không có lỗi thiếu kiểm tra quyền trên các endpoint ẩn hoặc HTTP methods không phải GET; (3) Không có lỗi bypass quyền qua tham số URL hoặc header đặc biệt; (4) Đảm bảo tuân thủ đầy đủ OWASP Top 10, đặc biệt là kiểm soát truy cập và xác thực đầu vào; (5) Tối ưu hiệu suất xác thực quyền để độ trễ xác thực <10ms; (6) Đảm bảo mã nguồn tuân thủ tiêu chuẩn mã hóa doanh nghiệp và quy tắc đặt tên biến. Ghi nhận tất cả lỗi nghiêm trọng và đề xuất giải pháp sửa chữa.",
+                    "agent": "Coder",
+                    "desc": "Cài đặt Next.js middleware tại đường dẫn ./sources/frontend/web-app/middleware.ts kiểm tra cookie NEXT_LOCALE; nếu không có, đọc Accept-Language header và chuyển hướng sang đường dẫn /[locale]/... phù hợp với một trong 3 ngôn ngữ được hỗ trợ (en, vi, es). Tích hợp danh sách locale cho phép và cơ chế ghi nhận lựa chọn ngôn ngữ của người dùng vào cookie với thời hạn 1 năm. Cấu hình matcher loại trừ các đường dẫn API, _next, file tĩnh. Cấu hình matcher: ['/((?!api|_next|.*\\\\..*).*)']. Bộ xử lý ngoại lệ locale: isSupportedLocale kiểm tra locale có nằm trong SUPPORTED_LOCALES ['en','vi','es'], fallback 'en'.",
                     "targeted_tags": [
-                        "[REQ-003]",
-                        "[ARC-001]",
-                        "[ARC-002]",
-                        "[ARC-003]",
-                        "[ARC-004]",
-                        "[ARC-005]",
-                        "[NFR-003]"
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[NFR-007]"
                     ],
                     "components": [
-                        "./sources/backend/auth/src/main/java/org/nlh4j/membership_hub/security/RbacMiddleware.java"
+                        "./sources/frontend/web-app/middleware.ts",
+                        "./sources/frontend/web-app/src/i18n/request.ts",
+                        "./sources/frontend/web-app/src/app/[locale]/layout.tsx"
                     ]
                 },
                 {
                     "id": "D2_ST2",
-                    "agent": "Docker",
-                    "desc": "Xây dựng Dockerfile đa giai đoạn cho tất cả dịch vụ backend (Quarkus) và frontend (Next.js). Sử dụng base image nhẹ (alpine hoặc distroless) cho giai đoạn cuối. Loại bỏ các tệp không cần thiết (tệp nguồn, tệp test, công cụ build, Maven/Gradle cache) trong giai đoạn cuối để tối ưu kích thước hình ảnh. Tối ưu cấu hình layer caching bằng cách sao chép tệp phụ thuộc trước khi sao chép mã nguồn. Đảm bảo kích thước hình ảnh cuối cùng dưới 500MB cho tất cả dịch vụ, tuân thủ yêu cầu NFR-005. Tạo file `.dockerignore` để loại bỏ các tệp không cần thiết khỏi ngữ cảnh build.",
+                    "agent": "Tester",
+                    "desc": "Tạo bộ kiểm thử tích hợp tại đường dẫn ./sources/frontend/web-app/src/test/middleware-i18n.spec.ts với Jest + msw mô phỏng header Accept-Language đa dạng (en-US, vi-VN, es-ES) và cookie NEXT_LOCALE. Xác nhận middleware chuyển hướng đúng URL /vi/courses, /es/centers, ghi nhận cookie khi người dùng đổi ngôn ngữ, và fallback về locale mặc định en khi giá trị không được hỗ trợ (ví dụ: fr-FR).",
                     "targeted_tags": [
-                        "[NFR-005]"
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[NFR-007]"
                     ],
                     "components": [
-                        "./sources/infra/docker/Dockerfile",
-                        "./sources/infra/docker/.dockerignore"
+                        "INTEGRATION_SCOPE;./sources/frontend/web-app/src/test/middleware-i18n.spec.ts"
+                    ]
+                },
+                {
+                    "id": "D2_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Kiểm tra tệp [locale]/layout.tsx tại đường dẫn ./sources/frontend/web-app/src/app/[locale]/layout.tsx đảm bảo: thẻ <html lang> chính xác theo locale, thẻ meta og:locale, thẻ alternate hreflang đầy đủ cho 3 ngôn ngữ (en, vi, es) cùng thẻ x-default, sơ đồ sitemap.xml đa ngôn ngữ tại ./sources/frontend/web-app/src/app/sitemap.ts, robots.txt tại ./sources/frontend/web-app/src/app/robots.ts không chặn crawler. Đánh giá hiệu năng tải bản dịch thông qua chunk splitting.",
+                    "targeted_tags": [
+                        "[REQ-022]",
+                        "[REQ-023]",
+                        "[NFR-007]"
+                    ],
+                    "components": [
+                        "./sources/frontend/web-app/src/app/[locale]/layout.tsx",
+                        "./sources/frontend/web-app/src/app/sitemap.ts",
+                        "./sources/frontend/web-app/src/app/robots.ts"
+                    ]
+                },
+                {
+                    "id": "D2_ST4",
+                    "agent": "Doc",
+                    "desc": "Biên soạn tài liệu hướng dẫn triển khai SEO đa ngôn ngữ tại các đường dẫn ./sources/docs/seo/01-internationalization.md và ./sources/docs/seo/02-hreflang-implementation.md gồm: chiến lược URL (path-based locale), cấu hình next-intl, danh sách hreflang, hướng dẫn tạo sitemap đa ngôn ngữ, checklist Google Search Console. Bao gồm ví dụ thực tế cho locale vi với tiêu đề tiếng Việt và cấu trúc URL /vi/khoa-hoc.",
+                    "targeted_tags": [
+                        "[DOC-001]",
+                        "[REQ-023]"
+                    ],
+                    "components": [
+                        "./sources/docs/seo/01-internationalization.md",
+                        "./sources/docs/seo/02-hreflang-implementation.md",
+                        "./sources/docs/architecture/ENTERPRISE_SYSTEM_ARCHITECTURE_BLUEPRINT.md",
+                        "./sources/docs/architecture/CENTRAL_ENDPOINT_API_CONTRACT_SPECS.md",
+                        "./sources/docs/architecture/CROSS_PLATFORM_INTEGRATED_BUSINESS_FLOWS.md",
+                        "./sources/docs/security/ENTERPRISE_SECURITY_OWASP_COMPLIANCE_MATRIX.md"
                     ]
                 }
             ]
@@ -102,37 +141,79 @@
         {
             "day": 3,
             "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
-            "context_section": "Provisioning hạ tầng GCP và tạo manifest GKE",
+            "context_section": "NGÀY 3: XÂY DỰNG BÁO CÁO ĐIỂM DANH CSV VÀ DASHBOARD TUYỂN SINH",
             "sub_tasks": [
                 {
                     "id": "D3_ST1",
-                    "agent": "GCP",
-                    "desc": "Cấu hình và triển khai toàn bộ hạ tầng GCP cần thiết cho hệ thống bằng Terraform. Tạo VPC với subnet riêng cho các dịch vụ backend và frontend, đảm bảo không có kết nối công cộng trực tiếp đến cơ sở dữ liệu. Cấu hình IAM roles với nguyên tắc đặc quyền tối thiểu cho từng dịch vụ. Provisioning Cloud SQL (PostgreSQL) với cấu hình sao lưu tự động hàng ngày, mã hóa dữ liệu lưu trữ AES-256, và kết nối TLS 1.3. Tạo Redis cluster cho caching phiên làm việc với chính sách hết hạn 24 giờ và LRU eviction. Cấu hình Cloud Storage cho lưu trữ tệp báo cáo. Thiết lập Firewall rules chỉ mở các cổng cần thiết (80, 443, 5432, 6379). Đảm bảo tất cả tài nguyên được định nghĩa dưới dạng mã (IaC), có thể reproduce và version control. Tích hợp monitoring và logging từ đầu.",
+                    "agent": "Coder",
+                    "desc": "Triển khai microservice report-service và dashboard-service. Sinh ReportController Quarkus REST tại ./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/controller/ReportController.java với endpoint GET /api/v1/reports/attendance?centerId&startDate&endDate sử dụng AttendanceReportService truy vấn JPA từ PostgreSQL, đóng gói CSV streaming qua OpenCSV để tránh OOM, giới hạn khoảng ngày tối đa 30 ngày, phát sinh InvalidDateRangeException nếu vi phạm, Content-Type text/csv với header Content-Disposition: attachment; filename=\"attendance.csv\", annotation @RolesAllowed({\"CENTER_ADMIN\",\"SYSTEM_ADMIN\"}). Đồng thời sinh EnrollmentDashboardController tại ./sources/backend/dashboard-service/src/main/java/org/nlh4j/membershiphub/dashboardservice/controller/EnrollmentDashboardController.java với endpoint GET /api/v1/dashboard/enrollment-summary?centerId cache 15 phút qua Redis (TTL=900s), trả về cards totalStudents, activeCourses, upcomingSessions, refreshedAt. View materialized mv_enrollment_summary với unique index ux_mv_enrollment_summary_center được tạo trong script SQL.",
                     "targeted_tags": [
-                        "[NFR-001]",
-                        "[NFR-002]",
-                        "[NFR-004]",
-                        "[NFR-009]"
+                        "[REQ-024]",
+                        "[NFR-001]"
                     ],
                     "components": [
-                        "./sources/infra/terraform/main.tf",
-                        "./sources/infra/terraform/variables.tf",
-                        "./sources/infra/terraform/outputs.tf"
+                        "./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/controller/ReportController.java",
+                        "./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/service/AttendanceReportService.java",
+                        "./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/dto/AttendanceReportDto.java",
+                        "./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/exception/InvalidDateRangeException.java",
+                        "./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/exception/GlobalExceptionMapper.java",
+                        "./sources/backend/dashboard-service/src/main/java/org/nlh4j/membershiphub/dashboardservice/controller/EnrollmentDashboardController.java",
+                        "./sources/backend/dashboard-service/src/main/java/org/nlh4j/membershiphub/dashboardservice/service/EnrollmentSummaryService.java",
+                        "./sources/backend/dashboard-service/src/main/java/org/nlh4j/membershiphub/dashboardservice/dto/EnrollmentSummaryDto.java",
+                        "./sources/backend/dashboard-service/src/main/resources/application.properties"
                     ]
                 },
                 {
                     "id": "D3_ST2",
-                    "agent": "GKE",
-                    "desc": "Tạo manifest Kubernetes triển khai cho tất cả dịch vụ backend và frontend lên GKE. Cấu hình resource limits (CPU, memory) cho từng dịch vụ dựa trên khối lượng công việc dự kiến. Thiết lập readiness và liveness probes với các ngưỡng phù hợp để đảm bảo khả năng chịu lỗi. Cấu hình Horizontal Pod Autoscaler (HPA) tự động scale số lượng pod dựa trên ngưỡng CPU >70% hoặc độ trễ yêu cầu >300ms. Cấu hình rolling update strategy với maxSurge và maxUnavailable để đảm bảo không có thời gian chết trong quá trình triển khai phiên bản mới. Tạo Service manifest cho từng dịch vụ với LoadBalancer hoặc NodePort tùy theo nhu cầu. Đảm bảo tất cả dịch vụ có thể giao tiếp với nhau trong cluster thông qua DNS nội bộ.",
+                    "agent": "Tester",
+                    "desc": "Biên soạn bộ kiểm thử tích hợp ReportServicesTestSuite tại ./sources/backend/report-service/src/test/java/org/nlh4j/membershiphub/reportservice/ReportServicesTestSuite.java sử dụng Quarkus Test + RestAssured + Testcontainers PostgreSQL fixture dữ liệu attendance 7 ngày. Xác nhận endpoint trả CSV đúng cột StudentName, CourseName, AttendanceDate, Status, từ chối khoảng ngày > 30 ngày với mã INVALID_DATE_RANGE, truy vấn P95 < 200ms. Mock Redis cache TTL 900 giây cho dashboard-service.",
                     "targeted_tags": [
-                        "[NFR-002]",
-                        "[NFR-004]",
+                        "[REQ-024]",
+                        "[NFR-001]"
+                    ],
+                    "components": [
+                        "INTEGRATION_SCOPE;./sources/backend/report-service/src/test/java/org/nlh4j/membershiphub/reportservice/ReportServicesTestSuite.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST3",
+                    "agent": "Reviewer",
+                    "desc": "Đánh giá mã AttendanceReportService tại ./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/service/AttendanceReportService.java theo checklist OWASP: xác nhận JPQL parameter binding chống SQL injection (OWASP A03), tận dụng index (course_id, attendance_date), logic streaming CSV tránh OOM, kiểm tra phân quyền @RolesAllowed CENTER_ADMIN/SYSTEM_ADMIN, mã hóa PII qua PiiMaskingSerializer cho tax_id và email, phát hiện race condition và thread safety trong dashboard cache.",
+                    "targeted_tags": [
+                        "[REQ-024]",
+                        "[NFR-001]",
+                        "[NFR-003]"
+                    ],
+                    "components": [
+                        "./sources/backend/report-service/src/main/java/org/nlh4j/membershiphub/reportservice/service/AttendanceReportService.java"
+                    ]
+                },
+                {
+                    "id": "D3_ST4",
+                    "agent": "Doc",
+                    "desc": "Bổ sung runbook vận hành tại ./sources/docs/operations/01-runbook.md cho dashboard và báo cáo: quy trình xuất CSV, xử lý sự cố timeout truy vấn, hướng dẫn REFRESH MATERIALIZED VIEW CONCURRENTLY mv_enrollment_summary, danh sách chỉ số giám sát (latency P95, row count, cache hit ratio). Cập nhật sơ đồ Mermaid luồng dữ liệu PostgreSQL → dashboard. Đồng thời hoàn thiện bộ tài liệu kiến trúc tổng thể doanh nghiệp tại ./sources/docs/architecture/, ./sources/docs/api/, ./sources/docs/database/, ./sources/docs/devops/, ./sources/docs/compliance/, ./sources/docs/operations/ bao gồm sơ đồ Mermaid luồng triển khai CI/CD → GKE, chỉ mục liên kết chéo và checklist triển khai cuối cùng.",
+                    "targeted_tags": [
+                        "[DOC-001]",
+                        "[REQ-024]",
+                        "[REQ-025]",
+                        "[NFR-006]",
                         "[NFR-009]"
                     ],
                     "components": [
-                        "./sources/infra/gke/deployment.yaml",
-                        "./sources/infra/gke/hpa.yaml",
-                        "./sources/infra/gke/service.yaml"
+                        "./sources/docs/operations/01-runbook.md",
+                        "./sources/docs/architecture/01-system-overview.md",
+                        "./sources/docs/architecture/02-c4-context.md",
+                        "./sources/docs/architecture/03-c4-container.md",
+                        "./sources/docs/architecture/04-microservices-decomposition.md",
+                        "./sources/docs/api/openapi.yaml",
+                        "./sources/docs/database/01-schema-overview.md",
+                        "./sources/docs/database/02-erd-diagram.md",
+                        "./sources/docs/devops/01-terraform-deployment.md",
+                        "./sources/docs/devops/02-gke-orchestration.md",
+                        "./sources/docs/devops/03-cicd-pipeline.md",
+                        "./sources/docs/compliance/01-gdpr-ccpa.md",
+                        "./sources/docs/compliance/02-security-baseline.md",
+                        "./sources/docs/operations/02-disaster-recovery.md"
                     ]
                 }
             ]
@@ -140,32 +221,63 @@
         {
             "day": 4,
             "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
-            "context_section": "Thiết lập pipeline CI/CD và kiểm thử tích hợp hạ tầng",
+            "context_section": "NGÀY 4: HẠ TẦNG DOCKER ĐA GIAI ĐOẠN VÀ ĐẨY IMAGE LÊN REGISTRY",
             "sub_tasks": [
                 {
                     "id": "D4_ST1",
-                    "agent": "Coder",
-                    "desc": "Xây dựng pipeline CI/CD tự động với GitHub Actions bao gồm các stages: (1) Checkout mã nguồn và thiết lập môi trường Java 21 và Node.js; (2) Build backend Quarkus với Maven và kiểm tra kích thước artifact; (3) Build frontend Next.js và kiểm tra kích thước bundle; (4) Chạy bộ kiểm thử đơn vị và tích hợp với mục tiêu độ bao phủ >=85%; (5) Quét lỗ hổng bảo mật phụ thuộc bằng OWASP Dependency Check; (6) Kiểm tra kích thước hình ảnh Docker đảm bảo dưới 500MB; (7) Push hình ảnh đã build lên Google Container Registry (GCR); (8) Triển khai tự động lên GKE khi commit vào nhánh main. Tích hợp ghi log audit cho tất cả sự kiện pipeline (build, test, deploy) với timestamp, user ID, và chi tiết hành động, lưu trữ log trong 1 năm theo yêu cầu NFR-006. Cấu hình thông báo lỗi qua email và Slack cho đội ngũ DevOps.",
+                    "agent": "Docker",
+                    "desc": "Sinh 7 Dockerfile đa giai đoạn (multi-stage build) cho 6 microservice backend (user-service, center-service, course-service, attendance-service, report-service, dashboard-service) và frontend. Stage builder dùng maven:3.9-eclipse-temurin-21 chạy ./mvnw package -DskipTests, stage runtime dùng eclipse-temurin:21-jre-jammy (image cơ sở <200MB), USER 1000 non-root, HEALTHCHECK curl -fsS http://localhost:8080/q/health/ready || exit 1, JAVA_OPTS tối ưu GC với -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0. Image cuối cùng <500MB tuân thủ [NFR-005]. Tệp .dockerignore loại trừ target/, .git/, node_modules/.",
                     "targeted_tags": [
-                        "[NFR-001]",
                         "[NFR-005]",
-                        "[NFR-006]"
+                        "[NFR-004]"
                     ],
                     "components": [
-                        "./sources/infra/.github/workflows/ci-cd-pipeline.yaml"
+                        "./sources/backend/user-service/Dockerfile",
+                        "./sources/backend/center-service/Dockerfile",
+                        "./sources/backend/course-service/Dockerfile",
+                        "./sources/backend/attendance-service/Dockerfile",
+                        "./sources/backend/report-service/Dockerfile",
+                        "./sources/backend/dashboard-service/Dockerfile",
+                        "./sources/frontend/web-app/Dockerfile"
                     ]
                 },
                 {
                     "id": "D4_ST2",
                     "agent": "Tester",
-                    "desc": "Thực hiện kiểm thử tích hợp toàn bộ hạ tầng để xác minh tất cả thành phần hoạt động đúng như đặc tả. Các kịch bản test: (1) Xác minh tất cả tài nguyên GCP được triển khai chính xác theo đặc tả Terraform (VPC, Cloud SQL, Redis, GKE clusters); (2) Kiểm tra kết nối giữa các dịch vụ (backend, PostgreSQL, Redis, FCM) hoạt động ổn định với độ trễ dưới 200ms; (3) Kiểm tra HPA tự động scale pod khi tải tăng (giả lập tải cao và kiểm tra số lượng pod tăng lên); (4) Kiểm tra pipeline CI/CD chạy thành công từ commit đến triển khai trên môi trường staging; (5) Kiểm tra tính năng sao lưu và phục hồi PostgreSQL hoạt động chính xác (thực hiện backup, xóa bảng, restore và xác minh dữ liệu được khôi phục). Ghi nhận tất cả lỗi phát sinh và đề xuất giải pháp khắc phục. Đảm bảo tất cả test case pass trước khi chuyển sang giai đoạn vận hành.",
+                    "desc": "Tạo script maven-build-integration.sh tại ./sources/infra/test/maven-build-integration.sh gọi docker build cho từng microservice với tag membershiphub-<service>:v5.0.0, chạy docker image inspect kiểm tra kích thước <500MB, docker run --rm health check. Tích hợp trivy image quét lỗ hổng bảo mật NFR-003. Verify container chạy UID 1000 non-root.",
                     "targeted_tags": [
-                        "[NFR-001]",
-                        "[NFR-002]",
+                        "[NFR-005]",
                         "[NFR-004]"
                     ],
                     "components": [
-                        "INTEGRATION_SCOPE;./sources/infra/test/infrastructure-integration-test.yaml"
+                        "INTEGRATION_SCOPE;./sources/infra/test/maven-build-integration.sh"
+                    ]
+                },
+                {
+                    "id": "D4_ST3",
+                    "agent": "Doc",
+                    "desc": "Bổ sung tài liệu quy trình build và push container tại ./sources/docs/devops/01-terraform-deployment.md: hướng dẫn docker buildx multi-arch (linux/amd64, linux/arm64), chiến lược tag immutable git SHA, cấu hình Artifact Registry, tích hợp Cloud Build qua ./sources/infra/gcp/cloudbuild.yaml, quy trình Trivy scan image và rollback. Đồng thời hoàn thiện bộ tài liệu kiến trúc tổng thể doanh nghiệp (C4, OpenAPI 3.1, ERD, GDPR/CCPA, Security Baseline OWASP, runbook, Disaster Recovery, i18n/SEO, Responsive design) với sơ đồ Mermaid và checklist triển khai.",
+                    "targeted_tags": [
+                        "[DOC-001]",
+                        "[NFR-005]",
+                        "[NFR-006]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/docs/devops/01-terraform-deployment.md",
+                        "./sources/docs/architecture/01-system-overview.md",
+                        "./sources/docs/architecture/02-c4-context.md",
+                        "./sources/docs/architecture/03-c4-container.md",
+                        "./sources/docs/architecture/04-microservices-decomposition.md",
+                        "./sources/docs/api/openapi.yaml",
+                        "./sources/docs/database/01-schema-overview.md",
+                        "./sources/docs/database/02-erd-diagram.md",
+                        "./sources/docs/devops/02-gke-orchestration.md",
+                        "./sources/docs/devops/03-cicd-pipeline.md",
+                        "./sources/docs/compliance/01-gdpr-ccpa.md",
+                        "./sources/docs/compliance/02-security-baseline.md",
+                        "./sources/docs/operations/01-runbook.md",
+                        "./sources/docs/operations/02-disaster-recovery.md"
                     ]
                 }
             ]
@@ -173,57 +285,116 @@
         {
             "day": 5,
             "context_file": ".ai/.plan/.context/phase-5.context.blueprint.md",
-            "context_section": "Hoàn thiện tài liệu doanh nghiệp và rà soát cuối cùng",
+            "context_section": "NGÀY 5: CUNG CẤP HẠ TẦNG GCP VỚI TERRAFORM VÀ TRIỂN KHAI GKE",
             "sub_tasks": [
                 {
                     "id": "D5_ST1",
-                    "agent": "Doc",
-                    "desc": "Soạn thảo bản vẽ kiến trúc hệ thống tổng thể theo chuẩn doanh nghiệp. Tài liệu phải bao gồm: (1) Sơ đồ kiến trúc tổng thể thể hiện các lớp: Frontend (Next.js, React Native), Backend (Quarkus microservices), Data Layer (PostgreSQL, Redis), Infrastructure (GKE, Terraform, Docker); (2) Mô tả chi tiết cấu trúc microservices và tương tác giữa các dịch vụ qua REST API và Kafka events; (3) Ma trận RBAC với 5 vai trò người dùng và ma trận quyền truy cập chi tiết; (4) Sơ đồ luồng dữ liệu chính: xác thực OAuth2/JWT, điểm danh QR, thông báo đa kênh, đăng ký khóa học, gia hạn thẻ hội viên; (5) Sơ đồ tương tác giữa các thành phần kiến trúc trong các luồng nghiệp vụ chính; (6) Danh sách các thư viện và phiên bản công nghệ được sử dụng; (7) Sơ đồ hạ tầng GCP và GKE. Đảm bảo tài liệu phản ánh chính xác kiến trúc đã triển khai và tuân thủ tất cả yêu cầu kiến trúc đã định nghĩa.",
+                    "agent": "GCP",
+                    "desc": "Sinh module Terraform tại đường dẫn ./sources/infra/terraform/main.tf cung cấp: VPC với subnet riêng (10.10.0.0/16) tại ./sources/infra/terraform/vpc.tf; GKE Autopilot cluster với Workload Identity tại ./sources/infra/terraform/gke.tf; Cloud SQL PostgreSQL 15 high availability tại ./sources/infra/terraform/cloudsql.tf; IAM service account cho workload identity tại ./sources/infra/terraform/iam.tf; KMS keyring mã hóa AES-256 tại ./sources/infra/terraform/kms.tf; Cloud Storage bucket cho backup tại ./sources/infra/terraform/storage.tf. Cấu hình biến project_id, region, db_password qua Secret Manager. Bật Private Service Access và Cloud Logging. Tích hợp lifecycle.prevent_destroy=true cho database production.",
                     "targeted_tags": [
-                        "[ARC-001]",
-                        "[ARC-002]",
-                        "[ARC-003]",
-                        "[ARC-004]",
-                        "[ARC-005]",
-                        "[ARC-006]",
-                        "[ARC-007]",
-                        "[ARC-008]",
-                        "[ARC-009]",
-                        "[ARC-010]"
-                    ],
-                    "components": [
-                        "./sources/docs/architecture/system-architecture.md"
-                    ]
-                },
-                {
-                    "id": "D5_ST2",
-                    "agent": "Doc",
-                    "desc": "Soạn thảo bộ tài liệu doanh nghiệp hoàn chỉnh. Tài liệu API REST phải mô tả đầy đủ tất cả endpoint công khai và nội bộ, bao gồm đường dẫn, phương thức HTTP, schema yêu cầu/phản hồi, mã lỗi, ví dụ sử dụng, và yêu cầu xác thực. Tài liệu hướng dẫn cài đặt phải mô tả chi tiết quy trình triển khai hệ thống trên môi trường GKE, bao gồm cấu hình biến môi trường, khởi tạo cơ sở dữ liệu, triển khai dịch vụ, và cấu hình DNS. Tài liệu hướng dẫn vận hành phải bao gồm quy trình giám sát, xử lý sự cố thường gặp, quy trình sao lưu và phục hồi thảm họa PostgreSQL (bao gồm PITR), quy trình scale dịch vụ, và quy trình cập nhật phiên bản. Đảm bảo tất cả yêu cầu phi chức năng về hiệu suất, bảo mật, khả năng sẵn sàng, tuân thủ GDPR/CCPA được ghi chú đầy đủ trong tài liệu.",
-                    "targeted_tags": [
-                        "[ARC-001]",
-                        "[ARC-002]",
-                        "[ARC-003]",
-                        "[ARC-004]",
-                        "[ARC-005]",
-                        "[ARC-006]",
-                        "[ARC-007]",
-                        "[ARC-008]",
-                        "[ARC-009]",
-                        "[ARC-010]",
-                        "[NFR-001]",
                         "[NFR-002]",
                         "[NFR-003]",
                         "[NFR-004]",
-                        "[NFR-005]",
-                        "[NFR-006]",
-                        "[NFR-007]",
                         "[NFR-008]",
                         "[NFR-009]"
                     ],
                     "components": [
-                        "./sources/docs/api/rest-api-reference.md",
-                        "./sources/docs/operations/installation-guide.md",
-                        "./sources/docs/operations/backup-recovery-guide.md"
+                        "./sources/infra/terraform/main.tf",
+                        "./sources/infra/terraform/vpc.tf",
+                        "./sources/infra/terraform/gke.tf",
+                        "./sources/infra/terraform/cloudsql.tf",
+                        "./sources/infra/terraform/iam.tf",
+                        "./sources/infra/terraform/kms.tf",
+                        "./sources/infra/terraform/storage.tf",
+                        "./sources/infra/gcp/artifact-registry.tf"
+                    ]
+                },
+                {
+                    "id": "D5_ST2",
+                    "agent": "Tester",
+                    "desc": "Sinh script ./sources/infra/test/terraform-integration.sh chạy terraform init -backend=false, terraform validate, terraform plan -out=tfplan với mock provider. Tích hợp tflint và checkov quét cấu hình sai lệch so với baseline bảo mật. Verify các module VPC, GKE, Cloud SQL, IAM, KMS, Storage đều có resource được khai báo đầy đủ. Tự động fail khi phát hiện cấu hình thiếu prevent_destroy cho Cloud SQL.",
+                    "targeted_tags": [
+                        "[NFR-002]",
+                        "[NFR-004]"
+                    ],
+                    "components": [
+                        "INTEGRATION_SCOPE;./sources/infra/test/terraform-integration.sh"
+                    ]
+                },
+                {
+                    "id": "D5_ST3",
+                    "agent": "GKE",
+                    "desc": "Sinh manifest Kubernetes cho 6 microservice backend tại ./sources/infra/k8s/<service-name>/deployment.yaml, hpa.yaml, service.yaml (user-service, center-service, course-service, attendance-service, report-service, dashboard-service). Mỗi Deployment cấu hình: replicas 2, resource requests (cpu 250m, memory 512Mi) và limits (cpu 1000m, memory 1Gi), liveness probe /q/health/live, readiness probe /q/health/ready, env từ ConfigMap và Secret. HPA minReplicas 2, maxReplicas 10, scale khi CPU > 70% hoặc latency > 300ms. Frontend tại ./sources/infra/k8s/frontend/deployment.yaml và service.yaml. Ingress NGINX TLS 1.3 tại ./sources/infra/k8s/ingress.yaml. NetworkPolicy hạn chế traffic giữa namespace tại ./sources/infra/k8s/network-policy.yaml. PodDisruptionBudget đảm bảo availability.",
+                    "targeted_tags": [
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-003]",
+                        "[NFR-004]"
+                    ],
+                    "components": [
+                        "./sources/infra/k8s/user-service/deployment.yaml",
+                        "./sources/infra/k8s/user-service/hpa.yaml",
+                        "./sources/infra/k8s/user-service/service.yaml",
+                        "./sources/infra/k8s/center-service/deployment.yaml",
+                        "./sources/infra/k8s/center-service/hpa.yaml",
+                        "./sources/infra/k8s/center-service/service.yaml",
+                        "./sources/infra/k8s/course-service/deployment.yaml",
+                        "./sources/infra/k8s/course-service/hpa.yaml",
+                        "./sources/infra/k8s/course-service/service.yaml",
+                        "./sources/infra/k8s/attendance-service/deployment.yaml",
+                        "./sources/infra/k8s/attendance-service/hpa.yaml",
+                        "./sources/infra/k8s/attendance-service/service.yaml",
+                        "./sources/infra/k8s/report-service/deployment.yaml",
+                        "./sources/infra/k8s/report-service/hpa.yaml",
+                        "./sources/infra/k8s/report-service/service.yaml",
+                        "./sources/infra/k8s/dashboard-service/deployment.yaml",
+                        "./sources/infra/k8s/dashboard-service/hpa.yaml",
+                        "./sources/infra/k8s/dashboard-service/service.yaml",
+                        "./sources/infra/k8s/frontend/deployment.yaml",
+                        "./sources/infra/k8s/frontend/service.yaml",
+                        "./sources/infra/k8s/ingress.yaml",
+                        "./sources/infra/k8s/network-policy.yaml",
+                        "./sources/infra/k8s/configmap.yaml",
+                        "./sources/infra/k8s/secret.yaml"
+                    ]
+                },
+                {
+                    "id": "D5_ST4",
+                    "agent": "Tester",
+                    "desc": "Tạo script ./sources/infra/test/gke-manifest-integration.sh sử dụng kubeconform xác thực schema manifest, kubectl --dry-run=server apply trong cluster kind. Kiểm tra HPA, NetworkPolicy, Ingress khớp cấu hình mong đợi và không có quyền mở rộng ngoài namespace membership-hub cho phép. Verify runAsNonRoot: true cho mọi Pod. Tự động fail khi phát hiện manifest thiếu resource limits hoặc securityContext.",
+                    "targeted_tags": [
+                        "[NFR-001]",
+                        "[NFR-002]",
+                        "[NFR-004]"
+                    ],
+                    "components": [
+                        "INTEGRATION_SCOPE;./sources/infra/test/gke-manifest-integration.sh"
+                    ]
+                },
+                {
+                    "id": "D5_ST5",
+                    "agent": "Doc",
+                    "desc": "Hoàn thiện bộ tài liệu kiến trúc tổng thể tại ./sources/docs/architecture/01-system-overview.md, ./sources/docs/architecture/02-c4-context.md, ./sources/docs/architecture/03-c4-container.md, ./sources/docs/architecture/04-microservices-decomposition.md, ./sources/docs/api/openapi.yaml, ./sources/docs/database/01-schema-overview.md, ./sources/docs/database/02-erd-diagram.md, ./sources/docs/devops/01-terraform-deployment.md, ./sources/docs/devops/02-gke-orchestration.md, ./sources/docs/devops/03-cicd-pipeline.md, ./sources/docs/compliance/01-gdpr-ccpa.md, ./sources/docs/compliance/02-security-baseline.md, ./sources/docs/operations/01-runbook.md, ./sources/docs/operations/02-disaster-recovery.md. Bao gồm sơ đồ Mermaid mô tả luồng triển khai từ CI/CD đến GKE. Tài liệu phải có chỉ mục liên kết chéo giữa các file và checklist triển khai cuối cùng.",
+                    "targeted_tags": [
+                        "[DOC-001]",
+                        "[NFR-006]",
+                        "[NFR-009]"
+                    ],
+                    "components": [
+                        "./sources/docs/architecture/01-system-overview.md",
+                        "./sources/docs/architecture/02-c4-context.md",
+                        "./sources/docs/architecture/03-c4-container.md",
+                        "./sources/docs/architecture/04-microservices-decomposition.md",
+                        "./sources/docs/api/openapi.yaml",
+                        "./sources/docs/database/01-schema-overview.md",
+                        "./sources/docs/database/02-erd-diagram.md",
+                        "./sources/docs/devops/01-terraform-deployment.md",
+                        "./sources/docs/devops/02-gke-orchestration.md",
+                        "./sources/docs/devops/03-cicd-pipeline.md",
+                        "./sources/docs/compliance/01-gdpr-ccpa.md",
+                        "./sources/docs/compliance/02-security-baseline.md",
+                        "./sources/docs/operations/01-runbook.md",
+                        "./sources/docs/operations/02-disaster-recovery.md"
                     ]
                 }
             ]
