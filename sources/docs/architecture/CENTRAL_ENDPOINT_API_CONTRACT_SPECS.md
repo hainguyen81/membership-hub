@@ -7,7 +7,7 @@
 | **Project Identity** | membership-hub |
 | **Package Prefix Base** | `org.nlh4j.membershiphub` |
 | **Target Storage Path** | `./sources/docs/architecture/CENTRAL_ENDPOINT_API_CONTRACT_SPECS.md` |
-| **Associated Traceability Tags** | `[ARC-000]`, `[ARC-006]`, `[ARC-007]`, `[ARC-008]`, `[ARC-009]`, `[REQ-012]`, `[REQ-013]`, `[EXC-001]`, `[EXC-002]`, `[EXC-005]`, `[DOC-001]` |
+| **Associated Traceability Tags** | `[ARC-000]`, `[ARC-006]`, `[ARC-007]`, `[ARC-008]`, `[ARC-009]`, `[REQ-012]`, `[REQ-013]`, `[EXC-001]`, `[EXC-002]`, `[EXC-005]`, `[DAT-004]`, `[DAT-005]`, `[NFR-001]`, `[NFR-003]`, `[DOC-001]` |
 | **Compliance Standard** | Enterprise Microservices REST API & Multi-Module Maven Blueprint |
 
 ---

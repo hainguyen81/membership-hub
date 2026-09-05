@@ -54,4 +54,4 @@ This section maps the architectural components, asynchronous event pipelines, op
 
 ## 2. 🏛️ C4 Container Architecture: Attendance Microservice Ecosystem `[ARC-007]`
 
-The `attendance-service` operates as a high-throughput, horizontally scalable Quarkus 3.15 runtime node dedicated to decoding, validating, persisting, and publishing student attendance events.
+The `attendance-service` operates as a high-throughput, horizontally scalable Quarkus 3.15 runtime node dedicated to decoding, validating, persisting, and publishing student attendance events. Below is the architectural flowchart governing the end-to-end QR scan ingestion pipeline across mobile clients, backend REST endpoints, and the Apache Kafka event broker network.

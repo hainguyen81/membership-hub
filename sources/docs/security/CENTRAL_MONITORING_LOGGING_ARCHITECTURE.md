@@ -22,3 +22,8 @@ The Membership Hub project adheres to a multi-module Maven architecture with the
 
 ### ⚙️ 2.1. ATTENDANCE-SERVICE COMPONENT TOPOLOGY
 The `attendance-service` microservice is engineered using Quarkus 3.15 LTS and Hibernate ORM Panache to manage real-time attendance tracking via QR code scanning. The physical module path is `./sources/backend/attendance-service/`.
+
+### ⚙️ 2.2. QR SCAN PROCESSING ARCHITECTURE
+The attendance processing pipeline is designed for high availability and idempotency, ensuring that duplicate scans do not result in multiple attendance records.
+
+#### 2.2.1. Processing Flowchart
