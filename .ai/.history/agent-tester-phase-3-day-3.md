@@ -1,3 +1,33 @@
+# Day 3: model models/gemini-flash-latest - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: ./sources/backend/course-service/src/main/java/org/nlh4j/membershiphub/courseservice/service/CourseTeacherService.java
+* **Production source codebase generated at TARGET destination**: ./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/service/CourseServiceTest.java
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Test Component Destination Path: `./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/service/CourseServiceTest.java` (Must map to sources/backend/ or sources/frontend/)
+
+
+
+
+### 🚀 SYSTEM INTEGRATION TESTING CONTEXT (E2E PIPELINE)
+INTEGRATION_SCOPE: Multi-component workflow validation required for target destination: ./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/service/CourseServiceTest.java. 
+[INSTRUCTION FOR AI: This is a system integration/E2E test suite. No single class code context is provided. You MUST write the test to bootstrap the full runtime infrastructure context, handle live network APIs, or database relational calculation states.]
+
+
+### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY TESTER AGENT
+['Bổ sung test case trong tệp ./sources/backend/course-service/src/test/java/org/nlh4j/membershiphub/courseservice/service/CourseServiceTest.java cho CourseTeacherService.assign và CourseTeacherService.unassign. Mock CourseRepository và KafkaTeacherProducer. Xác nhận rằng khi gán thành công, sự kiện Kafka được publish đúng topic teacher-events với payload chứa eventType=teacher-assigned, courseId, teacherId, assignedAt. Test trường hợp giáo viên đã tồn tại trong mapping ném DataIntegrityViolationException với mã DUPLICATE_TEACHER_ASSIGNMENT_409. Test trường hợp course không tồn tại ném CourseNotFoundException trả về HTTP 404. Sử dụng JUnit 5 kết hợp Mockito 5.7.0.']
+
+---
+
+### ⚙️ TEST ENGINEER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided away. Automatically evaluate the extension profile of the target test component path to construct either an isolated backend unit/integration suite or a frontend E2E/Unit suite.
+
+
+Verify that any Java file generated strictly begins with the required `org.nlh4j.membershiphub` structure. Ensure that you read the exact Tag IDs from the `['[REQ-009]', '[ARC-007]']` variable, and permanently burn those codes into the Javadoc metadata blocks (for Java) or the test case description strings (for TypeScript/JavaScript). Emit the final compiler-ready production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```java
 package org.nlh4j.membershiphub.courseservice.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -596,3 +626,5 @@ public class CourseServiceTest {
         }
     }
 }
+```
+
