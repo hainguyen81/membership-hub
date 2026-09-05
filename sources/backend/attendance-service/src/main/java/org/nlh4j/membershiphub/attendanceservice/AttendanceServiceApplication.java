@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 @QuarkusMain
 public class AttendanceServiceApplication {
 
+    // [ARC-000] Top-of-Class Constants Declaration Law: Isolated logger constant handle
     private static final Logger LOGGER = LoggerFactory.getLogger(AttendanceServiceApplication.class);
 
     /**
@@ -33,7 +34,8 @@ public class AttendanceServiceApplication {
      * @param args command-line arguments passed to the application
      */
     public static void main(String... args) {
-        LOGGER.info("Starting AttendanceServiceApplication (attendance-service) via Quarkus runtime...");
+        // [NFR-006] Enterprise Logging: Process Flow Entry Point Audit
+        LOGGER.info("[PROCESS] [ARC-000] Starting AttendanceServiceApplication (attendance-service) via Quarkus runtime...");
         Quarkus.run(AttendanceApp.class, args);
     }
 
@@ -43,14 +45,16 @@ public class AttendanceServiceApplication {
      */
     public static class AttendanceApp implements QuarkusApplication {
 
+        // [ARC-000] Top-of-Class Constants Declaration Law: Isolated application logger instance
         private static final Logger APP_LOGGER = LoggerFactory.getLogger(AttendanceApp.class);
 
         @Override
         public int run(String... args) throws Exception {
-            APP_LOGGER.info("AttendanceServiceApplication initialized successfully.");
-            APP_LOGGER.info("Attendance Service active profile, health check endpoints, and Kafka ingress ready.");
+            // [REQ-012] Business entry logging for attendance QR microservice initialization
+            APP_LOGGER.info("[PROCESS] [REQ-012] AttendanceServiceApplication initialized successfully.");
+            APP_LOGGER.info("[PROCESS] [ARC-000] Attendance Service active profile, health check endpoints, and Kafka ingress ready.");
             Quarkus.waitForExit();
-            APP_LOGGER.info("AttendanceServiceApplication shutting down gracefully.");
+            APP_LOGGER.info("[PROCESS] [ARC-000] AttendanceServiceApplication shutting down gracefully.");
             return 0;
         }
     }
