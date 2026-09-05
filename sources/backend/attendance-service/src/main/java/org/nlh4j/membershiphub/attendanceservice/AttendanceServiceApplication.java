@@ -1,41 +1,102 @@
-/*
- * Copyright (c) 2026 org.nlh4j.membershiphub
- * All rights reserved.
- * 
- * Traceability Tags:
- * - [ARC-000]: Scaffolding & Build Descriptors cho toàn bộ hệ thống
- * - [REQ-012]: Ghi nhận điểm danh QR cho sinh viên
- */
-package org.nlh4j.membershiphub.attendanceservice;
+<!-- 
+  File: ./sources/backend/attendance-service/pom.xml
+  Traceability Tags: [ARC-000], [REQ-012]
+  Description: Maven build descriptor for attendance-service microservice.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-import io.quarkus.runtime.Quarkus;
-import io.quarkus.runtime.annotations.QuarkusMain;
-import org.jboss.logging.Logger;
+    <parent>
+        <groupId>org.nlh4j.membershiphub</groupId>
+        <artifactId>membership-hub-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-/**
- * AttendanceServiceApplication serves as the main entry point for the Attendance Microservice
- * within the membership-hub enterprise platform. It bootstraps the Quarkus runtime,
- * configures production health checks, and initializes reactive messaging endpoints.
- * 
- * @author Enterprise Architecture System (SA Agent)
- * @version 1.0.0
- * @since 2026-08-29
- */
-@QuarkusMain
-public class AttendanceServiceApplication {
+    <artifactId>attendance-service</artifactId>
+    <name>Membership Hub :: Attendance Service</name>
 
-    private static final Logger LOG = Logger.getLogger(AttendanceServiceApplication.class);
+    <dependencies>
+        <!-- Quarkus Core & Web -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cache</artifactId>
+        </dependency>
 
-    /**
-     * Main entry point for the attendance-service microservice.
-     * Delegates startup execution to the Quarkus runtime engine.
-     *
-     * @param args Command line arguments passed during container bootstrap.
-     */
-    public static void main(String[] args) {
-        LOG.info("Initializing Attendance Service Microservice [membership-hub - attendance-service]...");
-        
-        // Execute Quarkus runtime container bootstrap
-        Quarkus.run(args);
-    }
-}
+        <!-- Testing Dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus.platform</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
