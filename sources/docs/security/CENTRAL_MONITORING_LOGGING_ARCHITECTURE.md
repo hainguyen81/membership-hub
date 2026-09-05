@@ -1,5 +1,5 @@
 # 🏛️ CENTRAL MONITORING & LOGGING ARCHITECTURE
-## 📊 1. SYSTEM OVERVIEW & CORE STACK TRACEABILITY
+## 📊 1. SYSTEM OVERVIEW & CORE STACEABILITY
 
 ### ⚙️ 1.1. ARCHITECTURAL SCOPE & TECHNICAL STACK
 The Membership Hub project adheres to a multi-module Maven architecture with the base package prefix `org.nlh4j.membershiphub`. The project consists of 5 microservices:

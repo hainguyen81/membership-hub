@@ -4,7 +4,11 @@ The Membership Hub project is structured as a multi-module Maven project with a 
 
 ## 📁 Backend Scaffolding Details
 ### 📂 Multi-Module Maven Structure
-(Existing structure preserved)
+The root `./sources/backend/pom.xml` coordinates the build of the following sub-modules:
+- `user-service`: Handles identity, authentication, and RBAC.
+- `center-service`: Manages multi-tenant centers and administrative mappings.
+- `course-service`: Manages courses, schedules, and student enrollments.
+- `attendance-service`: Processes real-time QR-based attendance scans.
 
 ---
 
