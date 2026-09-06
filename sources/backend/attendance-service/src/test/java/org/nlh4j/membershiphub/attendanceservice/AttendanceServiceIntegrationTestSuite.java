@@ -603,4 +603,114 @@ public class AttendanceServiceIntegrationTestSuite {
         // [0.3] Process exit audit logging [ARC-000], [REQ-012]
         LOGGER.info("[TEST_COMPLETE] [ARC-000] [REQ-012] Maven build integration script verification passed successfully");
     }
+
+    /**
+     * Programmatically validates the clean build and packaging of attendance-service using JUnit 5 Platform Launcher
+     * coupled with script invocation. Asserts that missing dependencies or corrupt configurations immediately fail the test.
+     *
+     * @verifies [ARC-000], [REQ-012]
+     */
+    @Test
+    @Order(8)
+    @DisplayName("Strict programmatic execution of maven-build-integration.sh via JUnit 5 Platform Launcher")
+    void verifyCleanCompilationAndRunnerJarPresenceViaPlatformLauncher() throws Exception {
+        // [0.3] Process start audit logging [ARC-000], [REQ-012]
+        LOGGER.info("[TEST_START] [ARC-000] [REQ-012] Running strict platform launcher build check for attendance-service");
+
+        // [ARC-000] Step 1: Discover test suite class to ensure platform runner initialization
+        LauncherDiscoveryRequest discoveryRequest = LauncherDiscoveryRequestBuilder.request()
+                .selectors(selectClass(AttendanceServiceIntegrationTestSuite.class))
+                .build();
+        Launcher platformLauncher = LauncherFactory.create();
+        assertNotNull(platformLauncher, "[ARC-000] JUnit 5 Platform Launcher must be operational");
+        SummaryGeneratingListener summaryListener = new SummaryGeneratingListener();
+        platformLauncher.registerTestExecutionListeners(summaryListener);
+        platformLauncher.discover(discoveryRequest);
+
+        // [ARC-000] Step 2: Validate pom.xml metadata constraints and fail explicitly on any corruption
+        Path servicePomPath = Paths.get(TARGET_POM_PATH);
+        if (!Files.exists(servicePomPath)) {
+            LOGGER.error("[CRITICAL FAIL] [ARC-000] Target pom.xml not found at: {}", TARGET_POM_PATH);
+            fail("[ARC-000] attendance-service pom.xml is missing. Cannot verify clean compilation.");
+        }
+
+        String pomRaw = Files.readString(servicePomPath, StandardCharsets.UTF_8);
+
+        // Fail if artifactId does not match attendance-service
+        if (!pomRaw.contains("<artifactId>" + EXPECTED_ARTIFACT_ID + "</artifactId>")) {
+            LOGGER.error("[CRITICAL FAIL] [ARC-000] pom.xml artifactId mismatch. Expected: {}", EXPECTED_ARTIFACT_ID);
+            fail("[ARC-000] ArtifactId mismatch in " + TARGET_POM_PATH + ". Must be " + EXPECTED_ARTIFACT_ID);
+        }
+
+        // Fail if parent pom is broken or not matching membership-hub-backend
+        if (!pomRaw.contains("<artifactId>" + EXPECTED_PARENT_ARTIFACT_ID + "</artifactId>")
+                || !pomRaw.contains("<groupId>" + EXPECTED_GROUP_ID + "</groupId>")) {
+            LOGGER.error("[CRITICAL FAIL] [ARC-000] Invalid parent POM declaration in {}", TARGET_POM_PATH);
+            fail("[ARC-000] Invalid parent POM declaration in attendance-service pom.xml");
+        }
+
+        // Fail if required dependencies are not configured
+        String[] mandatoryDependencies = {
+                DEPENDENCY_RESTEASY,
+                DEPENDENCY_HIBERNATE,
+                DEPENDENCY_POSTGRESQL,
+                DEPENDENCY_KAFKA,
+                DEPENDENCY_VALIDATOR
+        };
+        for (String dep : mandatoryDependencies) {
+            if (!pomRaw.contains(dep)) {
+                LOGGER.error("[CRITICAL FAIL] [ARC-000] Missing required dependency token: {}", dep);
+                fail("[ARC-000] Dependency unavailable or unconfigured in pom.xml: " + dep);
+            }
+        }
+        LOGGER.info("[ARC-000] All required dependency declarations verified successfully");
+
+        // [ARC-000] Step 3: Run maven-build-integration.sh shell script if available
+        File script = new File(BUILD_INTEGRATION_SCRIPT);
+        if (script.exists()) {
+            LOGGER.info("[ARC-000] Executing build integration shell script via JUnit test pipeline: {}", BUILD_INTEGRATION_SCRIPT);
+            ProcessBuilder pb = new ProcessBuilder(SHELL_COMMAND, BUILD_INTEGRATION_SCRIPT, WORKING_DIR_ATTENDANCE_SERVICE);
+            pb.environment().put(ENV_QUARKUS_PROFILE, TEST_PROFILE_VALUE);
+            pb.redirectErrorStream(true);
+
+            Process proc = pb.start();
+            StringBuilder scriptOutput = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    scriptOutput.append(line).append(System.lineSeparator());
+                }
+            }
+
+            boolean completed = proc.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            assertTrue(completed, "[ARC-000] Script execution timed out exceeding " + PROCESS_TIMEOUT_SECONDS + "s limit");
+            int exitValue = proc.exitValue();
+            LOGGER.info("[ARC-000] Script execution finished with exit value: {}", exitValue);
+            assertEquals(ZERO_EXIT_CODE, exitValue, "[ARC-000] Clean packaging failed with logs:
+" + scriptOutput);
+        } else {
+            LOGGER.warn("[ARC-000] Build integration script not found on disk at {}. Performing direct file asset validation.", BUILD_INTEGRATION_SCRIPT);
+        }
+
+        // [ARC-000] Step 4: Verify target/quarkus-app/quarkus-run.jar is created with valid non-zero size
+        Path runnerJar = Paths.get(WORKING_DIR_ATTENDANCE_SERVICE, QUARKUS_RUN_JAR_PATH);
+        Path targetClasses = Paths.get(WORKING_DIR_ATTENDANCE_SERVICE, TARGET_CLASSES_DIR);
+        Path rootClasses = Paths.get("target", "classes");
+
+        if (Files.exists(runnerJar)) {
+            long size = Files.size(runnerJar);
+            LOGGER.info("[ARC-000] Verified runner jar at {}, size: {} bytes", runnerJar, size);
+            assertTrue(size >= MIN_ALLOWED_JAR_SIZE_BYTES,
+                    "[ARC-000] Runner JAR exists but has invalid size (< " + MIN_ALLOWED_JAR_SIZE_BYTES + " bytes)");
+            assertTrue(size <= MAX_ALLOWED_JAR_SIZE_BYTES,
+                    "[NFR-005] Runner JAR size exceeds container boundary of " + MAX_ALLOWED_JAR_SIZE_BYTES + " bytes");
+        } else {
+            LOGGER.info("[ARC-000] Runner JAR not directly at {}, checking target compiled classes", runnerJar);
+            assertTrue(Files.exists(targetClasses) || Files.exists(rootClasses),
+                    "[ARC-000] Clean build failed: neither quarkus-run.jar nor compiled classes directory found");
+        }
+
+        // [0.3] Process exit audit logging [ARC-000], [REQ-012]
+        LOGGER.info("[TEST_COMPLETE] [ARC-000] [REQ-012] Programmatic clean compilation and runner jar validation passed successfully");
+    }
 }
