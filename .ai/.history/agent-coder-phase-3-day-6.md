@@ -8258,3 +8258,1336 @@ public class AttendanceServiceApplication {
 }
 ```
 
+# Day 6: model cohere/north-mini-code:free - API Endpoint https://openrouter.ai/api/v1
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/backend/attendance-service/pom.xml
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Component Destination Path: `./sources/backend/attendance-service/pom.xml`
+*   Traceability Audit Tags For This Task: ['[ARC-000]', '[REQ-012]']
+
+### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
+
+<EXISTING_SOURCE_CODE_WORKSPACE>
+* **File Existence Status:** PROCOVERY_MAINTENANCE
+* **Current Disk Content Base:**
+<EXISTING_SOURCE_CODE>
+```text
+We need to generate the attendance-service/pom.xml with the required dependencies and comments.
+
+The existing file is:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ================================================================================ -->
+<!-- FILE: ./sources/backend/attendance-service/pom.xml -->
+<!-- TRACEABILITY TAGS: [ARC-000], [REQ-012] -->
+<!-- BUSINESS CONTEXT: Enterprise Maven build descriptor for attendance-service -->
+<!-- ARCHITECTURAL COMPLIANCE: Quarkus 3.15 LTS, Panache ORM, Kafka, Testcontainers -->
+<!-- ================================================================================ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ============================================================================ -->
+    <!-- [ARC-000] Parent POM Inheritance for Centralized Dependency Management      -->
+    <!-- ============================================================================ -->
+    <parent>
+        <groupId>org.nlh4j.membershiphub</groupId>
+        <artifactId>membership-hub-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <!-- ============================================================================ -->
+    <!-- [ARC-000] Module Coordinate Identification for Attendance Service            -->
+    <!-- ============================================================================ -->
+    <groupId>org.nlh4j.membershiphub</groupId>
+    <artifactId>attendance-service</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>attendance-service</name>
+    <description>
+        Attendance Service: Handles high-throughput real-time QR code attendance scanning,
+        idempotent scan verification, and event publication via Apache Kafka for the Membership Hub.
+    </description>
+
+    <!-- ============================================================================ -->
+    <!-- [ARC-000] Centralized Immutable Properties & Dependency Versions             -->
+    <!-- ============================================================================ -->
+    <properties>
+        <!-- Project encoding specification -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Java LTS compilation baseline -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+
+        <!-- Testcontainers version pinned for reproducible integration builds -->
+        <testcontainers.version>1.20.4</testcontainers.version>
+
+        <!-- Plugin versions for lifecycle management -->
+        <compiler-plugin.version>3.13.0</compiler-plugin.version>
+        <surefire-plugin.version>3.2.5</surefire-plugin.version>
+    </properties>
+
+    <dependencies>
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Runtime REST & JSON Serialization Layer (Reactive)             -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Relational Persistence Layer (Hibernate ORM Panache)          -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] PostgreSQL JDBC Driver                                         -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Database Schema Migration Automation via Flyway                -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Security & Token Verification (SmallRye JWT)                    -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] OpenAPI 3.1 & Swagger Documentation Integration               -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [REQ-012], [ARC-000] Reactive Messaging for Apache Kafka Integration     -->
+        <!-- Used to publish QR attendance scan events to topic attendance.scan.requested -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io
+```
+</EXISTING_SOURCE_CODE>
+</EXISTING_SOURCE_CODE_WORKSPACE>
+
+
+### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
+['Tạo tệp pom.xml cho attendance-service tại đường dẫn ./sources/backend/attendance-service/pom.xml thừa kế parent ./sources/backend/pom.xml. Khai báo dependency Quarkus 3.15.1: quarkus-resteasy-reactive-jackson, quarkus-hibernate-orm-panache, quarkus-jdbc-postgresql, quarkus-flyway, quarkus-smallrye-reactive-messaging-kafka, quarkus-hibernate-validator, quarkus-smallrye-openapi, quarkus-cache (Caffeine). ArtifactId attendance-service, groupId org.nlh4j.membershiphub. Dependencies test gồm quarkus-junit5, rest-assured, mockito-core, org.testcontainers:postgresql:1.20.4, org.testcontainers:kafka:1.20.4. Tệp phải biên dịch trống thông qua mvn clean install -DskipTests.']
+
+---
+
+### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Analyze the `<EXISTING_SOURCE_CODE_WORKSPACE>` layout, you MUST perform an AST-level incremental insertion of the requested sub-tasks into the current file content. You ARE STRICTLY FORBIDDEN from dropping old logic.
+
+
+Verify that any Java file generated strictly begins with the required `org.nlh4j.membershiphub` package layout. Ensure that you read the exact Tag IDs from the `['[ARC-000]', '[REQ-012]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ================================================================================ -->
+<!-- FILE: ./sources/backend/attendance-service/pom.xml -->
+<!-- TRACEABILITY TAGS: [ARC-000], [REQ-012] -->
+<!-- BUSINESS CONTEXT: Enterprise Maven build descriptor for attendance-service -->
+<!-- ARCHITECTURAL COMPLIANCE: Quarkus 3.15 LTS, Panache ORM, Kafka, Testcontainers -->
+<!-- ================================================================================ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ============================================================================ -->
+    <!-- [ARC-000] Parent POM Inheritance for Centralized Dependency Management      -->
+    <!-- ============================================================================ -->
+    <parent>
+        <groupId>org.nlh4j.membershiphub</groupId>
+        <artifactId>membership-hub-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <!-- ============================================================================ -->
+    <!-- [ARC-000] Module Coordinate Identification for Attendance Service            -->
+    <!-- ============================================================================ -->
+    <groupId>org.nlh4j.membershiphub</groupId>
+    <artifactId>attendance-service</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>attendance-service</name>
+    <description>
+        Attendance Service: Handles high-throughput real-time QR code attendance scanning,
+        idempotent scan verification, and event publication via Apache Kafka for the Membership Hub.
+    </description>
+
+    <!-- ============================================================================ -->
+    <!-- [ARC-000] Centralized Immutable Properties & Dependency Versions             -->
+    <!-- ============================================================================ -->
+    <properties>
+        <!-- Project encoding specification -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Java LTS compilation baseline -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+
+        <!-- Testcontainers version pinned for reproducible integration builds -->
+        <testcontainers.version>1.20.4</testcontainers.version>
+
+        <!-- Plugin versions for lifecycle management -->
+        <compiler-plugin.version>3.13.0</compiler-plugin.version>
+        <surefire-plugin.version>3.2.5</surefire-plugin.version>
+    </properties>
+
+    <dependencies>
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Runtime REST & JSON Serialization Layer (Reactive)             -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Relational Persistence Layer (Hibernate ORM Panache)          -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] PostgreSQL JDBC Driver                                         -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Database Schema Migration Automation via Flyway                -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Security & Token Verification (SmallRye JWT)                    -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] OpenAPI 3.1 & Swagger Documentation Integration               -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [REQ-012], [ARC-000] Reactive Messaging for Apache Kafka Integration     -->
+        <!-- Used to publish QR attendance scan events to topic attendance.scan.requested -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Bean Validation (Jakarta Validation)                             -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Application Caching (Caffeine)                                   -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cache</artifactId>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Testing Framework (Quarkus JUnit5)                               -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] REST Assured for Integration Testing                             -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Mockito Core for Unit Testing                                    -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Testcontainers for PostgreSQL Integration                       -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ======================================================================== -->
+        <!-- [ARC-000] Testcontainers for Apache Kafka Integration                     -->
+        <!-- ======================================================================== -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- ============================================================================ -->
+    <!-- [ARC-000] Maven Plugins for Build Lifecycle Management                       -->
+    <!-- ============================================================================ -->
+    <build>
+        <plugins>
+            <!-- Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler-plugin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
+
+            <!-- Quarkus Maven Plugin -->
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>3.15.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Surefire Plugin for Unit Tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire-plugin.version}</version>
+                <configuration>
+                    <systemProperties>
+                        <java.util.logging.manager>org.jboss.logmanager.JBossLogManager</java.util.logging.manager>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+# Day 6: model cohere/north-mini-code:free - API Endpoint https://openrouter.ai/api/v1
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/backend/attendance-service/src/main/resources/application.properties
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Component Destination Path: `./sources/backend/attendance-service/src/main/resources/application.properties`
+*   Traceability Audit Tags For This Task: ['[ARC-000]', '[REQ-012]']
+
+### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
+
+<EXISTING_SOURCE_CODE_WORKSPACE>
+* **File Existence Status:** PROCOVERY_MAINTENANCE
+* **Current Disk Content Base:**
+<EXISTING_SOURCE_CODE>
+```properties
+<!-- 
+   ==========================================================================
+   📁 FILE: ./sources/backend/attendance-service/pom.xml
+   📌 PURPOSE: Maven build descriptor for the attendance-service microservice.
+   🔖 TRACEABILITY TAGS: [ARC-000], [REQ-012]
+   📅 CREATED: 2026-08-29
+   📝 NOTES: This pom.xml inherits from the parent project (membership-hub-backend) 
+            and declares all required Quarkus 3.15.1 runtime and test dependencies.
+   ==========================================================================
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- ---------------------------------------------------------------------- -->
+    <!-- PARENT PROJECT (membership-hub-backend) -->
+    <!-- ---------------------------------------------------------------------- -->
+    <parent>
+        <groupId>org.nlh4j.membershiphub</groupId>
+        <artifactId>membership-hub-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <!-- ---------------------------------------------------------------------- -->
+    <!-- PROJECT METADATA -->
+    <!-- ---------------------------------------------------------------------- -->
+    <artifactId>attendance-service</artifactId>
+    <packaging>jar</packaging>
+
+    <!-- ---------------------------------------------------------------------- -->
+    <!-- PROPERTIES -->
+    <!-- ---------------------------------------------------------------------- -->
+    <properties>
+        <!-- Compiler settings -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
+        <!-- Quarkus platform version -->
+        <quarkus.platform.version>3.15.1</quarkus.platform.version>
+        <quarkus.plugin.version>3.15.1</quarkus.plugin.version>
+
+        <!-- Maven plugins versions -->
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
+    </properties>
+
+    <!-- ---------------------------------------------------------------------- -->
+    <!-- DEPENDENCY MANAGEMENT (Quarkus BOM) -->
+    <!-- ---------------------------------------------------------------------- -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- Import the Quarkus platform BOM -->
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-bom</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- ---------------------------------------------------------------------- -->
+    <!-- RUNTIME DEPENDENCIES -->
+    <!-- ---------------------------------------------------------------------- -->
+    <dependencies>
+        <!-- Core Quarkus runtime -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cache</artifactId>
+        </dependency>
+
+        <!-- Additional optional runtime dependencies can be added here -->
+    </dependencies>
+
+    <!-- ---------------------------------------------------------------------- -->
+    <!-- TEST DEPENDENCIES -->
+    <!-- ---------------------------------------------------------------------- -->
+    <dependencies>
+        <!-- Quarkus JUnit 5 -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- REST Assured for HTTP testing -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Mockito for mocking -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Testcontainers for PostgreSQL -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Testcontainers for Kafka -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- ---------------------------------------------------------------------- -->
+    <!-- BUILD PLUGINS -->
+    <!-- ---------------------------------------------------------------------- -->
+    <build>
+        <plugins>
+            <!-- Maven Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+
+            <!-- Quarkus Maven Plugin -->
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven Surefire Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <java.util.logging.manager>org.jboss.logmanager.JBossLogManager</java.util.logging.manager>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+</EXISTING_SOURCE_CODE>
+</EXISTING_SOURCE_CODE_WORKSPACE>
+
+
+### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
+['Tạo tệp pom.xml cho attendance-service tại đường dẫn ./sources/backend/attendance-service/pom.xml thừa kế parent ./sources/backend/pom.xml. Khai báo dependency Quarkus 3.15.1: quarkus-resteasy-reactive-jackson, quarkus-hibernate-orm-panache, quarkus-jdbc-postgresql, quarkus-flyway, quarkus-smallrye-reactive-messaging-kafka, quarkus-hibernate-validator, quarkus-smallrye-openapi, quarkus-cache (Caffeine). ArtifactId attendance-service, groupId org.nlh4j.membershiphub. Dependencies test gồm quarkus-junit5, rest-assured, mockito-core, org.testcontainers:postgresql:1.20.4, org.testcontainers:kafka:1.20.4. Tệp phải biên dịch trống thông qua mvn clean install -DskipTests.']
+
+---
+
+### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Analyze the `<EXISTING_SOURCE_CODE_WORKSPACE>` layout, you MUST perform an AST-level incremental insertion of the requested sub-tasks into the current file content. You ARE STRICTLY FORBIDDEN from dropping old logic.
+
+
+Verify that any Java file generated strictly begins with the required `org.nlh4j.membershiphub` package layout. Ensure that you read the exact Tag IDs from the `['[ARC-000]', '[REQ-012]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```xml
+<!-- 
+   ==========================================================================
+   📁 FILE: ./sources/backend/attendance-service/src/main/resources/application.properties
+   📌 PURPOSE: Application configuration properties for the attendance-service microservice.
+   🔖 TRACEABILITY TAGS: [ARC-000], [REQ-012]
+   📅 CREATED: 2026-08-29
+   📝 NOTES: This Quarkus application.properties file defines core runtime configuration 
+            for the attendance-service, including datasource, Kafka, logging, and custom 
+            business settings. All configuration keys are aligned with enterprise 
+            standards and referenced by the traceability tags above.
+   ==========================================================================
+-->
+
+# Core Quarkus runtime configuration
+quarkus.http.port=8080
+quarkus.http.host=0.0.0.0
+
+# Database configuration (PostgreSQL)
+quarkus.datasource.default.db-kind=postgresql
+quarkus.datasource.default.username=${DB_USER}
+quarkus.datasource.default.password=${DB_PASSWORD}
+quarkus.datasource.default.jdbc-url=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+quarkus.datasource.default.jdbc-initial-sql=classpath:db/init.sql
+quarkus.datasource.default.reactive=false
+
+# Flyway migration
+quarkus.flyway.migrate-at-start=true
+quarkus.flyway.locations=classpath:db/migration
+
+# Hibernate ORM settings
+quarkus.hibernate-orm.default.database-generated=none
+quarkus.hibernate-orm.default.packages-to-scan=org.nlh4j.membershiphub.attendanceservice.model
+
+# Kafka configuration for attendance events
+quarkus.kafka.devservices.enabled=false
+mp.messaging.attendance-in.connector=kafka
+mp.messaging.attendance-in.topic=attendance-scan-requested
+mp.messaging.attendance-in.group-id=membership-hub-attendance
+mp.messaging.attendance-in.auto-offset-reset=earliest
+
+mp.messaging.attendance-out.connector=kafka
+mp.messaging.attendance-out.topic=attendance-events
+mp.messaging.attendance-out.group-id=membership-hub-attendance
+mp.messaging.attendance-out.auto-offset-reset=latest
+
+# Logging configuration (JSON format for ELK stack)
+quarkus.log.handler.gelf.enabled=true
+quarkus.log.handler.gelf.host=${ELK_HOST}
+quarkus.log.handler.gelf.port=${ELK_PORT}
+quarkus.log.handler.gelf.version=1.1
+quarkus.log.handler.gelf.message-fields=level,message,logger,thread,id
+quarkus.log.handler.gelf.additional-fields=service=attendance-service
+quarkus.log.handler.gelf.include-stack=false
+quarkus.log.handler.gelf.log-format=json
+
+# Custom application properties
+app.qr.payload.max-length=2048
+app.attendance.idempotency.window.seconds=300
+app.attendance.max.daily.scans.per.student=10
+app.notification.retry.max-attempts=3
+app.notification.retry.backoff.ms=5000
+
+# Security and JWT settings
+mp.jwt.verify.publickey.location=publicKey.pem
+mp.jwt.verify.issuer=membership-hub
+smallrye.jwt.verify.key-location=privateKey.pem
+
+# Health checks
+quarkus.smallrye-health.root-path=/q/health
+quarkus.smallrye-health.liveness-path=/q/health/live
+quarkus.smallrye-health readiness-path=/q/health/ready
+
+# Metrics and tracing
+quarkus.micrometer.export.prometheus.enabled=true
+quarkus.micrometer.metrics.enabled=true
+quarkus.opentelemetry.enabled=true
+quarkus.opentelemetry.tracer.exporter=otlp
+quarkus.opentelemetry.tracer.exporter.otlp.endpoint=${OTEL_EXPORTER_ENDPOINT}
+
+# Cache configuration (Caffeine)
+quarkus.cache.caffeine.attendance-cache.capacity=1000
+quarkus.cache.caffeine.attendance-cache.expire-after-write=PT30M
+
+# Feature flags
+app.feature.qr-scan-enabled=true
+app.feature.idempotent-attendance=true
+app.feature.kafka-events-enabled=true
+
+# External service URLs (injected via environment or config map)
+app.external.services.zalo.api=https://api.zalo.me/v3
+app.external.services.fcm.endpoint=https://fcm.googleapis.com/v1
+
+# Default logging level
+quarkus.log.level=INFO
+quarkus.log.category."org.nlh4j".level=DEBUG
+
+# Database connection pool settings
+quarkus.datasource.default.pool-size=20
+quarkus.datasource.default.max-lifetime=1800000
+quarkus.datasource.default.idle-timeout=300000
+quarkus.datasource.default.connection-timeout=5000
+
+# Kafka producer settings
+mp.messaging.attendance-out.connector=kafka
+mp.messaging.attendance-out.topic=attendance-events
+mp.messaging.attendance-out.bootstrap.servers=${KAFKA_BOOTSTRAP_SERVERS}
+mp.messaging.attendance-out.retries=5
+mp.messaging.attendance-out.acks=all
+mp.messaging.attendance-out.enable.idempotency=true
+
+# Kafka consumer settings
+mp.messaging.attendance-in.connector=kafka
+mp.messaging.attendance-in.topic=attendance-scan-requested
+mp.messaging.attendance-in.bootstrap.servers=${KAFKA_BOOTSTRAP_SERVERS}
+mp.messaging.attendance-in.group.id=membership-hub-attendance
+mp.messaging.attendance-in.auto.offset.reset=earliest
+mp.messaging.attendance-in.enable.auto.commit=false
+mp.messaging.attendance-in.fetch.min.bytes=
+
+# Day 6: model cohere/north-mini-code:free - API Endpoint https://openrouter.ai/api/v1
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/backend/attendance-service/src/main/resources/db/migration/V1__attendance_init.sql
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Component Destination Path: `./sources/backend/attendance-service/src/main/resources/db/migration/V1__attendance_init.sql`
+*   Traceability Audit Tags For This Task: ['[ARC-000]', '[REQ-012]']
+
+### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
+
+<EXISTING_SOURCE_CODE_WORKSPACE>
+* **File Existence Status:** PROCOVERY_MAINTENANCE
+* **Current Disk Content Base:**
+<EXISTING_SOURCE_CODE>
+```sql
+<!-- [ARC-000], [REQ-012] -->
+<!-- ==================================================================================== -->
+<!-- FILE: ./sources/backend/attendance-service/pom.xml -->
+<!-- SCOPE: Attendance Service - Maven Multi‑Module Build Descriptor -->
+<!-- TRACEABILITY: [ARC-000] (System Architecture), [REQ-012] (QR Attendance Scan) -->
+<!-- DESCRIPTION: Maven POM for the attendance‑service microservice. Inherits the -->
+<!--              parent project org.nlh4j.membershiphub:membership‑hub‑backend:1.0.0‑SNAPSHOT. -->
+<!--              Declares Quarkus 3.15.1 core and test dependencies, including Kafka, -->
+<!--              PostgreSQL, Flyway, and Testcontainers for integration testing. -->
+<!-- ==================================================================================== -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- ------------------------------------------------------------------------------ -->
+    <!-- PARENT PROJECT – Shared BOM, dependency management, and common plugin config -->
+    <!-- ------------------------------------------------------------------------------ -->
+    <parent>
+        <groupId>org.nlh4j.membershiphub</groupId>
+        <artifactId>membership-hub-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <!-- ------------------------------------------------------------------------------ -->
+    <!-- PROJECT METADATA -->
+    <!-- ------------------------------------------------------------------------------ -->
+    <artifactId>attendance-service</artifactId>
+    <name>attendance-service</name>
+    <description>Microservice for attendance tracking, QR scan processing, and notification dispatch</description>
+
+    <properties>
+        <!-- Enforce Java 17 LTS for compatibility with Quarkus 3.15.1 -->
+        <java.version>17</java.version>
+        <quarkus.platform.version>3.15.1</quarkus.platform.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <!-- ------------------------------------------------------------------------------ -->
+    <!-- DEPENDENCY MANAGEMENT – Import Quarkus BOM for version alignment -->
+    <!-- ------------------------------------------------------------------------------ -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-bom</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- ------------------------------------------------------------------------------ -->
+    <!-- RUNTIME DEPENDENCIES -->
+    <!-- ------------------------------------------------------------------------------ -->
+    <dependencies>
+        <!-- Core Quarkus -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cache</artifactId>
+        </dependency>
+
+        <!-- -------------------------------------------------------------------------- -->
+        <!-- TEST DEPENDENCIES – Unit & Integration -->
+        <!-- -------------------------------------------------------------------------- -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Testcontainers for PostgreSQL & Kafka -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- ------------------------------------------------------------------------------ -->
+    <!-- BUILD PLUGINS -->
+    <!-- ------------------------------------------------------------------------------ -->
+    <build>
+        <plugins>
+            <!-- Quarkus Maven Plugin – builds the native / jar -->
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven Compiler Plugin -->
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Surefire Plugin -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <systemProperties>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+</EXISTING_SOURCE_CODE>
+</EXISTING_SOURCE_CODE_WORKSPACE>
+
+
+### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
+['Tạo tệp pom.xml cho attendance-service tại đường dẫn ./sources/backend/attendance-service/pom.xml thừa kế parent ./sources/backend/pom.xml. Khai báo dependency Quarkus 3.15.1: quarkus-resteasy-reactive-jackson, quarkus-hibernate-orm-panache, quarkus-jdbc-postgresql, quarkus-flyway, quarkus-smallrye-reactive-messaging-kafka, quarkus-hibernate-validator, quarkus-smallrye-openapi, quarkus-cache (Caffeine). ArtifactId attendance-service, groupId org.nlh4j.membershiphub. Dependencies test gồm quarkus-junit5, rest-assured, mockito-core, org.testcontainers:postgresql:1.20.4, org.testcontainers:kafka:1.20.4. Tệp phải biên dịch trống thông qua mvn clean install -DskipTests.']
+
+---
+
+### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Analyze the `<EXISTING_SOURCE_CODE_WORKSPACE>` layout, you MUST perform an AST-level incremental insertion of the requested sub-tasks into the current file content. You ARE STRICTLY FORBIDDEN from dropping old logic.
+
+
+Verify that any Java file generated strictly begins with the required `org.nlh4j.membershiphub` package layout. Ensure that you read the exact Tag IDs from the `['[ARC-000]', '[REQ-012]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```xml
+<!-- [ARC-000], [REQ-012] -->
+<!-- ==================================================================================== -->
+<!-- FILE: ./sources/backend/attendance-service/pom.xml -->
+<!-- SCOPE: Attendance Service - Maven Multi‑Module Build Descriptor -->
+<!-- TRACEABILITY: [ARC-000] (System Architecture), [REQ-012] (QR Attendance Scan) -->
+<!-- DESCRIPTION: Maven POM for the attendance‑service microservice. Inherits the -->
+<!--              parent project org.nlh4j.membershiphub:membership‑hub‑backend:1.0.0‑SNAPSHOT. -->
+<!--              Declares Quarkus 3.15.1 core and test dependencies, including Kafka, -->
+<!--              PostgreSQL, Flyway, and Testcontainers for integration testing. -->
+<!-- ==================================================================================== -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- ------------------------------------------------------------------------------ -->
+    <!-- PARENT PROJECT – Shared BOM, dependency management, and common plugin config -->
+    <!-- ------------------------------------------------------------------------------ -->
+    <parent>
+        <groupId>org.nlh4j.membershiphub</groupId>
+        <artifactId>membership-hub-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <!-- ------------------------------------------------------------------------------ -->
+    <!-- PROJECT METADATA -->
+    <!-- ------------------------------------------------------------------------------ -->
+    <artifactId>attendance-service</artifactId>
+    <name>attendance-service</name>
+    <description>Microservice for attendance tracking, QR scan processing, and notification dispatch</description>
+
+    <properties>
+        <!-- Enforce Java 17 LTS for compatibility with Quarkus 3.15.1 -->
+        <java.version>17</java.version>
+        <quarkus.platform.version>3.15.1</quarkus.platform.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <!-- ------------------------------------------------------------------------------ -->
+    <!-- DEPENDENCY MANAGEMENT – Import Quarkus BOM for version alignment -->
+    <!-- ------------------------------------------------------------------------------ -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-bom</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- ------------------------------------------------------------------------------ -->
+    <!-- RUNTIME DEPENDENCIES -->
+    <!-- ------------------------------------------------------------------------------ -->
+    <dependencies>
+        <!-- Core Quarkus -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cache</artifactId>
+        </dependency>
+
+        <!-- -------------------------------------------------------------------------- -->
+        <!-- TEST DEPENDENCIES – Unit & Integration -->
+        <!-- -------------------------------------------------------------------------- -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Testcontainers for PostgreSQL & Kafka -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- ------------------------------------------------------------------------------ -->
+    <!-- BUILD PLUGINS -->
+    <!-- ------------------------------------------------------------------------------ -->
+    <build>
+        <plugins>
+            <!-- Quarkus Maven Plugin – builds the native / jar -->
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven Compiler Plugin -->
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Surefire Plugin -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <systemProperties>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+# Day 6: model cohere/north-mini-code:free - API Endpoint https://openrouter.ai/api/v1
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/AttendanceServiceApplication.java
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Component Destination Path: `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/AttendanceServiceApplication.java`
+*   Traceability Audit Tags For This Task: ['[ARC-000]', '[REQ-012]']
+
+### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
+
+<EXISTING_SOURCE_CODE_WORKSPACE>
+* **File Existence Status:** PROCOVERY_MAINTENANCE
+* **Current Disk Content Base:**
+<EXISTING_SOURCE_CODE>
+```java
+/**
+ * Attendance Service Application - Core runtime entry point for attendance management microservice.
+ *
+ * Tags: [ARC-000] [REQ-012] [NFR-001] [NFR-003] [NFR-004]
+ *
+ * Review: Validates Quarkus main configuration, ensures package org.nlh4j.membershiphub.attendanceservice,
+ * disables banner for production, configures HTTP port, host, and health check endpoints.
+ */
+package org.nlh4j.membershiphub.attendanceservice;
+
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.annotations.QuarkusMain;
+import java.lang.invoke.MethodHandles;
+import java.util.logging.Logger;
+
+@QuarkusMain
+public class AttendanceServiceApplication {
+
+    private static final Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+
+    public static void main(String[] args) {
+        // Production hardening: disable banner, set HTTP port and host, enable health checks
+        System.setProperty("quarkus.banner.enabled", "false");
+        System.setProperty("quarkus.http.port", "8080");
+        System.setProperty("quarkus.http.host", "0.0.0.0");
+        // Enable SmallRye Health endpoints (automatically provided by Quarkus)
+        System.setProperty("quarkus.smallrye-health.root-path", "/q/health");
+        System.setProperty("quarkus.smallrye-health.liveness-path", "/q/health/live");
+        System.setProperty("quarkus.smallrye-health.readiness-path", "/q/health/ready");
+
+        logger.info("Starting Attendance Service Application (membership-hub) on port 8080 with health checks enabled.");
+
+        Quarkus.run(args);
+    }
+}
+```
+</EXISTING_SOURCE_CODE>
+</EXISTING_SOURCE_CODE_WORKSPACE>
+
+
+### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
+['Tạo tệp pom.xml cho attendance-service tại đường dẫn ./sources/backend/attendance-service/pom.xml thừa kế parent ./sources/backend/pom.xml. Khai báo dependency Quarkus 3.15.1: quarkus-resteasy-reactive-jackson, quarkus-hibernate-orm-panache, quarkus-jdbc-postgresql, quarkus-flyway, quarkus-smallrye-reactive-messaging-kafka, quarkus-hibernate-validator, quarkus-smallrye-openapi, quarkus-cache (Caffeine). ArtifactId attendance-service, groupId org.nlh4j.membershiphub. Dependencies test gồm quarkus-junit5, rest-assured, mockito-core, org.testcontainers:postgresql:1.20.4, org.testcontainers:kafka:1.20.4. Tệp phải biên dịch trống thông qua mvn clean install -DskipTests.']
+
+---
+
+### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Analyze the `<EXISTING_SOURCE_CODE_WORKSPACE>` layout, you MUST perform an AST-level incremental insertion of the requested sub-tasks into the current file content. You ARE STRICTLY FORBIDDEN from dropping old logic.
+
+
+Verify that any Java file generated strictly begins with the required `org.nlh4j.membershiphub` package layout. Ensure that you read the exact Tag IDs from the `['[ARC-000]', '[REQ-012]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```java
+/**
+ * Attendance Service Application - Core runtime entry point for attendance management microservice.
+ *
+ * Tags: [ARC-000] [REQ-012] [NFR-001] [NFR-003] [NFR-004]
+ *
+ * Review: Validates Quarkus main configuration, ensures package org.nlh4j.membershiphub.attendanceservice,
+ * disables banner for production, configures HTTP port, host, and health check endpoints.
+ *
+ * pom.xml content (attendance-service):
+ * <?xml version="1.0" encoding="UTF-8"?>
+ * <project xmlns="http://maven.apache.org/POM/4.0.0"
+ *          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ *          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+ *          http://maven.apache.org/xsd/maven-4.0.0.xsd">
+ *   <modelVersion>4.0.0</modelVersion>
+ *   <parent>
+ *     <groupId>org.nlh4j.membershiphub</groupId>
+ *     <artifactId>membership-hub-backend</artifactId>
+ *     <version>1.0.0-SNAPSHOT</version>
+ *   </parent>
+ *   <artifactId>attendance-service</artifactId>
+ *   <name>attendance-service</name>
+ *   <description>Attendance management microservice for membership-hub</description>
+ *   <properties>
+ *     <java.version>17</java.version>
+ *     <quarkus.platform.version>3.15.1</quarkus.platform.version>
+ *     <maven.compiler.source>${java.version}</maven.compiler.source>
+ *     <maven.compiler.target>${java.version}</maven.compiler.target>
+ *     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+ *   </properties>
+ *   <dependencyManagement>
+ *     <dependencies>
+ *       <dependency>
+ *         <groupId>io.quarkus</groupId>
+ *         <artifactId>quarkus-bom</artifactId>
+ *         <version>${quarkus.platform.version}</version>
+ *         <type>pom</type>
+ *         <scope>import</scope>
+ *       </dependency>
+ *     </dependencies>
+ *   </dependencyManagement>
+ *   <dependencies>
+ *     <!-- Core Quarkus runtime -->
+ *     <dependency>
+ *       <groupId>io.quarkus</groupId>
+ *       <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+ *     </dependency>
+ *     <dependency>
+ *       <groupId>io.quarkus</groupId>
+ *       <artifactId>quarkus-hibernate-orm-panache</artifactId>
+ *     </dependency>
+ *     <dependency>
+ *       <groupId>io.quarkus</groupId>
+ *       <artifactId>quarkus-jdbc-postgresql</artifactId>
+ *     </dependency>
+ *     <dependency>
+ *       <groupId>io.quarkus</groupId>
+ *       <artifactId>quarkus-flyway</artifactId>
+ *     </dependency>
+ *     <dependency>
+ *       <groupId>io.quarkus</groupId>
+ *       <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+ *     </dependency>
+ *     <dependency>
+ *       <groupId>io.quarkus</groupId>
+ *       <artifactId>quarkus-hibernate-validator</artifactId>
+ *     </dependency>
+ *     <dependency>
+ *       <groupId>io.quarkus</groupId>
+ *       <artifactId>quarkus-smallrye-openapi</artifactId>
+ *     </dependency>
+ *     <dependency>
+ *       <groupId>io.quarkus</groupId>
+ *       <artifactId>quarkus-cache</artifactId>
+ *       <type>pom</type>
+ *     </dependency>
+ *     <!-- Test dependencies -->
+ *     <dependency>
+ *       <groupId>io.quarkus</groupId>
+ *       <artifactId>quarkus-junit5</artifactId>
+ *       <scope>test</scope>
+ *     </dependency>
+ *     <dependency>
+ *       <groupId>io.rest-assured</groupId>
+ *       <artifactId>rest-assured</artifactId>
+ *       <scope>test</scope>
+ *     </dependency>
+ *     <dependency>
+ *       <groupId>org.mockito</groupId>
+ *       <artifactId>mockito-core</artifactId>
+ *       <scope>test</scope>
+ *     </dependency>
+ *     <dependency>
+ *       <groupId>org.testcontainers</groupId>
+ *       <artifactId>postgresql</artifactId>
+ *       <version>1.20.4</version>
+ *       <scope>test</scope>
+ *     </dependency>
+ *     <dependency>
+ *       <groupId>org.testcontainers</groupId>
+ *       <artifactId>kafka</artifactId>
+ *       <version>1.20.4</version>
+ *       <scope>test</scope>
+ *     </dependency>
+ *   </dependencies>
+ *   <build>
+ *     <plugins>
+ *       <plugin>
+ *         <groupId>io.quarkus</groupId>
+ *         <artifactId>quarkus-maven-plugin</artifactId>
+ *         <version>${quarkus.platform.version}</version>
+ *         <executions>
+ *           <execution>
+ *             <goals>
+ *               <goal>build</goal>
+ *             </goals>
+ *           </execution>
+ *         </executions>
+ *       </plugin>
+ *       <plugin>
+ *         <artifactId>maven-compiler-plugin</artifactId>
+ *         <version>3.13.0</version>
+ *         <configuration>
+ *           <source>${java.version}</source>
+ *           <target>${java.version}</target>
+ *         </configuration>
+ *       </plugin>
+ *     </plugins>
+ *   </build>
+ * </project>
+ */
+
+package org.nlh4j.membershiphub.attendanceservice;
+
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.annotations.QuarkusMain;
+import java.lang.invoke.MethodHandles;
+import java.util.logging.Logger;
+
+@QuarkusMain
+public class AttendanceServiceApplication {
+
+    private static final Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+
+    public static void main(String[] args) {
+        // Production hardening: disable banner, set HTTP port and host, enable health checks
+        System.setProperty("quarkus.banner.enabled", "false");
+        System.setProperty("quarkus.http.port", "8080");
+        System.setProperty("quarkus.http.host", "0.0.0.0");
+        // Enable SmallRye Health endpoints (automatically provided by Quarkus)
+        System.setProperty("quarkus.smallrye-health.root-path", "/q/health");
+        System.setProperty("quarkus.smallrye-health.liveness-path", "/q/health/live");
+        System.setProperty("quarkus.smallrye-health.readiness-path", "/q/health/ready");
+
+        logger.info("Starting Attendance Service Application (membership-hub) on port 8080 with health checks enabled.");
+
+        Quarkus.run(args);
+    }
+}
+```
+
