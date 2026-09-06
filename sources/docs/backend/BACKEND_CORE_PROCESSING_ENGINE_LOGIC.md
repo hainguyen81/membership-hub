@@ -25,14 +25,14 @@ The `attendance-service` is a critical microservice within the Membership Hub ec
 - **Security Model:** JWT Bearer Token Authentication via OAuth2 Resource Server
 
 ### 2.2 Core Responsibilities
-| Responsibility | Description |
-|----------------|-------------|
-| QR Payload Decoding | Decode base64-encoded QR payloads containing studentID and courseID |
-| Enrollment Validation | Verify student is enrolled in the specified course |
-| Idempotency Enforcement | Prevent duplicate attendance records using composite unique keys |
-| Attendance Persistence | Store attendance records with timestamp and metadata |
-| Kafka Event Publishing | Emit `attendance-recorded` events for downstream consumers |
-| Fault Tolerance | Handle network drops with local queue and FIFO recovery |
+| Responsibility | Description | Traceability Tag ID |
+|----------------|-------------|---------------------|
+| QR Payload Decoding | Decode base64-encoded QR payloads containing studentID and courseID | `[REQ-012]`, `[ARC-007]` |
+| Enrollment Validation | Verify student is enrolled in the specified course | `[REQ-012]`, `[ARC-007]` |
+| Idempotency Enforcement | Prevent duplicate attendance records using composite unique keys | `[REQ-013]`, `[EXC-002]` |
+| Attendance Persistence | Store attendance records with timestamp and metadata | `[REQ-012]`, `[DAT-005]` |
+| Kafka Event Publishing | Emit `attendance-recorded` events for downstream consumers | `[ARC-008]` |
+| Fault Tolerance | Handle network drops with local queue and FIFO recovery | `[EXC-001]`, `[EXC-005]` |
 
 ---
 

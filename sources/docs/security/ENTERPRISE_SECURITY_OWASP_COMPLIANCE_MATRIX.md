@@ -5,7 +5,7 @@
 
 | Document ID | Version | Date | Author | Tags |
 |-------------|---------|------|--------|------|
-| ARCH-DOC-001 | 1.6 | 2026/08/29 | Kiến Trúc Sư Hệ Thống | [ARC-000], [DOC-001], [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005], [NFR-003] |
+| ARCH-DOC-001 | 1.7 | 2026/08/29 | Kiến Trúc Sư Hệ Thống | [ARC-000], [DOC-001], [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005], [NFR-003] |
 
 ## 📁 1. SYSTEM OVERVIEW & ARCHITECTURE
 
