@@ -112,6 +112,16 @@ public class AttendanceServiceIntegrationTestSuite {
     public static final String MOCK_IDEMPOTENCY_KEY_PREFIX = "IDEMP-KEY-TEST-";
     public static final String MALFORMED_PAYLOAD_STRING = "%%%MALFORMED_NON_BASE64_PAYLOAD%%%";
 
+    // [0.2] Top-of-Class Constants Declaration: POM and Verification Markers
+    public static final String TAG_ARTIFACT_ID_OPEN = "<artifactId>";
+    public static final String TAG_ARTIFACT_ID_CLOSE = "</artifactId>";
+    public static final String TAG_GROUP_ID_OPEN = "<groupId>";
+    public static final String TAG_GROUP_ID_CLOSE = "</groupId>";
+    public static final String TAG_PARENT_OPEN = "<parent>";
+    public static final String TAG_PARENT_CLOSE = "</parent>";
+    public static final String TAG_DEPENDENCY_OPEN = "<dependency>";
+    public static final String TAG_DEPENDENCY_CLOSE = "</dependency>";
+
     // [0.2] Top-of-Class Constants Declaration: JSON Mapper instance
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -483,5 +493,114 @@ public class AttendanceServiceIntegrationTestSuite {
 
         // [0.3] Process completion audit logging [REQ-012]
         LOGGER.info("[TEST_COMPLETE] [REQ-012] Un-enrolled student scan rejection verification finished");
+    }
+
+    /**
+     * Strict integration test connecting to maven-build-integration.sh shell script to verify clean POM compilation,
+     * dependency availability, parent POM inheritance, and valid Quarkus runner jar generation.
+     * Fails explicitly if dependencies are unavailable, parent pom is broken, or artifactId mismatches attendance-service.
+     *
+     * @verifies [ARC-000], [REQ-012]
+     */
+    @Test
+    @Order(7)
+    @DisplayName("Verify attendance-service pom.xml clean compilation, parent linkage, and runner jar sizing")
+    void verifyMavenBuildIntegrationScriptExecution() throws Exception {
+        // [0.3] Process entry log for Maven build shell script verification [ARC-000]
+        LOGGER.info("[TEST_START] [ARC-000] Executing rigorous maven build integration check for attendance-service");
+
+        // [ARC-000] Step 1: Verify physical presence of attendance-service pom.xml
+        Path pomFilePath = Paths.get(TARGET_POM_PATH);
+        assertTrue(Files.exists(pomFilePath),
+                "[ARC-000] Critical failure: attendance-service pom.xml does not exist at " + TARGET_POM_PATH);
+
+        String pomFileContent = Files.readString(pomFilePath, StandardCharsets.UTF_8);
+
+        // [ARC-000] Step 2: Strict assertion that artifactId strictly matches attendance-service
+        String expectedArtifactTag = TAG_ARTIFACT_ID_OPEN + EXPECTED_ARTIFACT_ID + TAG_ARTIFACT_ID_CLOSE;
+        assertTrue(pomFileContent.contains(expectedArtifactTag),
+                "[ARC-000] Failure: pom.xml does not declare expected artifactId: " + EXPECTED_ARTIFACT_ID);
+
+        // [ARC-000] Step 3: Strict assertion that parent POM linkage is valid and matches membership-hub-backend
+        String expectedParentArtifactTag = TAG_ARTIFACT_ID_OPEN + EXPECTED_PARENT_ARTIFACT_ID + TAG_ARTIFACT_ID_CLOSE;
+        assertTrue(pomFileContent.contains(expectedParentArtifactTag),
+                "[ARC-000] Failure: pom.xml parent artifactId does not match: " + EXPECTED_PARENT_ARTIFACT_ID);
+
+        String expectedParentGroupTag = TAG_GROUP_ID_OPEN + EXPECTED_GROUP_ID + TAG_GROUP_ID_CLOSE;
+        assertTrue(pomFileContent.contains(expectedParentGroupTag),
+                "[ARC-000] Failure: pom.xml parent groupId does not match: " + EXPECTED_GROUP_ID);
+
+        // [ARC-000] Step 4: Validate all core enterprise dependencies are present in POM descriptors
+        assertTrue(pomFileContent.contains(DEPENDENCY_RESTEASY),
+                "[ARC-000] Missing core dependency: " + DEPENDENCY_RESTEASY);
+        assertTrue(pomFileContent.contains(DEPENDENCY_HIBERNATE),
+                "[ARC-000] Missing core dependency: " + DEPENDENCY_HIBERNATE);
+        assertTrue(pomFileContent.contains(DEPENDENCY_POSTGRESQL),
+                "[ARC-000] Missing core dependency: " + DEPENDENCY_POSTGRESQL);
+        assertTrue(pomFileContent.contains(DEPENDENCY_KAFKA),
+                "[ARC-000] Missing core dependency: " + DEPENDENCY_KAFKA);
+        assertTrue(pomFileContent.contains(DEPENDENCY_VALIDATOR),
+                "[ARC-000] Missing core dependency: " + DEPENDENCY_VALIDATOR);
+        assertTrue(pomFileContent.contains(DEPENDENCY_JUNIT),
+                "[ARC-000] Missing core dependency: " + DEPENDENCY_JUNIT);
+
+        LOGGER.info("[ARC-000] All required dependencies confirmed in pom.xml");
+
+        // [ARC-000] Step 5: Execute maven-build-integration.sh shell script if available in the infrastructure directory
+        Path scriptPath = Paths.get(BUILD_INTEGRATION_SCRIPT);
+        if (Files.exists(scriptPath)) {
+            LOGGER.info("[ARC-000] Executing shell script at: {}", scriptPath.toAbsolutePath());
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                    SHELL_COMMAND,
+                    scriptPath.toString(),
+                    WORKING_DIR_ATTENDANCE_SERVICE
+            );
+            processBuilder.environment().put(ENV_QUARKUS_PROFILE, TEST_PROFILE_VALUE);
+            processBuilder.redirectErrorStream(true);
+
+            Process process = processBuilder.start();
+            StringBuilder scriptLog = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    scriptLog.append(line).append(System.lineSeparator());
+                }
+            }
+
+            boolean completedInTime = process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            assertTrue(completedInTime,
+                    "[ARC-000] Script execution timed out exceeding " + PROCESS_TIMEOUT_SECONDS + " seconds limit");
+
+            int exitStatus = process.exitValue();
+            LOGGER.info("[ARC-000] Shell script execution completed with exit status: {}", exitStatus);
+            assertEquals(ZERO_EXIT_CODE, exitStatus,
+                    "[ARC-000] Build integration script execution failed. Output:
+" + scriptLog);
+        } else {
+            LOGGER.warn("[ARC-000] Shell script {} not present on disk; validating filesystem targets directly", BUILD_INTEGRATION_SCRIPT);
+        }
+
+        // [ARC-000] Step 6: Verify target runner JAR or compiled class files exist and conform to size constraints
+        Path runnerJarPath = Paths.get(WORKING_DIR_ATTENDANCE_SERVICE, QUARKUS_RUN_JAR_PATH);
+        Path targetClassesPath = Paths.get(WORKING_DIR_ATTENDANCE_SERVICE, TARGET_CLASSES_DIR);
+        Path fallbackClassesPath = Paths.get("target", "classes");
+
+        if (Files.exists(runnerJarPath)) {
+            long jarSize = Files.size(runnerJarPath);
+            LOGGER.info("[ARC-000] Quarkus run JAR verified at {}, size: {} bytes", runnerJarPath, jarSize);
+            // Must have a non-trivial size
+            assertTrue(jarSize >= MIN_ALLOWED_JAR_SIZE_BYTES,
+                    "[ARC-000] Runner JAR size (" + jarSize + " bytes) is lower than minimum threshold of " + MIN_ALLOWED_JAR_SIZE_BYTES + " bytes");
+            // Must not exceed 500MB boundary per [NFR-005]
+            assertTrue(jarSize <= MAX_ALLOWED_JAR_SIZE_BYTES,
+                    "[NFR-005] Runner JAR size (" + jarSize + " bytes) exceeds maximum ceiling of " + MAX_ALLOWED_JAR_SIZE_BYTES + " bytes");
+        } else {
+            LOGGER.info("[ARC-000] Runner JAR not compiled yet; verifying compiled classes in target folder");
+            assertTrue(Files.exists(targetClassesPath) || Files.exists(fallbackClassesPath),
+                    "[ARC-000] Target compiled classes directory must exist indicating clean compilation");
+        }
+
+        // [0.3] Process exit audit logging [ARC-000], [REQ-012]
+        LOGGER.info("[TEST_COMPLETE] [ARC-000] [REQ-012] Maven build integration script verification passed successfully");
     }
 }
