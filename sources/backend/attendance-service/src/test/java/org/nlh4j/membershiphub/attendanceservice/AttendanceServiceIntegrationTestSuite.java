@@ -142,7 +142,7 @@ public class AttendanceServiceIntegrationTestSuite {
 
     /**
      * Executes JUnit 5 Platform Launcher to verify pom.xml dependencies and clean compilation.
-     * Ensures parent pom validity, dependency availability, and artifactId correctness.
+     * Ensures parent pom inheritance, correct module packaging, and database drivers.
      *
      * @verifies [ARC-000], [REQ-012]
      */
@@ -230,7 +230,7 @@ public class AttendanceServiceIntegrationTestSuite {
     }
 
     /**
-     * Valid QR scan attendance recording with idempotency enforcement [REQ-012].
+     * Valid QR scan attendance recording with idempotency [REQ-012].
      * Business flow: Mobile app scans QR -> backend decodes student_id and course_id from base64 payload ->
      * checks enrollment existence -> creates attendance record if (student_id, course_id, attendance_date) not duplicate ->
      * returns attendance ID and duplicate=false flag.
@@ -329,7 +329,7 @@ public class AttendanceServiceIntegrationTestSuite {
     }
 
     /**
-     * QR scan without active enrollment throws enrollment required exception [EXC-002].
+     * QR scan without enrollment throws enrollment required exception [EXC-002].
      * Business rule: Student must be enrolled in the course before QR scan can record attendance;
      * scanning without enrollment must be rejected with appropriate error response.
      *
@@ -354,7 +354,7 @@ public class AttendanceServiceIntegrationTestSuite {
                 .when()
                 .post(ATTENDANCE_SCAN_ENDPOINT);
 
-        // Assert: HTTP 403 Forbidden indicates student not enrolled in target course // [EXC-002]
+        // Assert: HTTP 403 Forbidden indicates student not enrolled in the course per [EXC-002] // [EXC-002]
         assertEquals(HTTP_STATUS_FORBIDDEN, response.getStatusCode(),
                 "Expected HTTP 403 when student is not enrolled in the course per [EXC-002]; actual status: " + response.getStatusCode());
 
