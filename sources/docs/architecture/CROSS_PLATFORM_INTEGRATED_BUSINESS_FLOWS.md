@@ -56,4 +56,4 @@ This section maps the architectural components, asynchronous event pipelines, op
 
 The `attendance-service` operates as a high-throughput, horizontally scalable Quarkus 3.15 runtime node dedicated to decoding, validating, persisting, and publishing student attendance events.
 
-### 2.1 Container Diagram
+### 2.1 Container Component Interaction Workflow `[REQ-012]`, `[REQ-013]`, `[ARC-007]`

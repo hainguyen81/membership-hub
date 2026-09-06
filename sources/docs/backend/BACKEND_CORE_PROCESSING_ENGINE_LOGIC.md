@@ -37,3 +37,5 @@ The `attendance-service` is a critical microservice within the Membership Hub ec
 ---
 
 ## 3. C4 Container Diagram
+
+The following diagram illustrates the container-level architecture of the `attendance-service` and its interactions with external systems and internal components:
