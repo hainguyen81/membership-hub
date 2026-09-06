@@ -1,9 +1,14 @@
+We need to generate the attendance-service/pom.xml with the required dependencies and comments.
+
+The existing file is:
+
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- ================================================================================ -->
-<!-- FILE: ./sources/backend/attendance-service/pom.xml                                -->
-<!-- TRACEABILITY TAGS: [ARC-000], [REQ-012]                                          -->
-<!-- BUSINESS CONTEXT: Enterprise Maven build descriptor for attendance-service        -->
-<!-- ARCHITECTURAL COMPLIANCE: Quarkus 3.15 LTS, Panache ORM, Kafka, Testcontainers    -->
+<!-- FILE: ./sources/backend/attendance-service/pom.xml -->
+<!-- TRACEABILITY TAGS: [ARC-000], [REQ-012] -->
+<!-- BUSINESS CONTEXT: Enterprise Maven build descriptor for attendance-service -->
+<!-- ARCHITECTURAL COMPLIANCE: Quarkus 3.15 LTS, Panache ORM, Kafka, Testcontainers -->
 <!-- ================================================================================ -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -109,154 +114,4 @@
         <!-- Used to publish QR attendance scan events to topic attendance.scan.requested -->
         <!-- ======================================================================== -->
         <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
-        </dependency>
-
-        <!-- ======================================================================== -->
-        <!-- [ARC-000] Input Validation Layer (Hibernate Validator / Jakarta Bean)    -->
-        <!-- ======================================================================== -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-hibernate-validator</artifactId>
-        </dependency>
-
-        <!-- ======================================================================== -->
-        <!-- [ARC-000] In-Memory Caching (Caffeine via Quarkus Cache)                 -->
-        <!-- ======================================================================== -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-cache</artifactId>
-        </dependency>
-
-        <!-- ======================================================================== -->
-        <!-- [ARC-000] Observability & Production Health Handshake Probes             -->
-        <!-- ======================================================================== -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-health</artifactId>
-        </dependency>
-
-        <!-- ======================================================================== -->
-        <!-- [ARC-000] Production Metrics Exposure (Micrometer Prometheus)            -->
-        <!-- ======================================================================== -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
-        </dependency>
-
-        <!-- ======================================================================== -->
-        <!-- [ARC-000] Testing Scope: Quarkus JUnit 5 Test Framework                  -->
-        <!-- ======================================================================== -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-junit5</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- ======================================================================== -->
-        <!-- [ARC-000] Testing Scope: REST Assured Integration Testing                -->
-        <!-- ======================================================================== -->
-        <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- ======================================================================== -->
-        <!-- [ARC-000] Testing Scope: Mockito Core for Unit Mocking Isolation         -->
-        <!-- ======================================================================== -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- ======================================================================== -->
-        <!-- [ARC-000] Testing Scope: Testcontainers PostgreSQL Relational Container  -->
-        <!-- ======================================================================== -->
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${testcontainers.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- ======================================================================== -->
-        <!-- [REQ-012], [ARC-000] Testing Scope: Testcontainers Kafka Container        -->
-        <!-- ======================================================================== -->
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>kafka</artifactId>
-            <version>${testcontainers.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <!-- ============================================================================ -->
-    <!-- [ARC-000] Build Configuration and Execution Plugins                          -->
-    <!-- ============================================================================ -->
-    <build>
-        <plugins>
-            <!-- Compiler plugin enforcing Java 17 LTS -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${compiler-plugin.version}</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                    <release>${maven.compiler.release}</release>
-                    <encoding>${project.build.sourceEncoding}</encoding>
-                    <parameters>true</parameters>
-                </configuration>
-            </plugin>
-
-            <!-- Surefire plugin for automated unit and component testing -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire-plugin.version}</version>
-                <configuration>
-                    <systemPropertyVariables>
-                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <maven.home>${maven.home}</maven.home>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
-
-            <!-- Quarkus Maven Plugin for live reload, native build and packaging -->
-            <plugin>
-                <groupId>io.quarkus</groupId>
-                <artifactId>quarkus-maven-plugin</artifactId>
-                <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build</goal>
-                            <goal>generate-code</goal>
-                            <goal>generate-code-tests</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <!-- ============================================================================ -->
-    <!-- [ARC-000] Native Image Compilation Profile via GraalVM/Mandrel               -->
-    <!-- ============================================================================ -->
-    <profiles>
-        <profile>
-            <id>native</id>
-            <activation>
-                <property>
-                    <name>native</name>
-                </property>
-            </activation>
-            <properties>
-                <quarkus.package.type>native</quarkus.package.type>
-            </properties>
-        </profile>
-    </profiles>
-</project>
+            <groupId>io
