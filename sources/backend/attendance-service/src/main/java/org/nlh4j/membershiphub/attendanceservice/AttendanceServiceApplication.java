@@ -1,60 +1,104 @@
-package org.nlh4j.membershiphub.attendanceservice;
+<!-- File: ./sources/backend/attendance-service/pom.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-import io.quarkus.runtime.Quarkus;
-import io.quarkus.runtime.QuarkusApplication;
-import io.quarkus.runtime.annotations.QuarkusMain;
-import org.jboss.logging.Logger;
+    <!-- Traceability Tags: [ARC-000], [REQ-012] -->
+    <parent>
+        <groupId>org.nlh4j.membershiphub</groupId>
+        <artifactId>membership-hub-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-/**
- * Main application entry point for the Attendance Service in Membership Hub.
- *
- * Traceability Tags:
- * [ARC-000] - Microservice scaffolding and multi-module Quarkus application setup.
- * [REQ-012] - Real-time QR attendance check-in workflow and processing initialization.
- * [ARC-007] - QR-based event streaming, idempotency enforcement, and attendance tracking.
- * [EXC-001] - Fault tolerance and retry handling for disconnected network environments.
- * [EXC-002] - Duplicate attendance validation in same calendar day idempotency window.
- * [EXC-005] - Orderly FIFO replay of buffered attendance events after network restoration.
- * [NFR-001] - Sub-200ms latency target and resource-optimized runtime lifecycle.
- * [NFR-003] - Zero-trust security enforcement, auditability, and token validation baseline.
- * [NFR-004] - Cloud-native elasticity, failover mechanisms, and Kubernetes readiness.
- * [NFR-005] - Lightweight container footprint optimization for GraalVM/JVM native image.
- */
-@QuarkusMain
-public class AttendanceServiceApplication {
+    <artifactId>attendance-service</artifactId>
+    <name>Membership Hub :: Attendance Service</name>
 
-    private static final Logger LOGGER = Logger.getLogger(AttendanceServiceApplication.class);
+    <dependencies>
+        <!-- Quarkus Core & Web -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+        </dependency>
+        
+        <!-- Persistence & Validation -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+        
+        <!-- Messaging & Integration -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cache</artifactId>
+        </dependency>
 
-    /**
-     * Standard main method delegated to Quarkus runtime lifecycle manager.
-     *
-     * @param args runtime command-line arguments.
-     */
-    public static void main(String... args) {
-        LOGGER.info("Bootstrapping AttendanceServiceApplication [ARC-000, REQ-012]...");
-        Quarkus.run(AttendanceAppRunner.class, args);
-    }
+        <!-- Testing Dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-    /**
-     * Internal QuarkusApplication runner to gracefully manage initialization,
-     * audit logging, and shutdown signals.
-     */
-    public static class AttendanceAppRunner implements QuarkusApplication {
-
-        private static final Logger RUNNER_LOGGER = Logger.getLogger(AttendanceAppRunner.class);
-
-        @Override
-        public int run(String... args) {
-            RUNNER_LOGGER.info("=================================================================");
-            RUNNER_LOGGER.info("Membership Hub :: Attendance Microservice successfully launched.");
-            RUNNER_LOGGER.info("Active Traceability Anchors: [ARC-000, REQ-012, ARC-007, EXC-001]");
-            RUNNER_LOGGER.info("Listening for real-time QR scans, Kafka streams & HTTP traffic.");
-            RUNNER_LOGGER.info("=================================================================");
-
-            Quarkus.waitForExit();
-
-            RUNNER_LOGGER.info("AttendanceServiceApplication shutting down gracefully.");
-            return 0;
-        }
-    }
-}
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
