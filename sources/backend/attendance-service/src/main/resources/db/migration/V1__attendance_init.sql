@@ -1,68 +1,114 @@
--- [ARC-000], [REQ-012]
--- ====================================================================================
--- FILE: ./sources/backend/attendance-service/src/main/resources/db/migration/V1__attendance_init.sql
--- SCOPE: Attendance Service Database Migration - Initial Schema Setup
--- TRACEABILITY: [ARC-000] (System Architecture), [REQ-012] (QR Attendance Scan)
--- DESCRIPTION: Flyway database migration script for the attendance-service microservice.
---              Creates the core 'attendance' table with composite unique constraints 
---              to guarantee strict idempotency [REQ-013] and indexed lookup performance.
--- ====================================================================================
+<!-- 
+  [ARC-000], [REQ-012]
+  ====================================================================================
+  FILE: ./sources/backend/attendance-service/pom.xml
+  SCOPE: Attendance Service Build Descriptor
+  TRACEABILITY: [ARC-000] (System Architecture), [REQ-012] (QR Attendance Scan)
+  DESCRIPTION: Maven POM configuration for the attendance-service microservice.
+               Defines dependencies for Quarkus 3.15.1, Hibernate Panache, Kafka,
+               and Testcontainers for integration testing.
+  ====================================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
--- ------------------------------------------------------------------------------------
--- 1. ATTENDANCE TABLE DEFINITION
--- ------------------------------------------------------------------------------------
--- The attendance table tracks real-time QR check-ins for students attending courses.
--- A composite unique constraint on (student_id, course_id, attendance_date) ensures 
--- that a student can only be marked present once per course on any given day, 
--- fulfilling the idempotency scanning requirements [REQ-013].
--- ------------------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS attendance (
-    -- Unique identifier for the attendance record (UUID v4)
-    attendance_id UUID NOT NULL,
-    
-    -- Foreign key referencing the student (user_id) from the user-service domain
-    student_id UUID NOT NULL,
-    
-    -- Foreign key referencing the course (course_id) from the course-service domain
-    course_id UUID NOT NULL,
-    
-    -- The specific calendar date of the attendance scan (normalized to DATE type)
-    attendance_date DATE NOT NULL,
-    
-    -- Exact timestamp when the QR code scan was processed and persisted
-    timestamp TIMESTAMP NOT NULL DEFAULT clock_timestamp(),
-    
-    -- Idempotency key passed from the client or generated at scan time to prevent duplicates
-    idempotency_key VARCHAR(100),
-    
-    -- Primary key constraint
-    CONSTRAINT pk_attendance PRIMARY KEY (attendance_id),
-    
-    -- Strict Business Constraint: Enforce idempotency per student, course, and day
-    CONSTRAINT uq_attendance_student_course_date UNIQUE (student_id, course_id, attendance_date),
-    
-    -- Idempotency Key unique constraint if provided
-    CONSTRAINT uq_attendance_idempotency_key UNIQUE (idempotency_key)
-);
+    <parent>
+        <groupId>org.nlh4j.membershiphub</groupId>
+        <artifactId>membership-hub-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
--- ------------------------------------------------------------------------------------
--- 2. INDEXING STRATEGY FOR HIGH-THROUGHPUT QUERIES
--- ------------------------------------------------------------------------------------
--- Create composite B-Tree index optimized for fast filtering by course and date
--- during reporting and dashboard aggregation queries.
--- ------------------------------------------------------------------------------------
-CREATE INDEX IF NOT EXISTS idx_attendance_course_date 
-    ON attendance (course_id, attendance_date);
+    <artifactId>attendance-service</artifactId>
+    <name>Membership Hub :: Attendance Service</name>
 
--- ------------------------------------------------------------------------------------
--- Create composite B-Tree index optimized for student history and attendance audits.
--- ------------------------------------------------------------------------------------
-CREATE INDEX IF NOT EXISTS idx_attendance_student_date 
-    ON attendance (student_id, attendance_date);
+    <dependencies>
+        <!-- Quarkus Core & Web -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+        </dependency>
+        
+        <!-- Persistence & Database -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
 
--- ------------------------------------------------------------------------------------
--- Create index on idempotency key for rapid lookup during duplicate scan detection.
--- ------------------------------------------------------------------------------------
-CREATE INDEX IF NOT EXISTS idx_attendance_idempotency 
-    ON attendance (idempotency_key) 
-    WHERE idempotency_key IS NOT NULL;
+        <!-- Messaging & Integration -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cache</artifactId>
+        </dependency>
+
+        <!-- Validation -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+
+        <!-- Testing Dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>1.20.4</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus.platform</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
