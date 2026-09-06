@@ -1,72 +1,146 @@
-/**
- * AttendanceServiceApplication.java
- * 
- * Traceability Tags:
- * [ARC-000] - System Scaffolding & Build Descriptors
- * [REQ-012] - Ghi nhận điểm danh QR cho sinh viên
- * [REQ-013] - Idempotency cho điểm danh QR
- * [ARC-007] - Luồng xử lý điểm danh QR đầu cuối
- * [NFR-001] - API Performance & Latency Guardrails
- * [NFR-005] - Quarkus Runtime Optimization
- * 
- * Enterprise Compliance:
- * - Package: org.nlh4j.membershiphub.attendanceservice
- * - Framework: Quarkus 3.15.1 LTS
- * - Security: TLS 1.3 enforced, Prepared Statements enforced
- */
+<!-- Traceability Tags: [ARC-000], [REQ-012] -->
+<project>
+  <modelVersion>4.0.0</modelVersion>
 
-package org.nlh4j.membershiphub.attendanceservice;
+  <!-- Parent: Membership Hub Backend (Multi‑Module Maven) -->
+  <parent>
+    <groupId>org.nlh4j.membershiphub</groupId>
+    <artifactId>membership-hub-backend</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
 
-import io.quarkus.runtime.Quarkus;
-import io.quarkus.runtime.annotations.QuarkusMain;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
-import io.quarkus.runtime.StartupEvent;
-import org.jboss.logging.Logger;
+  <artifactId>attendance-service</artifactId>
+  <packaging>jar</packaging>
+  <name>attendance-service</name>
+  <description>Attendance Service for Membership Hub – QR scan, idempotency, Kafka integration</description>
 
-@QuarkusMain
-public class AttendanceServiceApplication {
+  <properties>
+    <java.version>17</java.version>
+    <quarkus.platform.version>3.15.1</quarkus.platform.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <quarkus.package.type>jar</quarkus.package.type>
+    <!-- Production hardening -->
+    <quarkus.banner.enabled>false</quarkus.banner.enabled>
+    <quarkus.http.port>8080</quarkus.http.port>
+    <quarkus.http.host>0.0.0.0</quarkus.http.host>
+  </properties>
 
-    private static final Logger LOG = Logger.getLogger(AttendanceServiceApplication.class);
+  <dependencyManagement>
+    <dependencies>
+      <!-- Quarkus BOM – ensures consistent version across all Quarkus artifacts -->
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-bom</artifactId>
+        <version>${quarkus.platform.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
-    /**
-     * Main entry point for the Attendance Service.
-     * Configured for GraalVM native image compatibility.
-     */
-    public static void main(String... args) {
-        LOG.info("Starting Attendance Service Application...");
-        Quarkus.run(args);
-    }
+  <dependencies>
+    <!-- Core Quarkus runtime -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-hibernate-orm-panache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-jdbc-postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-flyway</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-hibernate-validator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-openapi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-cache</artifactId>
+    </dependency>
 
-    /**
-     * Startup observer to verify production configuration constraints.
-     * Ensures banner is disabled and health checks are initialized.
-     */
-    void onStart(@Observes StartupEvent ev) {
-        LOG.info("Attendance Service initialized successfully.");
-        
-        // Enterprise Guardrail: Verify production configuration
-        // quarkus.banner.enabled=false is enforced via application.properties
-        // Health check endpoints are automatically exposed by SmallRye Health
-    }
-}
+    <!-- Test & Integration -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>1.20.4</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>kafka</artifactId>
+      <version>1.20.4</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
-/**
- * Note on Configuration (application.properties):
- * 
- * # Production Hardening
- * quarkus.banner.enabled=false
- * quarkus.http.port=8080
- * quarkus.http.host=0.0.0.0
- * 
- * # Health Check Configuration
- * quarkus.smallrye-health.root-path=/q/health
- * quarkus.smallrye-health.enable-liveness=true
- * quarkus.smallrye-health.enable-readiness=true
- * 
- * # Security & Performance
- * quarkus.hibernate-orm.database.generation=none
- * quarkus.datasource.jdbc.min-size=10
- * quarkus.datasource.jdbc.max-size=30
- */
+  <build>
+    <plugins>
+      <!-- Quarkus Maven Plugin – builds the native / jar package -->
+      <plugin>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-maven-plugin</artifactId>
+        <version>${quarkus.platform.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Standard Maven Compiler -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+
+      <!-- Maven Surefire for unit tests -->
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+          <systemProperties>
+            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+          </systemProperties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
