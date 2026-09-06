@@ -21,7 +21,7 @@ The `membership-hub` enterprise backend is engineered as a robust, enterprise-gr
 ## 🕒 8. ATTENDANCE-SERVICE & QR PAYLOAD DECODER ARCHITECTURE SPECIFICATION (`[REQ-012]`, `[REQ-013]`, `[ARC-007]`, `[DOC-001]`)
 
 ### 8.1 Overview & System Context
-The `attendance-service` is an isolated, high-throughput microservice responsible for ingesting, validating, and recording real-time QR code attendance scans from mobile clients (`org.nlh4j.membershiphub.attendanceservice`). It guarantees idempotent execution across distributed nodes, offline retry resilience, and strict FIFO recovery following network partitions (`[EXC-001]`, `[EXC-002]`, `[EXC-005]`).
+The `attendance-service` (`org.nlh4j.membershiphub.attendanceservice`) is an isolated, high-throughput microservice responsible for ingesting, validating, and recording real-time QR code attendance scans from mobile clients. It guarantees idempotent execution across distributed nodes, offline retry resilience, and strict FIFO recovery following network partitions (`[EXC-001]`, `[EXC-002]`, `[EXC-005]`).
 
 ### 8.2 C4 Container Architecture Components
 - **`AttendanceController`**: Exposes REST endpoint `POST /api/v1/attendance/scan` with Bearer token authentication and idempotency key validation (`[REQ-012]`).
