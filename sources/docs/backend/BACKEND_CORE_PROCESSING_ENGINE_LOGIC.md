@@ -1,29 +1,16 @@
-# 📊 Scaffolding Architecture of Membership Hub
-## 📁 Overview
-The Membership Hub project is structured as a multi-module Maven project with a root directory `./sources/backend` containing four microservices: `user-service`, `center-service`, `course-service`, and `attendance-service`. The Java package prefix base is `org.nlh4j.membershiphub`.
-
-## 📁 Backend Scaffolding Details
-### 📂 Multi-Module Maven Structure
-The root `./sources/backend/pom.xml` coordinates the build of the following sub-modules:
-- `user-service`: Handles identity, authentication, and RBAC.
-- `center-service`: Manages multi-tenant centers and administrative mappings.
-- `course-service`: Manages courses, schedules, and student enrollments.
-- `attendance-service`: Processes real-time QR-based attendance scans.
-
----
-
-## 📁 Attendance Service Architecture
-### 📂 Overview
-The `attendance-service` is a critical component of the Membership Hub, responsible for real-time QR-based attendance tracking. It ensures high availability and data consistency through an idempotent processing engine.
-
-### 📂 C4 Container Components
-| Component | Responsibility | Targeted Tag IDs |
-| :--- | :--- | :--- |
-| `AttendanceController` | REST entry point for QR scan requests | [REQ-012], [ARC-007] |
-| `QrPayloadDecoder` | Decodes base64 payload to extract studentID and courseID | [REQ-012] |
-| `AttendanceService` | Orchestrates validation, idempotency check, and persistence | [REQ-013], [ARC-007] |
-| `AttendanceRepository` | PostgreSQL interaction with composite unique constraints | [REQ-013] |
-| `KafkaAttendanceProducer` | Publishes attendance events to Kafka for downstream processing | [ARC-007] |
-
-### 📂 QR Scan Processing Flow
-The following flowchart illustrates the robust processing pipeline for attendance scans, including fault tolerance and idempotency mechanisms.
+flowchart TD
+    A[Mobile App Scans QR] -->|POST /api/v1/attendance/scan| B(AttendanceController)
+    B -->|Extract Payload & IdempotencyKey| C{QrPayloadDecoder}
+    C -->|Decode Base64| D[Extract studentID & courseID]
+    D --> E{Validate Enrollment}
+    E -->|Not Enrolled| F[Throw EnrollmentRequiredException - 403]
+    E -->|Enrolled| G{Check Idempotency}
+    G -->|Duplicate Found [EXC-002]| H[Return 200 OK with duplicate=true]
+    G -->|New Scan| I[Persist Attendance Record]
+    I --> J[Publish Kafka Event: attendance-recorded]
+    J --> K[Return 201 Created]
+    
+    %% Fault Tolerance Paths
+    A -->|Network Drop [EXC-001]| L[Store in Local IndexedDB Queue]
+    L -->|Connection Restored| M[FIFO Recovery Queue [EXC-005]]
+    M -->|Re-submit Scans| B

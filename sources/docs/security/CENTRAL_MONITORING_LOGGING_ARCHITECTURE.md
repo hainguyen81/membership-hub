@@ -27,3 +27,4 @@ The `attendance-service` microservice is engineered using Quarkus 3.15 LTS and H
 The attendance processing pipeline is designed for high availability and idempotency, ensuring that duplicate scans do not result in multiple attendance records.
 
 #### 2.2.1. Processing Flowchart
+The following flowchart illustrates the end-to-end processing of a QR scan request, from the initial mobile scan to database persistence and event streaming.
