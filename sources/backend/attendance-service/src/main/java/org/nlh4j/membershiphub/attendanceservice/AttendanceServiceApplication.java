@@ -1,37 +1,34 @@
 /**
- * Attendance Service Application entry point for Membership Hub.
+ * Attendance Service Application - Core runtime entry point for attendance management microservice.
  *
- * Tags: [ARC-000], [REQ-012]
+ * Tags: [ARC-000] [REQ-012] [NFR-001] [NFR-003] [NFR-004]
+ *
+ * Review: Validates Quarkus main configuration, ensures package org.nlh4j.membershiphub.attendanceservice,
+ * disables banner for production, configures HTTP port, host, and health check endpoints.
  */
 package org.nlh4j.membershiphub.attendanceservice;
 
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.annotations.QuarkusMain;
+import java.lang.invoke.MethodHandles;
+import java.util.logging.Logger;
 
-/**
- * Entry point for the Attendance Service application.
- * <p>
- * This class initializes the Quarkus runtime with essential configuration settings:
- * - Disables the startup banner for production environments.
- * - Sets the default HTTP port (can be overridden by environment variables).
- * - Enables health check endpoints for liveness and readiness probes.
- *
- * @author Membership Hub Team
- * @version 1.1 .1
- * @since 2024-08-29
- */
 @QuarkusMain
 public class AttendanceServiceApplication {
 
+    private static final Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+
     public static void main(String[] args) {
-        // Disable banner in production to reduce log noise and improve startup performance
+        // Production hardening: disable banner, set HTTP port and host, enable health checks
         System.setProperty("quarkus.banner.enabled", "false");
-        // Set default HTTP port; can be overridden by environment (e.g., Docker/Kubernetes)
         System.setProperty("quarkus.http.port", "8080");
-        // Enable Quarkus health checks for monitoring and external tooling
-        System.setProperty("quarkus.health.enabled", "true");
-        System.setProperty("quarkus.health.liveness.enabled", "true");
-        System.setProperty("quarkus.health.readiness.enabled", "true");
+        System.setProperty("quarkus.http.host", "0.0.0.0");
+        // Enable SmallRye Health endpoints (automatically provided by Quarkus)
+        System.setProperty("quarkus.smallrye-health.root-path", "/q/health");
+        System.setProperty("quarkus.smallrye-health.liveness-path", "/q/health/live");
+        System.setProperty("quarkus.smallrye-health.readiness-path", "/q/health/ready");
+
+        logger.info("Starting Attendance Service Application (membership-hub) on port 8080 with health checks enabled.");
 
         Quarkus.run(args);
     }
