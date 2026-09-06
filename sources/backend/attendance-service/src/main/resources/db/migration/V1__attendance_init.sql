@@ -1,168 +1,68 @@
-<!-- [ARC-000], [REQ-012] -->
-<!-- ==================================================================================== -->
-<!-- FILE: ./sources/backend/attendance-service/pom.xml -->
-<!-- SCOPE: Attendance Service - Maven Multi‑Module Build Descriptor -->
-<!-- TRACEABILITY: [ARC-000] (System Architecture), [REQ-012] (QR Attendance Scan) -->
-<!-- DESCRIPTION: Maven POM for the attendance‑service microservice. Inherits the -->
-<!--              parent project org.nlh4j.membershiphub:membership‑hub‑backend:1.0.0‑SNAPSHOT. -->
-<!--              Declares Quarkus 3.15.1 core and test dependencies, including Kafka, -->
-<!--              PostgreSQL, Flyway, and Testcontainers for integration testing. -->
-<!-- ==================================================================================== -->
+-- [ARC-000], [REQ-012]
+-- ====================================================================================
+-- FILE: ./sources/backend/attendance-service/src/main/resources/db/migration/V1__attendance_init.sql
+-- SCOPE: Attendance Service Database Migration - Initial Schema Setup
+-- TRACEABILITY: [ARC-000] (System Architecture), [REQ-012] (QR Attendance Scan)
+-- DESCRIPTION: Flyway database migration script for the attendance-service microservice.
+--              Creates the core 'attendance' table with composite unique constraints 
+--              to guarantee strict idempotency [REQ-013] and indexed lookup performance.
+-- ====================================================================================
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <!-- ------------------------------------------------------------------------------ -->
-    <!-- PARENT PROJECT – Shared BOM, dependency management, and common plugin config -->
-    <!-- ------------------------------------------------------------------------------ -->
-    <parent>
-        <groupId>org.nlh4j.membershiphub</groupId>
-        <artifactId>membership-hub-backend</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-    </parent>
+-- ------------------------------------------------------------------------------------
+-- 1. ATTENDANCE TABLE DEFINITION
+-- ------------------------------------------------------------------------------------
+-- The attendance table tracks real-time QR check-ins for students attending courses.
+-- A composite unique constraint on (student_id, course_id, attendance_date) ensures 
+-- that a student can only be marked present once per course on any given day, 
+-- fulfilling the idempotency scanning requirements [REQ-013].
+-- ------------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS attendance (
+    -- Unique identifier for the attendance record (UUID v4)
+    attendance_id UUID NOT NULL,
+    
+    -- Foreign key referencing the student (user_id) from the user-service domain
+    student_id UUID NOT NULL,
+    
+    -- Foreign key referencing the course (course_id) from the course-service domain
+    course_id UUID NOT NULL,
+    
+    -- The specific calendar date of the attendance scan (normalized to DATE type)
+    attendance_date DATE NOT NULL,
+    
+    -- Exact timestamp when the QR code scan was processed and persisted
+    timestamp TIMESTAMP NOT NULL DEFAULT clock_timestamp(),
+    
+    -- Idempotency key passed from the client or generated at scan time to prevent duplicates
+    idempotency_key VARCHAR(100),
+    
+    -- Primary key constraint
+    CONSTRAINT pk_attendance PRIMARY KEY (attendance_id),
+    
+    -- Strict Business Constraint: Enforce idempotency per student, course, and day
+    CONSTRAINT uq_attendance_student_course_date UNIQUE (student_id, course_id, attendance_date),
+    
+    -- Idempotency Key unique constraint if provided
+    CONSTRAINT uq_attendance_idempotency_key UNIQUE (idempotency_key)
+);
 
-    <!-- ------------------------------------------------------------------------------ -->
-    <!-- PROJECT METADATA -->
-    <!-- ------------------------------------------------------------------------------ -->
-    <artifactId>attendance-service</artifactId>
-    <name>attendance-service</name>
-    <description>Microservice for attendance tracking, QR scan processing, and notification dispatch</description>
+-- ------------------------------------------------------------------------------------
+-- 2. INDEXING STRATEGY FOR HIGH-THROUGHPUT QUERIES
+-- ------------------------------------------------------------------------------------
+-- Create composite B-Tree index optimized for fast filtering by course and date
+-- during reporting and dashboard aggregation queries.
+-- ------------------------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_attendance_course_date 
+    ON attendance (course_id, attendance_date);
 
-    <properties>
-        <!-- Enforce Java 17 LTS for compatibility with Quarkus 3.15.1 -->
-        <java.version>17</java.version>
-        <quarkus.platform.version>3.15.1</quarkus.platform.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+-- ------------------------------------------------------------------------------------
+-- Create composite B-Tree index optimized for student history and attendance audits.
+-- ------------------------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_attendance_student_date 
+    ON attendance (student_id, attendance_date);
 
-    <!-- ------------------------------------------------------------------------------ -->
-    <!-- DEPENDENCY MANAGEMENT – Import Quarkus BOM for version alignment -->
-    <!-- ------------------------------------------------------------------------------ -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>io.quarkus</groupId>
-                <artifactId>quarkus-bom</artifactId>
-                <version>${quarkus.platform.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <!-- ------------------------------------------------------------------------------ -->
-    <!-- RUNTIME DEPENDENCIES -->
-    <!-- ------------------------------------------------------------------------------ -->
-    <dependencies>
-        <!-- Core Quarkus -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-hibernate-orm-panache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-jdbc-postgresql</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-flyway</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-hibernate-validator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-openapi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-cache</artifactId>
-        </dependency>
-
-        <!-- -------------------------------------------------------------------------- -->
-        <!-- TEST DEPENDENCIES – Unit & Integration -->
-        <!-- -------------------------------------------------------------------------- -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-junit5</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Testcontainers for PostgreSQL & Kafka -->
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>1.20.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>kafka</artifactId>
-            <version>1.20.4</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <!-- ------------------------------------------------------------------------------ -->
-    <!-- BUILD PLUGINS -->
-    <!-- ------------------------------------------------------------------------------ -->
-    <build>
-        <plugins>
-            <!-- Quarkus Maven Plugin – builds the native / jar -->
-            <plugin>
-                <groupId>io.quarkus</groupId>
-                <artifactId>quarkus-maven-plugin</artifactId>
-                <version>${quarkus.platform.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Maven Compiler Plugin -->
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-                <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                </configuration>
-            </plugin>
-
-            <!-- Maven Surefire Plugin -->
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
-                <configuration>
-                    <systemProperties>
-                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                    </systemProperties>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-</project>
+-- ------------------------------------------------------------------------------------
+-- Create index on idempotency key for rapid lookup during duplicate scan detection.
+-- ------------------------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_attendance_idempotency 
+    ON attendance (idempotency_key) 
+    WHERE idempotency_key IS NOT NULL;
