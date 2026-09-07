@@ -1,7 +1,7 @@
 # BACKEND CORE PROCESSING ENGINE LOGIC — Attendance Service
 **Document ID:** DOC-ATT-001  
 **Project:** membership-hub  
-**Version:** 1.0  
+**Version:** 1.1  
 **Last Updated:** 2026/08/29  
 **Author:** Enterprise System Architect (SA Agent)  
 **Status:** Production Ready  
@@ -33,9 +33,20 @@ The `attendance-service` is a critical microservice within the Membership Hub ec
 | Attendance Persistence | Store attendance records with timestamp and metadata | `[REQ-012]`, `[DAT-005]` |
 | Kafka Event Publishing | Emit `attendance-recorded` events for downstream consumers | `[ARC-008]` |
 | Fault Tolerance | Handle network drops with local queue and FIFO recovery | `[EXC-001]`, `[EXC-005]` |
+| Documentation Compliance | Maintain structural traceability and architectural metadata | `[DOC-001]` |
 
 ---
 
-## 3. C4 Container Diagram
+## 3. C4 Container Diagram & Architecture
 
-The following diagram illustrates the container-level architecture of the `attendance-service` and its interactions with external systems and internal components:
+The following section outlines the container-level architecture of the `attendance-service` along with its structural components: `AttendanceController`, `AttendanceService`, `AttendanceRepository`, `KafkaAttendanceProducer`, and `QrPayloadDecoder`.
+
+### 3.1 Component Breakdown
+- **`AttendanceController`**: Exposes REST endpoints (`POST /api/v1/attendance/scan`) and manages HTTP request validation, authentication context propagation, and error response mapping.
+- **`AttendanceService`**: Orchestrates core business logic, coordinating payload decoding, enrollment checks, idempotency verification, and database persistence.
+- **`QrPayloadDecoder`**: Utility component responsible for safely decoding Base64 strings and validating internal JSON schema structures (`studentId`, `courseId`, `timestamp`).
+- **`AttendanceRepository`**: Panache-based database abstraction layer interacting with PostgreSQL table `attendance` utilizing composite unique indexes.
+- **`KafkaAttendanceProducer`**: SmallRye Reactive Messaging component publishing `attendance-recorded` events to the Kafka broker for downstream notification and reporting consumers.
+
+### 3.2 QR Scan Processing Flowchart
+The following Mermaid diagram details the end-to-end processing pipeline for real-time QR attendance scanning:
