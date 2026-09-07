@@ -18597,3 +18597,1541 @@ public class AttendanceServiceApplication {
 }
 ```
 
+# Day 6: model models/gemini-flash-latest - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/backend/attendance-service/pom.xml
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Component Destination Path: `./sources/backend/attendance-service/pom.xml`
+*   Traceability Audit Tags For This Task: ['[ARC-000]', '[REQ-012]']
+
+### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
+
+<EXISTING_SOURCE_CODE_WORKSPACE>
+* **File Existence Status:** PROCOVERY_MAINTENANCE
+* **Current Disk Content Base:**
+<EXISTING_SOURCE_CODE>
+```text
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================================== -->
+<!-- FILE IDENTIFIER: ./sources/backend/attendance-service/pom.xml                                        -->
+<!-- TRACEABILITY AUDIT TAGS: [ARC-000], [REQ-012]                                                        -->
+<!-- BUSINESS CONTEXT: Enterprise Maven build descriptor for the Attendance Service microservice.         -->
+<!-- ARCHITECTURAL SPECIFICATION: Quarkus 3.15 LTS, Panache ORM, Reactive Messaging Kafka, Testcontainers -->
+<!-- GOVERNANCE COMPLIANCE: Adheres to Top-Level Constants, Strict Schema Constraints, and Zero-Warning   -->
+<!-- ==================================================================================================== -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ================================================================================================ -->
+    <!-- [ARC-000] Parent Project Coordinates & Dependency Convergence Declaration                        -->
+    <!-- Inherits centralized BOMs, version management, and compiler standards from membership-hub-backend -->
+    <!-- ================================================================================================ -->
+    <parent>
+        <groupId>org.nlh4j.membershiphub</groupId>
+        <artifactId>membership-hub-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <!-- ================================================================================================ -->
+    <!-- [ARC-000] Module Coordinates for Attendance Service                                              -->
+    <!-- Enforces the enterprise standard groupId base 'org.nlh4j.membershiphub'                          -->
+    <!-- ================================================================================================ -->
+    <groupId>org.nlh4j.membershiphub</groupId>
+    <artifactId>attendance-service</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>attendance-service</name>
+    <description>
+        Attendance Service: Implements real-time QR scan processing, attendance verification,
+        idempotency enforcement, offline queue recovery, and event emission to Kafka topic 'attendance.scan.requested'.
+    </description>
+
+    <!-- ================================================================================================ -->
+    <!-- [ARC-000] Immutable Build Properties & Version Management Constants                              -->
+    <!-- Top-of-Class Constants Declaration Law: Isolates all framework baselines and tool versions        -->
+    <!-- ================================================================================================ -->
+    <properties>
+        <!-- Standardized UTF-8 source code and reporting encoding [ARC-000] -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Java 17 LTS compilation baseline targets [ARC-000] -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+
+        <!-- Quarkus Framework LTS Platform Version (Consistent across all microservices) [ARC-000] -->
+        <quarkus.platform.version>3.15.1</quarkus.platform.version>
+
+        <!-- Testcontainers version pinned for reproducible integration testing [ARC-000] -->
+        <testcontainers.version>1.20.4</testcontainers.version>
+
+        <!-- Maven Core Build Plugin Versions [ARC-000] -->
+        <compiler-plugin.version>3.13.0</compiler-plugin.version>
+        <surefire-plugin.version>3.2.5</surefire-plugin.version>
+    </properties>
+
+    <dependencies>
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Quarkus RESTEasy Reactive with Jackson Serializer                                  -->
+        <!-- Provides non-blocking HTTP endpoint routing and optimized JSON (de)serialization             -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Hibernate ORM with Panache (Active Record & Repository Pattern Support)            -->
+        <!-- Facilitates transactional database persistence, entity mapping, and automated queries       -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] PostgreSQL JDBC Driver (Connection Pool & Native Dialect)                          -->
+        <!-- High-performance driver supporting prepared statements to neutralize SQL Injection vectors   -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Flyway Database Schema Migration Extension                                         -->
+        <!-- Executes versioned DDL scripts on startup for attendance tables and composite unique indexes  -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] SmallRye JWT (OAuth2 / OpenID Connect Bearer Token Verification)                   -->
+        <!-- Secures API entry points with role-based access control (RBAC) and signature checks          -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] SmallRye OpenAPI 3.1 & Swagger UI Generation                                       -->
+        <!-- Automatically exposes API schema contracts for mobile clients and integration gateways       -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [REQ-012], [ARC-000] SmallRye Reactive Messaging for Apache Kafka                            -->
+        <!-- Ingests and publishes QR attendance scan events to topic 'attendance.scan.requested'        -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Jakarta Bean Validation & Hibernate Validator                                      -->
+        <!-- Enforces constraints on incoming DTOs, QR scan payloads, and idempotency key headers         -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Quarkus Cache (High-performance In-Memory Caffeine Cache Engine)                   -->
+        <!-- Caches active enrollment verifications and session tokens to maintain sub-200ms scan latency -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cache</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Quarkus Testing Framework with JUnit 5 Platform                                    -->
+        <!-- Baseline runtime testing container for Quarkus integration test suites                       -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] REST Assured for Black-Box HTTP Integration Testing                                -->
+        <!-- Validates endpoint status codes, JSON response bodies, and idempotency guarantees           -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Mockito Core for Unit Testing & Service Isolation                                  -->
+        <!-- Isolates business layer components from direct network, cache, or database calls             -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Testcontainers for PostgreSQL Integration Testing                                  -->
+        <!-- Spawns disposable ephemeral PostgreSQL containers to verify Flyway migrations and SQL bounds -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Testcontainers for Apache Kafka Integration Testing                                -->
+        <!-- Spawns ephemeral Kafka brokers to test reactive event streams and recovery queues            -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- ================================================================================================ -->
+    <!-- [ARC-000] Build Lifecycle Plugins and Compiler Configuration                                     -->
+    <!-- ================================================================================================ -->
+    <build>
+        <plugins>
+            <!-- ======================================================================================== -->
+            <!-- [ARC-000] Maven Compiler Plugin: Standardizes byte-code generation to Java 17 LTS        -->
+            <!-- Retains parameter metadata required for RESTEasy Reactive reflection                      -->
+            <!-- ======================================================================================== -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler-plugin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <release>${maven.compiler.release}</release>
+                    <compilerArgs>
+                        <!-- Preserves method parameter reflection metadata for RESTEasy parameter binding -->
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!-- ======================================================================================== -->
+            <!-- [ARC-000] Quarkus Maven Plugin: Manages dev-mode, packaging, and GraalVM native build    -->
+            <!-- ======================================================================================== -->
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ======================================================================================== -->
+            <!-- [ARC-000] Maven Surefire Plugin: Executes unit & integration tests with JBoss LogManager -->
+            <!-- ======================================================================================== -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire-plugin.version}</version>
+                <configuration>
+                    <systemProperties>
+                        <java.util.logging.manager>org.jboss.logmanager.JBossLogManager</java.util.logging.manager>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+</EXISTING_SOURCE_CODE>
+</EXISTING_SOURCE_CODE_WORKSPACE>
+
+
+### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
+['Tạo tệp pom.xml cho attendance-service tại đường dẫn ./sources/backend/attendance-service/pom.xml thừa kế parent ./sources/backend/pom.xml. Khai báo dependency Quarkus 3.15.1: quarkus-resteasy-reactive-jackson, quarkus-hibernate-orm-panache, quarkus-jdbc-postgresql, quarkus-flyway, quarkus-smallrye-reactive-messaging-kafka, quarkus-hibernate-validator, quarkus-smallrye-openapi, quarkus-cache (Caffeine). ArtifactId attendance-service, groupId org.nlh4j.membershiphub. Dependencies test gồm quarkus-junit5, rest-assured, mockito-core, org.testcontainers:postgresql:1.20.4, org.testcontainers:kafka:1.20.4. Tệp phải biên dịch trống thông qua mvn clean install -DskipTests.']
+
+---
+
+### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Analyze the `<EXISTING_SOURCE_CODE_WORKSPACE>` layout, you MUST perform an AST-level incremental insertion of the requested sub-tasks into the current file content. You ARE STRICTLY FORBIDDEN from dropping old logic.
+
+
+Verify that any Java file generated strictly begins with the required `org.nlh4j.membershiphub` package layout. Ensure that you read the exact Tag IDs from the `['[ARC-000]', '[REQ-012]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================================== -->
+<!-- FILE IDENTIFIER: ./sources/backend/attendance-service/pom.xml                                        -->
+<!-- TRACEABILITY AUDIT TAGS: [ARC-000], [REQ-012]                                                        -->
+<!-- BUSINESS CONTEXT: Enterprise Maven build descriptor for the Attendance Service microservice.         -->
+<!-- ARCHITECTURAL SPECIFICATION: Quarkus 3.15 LTS, Panache ORM, Reactive Messaging Kafka, Testcontainers -->
+<!-- GOVERNANCE COMPLIANCE: Adheres to Top-Level Constants, Strict Schema Constraints, and Zero-Warning   -->
+<!-- ==================================================================================================== -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ================================================================================================ -->
+    <!-- [ARC-000] Parent Project Coordinates & Dependency Convergence Declaration                        -->
+    <!-- Inherits centralized BOMs, version management, and compiler standards from membership-hub-backend -->
+    <!-- ================================================================================================ -->
+    <parent>
+        <groupId>org.nlh4j.membershiphub</groupId>
+        <artifactId>membership-hub-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <!-- ================================================================================================ -->
+    <!-- [ARC-000] Module Coordinates for Attendance Service                                              -->
+    <!-- Enforces the enterprise standard groupId base 'org.nlh4j.membershiphub'                          -->
+    <!-- ================================================================================================ -->
+    <groupId>org.nlh4j.membershiphub</groupId>
+    <artifactId>attendance-service</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>attendance-service</name>
+    <description>
+        Attendance Service: Implements real-time QR scan processing, attendance verification,
+        idempotency enforcement, offline queue recovery, and event emission to Kafka topic 'attendance.scan.requested'.
+    </description>
+
+    <!-- ================================================================================================ -->
+    <!-- [ARC-000] Immutable Build Properties & Version Management Constants                              -->
+    <!-- Top-of-Class Constants Declaration Law: Isolates all framework baselines and tool versions        -->
+    <!-- ================================================================================================ -->
+    <properties>
+        <!-- Standardized UTF-8 source code and reporting encoding [ARC-000] -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Java 17 LTS compilation baseline targets [ARC-000] -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+
+        <!-- Quarkus Framework LTS Platform Version (Consistent across all microservices) [ARC-000] -->
+        <quarkus.platform.version>3.15.1</quarkus.platform.version>
+
+        <!-- Testcontainers version pinned for reproducible integration testing [ARC-000] -->
+        <testcontainers.version>1.20.4</testcontainers.version>
+
+        <!-- Maven Core Build Plugin Versions [ARC-000] -->
+        <compiler-plugin.version>3.13.0</compiler-plugin.version>
+        <surefire-plugin.version>3.2.5</surefire-plugin.version>
+    </properties>
+
+    <dependencies>
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Quarkus RESTEasy Reactive with Jackson Serializer                                  -->
+        <!-- Provides non-blocking HTTP endpoint routing and optimized JSON (de)serialization             -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Hibernate ORM with Panache (Active Record & Repository Pattern Support)            -->
+        <!-- Facilitates transactional database persistence, entity mapping, and automated queries       -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-orm-panache</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] PostgreSQL JDBC Driver (Connection Pool & Native Dialect)                          -->
+        <!-- High-performance driver supporting prepared statements to neutralize SQL Injection vectors   -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Flyway Database Schema Migration Extension                                         -->
+        <!-- Executes versioned DDL scripts on startup for attendance tables and composite unique indexes  -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-flyway</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] SmallRye JWT (OAuth2 / OpenID Connect Bearer Token Verification)                   -->
+        <!-- Secures API entry points with role-based access control (RBAC) and signature checks          -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-jwt</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] SmallRye OpenAPI 3.1 & Swagger UI Generation                                       -->
+        <!-- Automatically exposes API schema contracts for mobile clients and integration gateways       -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [REQ-012], [ARC-000] SmallRye Reactive Messaging for Apache Kafka                            -->
+        <!-- Ingests and publishes QR attendance scan events to topic 'attendance.scan.requested'        -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Jakarta Bean Validation & Hibernate Validator                                      -->
+        <!-- Enforces constraints on incoming DTOs, QR scan payloads, and idempotency key headers         -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Quarkus Cache (High-performance In-Memory Caffeine Cache Engine)                   -->
+        <!-- Caches active enrollment verifications and session tokens to maintain sub-200ms scan latency -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cache</artifactId>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Quarkus Testing Framework with JUnit 5 Platform                                    -->
+        <!-- Baseline runtime testing container for Quarkus integration test suites                       -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] REST Assured for Black-Box HTTP Integration Testing                                -->
+        <!-- Validates endpoint status codes, JSON response bodies, and idempotency guarantees           -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Mockito Core for Unit Testing & Service Isolation                                  -->
+        <!-- Isolates business layer components from direct network, cache, or database calls             -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Testcontainers for PostgreSQL Integration Testing                                  -->
+        <!-- Spawns disposable ephemeral PostgreSQL containers to verify Flyway migrations and SQL bounds -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ============================================================================================ -->
+        <!-- [ARC-000] Testcontainers for Apache Kafka Integration Testing                                -->
+        <!-- Spawns ephemeral Kafka brokers to test reactive event streams and recovery queues            -->
+        <!-- ============================================================================================ -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- ================================================================================================ -->
+    <!-- [ARC-000] Build Lifecycle Plugins and Compiler Configuration                                     -->
+    <!-- ================================================================================================ -->
+    <build>
+        <plugins>
+            <!-- ======================================================================================== -->
+            <!-- [ARC-000] Maven Compiler Plugin: Standardizes byte-code generation to Java 17 LTS        -->
+            <!-- Retains parameter metadata required for RESTEasy Reactive reflection                      -->
+            <!-- ======================================================================================== -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler-plugin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <release>${maven.compiler.release}</release>
+                    <compilerArgs>
+                        <!-- Preserves method parameter reflection metadata for RESTEasy parameter binding -->
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!-- ======================================================================================== -->
+            <!-- [ARC-000] Quarkus Maven Plugin: Manages dev-mode, packaging, and GraalVM native build    -->
+            <!-- ======================================================================================== -->
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ======================================================================================== -->
+            <!-- [ARC-000] Maven Surefire Plugin: Executes unit & integration tests with JBoss LogManager -->
+            <!-- ======================================================================================== -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire-plugin.version}</version>
+                <configuration>
+                    <systemProperties>
+                        <java.util.logging.manager>org.jboss.logmanager.JBossLogManager</java.util.logging.manager>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+# Day 6: model models/gemini-flash-latest - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/backend/attendance-service/src/main/resources/application.properties
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Component Destination Path: `./sources/backend/attendance-service/src/main/resources/application.properties`
+*   Traceability Audit Tags For This Task: ['[ARC-000]', '[REQ-012]']
+
+### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
+
+<EXISTING_SOURCE_CODE_WORKSPACE>
+* **File Existence Status:** PROCOVERY_MAINTENANCE
+* **Current Disk Content Base:**
+<EXISTING_SOURCE_CODE>
+```properties
+# ==============================================================================
+# 🏛️ MASTER ENTERPRISE GOVERNANCE & ARCHITECTURAL CONFIGURATION
+# 📁 COMPONENT DESTINATION: ./sources/backend/attendance-service/src/main/resources/application.properties
+# 🏢 SERVICE IDENTIFIER: attendance-service (Membership Hub Multi-Center Engine)
+# 🏷️ TRACEABILITY TAG IDENTIFIERS:
+#    - [ARC-000]: Multi-Module Backend Architecture & Build Scaffolding Specification
+#    - [REQ-012]: QR Attendance Scan Ingestion & Base64 Payload Decoding
+#    - [REQ-013]: Idempotent Attendance Processing & Duplicate Scan Prevention
+#    - [ARC-007]: End-to-End Real-Time QR Attendance Pipeline Architecture
+#    - [EXC-001]: Offline Resilience, Local Caching & Dynamic Network Retry Queue
+#    - [EXC-002]: Graceful Duplicate Attendance Scan Handling (Same-day Re-scan Flag)
+#    - [EXC-005]: FIFO Queue Ordering & Resilient Replay Upon Network Recovery
+#    - [NFR-001]: Core API Latency Target (P95 < 200ms) & Connection Pooling
+#    - [NFR-003]: TLS 1.3 / AES-256 / OWASP Zero-Trust Security Baseline & JWT
+#    - [NFR-004]: High-Availability Scale-Out & Cross-Region PostgreSQL Replication
+#    - [NFR-006]: Enterprise Audit Logging, Security Tracing & 1-Year Retention
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. CORE APPLICATION IDENTIFIERS & RUNTIME ENVIRONMENT
+# ------------------------------------------------------------------------------
+# [ARC-000] Application metadata identity aligned with Quarkus 3.15 LTS standard
+quarkus.application.name=attendance-service
+# [ARC-000] Semantic version identifier synchronized across microservices ecosystem
+quarkus.application.version=1.0.0-SNAPSHOT
+
+# ------------------------------------------------------------------------------
+# 2. HTTP SERVER & NETWORK TRANSPORT CONFIGURATION
+# ------------------------------------------------------------------------------
+# [ARC-000] Dedicated HTTP listener port isolated for attendance-service
+quarkus.http.port=8084
+# [ARC-000] Binding host address to all network interfaces inside containerized pods
+quarkus.http.host=0.0.0.0
+# [REQ-012] Enforce standard base path for all Attendance API routing endpoints
+quarkus.http.root-path=/
+# [REQ-012] Enforce strict payload body limit to prevent memory buffer exhaustion attacks
+quarkus.http.limits.max-body-size=10M
+# [NFR-001] Keep-alive timeout tuned for ultra-low latency mobile scan bursts (P95 < 200ms)
+quarkus.http.keep-alive-timeout=60S
+# [NFR-001] Read timeout ensuring dropped network scans do not block thread execution pools
+quarkus.http.read-timeout=30S
+
+# ------------------------------------------------------------------------------
+# 3. ENTERPRISE RELATIONAL DATABASE (POSTGRESQL & AGROAL POOL)
+# ------------------------------------------------------------------------------
+# [NFR-001] PostgreSQL enterprise connection driver for Hibernate Panache operations
+quarkus.datasource.db-kind=postgresql
+# [NFR-001] JDBC connection URL with parameterized host, port, and multi-tenant database name
+quarkus.datasource.jdbc.url=jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:attendance_db}?sslmode=${DB_SSL_MODE:prefer}
+# [NFR-003] Database authentication credentials bound dynamically to environment injection
+quarkus.datasource.username=${DB_USER:membership_admin}
+# [NFR-003] Zero-leak masked database secret reference bound to GCP Secret Manager
+quarkus.datasource.password=${DB_PASSWORD:membership_secure_password}
+
+# [NFR-001] Agroal connection pool tuning satisfying high-concurrency throughput (10,000 active users)
+quarkus.datasource.jdbc.min-size=10
+# [NFR-001] Maximum database connection pool capacity aligned with HikariCP / Agroal matrix
+quarkus.datasource.jdbc.max-size=30
+# [NFR-001] Initial connection pool capacity established upon application boot sequence
+quarkus.datasource.jdbc.initial-size=10
+# [NFR-001] Database acquisition timeout ceiling avoiding operational thread starvation
+quarkus.datasource.jdbc.acquisition-timeout=3S
+# [NFR-001] Connection idle timeout purging stale network sockets after 10 minutes
+quarkus.datasource.jdbc.idle-removal-interval=600S
+# [NFR-001] Maximum connection lifetime preventing PostgreSQL backend resource leakage
+quarkus.datasource.jdbc.max-lifetime=1800S
+# [NFR-001] Background validation query verifying active connection liveness
+quarkus.datasource.jdbc.background-validation-interval=60S
+
+# ------------------------------------------------------------------------------
+# 4. HIBERNATE ORM & PANACHE DATA PERSISTENCE SPECIFICATION
+# ------------------------------------------------------------------------------
+# [DAT-004] PostgreSQL enterprise dialect supporting JSONB and exclusion indexing
+quarkus.hibernate-orm.dialect=org.hibernate.dialect.PostgreSQLDialect
+# [DAT-005] Schema management delegated exclusively to Flyway migrations in production
+quarkus.hibernate-orm.database.generation=validate
+# [NFR-001] Enable SQL statement batching to accelerate multi-row attendance ingestion
+quarkus.hibernate-orm.jdbc.batch-size=50
+# [NFR-001] Order insert operations to optimize database index tree insertion performance
+quarkus.hibernate-orm.jdbc.order-inserts=true
+# [NFR-001] Order update operations to prevent deadlock occurrences under heavy concurrency
+quarkus.hibernate-orm.jdbc.order-updates=true
+# [NFR-006] Disable cleartext SQL logging in production to prevent PII exposure
+quarkus.hibernate-orm.log.sql=false
+
+# ------------------------------------------------------------------------------
+# 5. DATABASE SCHEMA MIGRATION ENGINE (FLYWAY)
+# ------------------------------------------------------------------------------
+# [DAT-004] Activate Flyway automated migration on application initialization
+quarkus.flyway.migrate-at-start=true
+# [DAT-004] Prevent destructive schema drops in production and staging environments
+quarkus.flyway.clean-at-start=false
+# [DAT-004] Source path locations for ANSI-compliant SQL migration scripts
+quarkus.flyway.locations=classpath:db/migration
+# [DAT-004] Enforce strict baseline on legacy schemas to ensure migration continuity
+quarkus.flyway.baseline-on-migrate=true
+# [DAT-004] Baseline version anchor establishing initial database schema state
+quarkus.flyway.baseline-version=0
+# [DAT-004] Enforce checksum validation preventing unauthorized modification of applied migrations
+quarkus.flyway.validate-on-migrate=true
+
+# ------------------------------------------------------------------------------
+# 6. ENTERPRISE OAUTH2 & SMALLRYE JWT AUTHENTICATION GATEWAY
+# ------------------------------------------------------------------------------
+# [NFR-003] Activate SmallRye JWT verification layer for zero-trust microservice perimeter
+quarkus.smallrye-jwt.enabled=true
+# [ARC-006] Expected JWT issuer verifying cryptographic authentication provenance
+mp.jwt.verify.issuer=membership-hub
+# [ARC-006] Expected JWT audience confirming target attendance-service boundary
+mp.jwt.verify.audiences=membership-hub-client
+# [NFR-003] Location of the RS256 2048-bit enterprise public verification key
+mp.jwt.verify.publickey.location=publicKey.pem
+# [NFR-003] Clock skew tolerance in seconds handling distributed cluster time variance
+mp.jwt.verify.clock.skew=60
+# [NFR-003] Proactive authentication disabled to permit health check probes without credentials
+quarkus.http.auth.proactive=false
+
+# ------------------------------------------------------------------------------
+# 7. SMALLRYE REACTIVE MESSAGING & APACHE KAFKA EVENT-DRIVEN TOPOLOGY
+# ------------------------------------------------------------------------------
+# [ARC-008] Kafka broker bootstrap connection endpoints with dynamic failover
+kafka.bootstrap.servers=${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+# --- Incoming Channel: QR Attendance Scan Ingestion [REQ-012], [ARC-007] ---
+# [REQ-012] Incoming reactive messaging connector mapping for QR mobile ingestion
+mp.messaging.incoming.attendance-scan-requested.connector=smallrye-kafka
+# [REQ-012] Topic destination for raw QR attendance scans streaming from mobile gateway
+mp.messaging.incoming.attendance-scan-requested.topic=attendance.scan.requested
+# [REQ-012] Consumer group ID coordinating attendance scan partition distribution
+mp.messaging.incoming.attendance-scan-requested.group.id=attendance-service-scan-consumer
+# [REQ-012] Key deserializer decoding UUID/String partition routing handles
+mp.messaging.incoming.attendance-scan-requested.key.deserializer=org.apache.kafka.common.serialization.StringDeserializer
+# [REQ-012] Value deserializer parsing structured attendance scan JSON payloads
+mp.messaging.incoming.attendance-scan-requested.value.deserializer=io.quarkus.kafka.client.serialization.ObjectMapperDeserializer
+# [EXC-005] Commit consumer offset manually only after successful business persistence (FIFO)
+mp.messaging.incoming.attendance-scan-requested.enable.auto.commit=false
+# [EXC-005] Auto-offset reset policy reading earliest uncommitted events during recovery
+mp.messaging.incoming.attendance-scan-requested.auto.offset.reset=earliest
+# [EXC-001] Resilient Dead Letter Queue routing poisoned or unparseable QR messages
+mp.messaging.incoming.attendance-scan-requested.failure-strategy=dead-letter-queue
+# [EXC-001] Dead Letter Queue topic capturing failed scans for audit and replay
+mp.messaging.incoming.attendance-scan-requested.dead-letter-queue.topic=attendance.scan.dlq
+
+# --- Outgoing Channel: Validated Attendance Recorded Stream [ARC-008], [REQ-013] ---
+# [ARC-008] Outgoing reactive messaging connector dispatching confirmed attendance records
+mp.messaging.outgoing.attendance-recorded.connector=smallrye-kafka
+# [ARC-008] Topic destination consumed by notification-service and reporting-service
+mp.messaging.outgoing.attendance-recorded.topic=attendance.recorded
+# [ARC-008] Key serializer handling partition routing keys for student attendance streams
+mp.messaging.outgoing.attendance-recorded.key.serializer=org.apache.kafka.common.serialization.StringSerializer
+# [ARC-008] Value serializer formatting standardized confirmed attendance JSON events
+mp.messaging.outgoing.attendance-recorded.value.serializer=io.quarkus.kafka.client.serialization.ObjectMapperSerializer
+# [ARC-008] Idempotent Kafka producer guarantee ensuring exactly-once publication semantics
+mp.messaging.outgoing.attendance-recorded.acks=all
+# [ARC-008] Snappy compression minimizing cross-zone network transit bandwidth
+mp.messaging.outgoing.attendance-recorded.compression.type=snappy
+# [ARC-008] Producer retry bounds handling transient network connectivity blips
+mp.messaging.outgoing.attendance-recorded.retries=5
+
+# --- Outgoing Channel: Outbound Notifications Fan-out [ARC-008], [REQ-016] ---
+# [ARC-008] Outgoing channel dispatching instant notification trigger events
+mp.messaging.outgoing.notification-outbound.connector=smallrye-kafka
+# [ARC-008] Topic destination for multi-channel push and Zalo OA message workers
+mp.messaging.outgoing.notification-outbound.topic=notification.outbound
+# [ARC-008] Serializer formats for notification queue event routing
+mp.messaging.outgoing.notification-outbound.key.serializer=org.apache.kafka.common.serialization.StringSerializer
+mp.messaging.outgoing.notification-outbound.value.serializer=io.quarkus.kafka.client.serialization.ObjectMapperSerializer
+
+# ------------------------------------------------------------------------------
+# 8. HIGH-PERFORMANCE CACHE ENGINE (CAFFEINE & IN-MEMORY CACHE)
+# ------------------------------------------------------------------------------
+# [NFR-001] Cache retention configuration for student enrollment eligibility lookups
+quarkus.cache.caffeine.enrollment-status-cache.initial-capacity=500
+quarkus.cache.caffeine.enrollment-status-cache.maximum-size=10000
+# [NFR-001] Eviction duration ensuring freshness of student enrollment permissions (300 seconds)
+quarkus.cache.caffeine.enrollment-status-cache.expire-after-write=300S
+
+# [REQ-013] In-memory short-window idempotency cache intercepting rapid duplicate scans
+quarkus.cache.caffeine.qr-idempotency-cache.initial-capacity=1000
+quarkus.cache.caffeine.qr-idempotency-cache.maximum-size=50000
+# [REQ-013] Idempotency window holding scanned tokens for deduplication (300 seconds)
+quarkus.cache.caffeine.qr-idempotency-cache.expire-after-write=300S
+
+# ------------------------------------------------------------------------------
+# 9. DOMAIN BUSINESS LOGIC CONSTANTS & SCANNER CONTROL FLAGS
+# ------------------------------------------------------------------------------
+# [REQ-012] Maximum character buffer limit for encrypted Base64 QR code scan payloads
+app.attendance.qr.payload.max-length=2048
+# [REQ-013] Idempotency lookback interval in seconds preventing concurrent duplicate execution
+app.attendance.idempotency.window.seconds=300
+# [EXC-002] Flag controlling graceful response handling when a duplicate scan occurs today
+app.attendance.duplicate.graceful-response=true
+# [EXC-001] Maximum automated retry attempts for offline pending scan batches
+app.attendance.offline.retry.max-attempts=3
+# [EXC-001] Initial backoff delay interval in milliseconds between retry execution loops
+app.attendance.offline.retry.backoff-ms=5000
+# [EXC-005] Enforce strict First-In-First-Out processing order upon network queue replay
+app.attendance.fifo.recovery-replay.enabled=true
+# [REQ-012] Enforce active enrollment verification against database before committing attendance
+app.attendance.validation.require-active-enrollment=true
+
+# ------------------------------------------------------------------------------
+# 10. ENTERPRISE OBSERVABILITY, AUDITING & LOGGING SPECIFICATION
+# ------------------------------------------------------------------------------
+# [NFR-006] Root logging threshold controlling system log output volume
+quarkus.log.level=INFO
+# [NFR-006] Domain service logging set to DEBUG for granular transaction audit tracing
+quarkus.log.category."org.nlh4j.membershiphub.attendanceservice".level=DEBUG
+# [NFR-006] Hibernate category logging set to WARN to suppress performance-impacting chatter
+quarkus.log.category."org.hibernate".level=WARN
+# [NFR-006] Kafka client logging threshold suppressing redundant connection heartbeat traces
+quarkus.log.category."org.apache.kafka".level=WARN
+
+# [NFR-006] Structured console logging format integrating OpenTelemetry Trace and Span IDs
+quarkus.log.console.format=%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p traceId=%X{traceId}, parentId=%X{parentId}, spanId=%X{spanId}, sampled=%X{sampled} [%c{3.}] (%t) %s%e%n
+# [NFR-006] Enable console logging channel for native container log harvesting
+quarkus.log.console.enable=true
+
+# [NFR-006] Micrometer metrics publication endpoint for Prometheus scraping
+quarkus.micrometer.enabled=true
+quarkus.micrometer.export.prometheus.enabled=true
+quarkus.micrometer.export.prometheus.path=/q/metrics
+
+# [NFR-004] SmallRye Health endpoints supporting Kubernetes Liveness and Readiness probes
+quarkus.smallrye-health.root-path=/q/health
+quarkus.smallrye-health.liveness-path=/q/health/live
+quarkus.smallrye-health.readiness-path=/q/health/ready
+
+# ------------------------------------------------------------------------------
+# 11. OPENAPI & SWAGGER UI CONTRACT EXPOSURE
+# ------------------------------------------------------------------------------
+# [ARC-000] Expose OpenAPI 3.1 contract document for mobile app and gateway integration
+quarkus.smallrye-openapi.path=/q/openapi
+# [ARC-000] Enable Swagger UI visualization console in non-production environments
+quarkus.swagger-ui.always-include=true
+quarkus.swagger-ui.path=/q/swagger-ui
+```
+</EXISTING_SOURCE_CODE>
+</EXISTING_SOURCE_CODE_WORKSPACE>
+
+
+### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
+['Tạo tệp pom.xml cho attendance-service tại đường dẫn ./sources/backend/attendance-service/pom.xml thừa kế parent ./sources/backend/pom.xml. Khai báo dependency Quarkus 3.15.1: quarkus-resteasy-reactive-jackson, quarkus-hibernate-orm-panache, quarkus-jdbc-postgresql, quarkus-flyway, quarkus-smallrye-reactive-messaging-kafka, quarkus-hibernate-validator, quarkus-smallrye-openapi, quarkus-cache (Caffeine). ArtifactId attendance-service, groupId org.nlh4j.membershiphub. Dependencies test gồm quarkus-junit5, rest-assured, mockito-core, org.testcontainers:postgresql:1.20.4, org.testcontainers:kafka:1.20.4. Tệp phải biên dịch trống thông qua mvn clean install -DskipTests.']
+
+---
+
+### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Analyze the `<EXISTING_SOURCE_CODE_WORKSPACE>` layout, you MUST perform an AST-level incremental insertion of the requested sub-tasks into the current file content. You ARE STRICTLY FORBIDDEN from dropping old logic.
+
+
+Verify that any Java file generated strictly begins with the required `org.nlh4j.membershiphub` package layout. Ensure that you read the exact Tag IDs from the `['[ARC-000]', '[REQ-012]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```properties
+# ==============================================================================
+# 🏛️ MASTER ENTERPRISE GOVERNANCE & ARCHITECTURAL CONFIGURATION
+# 📁 COMPONENT DESTINATION: ./sources/backend/attendance-service/src/main/resources/application.properties
+# 🏢 SERVICE IDENTIFIER: attendance-service (Membership Hub Multi-Center Engine)
+# 📦 ARTIFACT COORDINATES: org.nlh4j.membershiphub:attendance-service:1.0.0-SNAPSHOT
+# 🏷️ TRACEABILITY TAG IDENTIFIERS:
+#    - [ARC-000]: Multi-Module Backend Architecture & Build Scaffolding Specification
+#    - [REQ-012]: QR Attendance Scan Ingestion & Base64 Payload Decoding
+#    - [REQ-013]: Idempotent Attendance Processing & Duplicate Scan Prevention
+#    - [ARC-007]: End-to-End Real-Time QR Attendance Pipeline Architecture
+#    - [EXC-001]: Offline Resilience, Local Caching & Dynamic Network Retry Queue
+#    - [EXC-002]: Graceful Duplicate Attendance Scan Handling (Same-day Re-scan Flag)
+#    - [EXC-005]: FIFO Queue Ordering & Resilient Replay Upon Network Recovery
+#    - [NFR-001]: Core API Latency Target (P95 < 200ms) & Connection Pooling
+#    - [NFR-003]: TLS 1.3 / AES-256 / OWASP Zero-Trust Security Baseline & JWT
+#    - [NFR-004]: High-Availability Scale-Out & Cross-Region PostgreSQL Replication
+#    - [NFR-005]: Hardened Container Image Footprint & Cloud Resource Optimization
+#    - [NFR-006]: Enterprise Audit Logging, Security Tracing & 1-Year Retention
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. CORE APPLICATION IDENTIFIERS & RUNTIME ENVIRONMENT
+# ------------------------------------------------------------------------------
+# [ARC-000] Application metadata identity aligned with Quarkus 3.15 LTS enterprise baseline
+quarkus.application.name=attendance-service
+# [ARC-000] Semantic version identifier synchronized across microservices ecosystem
+quarkus.application.version=1.0.0-SNAPSHOT
+# [ARC-000] Package root handle mapping across attendance-service runtime components
+quarkus.package.type=fast-jar
+
+# ------------------------------------------------------------------------------
+# 2. HTTP SERVER & NETWORK TRANSPORT CONFIGURATION
+# ------------------------------------------------------------------------------
+# [ARC-000] Dedicated HTTP listener port isolated for attendance-service pod deployment
+quarkus.http.port=8084
+# [ARC-000] Binding host address to all available network interfaces inside containerized pods
+quarkus.http.host=0.0.0.0
+# [REQ-012] Enforce standard base path for all Attendance API routing endpoints
+quarkus.http.root-path=/
+# [REQ-012] Enforce strict payload body limit to prevent memory buffer exhaustion attacks
+quarkus.http.limits.max-body-size=10M
+# [NFR-001] Keep-alive timeout tuned for ultra-low latency mobile scan bursts (P95 < 200ms)
+quarkus.http.keep-alive-timeout=60S
+# [NFR-001] Read timeout ensuring dropped network scans do not block thread execution pools
+quarkus.http.read-timeout=30S
+
+# ------------------------------------------------------------------------------
+# 3. ENTERPRISE RELATIONAL DATABASE (POSTGRESQL & AGROAL POOL)
+# ------------------------------------------------------------------------------
+# [NFR-001] PostgreSQL enterprise connection driver for Hibernate Panache operations
+quarkus.datasource.db-kind=postgresql
+# [NFR-001] JDBC connection URL with parameterized host, port, and multi-tenant database name
+quarkus.datasource.jdbc.url=jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:attendance_db}?sslmode=${DB_SSL_MODE:prefer}
+# [NFR-003] Database authentication credentials bound dynamically to environment injection
+quarkus.datasource.username=${DB_USER:membership_admin}
+# [NFR-003] Zero-leak masked database secret reference bound to GCP Secret Manager
+quarkus.datasource.password=${DB_PASSWORD:membership_secure_password}
+
+# [NFR-001] Agroal connection pool tuning satisfying high-concurrency throughput (10,000 active users)
+quarkus.datasource.jdbc.min-size=10
+# [NFR-001] Maximum database connection pool capacity aligned with HikariCP / Agroal matrix
+quarkus.datasource.jdbc.max-size=30
+# [NFR-001] Initial connection pool capacity established upon application boot sequence
+quarkus.datasource.jdbc.initial-size=10
+# [NFR-001] Database acquisition timeout ceiling avoiding operational thread starvation
+quarkus.datasource.jdbc.acquisition-timeout=3S
+# [NFR-001] Connection idle timeout purging stale network sockets after 10 minutes
+quarkus.datasource.jdbc.idle-removal-interval=600S
+# [NFR-001] Maximum connection lifetime preventing PostgreSQL backend resource leakage
+quarkus.datasource.jdbc.max-lifetime=1800S
+# [NFR-001] Background validation query verifying active connection liveness
+quarkus.datasource.jdbc.background-validation-interval=60S
+
+# ------------------------------------------------------------------------------
+# 4. HIBERNATE ORM & PANACHE DATA PERSISTENCE SPECIFICATION
+# ------------------------------------------------------------------------------
+# [DAT-004] PostgreSQL enterprise dialect supporting JSONB and exclusion indexing
+quarkus.hibernate-orm.dialect=org.hibernate.dialect.PostgreSQLDialect
+# [DAT-005] Schema management delegated exclusively to Flyway migrations in production
+quarkus.hibernate-orm.database.generation=validate
+# [NFR-001] Enable SQL statement batching to accelerate multi-row attendance ingestion
+quarkus.hibernate-orm.jdbc.batch-size=50
+# [NFR-001] Order insert operations to optimize database index tree insertion performance
+quarkus.hibernate-orm.jdbc.order-inserts=true
+# [NFR-001] Order update operations to prevent deadlock occurrences under heavy concurrency
+quarkus.hibernate-orm.jdbc.order-updates=true
+# [NFR-006] Disable cleartext SQL logging in production to prevent PII exposure
+quarkus.hibernate-orm.log.sql=false
+
+# ------------------------------------------------------------------------------
+# 5. DATABASE SCHEMA MIGRATION ENGINE (FLYWAY)
+# ------------------------------------------------------------------------------
+# [DAT-004] Activate Flyway automated migration on application initialization
+quarkus.flyway.migrate-at-start=true
+# [DAT-004] Prevent destructive schema drops in production and staging environments
+quarkus.flyway.clean-at-start=false
+# [DAT-004] Source path locations for ANSI-compliant SQL migration scripts
+quarkus.flyway.locations=classpath:db/migration
+# [DAT-004] Enforce strict baseline on legacy schemas to ensure migration continuity
+quarkus.flyway.baseline-on-migrate=true
+# [DAT-004] Baseline version anchor establishing initial database schema state
+quarkus.flyway.baseline-version=0
+# [DAT-004] Enforce checksum validation preventing unauthorized modification of applied migrations
+quarkus.flyway.validate-on-migrate=true
+
+# ------------------------------------------------------------------------------
+# 6. ENTERPRISE OAUTH2 & SMALLRYE JWT AUTHENTICATION GATEWAY
+# ------------------------------------------------------------------------------
+# [NFR-003] Activate SmallRye JWT verification layer for zero-trust microservice perimeter
+quarkus.smallrye-jwt.enabled=true
+# [ARC-006] Expected JWT issuer verifying cryptographic authentication provenance
+mp.jwt.verify.issuer=membership-hub
+# [ARC-006] Expected JWT audience confirming target attendance-service boundary
+mp.jwt.verify.audiences=membership-hub-client
+# [NFR-003] Location of the RS256 2048-bit enterprise public verification key
+mp.jwt.verify.publickey.location=publicKey.pem
+# [NFR-003] Clock skew tolerance in seconds handling distributed cluster time variance
+mp.jwt.verify.clock.skew=60
+# [NFR-003] Proactive authentication disabled to permit health check probes without credentials
+quarkus.http.auth.proactive=false
+
+# ------------------------------------------------------------------------------
+# 7. SMALLRYE REACTIVE MESSAGING & APACHE KAFKA EVENT-DRIVEN TOPOLOGY
+# ------------------------------------------------------------------------------
+# [ARC-008] Kafka broker bootstrap connection endpoints with dynamic failover
+kafka.bootstrap.servers=${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+# --- Incoming Channel: QR Attendance Scan Ingestion [REQ-012], [ARC-007] ---
+# [REQ-012] Incoming reactive messaging connector mapping for QR mobile ingestion
+mp.messaging.incoming.attendance-scan-requested.connector=smallrye-kafka
+# [REQ-012] Topic destination for raw QR attendance scans streaming from mobile gateway
+mp.messaging.incoming.attendance-scan-requested.topic=attendance.scan.requested
+# [REQ-012] Consumer group ID coordinating attendance scan partition distribution
+mp.messaging.incoming.attendance-scan-requested.group.id=attendance-service-scan-consumer
+# [REQ-012] Key deserializer decoding UUID/String partition routing handles
+mp.messaging.incoming.attendance-scan-requested.key.deserializer=org.apache.kafka.common.serialization.StringDeserializer
+# [REQ-012] Value deserializer parsing structured attendance scan JSON payloads
+mp.messaging.incoming.attendance-scan-requested.value.deserializer=io.quarkus.kafka.client.serialization.ObjectMapperDeserializer
+# [EXC-005] Commit consumer offset manually only after successful business persistence (FIFO)
+mp.messaging.incoming.attendance-scan-requested.enable.auto.commit=false
+# [EXC-005] Auto-offset reset policy reading earliest uncommitted events during recovery
+mp.messaging.incoming.attendance-scan-requested.auto.offset.reset=earliest
+# [EXC-001] Resilient Dead Letter Queue routing poisoned or unparseable QR messages
+mp.messaging.incoming.attendance-scan-requested.failure-strategy=dead-letter-queue
+# [EXC-001] Dead Letter Queue topic capturing failed scans for audit and replay
+mp.messaging.incoming.attendance-scan-requested.dead-letter-queue.topic=attendance.scan.dlq
+
+# --- Outgoing Channel: Validated Attendance Recorded Stream [ARC-008], [REQ-013] ---
+# [ARC-008] Outgoing reactive messaging connector dispatching confirmed attendance records
+mp.messaging.outgoing.attendance-recorded.connector=smallrye-kafka
+# [ARC-008] Topic destination consumed by notification-service and reporting-service
+mp.messaging.outgoing.attendance-recorded.topic=attendance.recorded
+# [ARC-008] Key serializer handling partition routing keys for student attendance streams
+mp.messaging.outgoing.attendance-recorded.key.serializer=org.apache.kafka.common.serialization.StringSerializer
+# [ARC-008] Value serializer formatting standardized confirmed attendance JSON events
+mp.messaging.outgoing.attendance-recorded.value.serializer=io.quarkus.kafka.client.serialization.ObjectMapperSerializer
+# [ARC-008] Idempotent Kafka producer guarantee ensuring exactly-once publication semantics
+mp.messaging.outgoing.attendance-recorded.acks=all
+# [ARC-008] Snappy compression minimizing cross-zone network transit bandwidth
+mp.messaging.outgoing.attendance-recorded.compression.type=snappy
+# [ARC-008] Producer retry bounds handling transient network connectivity blips
+mp.messaging.outgoing.attendance-recorded.retries=5
+
+# --- Outgoing Channel: Outbound Notifications Fan-out [ARC-008], [REQ-016] ---
+# [ARC-008] Outgoing channel dispatching instant notification trigger events
+mp.messaging.outgoing.notification-outbound.connector=smallrye-kafka
+# [ARC-008] Topic destination for multi-channel push and Zalo OA message workers
+mp.messaging.outgoing.notification-outbound.topic=notification.outbound
+# [ARC-008] Serializer formats for notification queue event routing
+mp.messaging.outgoing.notification-outbound.key.serializer=org.apache.kafka.common.serialization.StringSerializer
+mp.messaging.outgoing.notification-outbound.value.serializer=io.quarkus.kafka.client.serialization.ObjectMapperSerializer
+
+# ------------------------------------------------------------------------------
+# 8. HIGH-PERFORMANCE CACHE ENGINE (CAFFEINE & IN-MEMORY CACHE)
+# ------------------------------------------------------------------------------
+# [NFR-001] Explicitly declare Caffeine cache provider for high-throughput in-memory lookups
+quarkus.cache.type=caffeine
+
+# [NFR-001] Cache retention configuration for student enrollment eligibility lookups
+quarkus.cache.caffeine.enrollment-status-cache.initial-capacity=500
+quarkus.cache.caffeine.enrollment-status-cache.maximum-size=10000
+# [NFR-001] Eviction duration ensuring freshness of student enrollment permissions (300 seconds)
+quarkus.cache.caffeine.enrollment-status-cache.expire-after-write=300S
+
+# [REQ-013] In-memory short-window idempotency cache intercepting rapid duplicate scans
+quarkus.cache.caffeine.qr-idempotency-cache.initial-capacity=1000
+quarkus.cache.caffeine.qr-idempotency-cache.maximum-size=50000
+# [REQ-013] Idempotency window holding scanned tokens for deduplication (300 seconds)
+quarkus.cache.caffeine.qr-idempotency-cache.expire-after-write=300S
+
+# ------------------------------------------------------------------------------
+# 9. DOMAIN BUSINESS LOGIC CONSTANTS & SCANNER CONTROL FLAGS
+# ------------------------------------------------------------------------------
+# [REQ-012] Maximum character buffer limit for encrypted Base64 QR code scan payloads
+app.attendance.qr.payload.max-length=2048
+# [REQ-012] Time-to-live tolerance window in seconds for dynamic QR code freshness verification
+app.attendance.qr.token-validity-seconds=60
+# [REQ-013] Idempotency lookback interval in seconds preventing concurrent duplicate execution
+app.attendance.idempotency.window.seconds=300
+# [EXC-002] Flag controlling graceful response handling when a duplicate scan occurs today
+app.attendance.duplicate.graceful-response=true
+# [EXC-001] Maximum automated retry attempts for offline pending scan batches
+app.attendance.offline.retry.max-attempts=3
+# [EXC-001] Initial backoff delay interval in milliseconds between retry execution loops
+app.attendance.offline.retry.backoff-ms=5000
+# [EXC-005] Enforce strict First-In-First-Out processing order upon network queue replay
+app.attendance.fifo.recovery-replay.enabled=true
+# [REQ-012] Enforce active enrollment verification against database before committing attendance
+app.attendance.validation.require-active-enrollment=true
+
+# ------------------------------------------------------------------------------
+# 10. ENTERPRISE OBSERVABILITY, AUDITING & LOGGING SPECIFICATION
+# ------------------------------------------------------------------------------
+# [NFR-006] Root logging threshold controlling system log output volume
+quarkus.log.level=INFO
+# [NFR-006] Domain service logging set to DEBUG for granular transaction audit tracing
+quarkus.log.category."org.nlh4j.membershiphub.attendanceservice".level=DEBUG
+# [NFR-006] Hibernate category logging set to WARN to suppress performance-impacting chatter
+quarkus.log.category."org.hibernate".level=WARN
+# [NFR-006] Kafka client logging threshold suppressing redundant connection heartbeat traces
+quarkus.log.category."org.apache.kafka".level=WARN
+
+# [NFR-006] Structured console logging format integrating OpenTelemetry Trace and Span IDs
+quarkus.log.console.format=%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p traceId=%X{traceId}, parentId=%X{parentId}, spanId=%X{spanId}, sampled=%X{sampled} [%c{3.}] (%t) %s%e%n
+# [NFR-006] Enable console logging channel for native container log harvesting
+quarkus.log.console.enable=true
+
+# [NFR-006] Micrometer metrics publication endpoint for Prometheus scraping
+quarkus.micrometer.enabled=true
+quarkus.micrometer.export.prometheus.enabled=true
+quarkus.micrometer.export.prometheus.path=/q/metrics
+
+# [NFR-004] SmallRye Health endpoints supporting Kubernetes Liveness and Readiness probes
+quarkus.smallrye-health.root-path=/q/health
+quarkus.smallrye-health.liveness-path=/q/health/live
+quarkus.smallrye-health.readiness-path=/q/health/ready
+
+# ------------------------------------------------------------------------------
+# 11. OPENAPI & SWAGGER UI CONTRACT EXPOSURE
+# ------------------------------------------------------------------------------
+# [ARC-000] Expose OpenAPI 3.1 contract document for mobile app and gateway integration
+quarkus.smallrye-openapi.path=/q/openapi
+# [ARC-000] Enable Swagger UI visualization console in non-production environments
+quarkus.swagger-ui.always-include=true
+quarkus.swagger-ui.path=/q/swagger-ui
+
+# ------------------------------------------------------------------------------
+# 12. TEST PROFILE OVERRIDES (QUARKUS ZERO-CONFIG TESTCONTAINERS SUPPORT)
+# ------------------------------------------------------------------------------
+# [ARC-000] Disable background schema migration in mock unit test executions if flyway is mocked
+%test.quarkus.flyway.migrate-at-start=true
+# [ARC-000] Disable Kafka connector startup during isolated standalone unit tests
+%test.mp.messaging.incoming.attendance-scan-requested.connector=smallrye-in-memory
+%test.mp.messaging.outgoing.attendance-recorded.connector=smallrye-in-memory
+%test.mp.messaging.outgoing.notification-outbound.connector=smallrye-in-memory
+# [ARC-000] Quiet test logging suppressing non-essential console outputs
+%test.quarkus.log.level=WARN
+%test.quarkus.log.category."org.nlh4j.membershiphub.attendanceservice".level=INFO
+```
+
+# Day 6: model models/gemini-flash-lite-latest - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/backend/attendance-service/src/main/resources/db/migration/V1__attendance_init.sql
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Component Destination Path: `./sources/backend/attendance-service/src/main/resources/db/migration/V1__attendance_init.sql`
+*   Traceability Audit Tags For This Task: ['[ARC-000]', '[REQ-012]']
+
+### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
+
+<EXISTING_SOURCE_CODE_WORKSPACE>
+* **File Existence Status:** PROCOVERY_MAINTENANCE
+* **Current Disk Content Base:**
+<EXISTING_SOURCE_CODE>
+```sql
+-- [ARC-000], [REQ-012]
+-- =====================================================================================
+-- FILE: ./sources/backend/attendance-service/src/main/resources/db/migration/V1__attendance_init.sql
+-- SCOPE: Database Schema Migration for Attendance Service Microservice
+-- TRACEABILITY: [ARC-000] (System Architecture), [REQ-012] (QR Attendance Scan & Validation)
+-- DESCRIPTION: Flyway database migration script establishing tables, constraints, 
+--              composite unique indexes for idempotency, foreign key relationships, 
+--              and performance optimization indexes for the attendance microservice.
+-- =====================================================================================
+
+-- [REQ-012] Set statement timeout to prevent long-running locks during schema deployment
+SET statement_timeout = 30000;
+
+-- [REQ-012] Enable UUID extension if not already present globally in the database instance
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- =====================================================================================
+-- TABLE: attendance
+-- PURPOSE: Stores real-time QR attendance scan records for students enrolled in courses.
+-- TRACEABILITY: [REQ-012], [ARC-000], [DAT-004]
+-- =====================================================================================
+CREATE TABLE IF NOT EXISTS attendance (
+    -- Primary unique identifier for the attendance scan record (UUID v4)
+    attendance_id UUID NOT NULL DEFAULT uuid_generate_v4(),
+    
+    -- Reference to the student user recording attendance (must exist in users table)
+    student_id UUID NOT NULL,
+    
+    -- Reference to the course being attended (must exist in courses table)
+    course_id UUID NOT NULL,
+    
+    -- Calendar date on which attendance is recorded (used for daily constraint enforcement)
+    attendance_date DATE NOT NULL,
+    
+    -- Precise timestamp when the QR code scan was successfully processed and logged
+    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Unique idempotency key supplied by the client mobile app to prevent duplicate submissions
+    idempotency_key VARCHAR(100) NULL,
+    
+    -- Status flag indicating processing state (RECORDED, DUPLICATE_SKIPPED, FAILED)
+    status VARCHAR(30) NOT NULL DEFAULT 'RECORDED',
+    
+    -- Primary Key Constraint
+    CONSTRAINT pk_attendance PRIMARY KEY (attendance_id),
+    
+    -- Composite Unique Constraint ensuring strict idempotency per student, course, and date
+    CONSTRAINT uq_attendance_student_course_date UNIQUE (student_id, course_id, attendance_date),
+    
+    -- Idempotency Key Unique Constraint across the entire table if provided
+    CONSTRAINT uq_attendance_idempotency_key UNIQUE (idempotency_key)
+);
+
+-- =====================================================================================
+-- INDEXES: attendance table performance tuning
+-- TRACEABILITY: [REQ-012], [NFR-001] (P95 < 200ms latency requirement)
+-- =====================================================================================
+
+-- Index for high-speed lookup and filtering by course and date (frequently used by reporting)
+CREATE INDEX IF NOT EXISTS idx_attendance_course_date 
+    ON attendance (course_id, attendance_date);
+
+-- Index for student attendance history queries and dashboard counters
+CREATE INDEX IF NOT EXISTS idx_attendance_student_date 
+    ON attendance (student_id, attendance_date);
+
+-- Index for idempotency verification lookups on high ingestion throughput
+CREATE INDEX IF NOT EXISTS idx_attendance_idempotency 
+    ON attendance (idempotency_key) 
+    WHERE idempotency_key IS NOT NULL;
+
+-- =====================================================================================
+-- TABLE: attendance_retry_queue
+-- PURPOSE: Dead-letter and retry queue buffer for offline attendance synchronization
+-- TRACEABILITY: [EXC-001], [EXC-005], [REQ-012]
+-- =====================================================================================
+CREATE TABLE IF NOT EXISTS attendance_retry_queue (
+    -- Unique queue entry identifier
+    queue_id UUID NOT NULL DEFAULT uuid_generate_v4(),
+    
+    -- Original client-side idempotency key
+    idempotency_key VARCHAR(100) NOT NULL,
+    
+    -- Encoded or raw QR payload string submitted during offline mode
+    qr_payload TEXT NOT NULL,
+    
+    -- Number of delivery retry attempts executed so far
+    attempt_count INT NOT NULL DEFAULT 0,
+    
+    -- Maximum permitted retry attempts before moving to permanent failure state
+    max_attempts INT NOT NULL DEFAULT 3,
+    
+    -- Timestamp of the last failed processing attempt
+    last_attempt_at TIMESTAMP NULL,
+    
+    -- Current processing status of the queued offline payload
+    queue_status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    
+    -- Error message captured during the last failed attempt
+    last_error_message TEXT NULL,
+    
+    -- Record creation timestamp
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Primary Key Constraint
+    CONSTRAINT pk_attendance_retry_queue PRIMARY KEY (queue_id),
+    
+    -- Unique constraint on idempotency key within retry queue
+    CONSTRAINT uq_retry_queue_idempotency UNIQUE (idempotency_key),
+    
+    -- Status validation check constraint
+    CONSTRAINT chk_retry_queue_status CHECK (queue_status IN ('PENDING', 'PROCESSING', 'RETRY_SCHEDULED', 'COMPLETED', 'DEAD_LETTER'))
+);
+
+-- =====================================================================================
+-- INDEXES: attendance_retry_queue performance and FIFO processing
+-- TRACEABILITY: [EXC-005] (FIFO recovery order)
+-- =====================================================================================
+
+-- Index for fetching pending queue items ordered strictly by creation timestamp (FIFO enforcement)
+CREATE INDEX IF NOT EXISTS idx_retry_queue_fifo 
+    ON attendance_retry_queue (created_at ASC) 
+    WHERE queue_status IN ('PENDING', 'RETRY_SCHEDULED');
+
+-- =====================================================================================
+-- MIGRATION COMPLETION LOGGING
+-- TRACEABILITY: [ARC-000]
+-- =====================================================================================
+DO $$
+BEGIN
+    RAISE NOTICE 'Migration V1__attendance_init.sql executed successfully. Attendance tables and indexes established.';
+END $$;
+```
+</EXISTING_SOURCE_CODE>
+</EXISTING_SOURCE_CODE_WORKSPACE>
+
+
+### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
+['Tạo tệp pom.xml cho attendance-service tại đường dẫn ./sources/backend/attendance-service/pom.xml thừa kế parent ./sources/backend/pom.xml. Khai báo dependency Quarkus 3.15.1: quarkus-resteasy-reactive-jackson, quarkus-hibernate-orm-panache, quarkus-jdbc-postgresql, quarkus-flyway, quarkus-smallrye-reactive-messaging-kafka, quarkus-hibernate-validator, quarkus-smallrye-openapi, quarkus-cache (Caffeine). ArtifactId attendance-service, groupId org.nlh4j.membershiphub. Dependencies test gồm quarkus-junit5, rest-assured, mockito-core, org.testcontainers:postgresql:1.20.4, org.testcontainers:kafka:1.20.4. Tệp phải biên dịch trống thông qua mvn clean install -DskipTests.']
+
+---
+
+### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Analyze the `<EXISTING_SOURCE_CODE_WORKSPACE>` layout, you MUST perform an AST-level incremental insertion of the requested sub-tasks into the current file content. You ARE STRICTLY FORBIDDEN from dropping old logic.
+
+
+Verify that any Java file generated strictly begins with the required `org.nlh4j.membershiphub` package layout. Ensure that you read the exact Tag IDs from the `['[ARC-000]', '[REQ-012]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```sql
+-- [ARC-000], [REQ-012]
+-- =====================================================================================
+-- FILE: ./sources/backend/attendance-service/src/main/resources/db/migration/V1__attendance_init.sql
+-- SCOPE: Database Schema Migration for Attendance Service Microservice
+-- TRACEABILITY: [ARC-000] (System Architecture), [REQ-012] (QR Attendance Scan & Validation)
+-- DESCRIPTION: Flyway database migration script establishing tables, constraints, 
+--              composite unique indexes for idempotency, foreign key relationships, 
+--              and performance optimization indexes for the attendance microservice.
+-- =====================================================================================
+
+-- [REQ-012] Set statement timeout to prevent long-running locks during schema deployment
+SET statement_timeout = 30000;
+
+-- [REQ-012] Enable UUID extension if not already present globally in the database instance
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- =====================================================================================
+-- TABLE: attendance
+-- PURPOSE: Stores real-time QR attendance scan records for students enrolled in courses.
+-- TRACEABILITY: [REQ-012], [ARC-000], [DAT-004]
+-- =====================================================================================
+CREATE TABLE IF NOT EXISTS attendance (
+    -- Primary unique identifier for the attendance scan record (UUID v4)
+    attendance_id UUID NOT NULL DEFAULT uuid_generate_v4(),
+    
+    -- Reference to the student user recording attendance (must exist in users table)
+    student_id UUID NOT NULL,
+    
+    -- Reference to the course being attended (must exist in courses table)
+    course_id UUID NOT NULL,
+    
+    -- Calendar date on which attendance is recorded (used for daily constraint enforcement)
+    attendance_date DATE NOT NULL,
+    
+    -- Precise timestamp when the QR code scan was successfully processed and logged
+    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Unique idempotency key supplied by the client mobile app to prevent duplicate submissions
+    idempotency_key VARCHAR(100) NULL,
+    
+    -- Status flag indicating processing state (RECORDED, DUPLICATE_SKIPPED, FAILED)
+    status VARCHAR(30) NOT NULL DEFAULT 'RECORDED',
+    
+    -- Primary Key Constraint
+    CONSTRAINT pk_attendance PRIMARY KEY (attendance_id),
+    
+    -- Composite Unique Constraint ensuring strict idempotency per student, course, and date
+    CONSTRAINT uq_attendance_student_course_date UNIQUE (student_id, course_id, attendance_date),
+    
+    -- Idempotency Key Unique Constraint across the entire table if provided
+    CONSTRAINT uq_attendance_idempotency_key UNIQUE (idempotency_key)
+);
+
+-- =====================================================================================
+-- INDEXES: attendance table performance tuning
+-- TRACEABILITY: [REQ-012], [NFR-001] (P95 < 200ms latency requirement)
+-- =====================================================================================
+
+-- Index for high-speed lookup and filtering by course and date (frequently used by reporting)
+CREATE INDEX IF NOT EXISTS idx_attendance_course_date 
+    ON attendance (course_id, attendance_date);
+
+-- Index for student attendance history queries and dashboard counters
+CREATE INDEX IF NOT EXISTS idx_attendance_student_date 
+    ON attendance (student_id, attendance_date);
+
+-- Index for idempotency verification lookups on high ingestion throughput
+CREATE INDEX IF NOT EXISTS idx_attendance_idempotency 
+    ON attendance (idempotency_key) 
+    WHERE idempotency_key IS NOT NULL;
+
+-- =====================================================================================
+-- TABLE: attendance_retry_queue
+-- PURPOSE: Dead-letter and retry queue buffer for offline attendance synchronization
+-- TRACEABILITY: [EXC-001], [EXC-005], [REQ-012]
+-- =====================================================================================
+CREATE TABLE IF NOT EXISTS attendance_retry_queue (
+    -- Unique queue entry identifier
+    queue_id UUID NOT NULL DEFAULT uuid_generate_v4(),
+    
+    -- Original client-side idempotency key
+    idempotency_key VARCHAR(100) NOT NULL,
+    
+    -- Encoded or raw QR payload string submitted during offline mode
+    qr_payload TEXT NOT NULL,
+    
+    -- Number of delivery retry attempts executed so far
+    attempt_count INT NOT NULL DEFAULT 0,
+    
+    -- Maximum permitted retry attempts before moving to permanent failure state
+    max_attempts INT NOT NULL DEFAULT 3,
+    
+    -- Timestamp of the last failed processing attempt
+    last_attempt_at TIMESTAMP NULL,
+    
+    -- Current processing status of the queued offline payload
+    queue_status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    
+    -- Error message captured during the last failed attempt
+    last_error_message TEXT NULL,
+    
+    -- Record creation timestamp
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Primary Key Constraint
+    CONSTRAINT pk_attendance_retry_queue PRIMARY KEY (queue_id),
+    
+    -- Unique constraint on idempotency key within retry queue
+    CONSTRAINT uq_retry_queue_idempotency UNIQUE (idempotency_key),
+    
+    -- Status validation check constraint
+    CONSTRAINT chk_retry_queue_status CHECK (queue_status IN ('PENDING', 'PROCESSING', 'RETRY_SCHEDULED', 'COMPLETED', 'DEAD_LETTER'))
+);
+
+-- =====================================================================================
+-- INDEXES: attendance_retry_queue performance and FIFO processing
+-- TRACEABILITY: [EXC-005] (FIFO recovery order)
+-- =====================================================================================
+
+-- Index for fetching pending queue items ordered strictly by creation timestamp (FIFO enforcement)
+CREATE INDEX IF NOT EXISTS idx_retry_queue_fifo 
+    ON attendance_retry_queue (created_at ASC) 
+    WHERE queue_status IN ('PENDING', 'RETRY_SCHEDULED');
+
+-- =====================================================================================
+-- MIGRATION COMPLETION LOGGING
+-- TRACEABILITY: [ARC-000]
+-- =====================================================================================
+DO $$
+BEGIN
+    RAISE NOTICE 'Migration V1__attendance_init.sql executed successfully. Attendance tables and indexes established.';
+END $$;
+```
+
+# Day 6: model models/gemini-flash-lite-latest - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/AttendanceServiceApplication.java
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DATA LAYER INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Component Destination Path: `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/AttendanceServiceApplication.java`
+*   Traceability Audit Tags For This Task: ['[ARC-000]', '[REQ-012]']
+
+### 📁 BASELINE LAYER / REFERENCE SPECIFICATION
+
+<EXISTING_SOURCE_CODE_WORKSPACE>
+* **File Existence Status:** PROCOVERY_MAINTENANCE
+* **Current Disk Content Base:**
+<EXISTING_SOURCE_CODE>
+```java
+package org.nlh4j.membershiphub.attendanceservice;
+
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.QuarkusApplication;
+import io.quarkus.runtime.annotations.QuarkusMain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Enterprise Main Application Entry Point for Attendance Service.
+ *
+ * <p>Traceability Matrix Tags:
+ * <ul>
+ *   <li>[ARC-000] - Microservices scaffolding and multi-module base architecture layout.</li>
+ *   <li>[REQ-012] - QR payload ingestion, check-in validation, and attendance logging processing.</li>
+ * </ul>
+ *
+ * <p>Compliance and Architectural Guardrails:
+ * <ul>
+ *   <li>Corporate package layout compliance: {@code org.nlh4j.membershiphub.attendanceservice}</li>
+ *   <li>Workspace boundary: {@code ./sources/backend/attendance-service/}</li>
+ *   <li>Strict zero reference to generic placeholders like {@code com.example}</li>
+ *   <li>Handles clean shutdown signals and startup lifecycle validation for attendance pipelines</li>
+ * </ul>
+ */
+@QuarkusMain
+public class AttendanceServiceApplication implements QuarkusApplication {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AttendanceServiceApplication.class);
+
+    /**
+     * Standard Quarkus entry point invoking the execution lifecycle.
+     *
+     * @param args runtime CLI arguments passed during container bootstrap
+     */
+    public static void main(String... args) {
+        LOGGER.info("Bootstrapping AttendanceServiceApplication [ARC-000, REQ-012]...");
+        Quarkus.run(AttendanceServiceApplication.class, args);
+    }
+
+    /**
+     * Executes the main application loop, handling startup logging, resource readiness,
+     * and blocking on shutdown signals.
+     *
+     * @param args runtime application arguments
+     * @return exit code integer (0 for successful graceful termination)
+     */
+    @Override
+    public int run(String... args) {
+        LOGGER.info("AttendanceServiceApplication has successfully initialized.");
+        LOGGER.info("Active profile services: QR scanning engine, idempotency guards, and Kafka attendance event producers.");
+
+        Quarkus.waitForExit();
+
+        LOGGER.info("AttendanceServiceApplication is shutting down gracefully.");
+        return 0;
+    }
+}
+```
+</EXISTING_SOURCE_CODE>
+</EXISTING_SOURCE_CODE_WORKSPACE>
+
+
+### 📋 EXECUTION SUB-TASKS TO IMPLEMENT BY CODER AGENT
+['Tạo tệp pom.xml cho attendance-service tại đường dẫn ./sources/backend/attendance-service/pom.xml thừa kế parent ./sources/backend/pom.xml. Khai báo dependency Quarkus 3.15.1: quarkus-resteasy-reactive-jackson, quarkus-hibernate-orm-panache, quarkus-jdbc-postgresql, quarkus-flyway, quarkus-smallrye-reactive-messaging-kafka, quarkus-hibernate-validator, quarkus-smallrye-openapi, quarkus-cache (Caffeine). ArtifactId attendance-service, groupId org.nlh4j.membershiphub. Dependencies test gồm quarkus-junit5, rest-assured, mockito-core, org.testcontainers:postgresql:1.20.4, org.testcontainers:kafka:1.20.4. Tệp phải biên dịch trống thông qua mvn clean install -DskipTests.']
+
+---
+
+### ⚙️ CORE SOFTWARE ENGINEER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder routing rules, and sub-task specifications provided above. Analyze the `<EXISTING_SOURCE_CODE_WORKSPACE>` layout, you MUST perform an AST-level incremental insertion of the requested sub-tasks into the current file content. You ARE STRICTLY FORBIDDEN from dropping old logic.
+
+
+Verify that any Java file generated strictly begins with the required `org.nlh4j.membershiphub` package layout. Ensure that you read the exact Tag IDs from the `['[ARC-000]', '[REQ-012]']` variable, and permanently burn those codes into the top-level comment block or Javadoc of the generated source code file. Emit the final compiler-ready production source code inside a single valid markdown code block now.
+* **📝 Response**:
+```java
+package org.nlh4j.membershiphub.attendanceservice;
+
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.QuarkusApplication;
+import io.quarkus.runtime.annotations.QuarkusMain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Enterprise Main Application Entry Point for Attendance Service.
+ *
+ * <p>Traceability Matrix Tags:
+ * <ul>
+ *   <li>[ARC-000] - Microservices scaffolding and multi-module base architecture layout.</li>
+ *   <li>[REQ-012] - QR payload ingestion, check-in validation, and attendance logging processing.</li>
+ * </ul>
+ *
+ * <p>Compliance and Architectural Guardrails:
+ * <ul>
+ *   <li>Corporate package layout compliance: {@code org.nlh4j.membershiphub.attendanceservice}</li>
+ *   <li>Workspace boundary: {@code ./sources/backend/attendance-service/}</li>
+ *   <li>Strict zero reference to generic placeholders like {@code com.example}</li>
+ *   <li>Handles clean shutdown signals and startup lifecycle validation for attendance pipelines</li>
+ * </ul>
+ */
+@QuarkusMain
+public class AttendanceServiceApplication implements QuarkusApplication {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AttendanceServiceApplication.class);
+
+    /**
+     * Standard Quarkus entry point invoking the execution lifecycle.
+     *
+     * @param args runtime CLI arguments passed during container bootstrap
+     */
+    public static void main(String... args) {
+        LOGGER.info("Bootstrapping AttendanceServiceApplication [ARC-000, REQ-012]...");
+        Quarkus.run(AttendanceServiceApplication.class, args);
+    }
+
+    /**
+     * Executes the main application loop, handling startup logging, resource readiness,
+     * and blocking on shutdown signals.
+     *
+     * @param args runtime application arguments
+     * @return exit code integer (0 for successful graceful termination)
+     */
+    @Override
+    public int run(String... args) {
+        LOGGER.info("AttendanceServiceApplication has successfully initialized.");
+        LOGGER.info("Active profile services: QR scanning engine, idempotency guards, and Kafka attendance event producers.");
+
+        Quarkus.waitForExit();
+
+        LOGGER.info("AttendanceServiceApplication is shutting down gracefully.");
+        return 0;
+    }
+}
+```
+
