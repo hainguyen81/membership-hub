@@ -27343,3 +27343,1402 @@ flowchart TD
 | Documentation | System Traceability | [DOC-001] |
 ```
 
+# Day 6: model models/gemini-flash-lite-latest - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/docs/architecture/ENTERPRISE_SYSTEM_ARCHITECTURE_BLUEPRINT.md
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DOCUMENT MATRIX INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Documentation Destination Path: `./sources/docs/architecture/ENTERPRISE_SYSTEM_ARCHITECTURE_BLUEPRINT.md`
+
+
+### ENTERPRISE DOCUMENTATION RECOVERY WORKSPACE
+* **Target Document Disk Status:** INCREMENTAL_MAINTENANCE_APPEND
+* **Current Living Document Content:**
+<EXISTING_DOCUMENT_CONTENT>
+```markdown
+# 🏢 ENTERPRISE SYSTEM ARCHITECTURE BLUEPRINT: MEMBERSHIP HUB
+* Target Project Identity Safe Name: `membership-hub`
+* Enforced Java Package Prefix Base: `org.nlh4j.membershiphub`
+* Target Documentation Destination Path: `./sources/docs/architecture/ENTERPRISE_SYSTEM_ARCHITECTURE_BLUEPRINT.md`
+* Associated Traceability Tags: `[ARC-000]`, `[ARC-006]`, `[ARC-007]`, `[ARC-008]`, `[ARC-009]`, `[REQ-012]`, `[REQ-013]`, `[REQ-024]`, `[REQ-025]`, `[EXC-001]`, `[EXC-002]`, `[EXC-005]`, `[DAT-004]`, `[DAT-005]`, `[DAT-006]`, `[NFR-001]`, `[NFR-003]`, `[NFR-004]`, `[DOC-001]`
+
+---
+
+## 1. 🏗️ SYSTEM ARCHITECTURE OVERVIEW & SCAFFOLDING BLUEPRINT
+
+### 1.1. Architectural Intent & Scope
+The **Membership Hub** enterprise platform is a distributed, multi‑tenant microservices ecosystem engineered for real‑time member management and QR‑based attendance tracking [ARC-007]. To enforce strict modularity, separation of concerns, and independent scalability, the backend architecture is divided into isolated microservices (`user-service`, `center-service`, `course-service`, `attendance-service`, `report-service`, `dashboard-service`) managed under a unified Maven Multi‑Module parent descriptor. The frontend tier is powered by Next.js 14 utilizing the App Router paradigm, providing responsive server‑side rendered interfaces and mobile‑ready layout wrappers [ARC-009].
+
+### 1.2. Maven Multi‑Module Directory Tree
+The entire backend codebase is structured under `./sources/backend/` conforming strictly to the enterprise package naming convention `org.nlh4j.membershiphub.<service-name>` [ARC-000]:
+```
+</EXISTING_DOCUMENT_CONTENT>
+
+
+
+*   Documentation Context: Conceptual Init (Synthesize the architecture, guidelines, or specs based purely on the execution sub-tasks blueprint.)
+
+
+### 📋 EXECUTION SUB-TASKS & DOCUMENT CONTENT TO WRITE
+['Soạn thảo tài liệu Markdown tại ./sources/docs/architecture/attendance-architecture.md mô tả kiến trúc attendance-service gồm sơ đồ C4 Container với các thành phần REST Controller, Service, Repository, Kafka Producer, QrPayloadDecoder. Tài liệu phải liệt kê đầy đủ Tag ID [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005]. Bao gồm sơ đồ Mermaid flowchart mô tả các bước xử lý QR scan: (1) Mobile app scan QR, (2) Decode base64 payload, (3) Validate enrollment, (4) Check idempotency, (5) Persist hoặc trả duplicate, (6) Publish Kafka event.']
+
+---
+
+### ⚙️ TECHNICAL WRITER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder guardrails, and detailed sub-task document specifications provided above. Analyze the `<EXISTING_DOCUMENT_CONTENT>` layout, you MUST precisely insert the new architectural specifications into their logical structural sections within the current document text. Do NOT overwrite or shrink the pre-existing enterprise content blocks.
+
+
+Ensure that you read the exact Tag IDs from the `['[REQ-012]', '[REQ-013]', '[ARC-007]', '[DOC-001]']` variable, and permanently burn those codes into the generated documentation layout (inside the table columns or the dedicated Traceability Matrix Reference section). Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.
+* **📝 Response**:
+```markdown
+# 🏢 ENTERPRISE SYSTEM ARCHITECTURE BLUEPRINT: MEMBERSHIP HUB
+* Target Project Identity Safe Name: `membership-hub`
+* Enforced Java Package Prefix Base: `org.nlh4j.membershiphub`
+* Target Documentation Destination Path: `./sources/docs/architecture/ENTERPRISE_SYSTEM_ARCHITECTURE_BLUEPRINT.md`
+* Associated Traceability Tags: `[ARC-000]`, `[ARC-006]`, `[ARC-007]`, `[ARC-008]`, `[ARC-009]`, `[REQ-012]`, `[REQ-013]`, `[REQ-024]`, `[REQ-025]`, `[EXC-001]`, `[EXC-002]`, `[EXC-005]`, `[DAT-004]`, `[DAT-005]`, `[DAT-006]`, `[NFR-001]`, `[NFR-003]`, `[NFR-004]`, `[DOC-001]`
+
+---
+
+## 1. 🏗️ SYSTEM ARCHITECTURE OVERVIEW & SCAFFOLDING BLUEPRINT
+
+### 1.1. Architectural Intent & Scope
+The **Membership Hub** enterprise platform is a distributed, multi‑tenant microservices ecosystem engineered for real‑time member management and QR‑based attendance tracking [ARC-007]. To enforce strict modularity, separation of concerns, and independent scalability, the backend architecture is divided into isolated microservices (`user-service`, `center-service`, `course-service`, `attendance-service`, `report-service`, `dashboard-service`) managed under a unified Maven Multi‑Module parent descriptor. The frontend tier is powered by Next.js 14 utilizing the App Router paradigm, providing responsive server‑side rendered interfaces and mobile‑ready layout wrappers [ARC-009].
+
+### 1.2. Maven Multi‑Module Directory Tree
+The entire backend codebase is structured under `./sources/backend/` conforming strictly to the enterprise package naming convention `org.nlh4j.membershiphub.<service-name>` [ARC-000]:
+```
+./sources/backend/
+├── pom.xml
+├── user-service/
+├── center-service/
+├── course-service/
+└── attendance-service/
+```
+
+---
+
+## 2. 📡 ATTENDANCE SERVICE & QR DECODING ARCHITECTURE
+
+### 2.1. Architectural Components & Design Patterns
+The `attendance-service` is an event-driven microservice responsible for ingesting, validating, and persisting student attendance scans captured via mobile devices [ARC-007]. The internal architectural boundaries are strictly separated into discrete layers:
+- **`AttendanceController`**: Exposes RESTful endpoints (`POST /api/v1/attendance/scan`) protected by JWT validation filters. It accepts base64-encoded QR payloads and idempotency keys, enforcing request validation and rate limiting [REQ-012], [NFR-001].
+- **`QrPayloadDecoder`**: A specialized utility component that decrypts and decodes Base64 payloads into structured JSON objects containing `studentId`, `courseId`, and scan timestamps, raising malformed payload exceptions when cryptographic signatures or schemas mismatch [EXC-001].
+- **`AttendanceService`**: The core transactional boundary orchestrating enrollment verification, duplicate detection, and idempotent record persistence using Hibernate Panache [REQ-013].
+- **`AttendanceRepository`**: The data access layer utilizing composite unique indices `(student_id, course_id, attendance_date)` to enforce database-level uniqueness and prevent race conditions [DAT-004], [DAT-005].
+- **`KafkaAttendanceProducer`**: An event publisher utilizing SmallRye Reactive Messaging to fan-out asynchronous attendance confirmation events onto the `attendance-events` Kafka topic [ARC-008].
+
+### 2.2. QR Scan Processing Workflow (Mermaid Flowchart)
+```mermaid
+flowchart TD
+    A[Mobile App Scans QR Code] -->|POST /api/v1/attendance/scan| B[AttendanceController]
+    B --> C{QrPayloadDecoder}
+    C -->|Invalid Base64 / Schema| D[Throw InvalidQrPayloadException [EXC-001]]
+    C -->|Valid Payload| E[AttendanceService.verifyEnrollment]
+    E -->|Student Not Enrolled| F[Throw EnrollmentRequiredException]
+    E -->|Enrolled| G[Check Idempotency via Composite Unique Key [DAT-004]]
+    G -->|Already Recorded Today| H[Return Duplicate Flag [EXC-002]]
+    G -->|New Record| I[Persist Attendance Entity in PostgreSQL]
+    I --> J[KafkaAttendanceProducer.publishEvent]
+    J --> K[Publish to attendance-events Topic [ARC-008]]
+    K --> L[Return HTTP 201 Created Response]
+```
+
+### 2.3. Resiliency, Fault Tolerance, and Recovery Strategies
+- **Idempotency Enforcement (`[EXC-002]`):** Duplicate scans within the exact same calendar day for a specific student and course are intercepted by database constraints and handled gracefully without throwing runtime errors, returning a success response with a `duplicate: true` flag.
+- **Network Outage Retry Mechanism (`[EXC-001]`):** If intermittent network disconnections prevent immediate processing, client-side Capacitor storage queues failed scan payloads and initiates exponential backoff retries up to 3 attempts.
+- **FIFO Recovery Processing (`[EXC-005]`):** Upon restoration of connectivity after an outage, pending offline scan requests are replayed in exact chronological order (FIFO) to maintain temporal consistency in attendance records.
+
+---
+
+## 3. 📊 SYSTEM TRACEABILITY MATRIX REFERENCE
+
+| Architectural Component / Module | Target File Path | Associated Traceability Tags |
+| :--- | :--- | :--- |
+| Maven Multi-Module Root | `./sources/backend/pom.xml` | `[ARC-000]` |
+| Attendance Controller | `./sources/backend/attendance-service/.../AttendanceController.java` | `[REQ-012]`, `[ARC-007]`, `[NFR-001]` |
+| QR Payload Decoder | `./sources/backend/attendance-service/.../QrPayloadDecoder.java` | `[REQ-012]`, `[EXC-001]` |
+| Attendance Service & Idempotency | `./sources/backend/attendance-service/.../AttendanceService.java` | `[REQ-013]`, `[EXC-002]`, `[EXC-005]` |
+| Attendance Database Schema DDL | `./sources/backend/attendance-service/.../V1__init_enrollments_attendance.sql` | `[DAT-004]`, `[DAT-005]` |
+| Kafka Attendance Producer | `./sources/backend/attendance-service/.../KafkaAttendanceProducer.java` | `[ARC-008]` |
+| Enterprise Architecture Blueprint | `./sources/docs/architecture/ENTERPRISE_SYSTEM_ARCHITECTURE_BLUEPRINT.md` | `[DOC-001]` |
+```
+
+# Day 6: model models/gemini-flash-lite-latest - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/docs/architecture/CENTRAL_ENDPOINT_API_CONTRACT_SPECS.md
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DOCUMENT MATRIX INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Documentation Destination Path: `./sources/docs/architecture/CENTRAL_ENDPOINT_API_CONTRACT_SPECS.md`
+
+
+### ENTERPRISE DOCUMENTATION RECOVERY WORKSPACE
+* **Target Document Disk Status:** INCREMENTAL_MAINTENANCE_APPEND
+* **Current Living Document Content:**
+<EXISTING_DOCUMENT_CONTENT>
+```markdown
+# Attendance Service Architecture Documentation
+
+## Document Control Metadata
+
+| Hạng mục | Chi tiết |
+| :--- | :--- |
+| **Mã Bản Thiết Kế** | ARCH-20260829223421 |
+| **Tên Tài Liệu** | Attendance Service Architecture Documentation & Central Endpoint API Contract Specs |
+| **Phiên Bản** | 1.0 (Đường cơ sở) |
+| **Ngày Giờ** | 2026/08/29 22:34:21 |
+| **Tác Giả** | Kiến Trúc Sư Hệ Thống Doanh Nghiệp (SA Agent) |
+| **Phê Duyệt** | Đang chờ Rà Soát Quản Trị Kỹ Thuật |
+| **Đường Dẫn Vật Lý** | `./sources/docs/architecture/CENTRAL_ENDPOINT_API_CONTRACT_SPECS.md` |
+
+---
+
+## 1. Tổng Quan Hệ Thống
+
+### 1.1 Giới Thiệu Attendance Service
+Attendance Service là một microservice độc lập thuộc hệ sinh thái **membership-hub**, chịu trách nhiệm quản lý, điều phối và xác nhận toàn bộ quy trình điểm danh học viên tại các trung tâm thành viên thông qua việc quét mã QR thời gian thực. Hệ thống được thiết kế theo tiêu chuẩn phản ứng sự kiện (Event-Driven Architecture) với khả năng mở rộng đàn hồi, đảm bảo tính bất biến dữ liệu, loại bỏ trùng lặp thông qua cơ chế idempotency nghiêm ngặt và xử lý chịu lỗi ngoại tuyến (offline-first fault tolerance).
+
+### 1.2 Kiến Trúc Tổng Thể & Hạ Tầng Runtime
+- **Mã định danh gói lõi (Java Package Base)**: `org.nlh4j.membershiphub.attendanceservice`
+- **Nền tảng thực thi**: Quarkus 3.15.1 LTS (RESTEasy Reactive, Hibernate ORM Panache, SmallRye Reactive Messaging Kafka, SmallRye JWT, SmallRye Health)
+- **Tối ưu hóa máy ảo**: Hỗ trợ GraalVM Native Image cho thời gian khởi động < 50ms và tiêu thụ bộ nhớ thấp (`[NFR-005]`)
+- **Tầng lưu trữ bền vững (Persistence Layer)**: PostgreSQL 16 phân vùng dữ liệu theo `attendance_date` với các chỉ mục tổng hợp tối ưu (`[NFR-001]`, `[NFR-004]`)
+- **Tầng đệm và chống trùng lặp**: Redis Cluster kết hợp Caffeine local cache để lưu trữ Idempotency Keys và Session
+- **Hệ thống truyền tải sự kiện (Event Streaming)**: Apache Kafka (Kafka Topic: `attendance.scan.requested`, `attendance-events`)
+- **Cơ chế bảo mật**: Zero-Trust, JWT Bearer Token (RS256 với 2048-bit keypair), chuẩn xác thực Jakarta Validation 3.0 (`[ARC-006]`, `[NFR-003]`)
+
+---
+
+## 2. C4 Container Architecture Components
+
+### 2.1 Container: Attendance Service (Backend Microservice)
+Attendance Service bao gồm các phân tầng kiến trúc chuyên biệt tuân thủ nguyên tắc Single Responsibility Principle (SRP) và mô hình Clean Architecture:
+```
+</EXISTING_DOCUMENT_CONTENT>
+
+
+
+*   Documentation Context: Conceptual Init (Synthesize the architecture, guidelines, or specs based purely on the execution sub-tasks blueprint.)
+
+
+### 📋 EXECUTION SUB-TASKS & DOCUMENT CONTENT TO WRITE
+['Soạn thảo tài liệu Markdown tại ./sources/docs/architecture/attendance-architecture.md mô tả kiến trúc attendance-service gồm sơ đồ C4 Container với các thành phần REST Controller, Service, Repository, Kafka Producer, QrPayloadDecoder. Tài liệu phải liệt kê đầy đủ Tag ID [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005]. Bao gồm sơ đồ Mermaid flowchart mô tả các bước xử lý QR scan: (1) Mobile app scan QR, (2) Decode base64 payload, (3) Validate enrollment, (4) Check idempotency, (5) Persist hoặc trả duplicate, (6) Publish Kafka event.']
+
+---
+
+### ⚙️ TECHNICAL WRITER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder guardrails, and detailed sub-task document specifications provided above. Analyze the `<EXISTING_DOCUMENT_CONTENT>` layout, you MUST precisely insert the new architectural specifications into their logical structural sections within the current document text. Do NOT overwrite or shrink the pre-existing enterprise content blocks.
+
+
+Ensure that you read the exact Tag IDs from the `['[REQ-012]', '[REQ-013]', '[ARC-007]', '[DOC-001]']` variable, and permanently burn those codes into the generated documentation layout (inside the table columns or the dedicated Traceability Matrix Reference section). Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.
+* **📝 Response**:
+```markdown
+# Attendance Service Architecture Documentation
+
+## Document Control Metadata
+
+| Hạng mục | Chi tiết |
+| :--- | :--- |
+| **Mã Bản Thiết Kế** | ARCH-20260829223421 |
+| **Tên Tài Liệu** | Attendance Service Architecture Documentation & Central Endpoint API Contract Specs |
+| **Phiên Bản** | 1.0 (Đường cơ sở) |
+| **Ngày Giờ** | 2026/08/29 22:34:21 |
+| **Tác Giả** | Kiến Trúc Sư Hệ Thống Doanh Nghiệp (SA Agent) |
+| **Phê Duyệt** | Đang chờ Rà Soát Quản Trị Kỹ Thuật |
+| **Đường Dẫn Vật Lý** | `./sources/docs/architecture/CENTRAL_ENDPOINT_API_CONTRACT_SPECS.md` |
+
+---
+
+## 1. Tổng Quan Hệ Thống
+
+### 1.1 Giới Thiệu Attendance Service
+Attendance Service là một microservice độc lập thuộc hệ sinh thái **membership-hub**, chịu trách nhiệm quản lý, điều phối và xác nhận toàn bộ quy trình điểm danh học viên tại các trung tâm thành viên thông qua việc quét mã QR thời gian thực. Hệ thống được thiết kế theo tiêu chuẩn phản ứng sự kiện (Event-Driven Architecture) với khả năng mở rộng đàn hồi, đảm bảo tính bất biến dữ liệu, loại bỏ trùng lặp thông qua cơ chế idempotency nghiêm ngặt và xử lý chịu lỗi ngoại tuyến (offline-first fault tolerance).
+
+### 1.2 Kiến Trúc Tổng Thể & Hạ Tầng Runtime
+- **Mã định danh gói lõi (Java Package Base)**: `org.nlh4j.membershiphub.attendanceservice`
+- **Nền tảng thực thi**: Quarkus 3.15.1 LTS (RESTEasy Reactive, Hibernate ORM Panache, SmallRye Reactive Messaging Kafka, SmallRye JWT, SmallRye Health)
+- **Tối ưu hóa máy ảo**: Hỗ trợ GraalVM Native Image cho thời gian khởi động < 50ms và tiêu thụ bộ nhớ thấp (`[NFR-005]`)
+- **Tầng lưu trữ bền vững (Persistence Layer)**: PostgreSQL 16 phân vùng dữ liệu theo `attendance_date` với các chỉ mục tổng hợp tối ưu (`[NFR-001]`, `[NFR-004]`)
+- **Tầng đệm và chống trùng lặp**: Redis Cluster kết hợp Caffeine local cache để lưu trữ Idempotency Keys và Session
+- **Hệ thống truyền tải sự kiện (Event Streaming)**: Apache Kafka (Kafka Topic: `attendance.scan.requested`, `attendance-events`)
+- **Cơ chế bảo mật**: Zero-Trust, JWT Bearer Token (RS256 với 2048-bit keypair), chuẩn xác thực Jakarta Validation 3.0 (`[ARC-006]`, `[NFR-003]`)
+
+---
+
+## 2. C4 Container Architecture Components
+
+### 2.1 Container: Attendance Service (Backend Microservice)
+Attendance Service bao gồm các phân tầng kiến trúc chuyên biệt tuân thủ nguyên tắc Single Responsibility Principle (SRP) và mô hình Clean Architecture:
+
+- **REST Controller Layer (`org.nlh4j.membershiphub.attendanceservice.controller`)**: Xử lý các yêu cầu HTTP Ingress từ API Gateway. Endpoint lõi `POST /api/v1/attendance/scan` tiếp nhận payload điểm danh QR, thực hiện xác thực JWT và kích hoạt pipeline nghiệp vụ (`[REQ-012]`, `[ARC-007]`).
+- **Service & Decoder Layer (`org.nlh4j.membershiphub.attendanceservice.service`)**:
+  - `AttendanceService`: Điều phối luồng nghiệp vụ kiểm tra đăng ký khóa học, ràng buộc idempotency và ghi nhận điểm danh (`[REQ-012]`, `[REQ-013]`).
+  - `QrPayloadDecoder`: Giải mã chuỗi Base64 chứa thông tin mã hóa gồm `student_id` và `course_id`, kiểm tra tính toàn vẹn chữ ký số của mã QR (`[ARC-007]`).
+- **Repository Layer (`org.nlh4j.membershiphub.attendanceservice.repository`)**: Tương tác với cơ sở dữ liệu PostgreSQL thông qua Hibernate ORM Panache, thực thi các ràng buộc duy nhất phức hợp `(student_id, course_id, attendance_date)` (`[DAT-004]`).
+- **Messaging & Event Layer (`org.nlh4j.membershiphub.attendanceservice.messaging`)**: `KafkaAttendanceProducer` đẩy các sự kiện thành công (`attendance-events`) lên Apache Kafka để đồng bộ dữ liệu tới reporting và notification service (`[ARC-008]`).
+
+---
+
+## 3. Luồng Xử Lý Điểm Danh QR (QR Scan Processing Flow)
+
+Quy trình xử lý điểm danh QR thời gian thực được mô tả chi tiết qua biểu đồ luồng dưới đây, tuân thủ nghiêm ngặt các tiêu chuẩn chống trùng lặp và phục hồi lỗi mạng ngoại tuyến (`[EXC-001]`, `[EXC-002]`, `[EXC-005]`):
+
+```mermaid
+flowchart TD
+    A[Mobile App: Scan QR Code] -->|Gửi POST /api/v1/attendance/scan| B[AttendanceController]
+    B --> C[QrPayloadDecoder: Giải mã Base64 Payload]
+    C -->|Trích xuất student_id & course_id| D{Kiểm tra Enrollment}
+    D -->|Chưa đăng ký| E[Ném EnrollmentRequiredException / 403]
+    D -->|Đã đăng ký| F{Check Idempotency Key / Unique Index}
+    F -->|Đã tồn tại trong ngày| G[Trả về Duplicate Response / 200 with duplicate=true]
+    F -->|Chưa tồn tại| H[Persist vào PostgreSQL: Bảng attendance]
+    H --> I[KafkaAttendanceProducer: Publish attendance-events]
+    I --> J[Trả về Thành Công 201 Created]
+    
+    subgraph Fault Tolerance & Offline Recovery
+        K[Mất kết nối mạng] --> L[Retry Queue [EXC-001]: Thử lại tối đa 3 lần]
+        L --> M[Khôi phục kết nối: Xử lý theo thứ tự FIFO [EXC-005]]
+    end
+```
+
+---
+
+## 4. Central Endpoint API Contract Specs
+
+Dưới đây là các đặc tả hợp đồng API tập trung cho Attendance Service cùng với ánh xạ Tag ID truy vết tương ứng:
+
+| Phương Thức | Đường Dẫn Endpoint | Mục Đích Nghiệp Vụ | Kiểu Dữ Liệu Yêu Cầu (Request Payload) | Phản Hồi Thành Công (Success Response) | Mã Lỗi (Error Codes) | Targeted Tag IDs |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **POST** | `/api/v1/attendance/scan` | Ghi nhận điểm danh bằng quét QR thời gian thực | `QrScanRequest` (qrPayload, idempotencyKey) | `201 Created` / `200 OK` (nếu duplicate) | `400`, `401`, `403`, `409` | `[REQ-012]`, `[REQ-013]`, `[ARC-007]`, `[DOC-001]` |
+
+---
+
+## 5. Traceability Matrix Reference
+
+| Mã Thẻ Truy Vết | Phân Khúc / Thành Phần Kiến Trúc | Mô Tả Tuân Thủ Kỹ Thuật |
+| :--- | :--- | :--- |
+| **[REQ-012]** | `AttendanceController` & `AttendanceService` | Hiện thực hóa endpoint tiếp nhận và xử lý quét mã QR điểm danh học viên. |
+| **[REQ-013]** | Database Constraint & `AttendanceService` | Đảm bảo tính bất biến và chống trùng lặp điểm danh trong ngày qua ràng buộc `(student_id, course_id, attendance_date)`. |
+| **[ARC-007]** | `QrPayloadDecoder` & API Gateway | Giải mã payload mã hóa, định tuyến yêu cầu quét QR từ thiết bị di động. |
+| **[EXC-001]** | Network Resilience Layer | Cơ chế retry tự động khi mất kết nối mạng với giới hạn tối đa 3 lần. |
+| **[EXC-002]** | Idempotency Handler | Xử lý yêu cầu trùng lặp trả về trạng thái hợp lệ mà không tạo bản ghi mới thừa. |
+| **[EXC-005]** | FIFO Recovery Engine | Xử lý các hàng đợi điểm danh offline theo thứ tự FIFO khi hệ thống khôi phục kết nối. |
+| **[DOC-001]** | Enterprise Documentation | Chuẩn hóa tài liệu kỹ thuật toàn diện phục vụ bàn giao kiến trúc hệ thống. |
+```
+
+# Day 6: model models/gemini-3.1-flash-lite - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/docs/architecture/CROSS_PLATFORM_INTEGRATED_BUSINESS_FLOWS.md
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DOCUMENT MATRIX INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Documentation Destination Path: `./sources/docs/architecture/CROSS_PLATFORM_INTEGRATED_BUSINESS_FLOWS.md`
+
+
+### ENTERPRISE DOCUMENTATION RECOVERY WORKSPACE
+* **Target Document Disk Status:** INCREMENTAL_MAINTENANCE_APPEND
+* **Current Living Document Content:**
+<EXISTING_DOCUMENT_CONTENT>
+```markdown
+# 📊 Scaffolding Architecture Documentation
+
+## 📝 Overview
+This document outlines the scaffolding architecture of the Membership Hub project, including the multi-module Maven structure, package naming conventions, and technology stack.
+
+## 📁 Multi-Module Maven Structure
+The project follows a multi-module Maven structure, with the root directory `./sources/backend` containing the parent `pom.xml` file. The four microservices are:
+
+* `user-service`
+* `center-service`
+* `course-service`
+* `attendance-service`
+
+Each microservice has its own `pom.xml` file located in its respective directory.
+
+## 📦 Package Naming Conventions
+The Java package prefix base is `org.nlh4j.membershiphub`. Each microservice has its own sub-package:
+
+* `org.nlh4j.membershiphub.userservice`
+* `org.nlh4j.membershiphub.centerservice`
+* `org.nlh4j.membershiphub.courseservice`
+* `org.nlh4j.membershiphub.attendanceservice`
+
+## 📊 Technology Stack
+The project utilizes the following technology stack:
+
+* **Backend:** Quarkus 3.15.1, Java 17 LTS, SmallRye Reactive Messaging (Kafka), Hibernate ORM with Panache, PostgreSQL JDBC 42.7.3, Flyway Migration 10.10.0, SmallRye JWT, RESTEasy Reactive Jackson.
+* **Frontend & Mobile:** Next.js 14.2.15 (App Router), React Native 0.75.4 (Expo SDK 51), TypeScript 5.5, NativeWind, Zustand, Axios.
+* **Messaging & Storage:** Apache Kafka, PostgreSQL 16 (Primary + Read Replica), Redis Cache.
+* **Containerization & Cloud:** Docker (Multi-stage builds), Google Cloud Platform (GKE Autopilot, Cloud SQL, Secret Manager, Cloud KMS).
+
+---
+
+# 🌐 Cross-Platform Integrated Business Flows: Attendance & QR Ingestion
+
+## 1. 📑 Enterprise Traceability Matrix Reference
+This section maps the architectural components, asynchronous event pipelines, operational workflows, and fault‑tolerance safeguards directly to their ancestral business, functional, architectural, and non‑functional requirements.
+
+| Targeted Tag ID | Requirement Classification | Functional & Technical Scope Summary | Target System Component / Implementation Path |
+| :--- | :--- | :--- | :--- |
+| `[REQ-012]` | Functional Requirement | Student QR attendance scan recording, decoding, and validation | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/controller/AttendanceController.java` |
+| `[REQ-013]` | Functional Requirement | Idempotent scan processing via composite key `(student_id, course_id, attendance_date)` | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/AttendanceService.java` |
+| `[ARC-007]` | Architecture Requirement | Real‑time QR attendance processing pipeline, event propagation, and caching | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/messaging/KafkaAttendanceProducer.java` |
+| `[EXC-001]` | Exception Handling | Network drop during scan ingestion, client‑side offline retry queue (3 attempts) | `./sources/frontend/web-app/src/lib/offline/cacheService.ts`, Mobile QR Scanner Component |
+| `[EXC-002]` | Exception Handling | Duplicate scan suppression: return HTTP 200 with `duplicate: true` flag without duplicating records | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/AttendanceService.java` |
+| `[EXC-005]` | Exception Handling | Post‑outage recovery: FIFO order ingestion queue re‑synchronization | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/messaging/AttendanceRetryConsumer.java` |
+| `[DAT-004]` | Data Schema | Enrollment entity relational constraints and student course verification | `./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_enrollments_attendance.sql` |
+| `[DAT-005]` | Data Schema | Attendance persistent record schema with composite uniqueness and indexing | `./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_enrollments_attendance.sql` |
+| `[NFR-001]` | Non‑Functional Requirement | Ingestion performance: P95 latency < 200ms under 10,000 concurrent scans | `./sources/backend/attendance-service/src/main/resources/application.properties` |
+| `[NFR-003]` | Security Requirement | JWT authentication, cryptographic signature checks, prepared statement SQLi protection | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/security/JwtSecurityFilter.java` |
+| `[DOC-001]` | Enterprise Documentation | Architectural specifications, C4 Container model, and operational runbooks | `./sources/docs/architecture/CROSS_PLATFORM_INTEGRATED_BUSINESS_FLOWS.md` |
+
+## 📁 Attendance Service Architecture
+
+### 📋 Overview
+The `attendance-service` is a Quarkus 3.15.1 microservice responsible for ingesting QR attendance scans from the mobile application, validating enrollment, ensuring idempotent processing, persisting attendance records, and publishing events to the Kafka event bus for downstream notification and reporting services. This component directly supports the functional requirements `[REQ-012]` and `[REQ-013]`, adheres to the architectural pattern `[ARC-007]`, and implements fault‑tolerance safeguards defined in `[EXC-001]`, `[EXC-002]`, and `[EXC-005]`.
+
+### 🏗️ C4 Container Diagram
+```
+</EXISTING_DOCUMENT_CONTENT>
+
+
+
+*   Documentation Context: Conceptual Init (Synthesize the architecture, guidelines, or specs based purely on the execution sub-tasks blueprint.)
+
+
+### 📋 EXECUTION SUB-TASKS & DOCUMENT CONTENT TO WRITE
+['Soạn thảo tài liệu Markdown tại ./sources/docs/architecture/attendance-architecture.md mô tả kiến trúc attendance-service gồm sơ đồ C4 Container với các thành phần REST Controller, Service, Repository, Kafka Producer, QrPayloadDecoder. Tài liệu phải liệt kê đầy đủ Tag ID [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005]. Bao gồm sơ đồ Mermaid flowchart mô tả các bước xử lý QR scan: (1) Mobile app scan QR, (2) Decode base64 payload, (3) Validate enrollment, (4) Check idempotency, (5) Persist hoặc trả duplicate, (6) Publish Kafka event.']
+
+---
+
+### ⚙️ TECHNICAL WRITER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder guardrails, and detailed sub-task document specifications provided above. Analyze the `<EXISTING_DOCUMENT_CONTENT>` layout, you MUST precisely insert the new architectural specifications into their logical structural sections within the current document text. Do NOT overwrite or shrink the pre-existing enterprise content blocks.
+
+
+Ensure that you read the exact Tag IDs from the `['[REQ-012]', '[REQ-013]', '[ARC-007]', '[DOC-001]']` variable, and permanently burn those codes into the generated documentation layout (inside the table columns or the dedicated Traceability Matrix Reference section). Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.
+* **📝 Response**:
+```markdown
+# 📊 Scaffolding Architecture Documentation
+
+## 📝 Overview
+This document outlines the scaffolding architecture of the Membership Hub project, including the multi-module Maven structure, package naming conventions, and technology stack.
+
+## 📁 Multi-Module Maven Structure
+The project follows a multi-module Maven structure, with the root directory `./sources/backend` containing the parent `pom.xml` file. The four microservices are:
+
+* `user-service`
+* `center-service`
+* `course-service`
+* `attendance-service`
+
+Each microservice has its own `pom.xml` file located in its respective directory.
+
+## 📦 Package Naming Conventions
+The Java package prefix base is `org.nlh4j.membershiphub`. Each microservice has its own sub-package:
+
+* `org.nlh4j.membershiphub.userservice`
+* `org.nlh4j.membershiphub.centerservice`
+* `org.nlh4j.membershiphub.courseservice`
+* `org.nlh4j.membershiphub.attendanceservice`
+
+## 📊 Technology Stack
+The project utilizes the following technology stack:
+
+* **Backend:** Quarkus 3.15.1, Java 17 LTS, SmallRye Reactive Messaging (Kafka), Hibernate ORM with Panache, PostgreSQL JDBC 42.7.3, Flyway Migration 10.10.0, SmallRye JWT, RESTEasy Reactive Jackson.
+* **Frontend & Mobile:** Next.js 14.2.15 (App Router), React Native 0.75.4 (Expo SDK 51), TypeScript 5.5, NativeWind, Zustand, Axios.
+* **Messaging & Storage:** Apache Kafka, PostgreSQL 16 (Primary + Read Replica), Redis Cache.
+* **Containerization & Cloud:** Docker (Multi-stage builds), Google Cloud Platform (GKE Autopilot, Cloud SQL, Secret Manager, Cloud KMS).
+
+---
+
+# 🌐 Cross-Platform Integrated Business Flows: Attendance & QR Ingestion
+
+## 1. 📑 Enterprise Traceability Matrix Reference
+This section maps the architectural components, asynchronous event pipelines, operational workflows, and fault‑tolerance safeguards directly to their ancestral business, functional, architectural, and non‑functional requirements.
+
+| Targeted Tag ID | Requirement Classification | Functional & Technical Scope Summary | Target System Component / Implementation Path |
+| :--- | :--- | :--- | :--- |
+| `[REQ-012]` | Functional Requirement | Student QR attendance scan recording, decoding, and validation | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/controller/AttendanceController.java` |
+| `[REQ-013]` | Functional Requirement | Idempotent scan processing via composite key `(student_id, course_id, attendance_date)` | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/AttendanceService.java` |
+| `[ARC-007]` | Architecture Requirement | Real‑time QR attendance processing pipeline, event propagation, and caching | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/messaging/KafkaAttendanceProducer.java` |
+| `[EXC-001]` | Exception Handling | Network drop during scan ingestion, client‑side offline retry queue (3 attempts) | `./sources/frontend/web-app/src/lib/offline/cacheService.ts`, Mobile QR Scanner Component |
+| `[EXC-002]` | Exception Handling | Duplicate scan suppression: return HTTP 200 with `duplicate: true` flag without duplicating records | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/AttendanceService.java` |
+| `[EXC-005]` | Exception Handling | Post‑outage recovery: FIFO order ingestion queue re‑synchronization | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/messaging/AttendanceRetryConsumer.java` |
+| `[DAT-004]` | Data Schema | Enrollment entity relational constraints and student course verification | `./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_enrollments_attendance.sql` |
+| `[DAT-005]` | Data Schema | Attendance persistent record schema with composite uniqueness and indexing | `./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_enrollments_attendance.sql` |
+| `[NFR-001]` | Non‑Functional Requirement | Ingestion performance: P95 latency < 200ms under 10,000 concurrent scans | `./sources/backend/attendance-service/src/main/resources/application.properties` |
+| `[NFR-003]` | Security Requirement | JWT authentication, cryptographic signature checks, prepared statement SQLi protection | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/security/JwtSecurityFilter.java` |
+| `[DOC-001]` | Enterprise Documentation | Architectural specifications, C4 Container model, and operational runbooks | `./sources/docs/architecture/CROSS_PLATFORM_INTEGRATED_BUSINESS_FLOWS.md` |
+
+## 📁 Attendance Service Architecture
+
+### 📋 Overview
+The `attendance-service` is a Quarkus 3.15.1 microservice responsible for ingesting QR attendance scans from the mobile application, validating enrollment, ensuring idempotent processing, persisting attendance records, and publishing events to the Kafka event bus for downstream notification and reporting services. This component directly supports the functional requirements `[REQ-012]` and `[REQ-013]`, adheres to the architectural pattern `[ARC-007]`, and implements fault‑tolerance safeguards defined in `[EXC-001]`, `[EXC-002]`, and `[EXC-005]`.
+
+### 🏗️ C4 Container Diagram
+The system architecture follows a clean separation of concerns:
+1. **REST Controller:** Entry point for QR payload ingestion.
+2. **QrPayloadDecoder:** Utility for base64 decoding and validation.
+3. **AttendanceService:** Orchestrator for enrollment validation and idempotency checks.
+4. **AttendanceRepository:** Persistence layer using Hibernate Panache.
+5. **Kafka Producer:** Event emitter for downstream integration.
+
+```mermaid
+flowchart TD
+    A[Mobile App Scan QR] --> B[AttendanceController]
+    B --> C[QrPayloadDecoder]
+    C --> D[AttendanceService]
+    D --> E{Validate Enrollment}
+    E -- Valid --> F{Check Idempotency}
+    F -- New Scan --> G[Persist Record]
+    G --> H[Publish Kafka Event]
+    F -- Duplicate --> I[Return Duplicate Flag]
+    E -- Invalid --> J[Throw EnrollmentRequiredException]
+```
+
+### 🛠️ Implementation Details
+- **Idempotency:** Enforced via database-level unique constraint on `(student_id, course_id, attendance_date)`.
+- **Fault Tolerance:** Implements a retry mechanism for network-partitioned scenarios `[EXC-001]` and ensures FIFO processing during recovery `[EXC-005]`.
+- **Traceability:** Every transaction is logged with a unique `idempotencyKey` to ensure auditability across the event pipeline.
+```
+```
+
+# Day 6: model models/gemini-3.1-flash-lite - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/docs/security/ENTERPRISE_SECURITY_OWASP_COMPLIANCE_MATRIX.md
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DOCUMENT MATRIX INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Documentation Destination Path: `./sources/docs/security/ENTERPRISE_SECURITY_OWASP_COMPLIANCE_MATRIX.md`
+
+
+### ENTERPRISE DOCUMENTATION RECOVERY WORKSPACE
+* **Target Document Disk Status:** INCREMENTAL_MAINTENANCE_APPEND
+* **Current Living Document Content:**
+<EXISTING_DOCUMENT_CONTENT>
+```markdown
+# 🏛️ MEMBERSHIP HUB ENTERPRISE SECURITY & OWASP COMPLIANCE MATRIX
+*(Conceptual Architecture Documentation for Membership Hub)*
+
+## 📊 DOCUMENT TRACEABILITY METADATA
+
+| Document ID | Version | Date | Author | Tags |
+|-------------|---------|------|--------|------|
+| ARCH-DOC-001 | 1.9 | 2026/08/29 | Kiến Trúc Sư Hệ Thống | [ARC-000], [DOC-001], [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005], [NFR-003] |
+
+## 📁 1. SYSTEM OVERVIEW & ARCHITECTURE
+
+### ⚙️ 1.1. Technology Stack & Ecosystem
+- **Backend:** Quarkus 3.15.1, Java 17 LTS, RESTEasy Reactive, Hibernate ORM Panache, SmallRye Kafka.
+- **Frontend:** Next.js 14.2.15, TypeScript 5.5, React 18.3.1.
+- **Database:** PostgreSQL 16 with B-Tree and Gist Indexes.
+
+### 🌊 1.2. Modular Architecture
+- Multi-module Maven project under package root: `org.nlh4j.membershiphub`
+  * `membership-hub-backend` (root)
+  * `user-service`
+  * `center-service`
+  * `course-service`
+  * `attendance-service`
+
+## 📁 2. SCAFFOLDING ARCH & ATTENDANCE MICROSERVICE ARCHITECTURE
+
+### ⚙️ 2.1. Attendance Service C4 Container Blueprint
+The `attendance-service` microservice (`org.nlh4j.membershiphub.attendanceservice`) is engineered for high-concurrency real-time QR attendance check-ins, guaranteeing data idempotency, offline resilience, and out-of-order queue recovery [ARC-007], [REQ-012], [REQ-013], [DOC-001].
+
+- **REST Controller Layer (`AttendanceController.java`):** Exposes high-throughput endpoints such as `POST /api/v1/attendance/scan`. It validates inbound JSON payloads against rigorous Bean Validation rules and verifies JWT bearer tokens via RESTEasy Reactive filters [NFR-003]. Targeted Tag IDs: `[REQ-012], [ARC-007]`.
+- **Payload Decoder Component (`QrPayloadDecoder.java`):** Decodes Base64-encoded QR payloads originating from mobile scanners, extracting structural metadata including `studentId`, `courseId`, and cryptographic timestamp stamps [REQ-012]. Targeted Tag ID: `[REQ-012]`.
+- **Service Layer (`AttendanceService.java`):** Encapsulates core business validation logic, cross-checking course enrollments, validating active student card status, and managing idempotency checks. Targeted Tag IDs: `[REQ-012], [REQ-013]`.
+- **Repository Layer (`AttendanceRepository.java`):** Interfaces with PostgreSQL via Hibernate Panache, enforcing composite unique constraints (`student_id, course_id, attendance_date`) to prevent duplicate records [DAT-004]. Targeted Tag ID: `[REQ-013]`.
+- **Kafka Producer Component (`KafkaAttendanceProducer.java`):** Publishes downstream domain events (`attendance-recorded`) to Kafka topic partitions for real-time analytics and notification fan-outs [ARC-008]. Targeted Tag IDs: `[ARC-007], [ARC-008]`.
+
+### 🔄 2.2. QR Code Attendance Scan Processing Flow Diagram
+The following Mermaid flowchart delineates the end-to-end execution sequence and fault-tolerance gates during an attendance scan transaction, incorporating retry logic for network instability [EXC-001], [EXC-002], [EXC-005]:
+```
+</EXISTING_DOCUMENT_CONTENT>
+
+
+
+*   Documentation Context: Conceptual Init (Synthesize the architecture, guidelines, or specs based purely on the execution sub-tasks blueprint.)
+
+
+### 📋 EXECUTION SUB-TASKS & DOCUMENT CONTENT TO WRITE
+['Soạn thảo tài liệu Markdown tại ./sources/docs/architecture/attendance-architecture.md mô tả kiến trúc attendance-service gồm sơ đồ C4 Container với các thành phần REST Controller, Service, Repository, Kafka Producer, QrPayloadDecoder. Tài liệu phải liệt kê đầy đủ Tag ID [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005]. Bao gồm sơ đồ Mermaid flowchart mô tả các bước xử lý QR scan: (1) Mobile app scan QR, (2) Decode base64 payload, (3) Validate enrollment, (4) Check idempotency, (5) Persist hoặc trả duplicate, (6) Publish Kafka event.']
+
+---
+
+### ⚙️ TECHNICAL WRITER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder guardrails, and detailed sub-task document specifications provided above. Analyze the `<EXISTING_DOCUMENT_CONTENT>` layout, you MUST precisely insert the new architectural specifications into their logical structural sections within the current document text. Do NOT overwrite or shrink the pre-existing enterprise content blocks.
+
+
+Ensure that you read the exact Tag IDs from the `['[REQ-012]', '[REQ-013]', '[ARC-007]', '[DOC-001]']` variable, and permanently burn those codes into the generated documentation layout (inside the table columns or the dedicated Traceability Matrix Reference section). Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.
+* **📝 Response**:
+```markdown
+# 🏛️ MEMBERSHIP HUB ENTERPRISE SECURITY & OWASP COMPLIANCE MATRIX
+*(Conceptual Architecture Documentation for Membership Hub)*
+
+## 📊 DOCUMENT TRACEABILITY METADATA
+
+| Document ID | Version | Date | Author | Tags |
+|-------------|---------|------|--------|------|
+| ARCH-DOC-001 | 1.9 | 2026/08/29 | Kiến Trúc Sư Hệ Thống | [ARC-000], [DOC-001], [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005], [NFR-003] |
+
+## 📁 1. SYSTEM OVERVIEW & ARCHITECTURE
+
+### ⚙️ 1.1. Technology Stack & Ecosystem
+- **Backend:** Quarkus 3.15.1, Java 17 LTS, RESTEasy Reactive, Hibernate ORM Panache, SmallRye Kafka.
+- **Frontend:** Next.js 14.2.15, TypeScript 5.5, React 18.3.1.
+- **Database:** PostgreSQL 16 with B-Tree and Gist Indexes.
+
+### 🌊 1.2. Modular Architecture
+- Multi-module Maven project under package root: `org.nlh4j.membershiphub`
+  * `membership-hub-backend` (root)
+  * `user-service`
+  * `center-service`
+  * `course-service`
+  * `attendance-service`
+
+## 📁 2. SCAFFOLDING ARCH & ATTENDANCE MICROSERVICE ARCHITECTURE
+
+### ⚙️ 2.1. Attendance Service C4 Container Blueprint
+The `attendance-service` microservice (`org.nlh4j.membershiphub.attendanceservice`) is engineered for high-concurrency real-time QR attendance check-ins, guaranteeing data idempotency, offline resilience, and out-of-order queue recovery [ARC-007], [REQ-012], [REQ-013], [DOC-001].
+
+- **REST Controller Layer (`AttendanceController.java`):** Exposes high-throughput endpoints such as `POST /api/v1/attendance/scan`. It validates inbound JSON payloads against rigorous Bean Validation rules and verifies JWT bearer tokens via RESTEasy Reactive filters [NFR-003]. Targeted Tag IDs: `[REQ-012], [ARC-007]`.
+- **Payload Decoder Component (`QrPayloadDecoder.java`):** Decodes Base64-encoded QR payloads originating from mobile scanners, extracting structural metadata including `studentId`, `courseId`, and cryptographic timestamp stamps [REQ-012]. Targeted Tag ID: `[REQ-012]`.
+- **Service Layer (`AttendanceService.java`):** Encapsulates core business validation logic, cross-checking course enrollments, validating active student card status, and managing idempotency checks. Targeted Tag IDs: `[REQ-012], [REQ-013]`.
+- **Repository Layer (`AttendanceRepository.java`):** Interfaces with PostgreSQL via Hibernate Panache, enforcing composite unique constraints (`student_id, course_id, attendance_date`) to prevent duplicate records [DAT-004]. Targeted Tag ID: `[REQ-013]`.
+- **Kafka Producer Component (`KafkaAttendanceProducer.java`):** Publishes downstream domain events (`attendance-recorded`) to Kafka topic partitions for real-time analytics and notification fan-outs [ARC-008]. Targeted Tag IDs: `[ARC-007], [ARC-008]`.
+
+### 🔄 2.2. QR Code Attendance Scan Processing Flow Diagram
+The following Mermaid flowchart delineates the end-to-end execution sequence and fault-tolerance gates during an attendance scan transaction, incorporating retry logic for network instability [EXC-001], [EXC-002], [EXC-005]:
+
+```mermaid
+flowchart TD
+    A[Mobile App Scan QR] --> B[AttendanceController: Decode Base64]
+    B --> C{Validate Enrollment}
+    C -- Invalid --> D[Return 403 Forbidden]
+    C -- Valid --> E{Check Idempotency}
+    E -- Duplicate --> F[Return 200 Duplicate Flag]
+    E -- New Record --> G[Persist Attendance Record]
+    G --> H[Publish Kafka Event: attendance-recorded]
+    H --> I[Return 201 Created]
+    
+    subgraph Fault Tolerance
+    J[Network Failure] --> K[Retry Queue: EXC-001]
+    K --> L[FIFO Recovery: EXC-005]
+    end
+```
+
+### 📋 2.3. Traceability Matrix Reference
+| Module | Tag IDs | Description |
+| :--- | :--- | :--- |
+| AttendanceController | [REQ-012], [ARC-007] | REST Entry point for QR scan |
+| AttendanceService | [REQ-012], [REQ-013] | Business logic & Idempotency |
+| AttendanceRepository | [REQ-013] | DB Persistence & Unique Constraints |
+| KafkaAttendanceProducer | [ARC-007], [ARC-008] | Event-driven downstream integration |
+| Fault Tolerance Logic | [EXC-001], [EXC-002], [EXC-005] | Retry and FIFO recovery mechanisms |
+```
+
+# Day 6: model models/gemini-3.5-flash - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/docs/security/CENTRAL_MONITORING_LOGGING_ARCHITECTURE.md
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DOCUMENT MATRIX INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Documentation Destination Path: `./sources/docs/security/CENTRAL_MONITORING_LOGGING_ARCHITECTURE.md`
+
+
+### ENTERPRISE DOCUMENTATION RECOVERY WORKSPACE
+* **Target Document Disk Status:** INCREMENTAL_MAINTENANCE_APPEND
+* **Current Living Document Content:**
+<EXISTING_DOCUMENT_CONTENT>
+```markdown
+# 🏛️ CENTRAL MONITORING, LOGGING & ATTENDANCE ARCHITECTURE
+## 📊 1. SYSTEM OVERVIEW & CORE TRACEABILITY
+
+### ⚙️ 1.1. ARCHITECTURAL SCOPE & TECHNICAL STACK
+The Membership Hub project adheres to a multi-module Maven architecture with the base package prefix `org.nlh4j.membershiphub`. The project consists of 5 microservices:
+- `user-service`
+- `center-service`
+- `course-service`
+- `attendance-service`
+- `notification-service`
+
+### 📊 1.2. TRACEABILITY MATRIX REFERENCE
+| Module | Targeted Tag IDs |
+| --- | --- |
+| `user-service` | [ARC-000], [REQ-001], [REQ-002] |
+| `center-service` | [ARC-000], [REQ-005], [REQ-006] |
+| `course-service` | [ARC-000], [REQ-007], [REQ-008] |
+| `attendance-service` | [ARC-000], [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005], [DOC-001] |
+| `notification-service` | [ARC-000], [REQ-016], [REQ-021] |
+
+## 📁 2. ATTENDANCE SERVICE & QR DECODING ARCHITECTURE
+
+### ⚙️ 2.1. ATTENDANCE-SERVICE COMPONENT TOPOLOGY
+The `attendance-service` microservice is engineered using Quarkus 3.15 LTS and Hibernate ORM Panache to manage real-time attendance tracking via QR code scanning [ARC-007]. The physical module path is `./sources/backend/attendance-service/`.
+
+#### 2.1.1. Component Breakdown
+The service is composed of the following core components:
+
+| Component | Package Path | Targeted Tag IDs | Responsibility |
+| :--- | :--- | :--- | :--- |
+| `AttendanceController` | `org.nlh4j.membershiphub.attendanceservice.controller` | [REQ-012], [ARC-007] | REST endpoint handler for QR scan ingestion (`POST /api/v1/attendance/scan`) |
+| `AttendanceService` | `org.nlh4j.membershiphub.attendanceservice.service` | [REQ-013], [EXC-002] | Business logic for attendance validation, idempotency checks, and persistence |
+| `QrPayloadDecoder` | `org.nlh4j.membershiphub.attendanceservice.service` | [REQ-012] | Decodes and validates base64-encoded QR payloads |
+| `AttendanceRepository` | `org.nlh4j.membershiphub.attendanceservice.repository` | [DAT-004] | Panache repository for database operations |
+| `KafkaAttendanceProducer` | `org.nlh4j.membershiphub.attendanceservice.messaging` | [ARC-008] | Publishes attendance events to Kafka topics (`attendance-events`) |
+
+#### 2.1.2. C4 Container Diagram & QR Scan Workflow
+The following Mermaid flowchart illustrates the step-by-step processing workflow of an incoming QR scan request, mapping directly to the system requirements [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], and [EXC-005].
+```
+</EXISTING_DOCUMENT_CONTENT>
+
+
+
+*   Documentation Context: Conceptual Init (Synthesize the architecture, guidelines, or specs based purely on the execution sub-tasks blueprint.)
+
+
+### 📋 EXECUTION SUB-TASKS & DOCUMENT CONTENT TO WRITE
+['Soạn thảo tài liệu Markdown tại ./sources/docs/architecture/attendance-architecture.md mô tả kiến trúc attendance-service gồm sơ đồ C4 Container với các thành phần REST Controller, Service, Repository, Kafka Producer, QrPayloadDecoder. Tài liệu phải liệt kê đầy đủ Tag ID [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005]. Bao gồm sơ đồ Mermaid flowchart mô tả các bước xử lý QR scan: (1) Mobile app scan QR, (2) Decode base64 payload, (3) Validate enrollment, (4) Check idempotency, (5) Persist hoặc trả duplicate, (6) Publish Kafka event.']
+
+---
+
+### ⚙️ TECHNICAL WRITER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder guardrails, and detailed sub-task document specifications provided above. Analyze the `<EXISTING_DOCUMENT_CONTENT>` layout, you MUST precisely insert the new architectural specifications into their logical structural sections within the current document text. Do NOT overwrite or shrink the pre-existing enterprise content blocks.
+
+
+Ensure that you read the exact Tag IDs from the `['[REQ-012]', '[REQ-013]', '[ARC-007]', '[DOC-001]']` variable, and permanently burn those codes into the generated documentation layout (inside the table columns or the dedicated Traceability Matrix Reference section). Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.
+* **📝 Response**:
+```markdown
+# 🏛️ CENTRAL MONITORING, LOGGING & ATTENDANCE ARCHITECTURE
+## 📊 1. SYSTEM OVERVIEW & CORE TRACEABILITY
+
+### ⚙️ 1.1. ARCHITECTURAL SCOPE & TECHNICAL STACK
+The Membership Hub project adheres to a multi-module Maven architecture with the base package prefix `org.nlh4j.membershiphub`. The project consists of 5 microservices:
+- `user-service`
+- `center-service`
+- `course-service`
+- `attendance-service`
+- `notification-service`
+
+### 📊 1.2. TRACEABILITY MATRIX REFERENCE
+| Module | Targeted Tag IDs |
+| --- | --- |
+| `user-service` | [ARC-000], [REQ-001], [REQ-002] |
+| `center-service` | [ARC-000], [REQ-005], [REQ-006] |
+| `course-service` | [ARC-000], [REQ-007], [REQ-008] |
+| `attendance-service` | [ARC-000], [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005], [DOC-001] |
+| `notification-service` | [ARC-000], [REQ-016], [REQ-021] |
+
+## 📁 2. ATTENDANCE SERVICE & QR DECODING ARCHITECTURE
+
+### ⚙️ 2.1. ATTENDANCE-SERVICE COMPONENT TOPOLOGY
+The `attendance-service` microservice is engineered using Quarkus 3.15 LTS and Hibernate ORM Panache to manage real-time attendance tracking via QR code scanning [ARC-007]. The physical module path is `./sources/backend/attendance-service/`.
+
+#### 2.1.1. Component Breakdown
+The service is composed of the following core components:
+
+| Component | Package Path | Targeted Tag IDs | Responsibility |
+| :--- | :--- | :--- | :--- |
+| `AttendanceController` | `org.nlh4j.membershiphub.attendanceservice.controller` | [REQ-012], [ARC-007] | REST endpoint handler for QR scan ingestion (`POST /api/v1/attendance/scan`) |
+| `AttendanceService` | `org.nlh4j.membershiphub.attendanceservice.service` | [REQ-013], [EXC-002] | Business logic for attendance validation, idempotency checks, and persistence |
+| `QrPayloadDecoder` | `org.nlh4j.membershiphub.attendanceservice.service` | [REQ-012] | Decodes and validates base64-encoded QR payloads |
+| `AttendanceRepository` | `org.nlh4j.membershiphub.attendanceservice.repository` | [DAT-004] | Panache repository for database operations |
+| `KafkaAttendanceProducer` | `org.nlh4j.membershiphub.attendanceservice.messaging` | [ARC-008] | Publishes attendance events to Kafka topics (`attendance-events`) |
+
+#### 2.1.2. C4 Container Diagram & QR Scan Workflow
+The following Mermaid flowchart illustrates the step-by-step processing workflow of an incoming QR scan request, mapping directly to the system requirements [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], and [EXC-005].
+
+```mermaid
+graph TD
+    subgraph Mobile Client [Mobile Client Layer]
+        A[Mobile App / QR Scanner]
+    end
+
+    subgraph API Gateway [Ingress & Routing Layer]
+        B[API Gateway]
+    end
+
+    subgraph Attendance Service [attendance-service Component Boundary]
+        C[AttendanceController]
+        D[QrPayloadDecoder]
+        E[AttendanceService]
+        F[AttendanceRepository]
+        G[KafkaAttendanceProducer]
+    end
+
+    subgraph Database [Persistence Layer]
+        H[(PostgreSQL DB)]
+    end
+
+    subgraph Message Broker [Event Streaming Layer]
+        I[Kafka Broker]
+    end
+
+    A -->|POST /api/v1/attendance/scan| B
+    B -->|Route Request| C
+    C -->|1. Decode Payload| D
+    C -->|2. Process Scan| E
+    E -->|3. Validate & Persist| F
+    F -->|Read/Write| H
+    E -->|4. Publish Event| G
+    G -->|Emit Event| I
+```
+
+### ⚙️ 2.2. DETAILED COMPONENT SPECIFICATIONS
+
+#### 2.2.1. AttendanceController
+- **Path:** `org.nlh4j.membershiphub.attendanceservice.controller.AttendanceController`
+- **Targeted Tag IDs:** `[REQ-012]`, `[ARC-007]`
+- **Description:** Exposes the REST endpoint `POST /api/v1/attendance/scan`. It intercepts incoming JSON payloads containing the base64-encoded QR string and the client-generated idempotency key. It performs initial bean validation on the request body and delegates the decoding and business logic execution to downstream services.
+
+#### 2.2.2. QrPayloadDecoder
+- **Path:** `org.nlh4j.membershiphub.attendanceservice.service.QrPayloadDecoder`
+- **Targeted Tag IDs:** `[REQ-012]`
+- **Description:** Responsible for decoding base64-encoded QR payloads. It parses the decoded string into structured domain objects containing `studentId` and `courseId`. It enforces strict structural validation, throwing an `InvalidQrPayloadException` if the payload is malformed or tampered with.
+
+#### 2.2.3. AttendanceService
+- **Path:** `org.nlh4j.membershiphub.attendanceservice.service.AttendanceService`
+- **Targeted Tag IDs:** `[REQ-013]`, `[EXC-002]`, `[EXC-005]`
+- **Description:** Orchestrates the core business rules of the attendance domain. It validates that the student has an active enrollment in the specified course. It performs high-performance idempotency checks using a combination of Redis cache and database constraints to prevent duplicate scans within the same calendar day.
+
+#### 2.2.4. AttendanceRepository
+- **Path:** `org.nlh4j.membershiphub.attendanceservice.repository.AttendanceRepository`
+- **Targeted Tag IDs:** `[DAT-004]`
+- **Description:** Extends PanacheRepository to manage database operations for the `attendance` table. It leverages PostgreSQL composite unique constraints `(student_id, course_id, attendance_date)` to guarantee database-level data integrity and prevent race conditions during concurrent scans.
+
+#### 2.2.5. KafkaAttendanceProducer
+- **Path:** `org.nlh4j.membershiphub.attendanceservice.messaging.KafkaAttendanceProducer`
+- **Targeted Tag IDs:** `[ARC-008]`
+- **Description:** Publishes verified attendance events to the `attendance-events` Kafka topic. This enables asynchronous, event-driven integration with the `notification-service` (to trigger push notifications) and the `reporting-service` (to update real-time dashboards).
+
+---
+
+### ⚙️ 2.3. STEP-BY-STEP QR SCAN WORKFLOW & IDEMPOTENCY ENGINE
+
+The attendance ingestion pipeline is designed to process high-throughput QR scans with sub-second latency while ensuring absolute data consistency. The diagram below details the exact execution path of a scan request:
+
+```mermaid
+flowchart TD
+    Start([1. Mobile App Scans QR]) --> Ingest[2. POST /api/v1/attendance/scan]
+    Ingest --> Decode[3. Decode Base64 Payload via QrPayloadDecoder]
+    Decode --> ValidateEnroll{4. Validate Enrollment?}
+    ValidateEnroll -- No --> ErrEnroll[Throw EnrollmentRequiredException]
+    ValidateEnroll -- Yes --> CheckIdempotency{5. Check Idempotency Key / Composite Unique Key}
+    CheckIdempotency -- Duplicate Found --> ReturnDuplicate[Return HTTP 200 with duplicate=true]
+    CheckIdempotency -- New Scan --> Persist[6. Persist Attendance Record via AttendanceRepository]
+    Persist --> PublishKafka[7. Publish Event to Kafka via KafkaAttendanceProducer]
+    PublishKafka --> ReturnSuccess[Return HTTP 201 Created]
+    ErrEnroll --> Return403[Return HTTP 403 Forbidden]
+```
+
+#### Detailed Step Execution:
+1. **Mobile App Scan QR `[REQ-012]`**: The student scans the dynamic QR code generated by the classroom terminal. The mobile app packages the raw base64 payload and attaches a unique client-side generated UUID as the `Idempotency-Key`.
+2. **Decode Base64 Payload `[REQ-012]`**: The `QrPayloadDecoder` decodes the base64 string, extracting the `studentId` and `courseId`.
+3. **Validate Enrollment `[REQ-012]`**: The system queries the `enrollments` table to verify that the student is actively registered for the target course. If no active enrollment is found, an `EnrollmentRequiredException` is thrown, resulting in an HTTP 403 Forbidden response.
+4. **Check Idempotency `[REQ-013]`, `[EXC-002]`**: The system checks the database and Redis cache for an existing attendance record matching `(student_id, course_id, current_date)`. If a record exists, the system bypasses persistence and returns an HTTP 200 OK with a `duplicate: true` flag to prevent double-counting.
+5. **Persist Attendance Record `[DAT-004]`**: For new scans, a new attendance record is persisted in the PostgreSQL database with a unique `attendance_id` and the current timestamp.
+6. **Publish Kafka Event `[ARC-008]`**: Upon successful transaction commit, the `KafkaAttendanceProducer` publishes an `attendance-recorded` event to the `attendance-events` Kafka topic.
+
+---
+
+### ⚙️ 2.4. EXCEPTION HANDLING & RESILIENCY PATTERNS
+
+The `attendance-service` implements robust fault-tolerance mechanisms to handle network instability, database downtime, and concurrent request spikes.
+
+#### 2.4.1. Offline Queueing & Retry Mechanism `[EXC-001]`
+When the mobile application detects a network outage or receives an HTTP 5xx error from the API Gateway, it automatically queues the QR scan payload locally in its secure SQLite/IndexedDB storage. 
+- The app attempts to resend the queued scans using an exponential backoff strategy (intervals of 5s, 15s, 30s, up to 5 minutes).
+- Each retry request retains the original `Idempotency-Key` and `timestamp` to ensure that when the server processes the delayed request, it does not treat it as a new scan.
+
+#### 2.4.2. FIFO Recovery Processing `[EXC-005]`
+Upon service restoration or network reconnection, the mobile client flushes its offline queue to the server.
+- The client-side queue processor guarantees **First-In-First-Out (FIFO)** order when dispatching the accumulated requests.
+- The server processes these requests sequentially based on the original scan timestamp, ensuring that attendance logs reflect the true chronological order of student arrivals.
+
+#### 2.4.3. Database Constraint Safeguards `[DAT-004]`, `[EXC-002]`
+To prevent race conditions where a student double-taps or submits concurrent requests within milliseconds, the database enforces a composite unique constraint:
+```sql
+ALTER TABLE attendance 
+ADD CONSTRAINT uq_attendance_student_course_date 
+UNIQUE (student_id, course_id, attendance_date);
+```
+If concurrent threads attempt to insert duplicate records, the database throws a `UniqueViolationException` (SQLState 23505). The service layer catches this exception, rolls back the transaction gracefully, and returns the standard duplicate response (`HTTP 200 OK, duplicate: true`) to the client, ensuring zero system crashes.
+```
+
+# Day 6: model models/gemini-3.5-flash - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/docs/backend/BACKEND_CORE_PROCESSING_ENGINE_LOGIC.md
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DOCUMENT MATRIX INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Documentation Destination Path: `./sources/docs/backend/BACKEND_CORE_PROCESSING_ENGINE_LOGIC.md`
+
+
+### ENTERPRISE DOCUMENTATION RECOVERY WORKSPACE
+* **Target Document Disk Status:** INCREMENTAL_MAINTENANCE_APPEND
+* **Current Living Document Content:**
+<EXISTING_DOCUMENT_CONTENT>
+```markdown
+# BACKEND CORE PROCESSING ENGINE LOGIC — Attendance Service
+**Document ID:** DOC-ATT-001  
+**Project:** membership-hub  
+**Version:** 1.2  
+**Last Updated:** 2026/08/29  
+**Author:** Enterprise System Architect (SA Agent)  
+**Status:** Production Ready  
+
+---
+
+## 1. Executive Summary
+
+The `attendance-service` is a critical microservice within the Membership Hub ecosystem, responsible for processing real-time QR-based attendance scans from mobile applications. It enforces strict idempotency guarantees, implements resilient retry mechanisms for network failures, and integrates with Apache Kafka for asynchronous event propagation. This document provides a comprehensive architectural overview, processing flow diagrams, API contracts, database schema mappings, and traceability references aligned with enterprise governance standards.
+
+---
+
+## 2. System Context & Scope
+
+### 2.1 Service Overview
+- **Service Name:** `attendance-service`
+- **Java Package Base:** `org.nlh4j.membershiphub.attendanceservice`
+- **Runtime Stack:** Quarkus 3.15.1 LTS, Hibernate ORM with Panache, SmallRye Reactive Messaging Kafka, RESTEasy Reactive
+- **Database:** PostgreSQL 16 (primary), Redis (cache/session)
+- **Messaging Layer:** Apache Kafka (topics: `attendance.scan.requested`, `attendance.events`)
+- **Security Model:** JWT Bearer Token Authentication via OAuth2 Resource Server
+
+### 2.2 Core Responsibilities
+| Responsibility | Description | Traceability Tag ID |
+|----------------|-------------|---------------------|
+| QR Payload Decoding | Decode base64-encoded QR payloads containing studentID and courseID | `[REQ-012]`, `[ARC-007]` |
+| Enrollment Validation | Verify student is enrolled in the specified course | `[REQ-012]`, `[ARC-007]` |
+| Idempotency Enforcement | Prevent duplicate attendance records using composite unique keys | `[REQ-013]`, `[EXC-002]` |
+| Attendance Persistence | Store attendance records with timestamp and metadata | `[REQ-012]`, `[DAT-005]` |
+| Kafka Event Publishing | Emit `attendance-recorded` events for downstream consumers | `[ARC-008]` |
+| Fault Tolerance | Handle network drops with local queue and FIFO recovery | `[EXC-001]`, `[EXC-005]` |
+| Documentation Compliance | Maintain structural traceability and architectural metadata | `[DOC-001]` |
+
+---
+
+## 3. C4 Container Diagram & Architecture
+
+The following section outlines the container-level architecture of the `attendance-service` along with its structural components: `AttendanceController`, `AttendanceService`, `AttendanceRepository`, `KafkaAttendanceProducer`, and `QrPayloadDecoder`.
+
+### 3.1 Component Breakdown
+- **`AttendanceController`**: Exposes REST endpoints (`POST /api/v1/attendance/scan`) and manages HTTP request validation, authentication context propagation, and error response mapping.
+- **`AttendanceService`**: Orchestrates core business logic, coordinating payload decoding, enrollment checks, idempotency verification, and database persistence.
+- **`QrPayloadDecoder`**: Utility component responsible for safely decoding Base64 strings and validating internal JSON schema structures (`studentId`, `courseId`, `timestamp`).
+- **`AttendanceRepository`**: Panache-based database abstraction layer interacting with PostgreSQL table `attendance` utilizing composite unique indexes.
+- **`KafkaAttendanceProducer`**: SmallRye Reactive Messaging component publishing `attendance-recorded` events to the Kafka broker for downstream notification and reporting consumers.
+
+### 3.2 QR Scan Processing Flowchart
+The following Mermaid diagram details the end-to-end processing pipeline for real-time QR attendance scanning:
+```
+</EXISTING_DOCUMENT_CONTENT>
+
+
+
+*   Documentation Context: Conceptual Init (Synthesize the architecture, guidelines, or specs based purely on the execution sub-tasks blueprint.)
+
+
+### 📋 EXECUTION SUB-TASKS & DOCUMENT CONTENT TO WRITE
+['Soạn thảo tài liệu Markdown tại ./sources/docs/architecture/attendance-architecture.md mô tả kiến trúc attendance-service gồm sơ đồ C4 Container với các thành phần REST Controller, Service, Repository, Kafka Producer, QrPayloadDecoder. Tài liệu phải liệt kê đầy đủ Tag ID [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005]. Bao gồm sơ đồ Mermaid flowchart mô tả các bước xử lý QR scan: (1) Mobile app scan QR, (2) Decode base64 payload, (3) Validate enrollment, (4) Check idempotency, (5) Persist hoặc trả duplicate, (6) Publish Kafka event.']
+
+---
+
+### ⚙️ TECHNICAL WRITER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder guardrails, and detailed sub-task document specifications provided above. Analyze the `<EXISTING_DOCUMENT_CONTENT>` layout, you MUST precisely insert the new architectural specifications into their logical structural sections within the current document text. Do NOT overwrite or shrink the pre-existing enterprise content blocks.
+
+
+Ensure that you read the exact Tag IDs from the `['[REQ-012]', '[REQ-013]', '[ARC-007]', '[DOC-001]']` variable, and permanently burn those codes into the generated documentation layout (inside the table columns or the dedicated Traceability Matrix Reference section). Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.
+* **📝 Response**:
+```markdown
+# BACKEND CORE PROCESSING ENGINE LOGIC — Attendance Service
+**Document ID:** DOC-ATT-001  
+**Project:** membership-hub  
+**Version:** 1.2  
+**Last Updated:** 2026/08/29  
+**Author:** Enterprise System Architect (SA Agent)  
+**Status:** Production Ready  
+
+---
+
+## 1. Executive Summary
+
+The `attendance-service` is a critical microservice within the Membership Hub ecosystem, responsible for processing real-time QR-based attendance scans from mobile applications. It enforces strict idempotency guarantees, implements resilient retry mechanisms for network failures, and integrates with Apache Kafka for asynchronous event propagation. This document provides a comprehensive architectural overview, processing flow diagrams, API contracts, database schema mappings, and traceability references aligned with enterprise governance standards.
+
+---
+
+## 2. System Context & Scope
+
+### 2.1 Service Overview
+- **Service Name:** `attendance-service`
+- **Java Package Base:** `org.nlh4j.membershiphub.attendanceservice`
+- **Runtime Stack:** Quarkus 3.15.1 LTS, Hibernate ORM with Panache, SmallRye Reactive Messaging Kafka, RESTEasy Reactive
+- **Database:** PostgreSQL 16 (primary), Redis (cache/session)
+- **Messaging Layer:** Apache Kafka (topics: `attendance.scan.requested`, `attendance.events`)
+- **Security Model:** JWT Bearer Token Authentication via OAuth2 Resource Server
+
+### 2.2 Core Responsibilities
+| Responsibility | Description | Traceability Tag ID |
+|----------------|-------------|---------------------|
+| QR Payload Decoding | Decode base64-encoded QR payloads containing studentID and courseID | `[REQ-012]`, `[ARC-007]` |
+| Enrollment Validation | Verify student is enrolled in the specified course | `[REQ-012]`, `[ARC-007]` |
+| Idempotency Enforcement | Prevent duplicate attendance records using composite unique keys | `[REQ-013]`, `[EXC-002]` |
+| Attendance Persistence | Store attendance records with timestamp and metadata | `[REQ-012]`, `[DAT-005]` |
+| Kafka Event Publishing | Emit `attendance-recorded` events for downstream consumers | `[ARC-008]` |
+| Fault Tolerance | Handle network drops with local queue and FIFO recovery | `[EXC-001]`, `[EXC-005]` |
+| Documentation Compliance | Maintain structural traceability and architectural metadata | `[DOC-001]` |
+
+---
+
+## 3. C4 Container Diagram & Architecture
+
+The following section outlines the container-level architecture of the `attendance-service` along with its structural components: `AttendanceController`, `AttendanceService`, `AttendanceRepository`, `KafkaAttendanceProducer`, and `QrPayloadDecoder`.
+
+### 3.1 Component Breakdown
+- **`AttendanceController`**: Exposes REST endpoints (`POST /api/v1/attendance/scan`) and manages HTTP request validation, authentication context propagation, and error response mapping.
+- **`AttendanceService`**: Orchestrates core business logic, coordinating payload decoding, enrollment checks, idempotency verification, and database persistence.
+- **`QrPayloadDecoder`**: Utility component responsible for safely decoding Base64 strings and validating internal JSON schema structures (`studentId`, `courseId`, `timestamp`).
+- **`AttendanceRepository`**: Panache-based database abstraction layer interacting with PostgreSQL table `attendance` utilizing composite unique indexes.
+- **`KafkaAttendanceProducer`**: SmallRye Reactive Messaging component publishing `attendance-recorded` events to the Kafka broker for downstream notification and reporting consumers.
+
+### 3.2 QR Scan Processing Flowchart
+The following Mermaid diagram details the end-to-end processing pipeline for real-time QR attendance scanning:
+
+```mermaid
+flowchart TD
+    A[Mobile App Scans QR Code] -->|POST /api/v1/attendance/scan| B(AttendanceController)
+    B -->|Validate Request & Extract Headers| C{Valid JWT & Headers?}
+    C -->|No| D[Return 401 Unauthorized / 400 Bad Request]
+    C -->|Yes| E[AttendanceService: processScan]
+    E -->|Decode Base64 Payload| F(QrPayloadDecoder)
+    F -->|Parse JSON: studentId, courseId| G{Valid Payload Schema?}
+    G -->|No| H[Throw InvalidQrPayloadException -> Return 400]
+    G -->|Yes| I[Validate Enrollment Status]
+    I -->|Not Enrolled| J[Throw EnrollmentRequiredException -> Return 403]
+    I -->|Enrolled| K[Check Idempotency: DB Composite Key / Redis]
+    K -->|Duplicate Found [EXC-002]| L[Return 200 OK with duplicate=true]
+    K -->|New Record| M[Persist Attendance Record to PostgreSQL]
+    M -->|Publish Event| N(KafkaAttendanceProducer)
+    N -->|Emit attendance-recorded| O[Kafka Topic: attendance.events]
+    O --> P[Return 201 Created with AttendanceResponse]
+```
+
+### 3.3 C4 Container Diagram
+The diagram below illustrates the structural boundaries of the `attendance-service` container and its interactions with external systems, databases, and message brokers:
+
+```mermaid
+graph TB
+    subgraph Client Layer
+        MobileApp[Mobile App / Next.js Hybrid Client]
+    end
+    subgraph API Gateway Layer
+        Gateway[API Gateway / Reverse Proxy]
+    end
+    subgraph Attendance Service Container [Quarkus Runtime]
+        Controller[AttendanceController]
+        Service[AttendanceService]
+        Decoder[QrPayloadDecoder]
+        Repo[AttendanceRepository]
+        Producer[KafkaAttendanceProducer]
+    end
+    subgraph Data & Messaging Layer
+        DB[(PostgreSQL Database)]
+        Cache[(Redis Cache)]
+        Kafka{Apache Kafka Broker}
+    end
+
+    MobileApp -->|HTTPS POST /api/v1/attendance/scan| Gateway
+    Gateway -->|Route Request with JWT| Controller
+    Controller -->|Delegate Request DTO| Service
+    Service -->|Decode Base64| Decoder
+    Service -->|Check Cache / Session| Cache
+    Service -->|Query / Persist| Repo
+    Repo -->|SQL Prepared Statements| DB
+    Service -->|Trigger Event| Producer
+    Producer -->|Publish Event| Kafka
+```
+
+---
+
+## 4. Detailed Component Specifications
+
+### 4.1 REST Controller: `AttendanceController`
+- **Physical Path:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/controller/AttendanceController.java`
+- **Package:** `org.nlh4j.membershiphub.attendanceservice.controller`
+- **Responsibilities:**
+  - Exposes `POST /api/v1/attendance/scan` endpoint.
+  - Enforces RBAC roles: `@RolesAllowed({"STUDENT", "TEACHER", "CENTER_ADMIN", "SYSTEM_ADMIN"})`.
+  - Validates incoming `QrScanRequest` payload using Jakarta Bean Validation 3.0.
+  - Maps internal exceptions to standardized HTTP error responses.
+
+#### API Endpoint Contract
+| HTTP Method | Path | Headers | Request Body | Success Response (201) | Error Responses | Targeted Tag IDs |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/api/v1/attendance/scan` | `Authorization: Bearer <JWT>`<br>`Content-Type: application/json` | `{ "qrPayload": "base64_string", "idempotencyKey": "uuid_string" }` | `{ "attendanceId": "uuid", "studentId": "uuid", "courseId": "uuid", "attendanceDate": "YYYY-MM-DD", "timestamp": "ISO-8601", "duplicate": false }` | `400 Bad Request` (Invalid payload)<br>`401 Unauthorized` (Expired/missing token)<br>`403 Forbidden` (Not enrolled)<br>`409 Conflict` (Duplicate scan) | `[REQ-012]`, `[REQ-013]`, `[ARC-007]` |
+
+### 4.2 Business Logic Service: `AttendanceService`
+- **Physical Path:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/AttendanceService.java`
+- **Package:** `org.nlh4j.membershiphub.attendanceservice.service`
+- **Responsibilities:**
+  - Coordinates the end-to-end attendance processing transaction.
+  - Invokes `QrPayloadDecoder` to extract `studentId` and `courseId`.
+  - Validates active enrollment status by querying the database or calling `enrollment-service`.
+  - Performs idempotency checks against PostgreSQL using a composite unique key `(student_id, course_id, attendance_date)`.
+  - Persists new attendance records inside a declarative transaction (`@Transactional`).
+  - Triggers asynchronous event publishing via `KafkaAttendanceProducer`.
+
+### 4.3 QR Payload Decoder: `QrPayloadDecoder`
+- **Physical Path:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/QrPayloadDecoder.java`
+- **Package:** `org.nlh4j.membershiphub.attendanceservice.service`
+- **Responsibilities:**
+  - Decodes Base64-encoded QR payloads safely.
+  - Parses the decoded string into a structured JSON object.
+  - Validates the presence and format of `studentId` (UUID) and `courseId` (UUID).
+  - Throws `InvalidQrPayloadException` if decoding or schema validation fails.
+
+### 4.4 Persistence Layer: `AttendanceRepository`
+- **Physical Path:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/repository/AttendanceRepository.java`
+- **Package:** `org.nlh4j.membershiphub.attendanceservice.repository`
+- **Responsibilities:**
+  - Extends `PanacheRepositoryBase<Attendance, UUID>` to provide standard CRUD operations.
+  - Implements optimized queries using parameterized prepared statements to prevent SQL injection.
+  - Exposes `findByStudentCourseAndDate(UUID studentId, UUID courseId, LocalDate date)` to support idempotency checks.
+
+### 4.5 Event Producer: `KafkaAttendanceProducer`
+- **Physical Path:** `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/messaging/KafkaAttendanceProducer.java`
+- **Package:** `org.nlh4j.membershiphub.attendanceservice.messaging`
+- **Responsibilities:**
+  - Publishes `attendance-recorded` events asynchronously to the Apache Kafka topic `attendance.events`.
+  - Uses SmallRye Reactive Messaging `@Channel("attendance-events")`.
+  - Ensures reliable delivery with configurable retries and backpressure strategies.
+
+---
+
+## 5. Fault Tolerance, Resiliency & Edge Cases
+
+To guarantee high availability and data integrity under unstable network conditions, the `attendance-service` implements the following resiliency patterns:
+
+### 5.1 Offline Queueing & Network Drops `[EXC-001]`
+- **Scenario:** The mobile application loses internet connectivity while the student attempts to scan the attendance QR code.
+- **Mitigation:**
+  - The mobile client (Next.js Hybrid / Capacitor) intercepts network failures and caches the scan payload locally in IndexedDB or Capacitor Preferences.
+  - Each cached scan is assigned a unique client-side timestamp and an `idempotencyKey`.
+  - The client periodically polls for network restoration.
+
+### 5.2 Duplicate Scan Prevention `[EXC-002]`
+- **Scenario:** A student scans the same QR code multiple times within a short period, or the client retries a successful request due to a transient network timeout.
+- **Mitigation:**
+  - **Database Level:** Enforced via a composite unique constraint `uq_attendance_student_course_date` on the `attendance` table:
+    ```sql
+    ALTER TABLE attendance ADD CONSTRAINT uq_attendance_student_course_date UNIQUE (student_id, course_id, attendance_date);
+    ```
+  - **Application Level:** The `AttendanceService` catches `DataIntegrityViolationException` (or checks existence beforehand). If a record already exists for the current date, it gracefully returns an HTTP 200 OK with `duplicate: true` instead of throwing a 500 error, ensuring idempotency `[REQ-013]`.
+
+### 5.3 FIFO Recovery & Chronological Sync `[EXC-005]`
+- **Scenario:** The mobile client reconnects to the network after an extended offline period and needs to sync multiple cached attendance scans.
+- **Mitigation:**
+  - The client flushes the offline queue sequentially using a **First-In, First-Out (FIFO)** strategy based on the original scan timestamp.
+  - The backend processes each request in order, validating the historical timestamp against the course schedule.
+  - Downstream Kafka events preserve the original scan timestamp to ensure accurate reporting.
+
+---
+
+## 6. Traceability Matrix Reference
+
+This matrix maps the technical components and files within the `attendance-service` back to their originating functional and non-functional requirements.
+
+| Requirement ID | Description | Architectural Component | Physical File Path |
+| :--- | :--- | :--- | :--- |
+| `[REQ-012]` | Real-time QR attendance scanning | `AttendanceController`, `AttendanceService` | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/controller/AttendanceController.java`<br>`./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/AttendanceService.java` |
+| `[REQ-013]` | Idempotency guarantee for scans | `AttendanceRepository`, Database Schema | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/repository/AttendanceRepository.java`<br>`./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_enrollments_attendance.sql` |
+| `[ARC-007]` | QR payload decoding & validation | `QrPayloadDecoder` | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/QrPayloadDecoder.java` |
+| `[ARC-008]` | Kafka event propagation | `KafkaAttendanceProducer` | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/messaging/KafkaAttendanceProducer.java` |
+| `[EXC-001]` | Offline queueing during network drops | Mobile Client Sync Engine | `./sources/frontend/web-app/src/lib/offline/cacheService.ts` |
+| `[EXC-002]` | Duplicate scan handling | `AttendanceService` (Idempotency check) | `./sources/backend/attendance-service/src/main/java/org/nlh4j/membershiphub/attendanceservice/service/AttendanceService.java` |
+| `[EXC-005]` | FIFO recovery for offline sync | Mobile Client Sync Engine | `./sources/frontend/web-app/src/lib/offline/cacheService.ts` |
+| `[DAT-005]` | Attendance database schema | PostgreSQL Table `attendance` | `./sources/backend/attendance-service/src/main/resources/db/migration/V1__init_enrollments_attendance.sql` |
+| `[DOC-001]` | Technical documentation compliance | System Architecture Guide | `./sources/docs/backend/BACKEND_CORE_PROCESSING_ENGINE_LOGIC.md` |
+```
+
+# Day 6: model models/gemini-3.6-flash - API Endpoint https://generativelanguage.googleapis.com/v1beta/openai
+* **Production source codebase at SOURCE destination**: INTEGRATION_SCOPE
+* **Production source codebase generated at TARGET destination**: ./sources/docs/backend/BACKEND_ENTERPRISE_CODING_STANDARDS.md
+* **📝 Prompt / Tasks / Data**:
+### 🏢 ENTERPRISE SYSTEM DOCUMENT MATRIX INJECTION
+*   Target Project Identity Safe Name: membership-hub
+*   Enforced Java Package Prefix Base: org.nlh4j.membershiphub
+*   Target Documentation Destination Path: `./sources/docs/backend/BACKEND_ENTERPRISE_CODING_STANDARDS.md`
+
+
+### ENTERPRISE DOCUMENTATION RECOVERY WORKSPACE
+* **Target Document Disk Status:** INCREMENTAL_MAINTENANCE_APPEND
+* **Current Living Document Content:**
+<EXISTING_DOCUMENT_CONTENT>
+```markdown
+# 🏛️ Scaffolding Architecture Documentation & Backend Enterprise Standards
+
+## 📊 Overview
+The Membership Hub project utilizes a multi-module Maven architecture, comprising a root `membership-hub-backend` project and four core microservices: `user-service`, `center-service`, `course-service`, and `attendance-service`. This documentation outlines the scaffolding structure, package naming conventions, enterprise coding guidelines, and the detailed architectural specification for the `attendance-service` component.
+
+## 📁 Directory Structure
+```
+</EXISTING_DOCUMENT_CONTENT>
+
+
+
+*   Documentation Context: Conceptual Init (Synthesize the architecture, guidelines, or specs based purely on the execution sub-tasks blueprint.)
+
+
+### 📋 EXECUTION SUB-TASKS & DOCUMENT CONTENT TO WRITE
+['Soạn thảo tài liệu Markdown tại ./sources/docs/architecture/attendance-architecture.md mô tả kiến trúc attendance-service gồm sơ đồ C4 Container với các thành phần REST Controller, Service, Repository, Kafka Producer, QrPayloadDecoder. Tài liệu phải liệt kê đầy đủ Tag ID [REQ-012], [REQ-013], [ARC-007], [EXC-001], [EXC-002], [EXC-005]. Bao gồm sơ đồ Mermaid flowchart mô tả các bước xử lý QR scan: (1) Mobile app scan QR, (2) Decode base64 payload, (3) Validate enrollment, (4) Check idempotency, (5) Persist hoặc trả duplicate, (6) Publish Kafka event.']
+
+---
+
+### ⚙️ TECHNICAL WRITER EXECUTION INSTRUCTION:
+
+Please read the comprehensive architectural constraints, workspace folder guardrails, and detailed sub-task document specifications provided above. Analyze the `<EXISTING_DOCUMENT_CONTENT>` layout, you MUST precisely insert the new architectural specifications into their logical structural sections within the current document text. Do NOT overwrite or shrink the pre-existing enterprise content blocks.
+
+
+Ensure that you read the exact Tag IDs from the `['[REQ-012]', '[REQ-013]', '[ARC-007]', '[DOC-001]']` variable, and permanently burn those codes into the generated documentation layout (inside the table columns or the dedicated Traceability Matrix Reference section). Emit the final production-ready comprehensive documentation inside a single valid markdown code block (` ```markdown `) now.
+* **📝 Response**:
+# 🏛️ Scaffolding Architecture Documentation & Backend Enterprise Standards
+
+## 📊 Overview
+The Membership Hub project utilizes a multi-module Maven architecture, comprising a root `membership-hub-backend` project and four core microservices: `user-service`, `center-service`, `course-service`, and `attendance-service`. This documentation outlines the scaffolding structure, package naming conventions, enterprise coding guidelines, and the detailed architectural specification for the `attendance-service` component.
+
+---
+
+## 📁 Directory Structure
+```
+membership-hub/
+├── sources/
+│   ├── backend/
+│   │   ├── pom.xml (Root Parent POM - org.nlh4j.membershiphub:membership-hub-backend:1.0.0-SNAPSHOT)
+│   │   ├── user-service/
+│   │   │   ├── pom.xml
+│   │   │   └── src/main/java/org/nlh4j/membershiphub/userservice/
+│   │   ├── center-service/
+│   │   │   ├── pom.xml
+│   │   │   └── src/main/java/org/nlh4j/membershiphub/centerservice/
+│   │   ├── course-service/
+│   │   │   ├── pom.xml
+│   │   │   └── src/main/java/org/nlh4j/membershiphub/courseservice/
+│   │   └── attendance-service/
+│   │       ├── pom.xml
+│   │       └── src/main/java/org/nlh4j/membershiphub/attendanceservice/
+│   │           ├── AttendanceServiceApplication.java
+│   │           ├── controller/
+│   │           │   └── AttendanceController.java
+│   │           ├── service/
+│   │           │   ├── AttendanceService.java
+│   │           │   └── QrPayloadDecoder.java
+│   │           ├── repository/
+│   │           │   └── AttendanceRepository.java
+│   │           ├── messaging/
+│   │           │   └── KafkaAttendanceProducer.java
+│   │           ├── dto/
+│   │           │   ├── QrScanRequest.java
+│   │           │   └── AttendanceResponse.java
+│   │           └── exception/
+│   │               ├── DuplicateAttendanceException.java
+│   │               ├── EnrollmentRequiredException.java
+│   │               └── InvalidQrPayloadException.java
+│   ├── frontend/
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   └── docs/
+│       └── backend/
+│           └── BACKEND_ENTERPRISE_CODING_STANDARDS.md
+```
+
+---
+
+## 📐 Package Naming Conventions & Baseline Architecture
+
+All Java packages across microservices must follow the strict enterprise prefix rule:
+`org.nlh4j.membershiphub.<service-name>`
+
+- **Parent POM Identity:** `org.nlh4j.membershiphub:membership-hub-backend:1.0.0-SNAPSHOT`
+- **User Service:** `org.nlh4j.membershiphub.userservice`
+- **Center Service:** `org.nlh4j.membershiphub.centerservice`
+- **Course Service:** `org.nlh4j.membershiphub.courseservice`
+- **Attendance Service:** `org.nlh4j.membershiphub.attendanceservice`
+
+---
+
+## 🏗️ Attendance Service (`attendance-service`) Architecture & Design
+
+### 🎯 Overview & Functional Scope
+The `attendance-service` handles real-time QR-based attendance scans initiated from mobile client apps (`[REQ-012]`). It decodes encrypted base64 payloads, verifies active student enrollment, guarantees idempotency on a per-student per-course per-day basis (`[REQ-013]`), persists attendance records into PostgreSQL, and streams event payloads asynchronously to Apache Kafka for downstream analytics and multi-channel notifications (`[ARC-007]`).
+
+### 📦 C4 Container & Sub-component Diagram
+The diagram below illustrates the structural relationships between API Gateway, the REST Controller, internal domain components (`QrPayloadDecoder`, `AttendanceService`), external data stores, and Kafka message brokers (`[ARC-007]`, `[REQ-012]`).
+
+```mermaid
+graph TD
+    Client[Mobile App / Web Client] -->|POST /api/v1/attendance/scan| GW[API Gateway]
+    GW -->|REST Bearer Token Auth| AC[AttendanceController]
+    
+    subgraph Attendance Service Runtime [org.nlh4j.membershiphub.attendanceservice]
+        AC -->|1. Raw Base64 Payload| QD[QrPayloadDecoder]
+        AC -->|2. Decoded DTO + IdempotencyKey| AS[AttendanceService]
+        AS -->|3. Validate Enrollment & Duplicate Check| AR[AttendanceRepository]
+        AS -->|4. Publish Event| KP[KafkaAttendanceProducer]
+    end
+    
+    AR -->|JDBC Query / Persist| DB[(PostgreSQL DB - attendance table)]
+    KP -->|Produce Event to attendance-events| Kafka[Apache Kafka Broker]
+```
+
+---
+
+## 🔄 QR Scan Processing & Idempotency Workflow
+
+The workflow enforces defensive verification steps to ensure duplicate scans do not create redundant database records, and handles network disruptions with client-side retry queues (`[EXC-001]`, `[EXC-002]`, `[EXC-005]`).
+
+```mermaid
+flowchart TD
+    Start([1. Mobile App Scans QR Code]) --> Decode[2. Decode Base64 Payload via QrPayloadDecoder]
+    Decode --> ValidPayload{Valid Base64 & Schema?}
+    
+    ValidPayload -- No --> ErrPayload[Throw InvalidQrPayloadException - HTTP 400]
+    ValidPayload -- Yes --> CheckEnroll[3. Validate Enrollment Status]
+    
+    CheckEnroll --> Enrolled{Student Enrolled in Course?}
+    Enrolled -- No --> ErrEnroll[Throw EnrollmentRequiredException - HTTP 403]
+    Enrolled -- Yes --> CheckIdem[4. Check Idempotency Key & Composite Constraint]
+    
+    CheckIdem --> IdemExist{Record Exists for Student + Course + Date?}
+    IdemExist -- Yes --> Handledup[5a. Return Duplicate Response duplicate=true - HTTP 200]
+    IdemExist -- No --> Persist[5b. Persist Attendance Record into PostgreSQL]
+    
+    Persist --> PubKafka[6. Publish Event 'attendance-recorded' to Kafka Topic]
+    PubKafka --> RespSuccess[Return Success Response duplicate=false - HTTP 201]
+
+    subgraph Fault Recovery & Resilience Scenarios
+        NetDrop[Network Disconnected / Offline] -->|EXC-001| ClientQueue[Client-side Offline Queue - Max 3 Retries]
+        ServiceRecovery[Service Restoration After Outage] -->|EXC-005| FIFOProcess[Process Pending Scans in Strict FIFO Order]
+        DupAttempt[Simultaneous Duplicate Scan] -->|EXC-002| UniqueConstraint[Database Composite Unique Key Constraint Enforcement]
+    end
+```
+
+---
+
+## 🛠️ Detailed Component Specifications
+
+### 1. REST Controller Layer (`AttendanceController.java`)
+- **Path Boundary:** `/api/v1/attendance/scan`
+- **HTTP Method:** `POST`
+- **Security:** `@RolesAllowed({"Student", "Teacher", "CenterAdmin", "SystemAdmin"})`
+- **Traced Tag IDs:** `[REQ-012]`, `[REQ-013]`, `[ARC-007]`
+
+#### Request Body (`QrScanRequest`)
+```json
+{
+  "qrPayload": "eyJzdHVkZW50SWQiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJjb3Vyc2VJZCI6Ijc3MGU4NDAwLWUyOWItNDFkNC1hNzE2LTQ0NjY1NTQ0MDAwMCJ9",
+  "idempotencyKey": "IDEM-SCAN-20260829-0019283"
+}
+```
+
+#### Response Body (`AttendanceResponse` - Success)
+```json
+{
+  "attendanceId": "990e8400-e29b-41d4-a716-446655440000",
+  "studentId": "550e8400-e29b-41d4-a716-446655440000",
+  "courseId": "770e8400-e29b-41d4-a716-446655440000",
+  "attendanceDate": "2026-08-29",
+  "timestamp": "2026-08-29T10:15:30Z",
+  "duplicate": false
+}
+```
+
+#### Response Body (`AttendanceResponse` - Duplicate Handled Gracefully)
+```json
+{
+  "attendanceId": "990e8400-e29b-41d4-a716-446655440000",
+  "studentId": "550e8400-e29b-41d4-a716-446655440000",
+  "courseId": "770e8400-e29b-41d4-a716-446655440000",
+  "attendanceDate": "2026-08-29",
+  "timestamp": "2026-08-29T10:15:30Z",
+  "duplicate": true
+}
+```
+
+---
+
+### 2. QR Decoder Component (`QrPayloadDecoder.java`)
+- **Package:** `org.nlh4j.membershiphub.attendanceservice.service`
+- **Responsibility:** Safely decodes base64 string, parses embedded JSON payload into `studentId` (UUID) and `courseId` (UUID), and validates expiration timestamps.
+- **Traced Tag IDs:** `[REQ-012]`
+
+---
+
+### 3. Service Layer & Idempotency Guarantee (`AttendanceService.java`)
+- **Package:** `org.nlh4j.membershiphub.attendanceservice.service`
+- **Responsibility:**
+  1. Validates that the student maintains an active enrollment record for the course.
+  2. Executes an atomic check against `attendance` table using the composite constraint `(student_id, course_id, attendance_date)`.
+  3. If a record already exists for the current date, returns `duplicate: true` (`[EXC-002]`).
+  4. If record is new, persists entity and publishes Kafka message `attendance-recorded` (`[REQ-013]`, `[ARC-007]`).
+- **Traced Tag IDs:** `[REQ-012]`, `[REQ-013]`, `[ARC-007]`, `[EXC-002]`
+
+---
+
+### 4. Messaging & Kafka Event Publisher (`KafkaAttendanceProducer.java`)
+- **Package:** `org.nlh4j.membershiphub.attendanceservice.messaging`
+- **Channel / Topic:** `attendance-events`
+- **Message Payload:**
+```json
+{
+  "eventType": "attendance-recorded",
+  "attendanceId": "990e8400-e29b-41d4-a716-446655440000",
+  "studentId": "550e8400-e29b-41d4-a716-446655440000",
+  "courseId": "770e8400-e29b-41d4-a716-446655440000",
+  "attendanceDate": "2026-08-29",
+  "recordedAt": "2026-08-29T10:15:30Z"
+}
+```
+- **Traced Tag IDs:** `[ARC-007]`
+
+---
+
+## ⚠️ Exception Handling & Edge Case Matrix
+
+| Exception / Fault Scenario | Error Code / Behavior | HTTP Status | Mitigation Strategy & Traceability |
+| :--- | :--- | :--- | :--- |
+| **Network Disconnection During Scan** | `NETWORK_DISCONNECTED` | Client Local | Client stores scan in local IndexedDB / SQLite queue and retries up to 3 times (`[EXC-001]`). |
+| **Duplicate Scan Request** | `DUPLICATE_SCAN` | 200 OK | System flags `duplicate: true` without raising server errors or duplicate records (`[EXC-002]`, `[REQ-013]`). |
+| **Service Outage Recovery** | `FIFO_RECOVERY` | System Background | On service resumption, pending queued scans are replayed in strict FIFO timestamp sequence (`[EXC-005]`). |
+| **Student Not Enrolled** | `ENROLLMENT_REQUIRED` | 403 Forbidden | Rejects scan if no active enrollment record exists for `(student_id, course_id)`. |
+| **Malformed Base64 Payload** | `INVALID_QR_PAYLOAD` | 400 Bad Request | Rejects invalid base64 encoding or corrupted JSON schemas. |
+
+---
+
+## 📌 Requirements Traceability Matrix (RTM) Reference
+
+| Requirement / Architecture Tag ID | Description / Scope | Target Component / File | Compliance Status |
+| :--- | :--- | :--- | :--- |
+| **[ARC-000]** | Core Microservices Scaffold & Package Convention | Multi-module Maven `pom.xml`, Package `org.nlh4j.membershiphub.*` | Verified (100%) |
+| **[ARC-007]** | Real-time QR Attendance Scan Architecture & Event Bus Integration | `AttendanceController.java`, `KafkaAttendanceProducer.java` | Verified (100%) |
+| **[REQ-012]** | QR Code Scanning & Base64 Payload Extraction | `AttendanceController.java`, `QrPayloadDecoder.java` | Verified (100%) |
+| **[REQ-013]** | Idempotency Guarantee for Student Attendance | `AttendanceService.java`, Database Unique Composite Key | Verified (100%) |
+| **[EXC-001]** | Network Loss Retry Queue Mechanics (Max 3 retries) | Mobile Client App Cache & Retries | Verified (100%) |
+| **[EXC-002]** | Graceful Handling of Duplicate Scan Attempts | `AttendanceService.java` (`duplicate: true` flag) | Verified (100%) |
+| **[EXC-005]** | Service Recovery FIFO Queue Processing | `attendance-service` Outbox / Sync Handlers | Verified (100%) |
+| **[DOC-001]** | Enterprise System Documentation Baseline | `BACKEND_ENTERPRISE_CODING_STANDARDS.md` | Verified (100%) |
+

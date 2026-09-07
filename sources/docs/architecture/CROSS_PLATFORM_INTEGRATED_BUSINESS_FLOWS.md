@@ -56,3 +56,9 @@ This section maps the architectural components, asynchronous event pipelines, op
 The `attendance-service` is a Quarkus 3.15.1 microservice responsible for ingesting QR attendance scans from the mobile application, validating enrollment, ensuring idempotent processing, persisting attendance records, and publishing events to the Kafka event bus for downstream notification and reporting services. This component directly supports the functional requirements `[REQ-012]` and `[REQ-013]`, adheres to the architectural pattern `[ARC-007]`, and implements fault‑tolerance safeguards defined in `[EXC-001]`, `[EXC-002]`, and `[EXC-005]`.
 
 ### 🏗️ C4 Container Diagram
+The system architecture follows a clean separation of concerns:
+1. **REST Controller:** Entry point for QR payload ingestion.
+2. **QrPayloadDecoder:** Utility for base64 decoding and validation.
+3. **AttendanceService:** Orchestrator for enrollment validation and idempotency checks.
+4. **AttendanceRepository:** Persistence layer using Hibernate Panache.
+5. **Kafka Producer:** Event emitter for downstream integration.

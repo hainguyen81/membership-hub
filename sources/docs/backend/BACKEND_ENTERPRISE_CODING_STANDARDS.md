@@ -1,6 +1,39 @@
-# 🏛️ Scaffolding Architecture Documentation & Backend Enterprise Standards
-
-## 📊 Overview
-The Membership Hub project utilizes a multi-module Maven architecture, comprising a root `membership-hub-backend` project and four core microservices: `user-service`, `center-service`, `course-service`, and `attendance-service`. This documentation outlines the scaffolding structure, package naming conventions, enterprise coding guidelines, and the detailed architectural specification for the `attendance-service` component.
-
-## 📁 Directory Structure
+membership-hub/
+├── sources/
+│   ├── backend/
+│   │   ├── pom.xml (Root Parent POM - org.nlh4j.membershiphub:membership-hub-backend:1.0.0-SNAPSHOT)
+│   │   ├── user-service/
+│   │   │   ├── pom.xml
+│   │   │   └── src/main/java/org/nlh4j/membershiphub/userservice/
+│   │   ├── center-service/
+│   │   │   ├── pom.xml
+│   │   │   └── src/main/java/org/nlh4j/membershiphub/centerservice/
+│   │   ├── course-service/
+│   │   │   ├── pom.xml
+│   │   │   └── src/main/java/org/nlh4j/membershiphub/courseservice/
+│   │   └── attendance-service/
+│   │       ├── pom.xml
+│   │       └── src/main/java/org/nlh4j/membershiphub/attendanceservice/
+│   │           ├── AttendanceServiceApplication.java
+│   │           ├── controller/
+│   │           │   └── AttendanceController.java
+│   │           ├── service/
+│   │           │   ├── AttendanceService.java
+│   │           │   └── QrPayloadDecoder.java
+│   │           ├── repository/
+│   │           │   └── AttendanceRepository.java
+│   │           ├── messaging/
+│   │           │   └── KafkaAttendanceProducer.java
+│   │           ├── dto/
+│   │           │   ├── QrScanRequest.java
+│   │           │   └── AttendanceResponse.java
+│   │           └── exception/
+│   │               ├── DuplicateAttendanceException.java
+│   │               ├── EnrollmentRequiredException.java
+│   │               └── InvalidQrPayloadException.java
+│   ├── frontend/
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   └── docs/
+│       └── backend/
+│           └── BACKEND_ENTERPRISE_CODING_STANDARDS.md

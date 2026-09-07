@@ -34,3 +34,16 @@ Attendance Service là một microservice độc lập thuộc hệ sinh thái *
 
 ### 2.1 Container: Attendance Service (Backend Microservice)
 Attendance Service bao gồm các phân tầng kiến trúc chuyên biệt tuân thủ nguyên tắc Single Responsibility Principle (SRP) và mô hình Clean Architecture:
+
+- **REST Controller Layer (`org.nlh4j.membershiphub.attendanceservice.controller`)**: Xử lý các yêu cầu HTTP Ingress từ API Gateway. Endpoint lõi `POST /api/v1/attendance/scan` tiếp nhận payload điểm danh QR, thực hiện xác thực JWT và kích hoạt pipeline nghiệp vụ (`[REQ-012]`, `[ARC-007]`).
+- **Service & Decoder Layer (`org.nlh4j.membershiphub.attendanceservice.service`)**:
+  - `AttendanceService`: Điều phối luồng nghiệp vụ kiểm tra đăng ký khóa học, ràng buộc idempotency và ghi nhận điểm danh (`[REQ-012]`, `[REQ-013]`).
+  - `QrPayloadDecoder`: Giải mã chuỗi Base64 chứa thông tin mã hóa gồm `student_id` và `course_id`, kiểm tra tính toàn vẹn chữ ký số của mã QR (`[ARC-007]`).
+- **Repository Layer (`org.nlh4j.membershiphub.attendanceservice.repository`)**: Tương tác với cơ sở dữ liệu PostgreSQL thông qua Hibernate ORM Panache, thực thi các ràng buộc duy nhất phức hợp `(student_id, course_id, attendance_date)` (`[DAT-004]`).
+- **Messaging & Event Layer (`org.nlh4j.membershiphub.attendanceservice.messaging`)**: `KafkaAttendanceProducer` đẩy các sự kiện thành công (`attendance-events`) lên Apache Kafka để đồng bộ dữ liệu tới reporting và notification service (`[ARC-008]`).
+
+---
+
+## 3. Luồng Xử Lý Điểm Danh QR (QR Scan Processing Flow)
+
+Quy trình xử lý điểm danh QR thời gian thực được mô tả chi tiết qua biểu đồ luồng dưới đây, tuân thủ nghiêm ngặt các tiêu chuẩn chống trùng lặp và phục hồi lỗi mạng ngoại tuyến (`[EXC-001]`, `[EXC-002]`, `[EXC-005]`):
