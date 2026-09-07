@@ -221,7 +221,7 @@ CHECKLIST TUÂN THỦ TIÊU CHUẨN DOANH NGHIỆP (ENTERPRISE COMPLIANCE CHECKL
             <!-- Plugin Thực Thi Unit Tests -->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <version>${maven.surefire.plugin.version}</version>
                 <configuration>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>

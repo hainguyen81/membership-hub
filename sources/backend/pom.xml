@@ -30,8 +30,10 @@
     </modules>
 
     <properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
-        <maven.compiler.release>17</maven.compiler.release>
+		<java.version>17</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
@@ -40,6 +42,8 @@
         <surefire-plugin.version>3.2.5</surefire-plugin.version>
         <flyway.version>10.10.0</flyway.version>
         <jacoco.version>0.8.11</jacoco.version>
+		<maven.compiler.plugin.version>3.16.0</maven.compiler.plugin.version>
+		<maven.surefire.plugin.version>3.6.0</maven.surefire.plugin.version>
     </properties>
 
     <dependencyManagement>
