@@ -4,6 +4,7 @@
 <!-- TRACEABILITY AUDIT TAGS: [ARC-000], [REQ-012]                                                        -->
 <!-- BUSINESS CONTEXT: Enterprise Maven build descriptor for the Attendance Service microservice.         -->
 <!-- ARCHITECTURAL SPECIFICATION: Quarkus 3.15 LTS, Panache ORM, Reactive Messaging Kafka, Testcontainers -->
+<!-- GOVERNANCE COMPLIANCE: Adheres to Top-Level Constants, Strict Schema Constraints, and Zero-Warning   -->
 <!-- ==================================================================================================== -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -38,24 +39,25 @@
 
     <!-- ================================================================================================ -->
     <!-- [ARC-000] Immutable Build Properties & Version Management Constants                              -->
+    <!-- Top-of-Class Constants Declaration Law: Isolates all framework baselines and tool versions        -->
     <!-- ================================================================================================ -->
     <properties>
-        <!-- Standardized UTF-8 source code and reporting encoding -->
+        <!-- Standardized UTF-8 source code and reporting encoding [ARC-000] -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <!-- Java 17 LTS compilation baseline targets -->
+        <!-- Java 17 LTS compilation baseline targets [ARC-000] -->
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
 
-        <!-- Quarkus Framework LTS Platform Version (Consistent across all microservices) -->
+        <!-- Quarkus Framework LTS Platform Version (Consistent across all microservices) [ARC-000] -->
         <quarkus.platform.version>3.15.1</quarkus.platform.version>
 
-        <!-- Testcontainers version pinned for reproducible integration testing -->
+        <!-- Testcontainers version pinned for reproducible integration testing [ARC-000] -->
         <testcontainers.version>1.20.4</testcontainers.version>
 
-        <!-- Maven Core Build Plugin Versions -->
+        <!-- Maven Core Build Plugin Versions [ARC-000] -->
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
         <surefire-plugin.version>3.2.5</surefire-plugin.version>
     </properties>
@@ -134,7 +136,7 @@
         </dependency>
 
         <!-- ============================================================================================ -->
-        <!-- [ARC-000] Quarkus Cache (High-performance In-Memory Caffeine Cache)                          -->
+        <!-- [ARC-000] Quarkus Cache (High-performance In-Memory Caffeine Cache Engine)                   -->
         <!-- Caches active enrollment verifications and session tokens to maintain sub-200ms scan latency -->
         <!-- ============================================================================================ -->
         <dependency>
@@ -196,12 +198,13 @@
     </dependencies>
 
     <!-- ================================================================================================ -->
-    <!-- [ARC-000] Build Lifecycle Plugins and Build Configuration                                        -->
+    <!-- [ARC-000] Build Lifecycle Plugins and Compiler Configuration                                     -->
     <!-- ================================================================================================ -->
     <build>
         <plugins>
             <!-- ======================================================================================== -->
-            <!-- Maven Compiler Plugin: Standardizes byte-code generation to Java 17 LTS                  -->
+            <!-- [ARC-000] Maven Compiler Plugin: Standardizes byte-code generation to Java 17 LTS        -->
+            <!-- Retains parameter metadata required for RESTEasy Reactive reflection                      -->
             <!-- ======================================================================================== -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -219,7 +222,7 @@
             </plugin>
 
             <!-- ======================================================================================== -->
-            <!-- Quarkus Maven Plugin: Manages dev-mode, packaging, and GraalVM native image compilation  -->
+            <!-- [ARC-000] Quarkus Maven Plugin: Manages dev-mode, packaging, and GraalVM native build    -->
             <!-- ======================================================================================== -->
             <plugin>
                 <groupId>io.quarkus</groupId>
@@ -238,7 +241,7 @@
             </plugin>
 
             <!-- ======================================================================================== -->
-            <!-- Maven Surefire Plugin: Executes unit & integration tests with JBoss Log Manager support  -->
+            <!-- [ARC-000] Maven Surefire Plugin: Executes unit & integration tests with JBoss LogManager -->
             <!-- ======================================================================================== -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
