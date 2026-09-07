@@ -5,25 +5,32 @@
 | Hạng mục | Chi tiết |
 | :--- | :--- |
 | **Mã Bản Thiết Kế** | ARCH-20260829223421 |
-| **Tên Tài Liệu** | Attendance Service Architecture Documentation |
+| **Tên Tài Liệu** | Attendance Service Architecture Documentation & Central Endpoint API Contract Specs |
 | **Phiên Bản** | 1.0 (Đường cơ sở) |
 | **Ngày Giờ** | 2026/08/29 22:34:21 |
 | **Tác Giả** | Kiến Trúc Sư Hệ Thống Doanh Nghiệp (SA Agent) |
 | **Phê Duyệt** | Đang chờ Rà Soát Quản Trị Kỹ Thuật |
+| **Đường Dẫn Vật Lý** | `./sources/docs/architecture/CENTRAL_ENDPOINT_API_CONTRACT_SPECS.md` |
+
+---
 
 ## 1. Tổng Quan Hệ Thống
 
 ### 1.1 Giới Thiệu Attendance Service
-Attendance Service là một microservice trong hệ thống Membership Hub, chuyên trách xử lý các nghiệp vụ điểm danh sinh viên thông qua mã QR. Dịch vụ này đóng vai trò quan trọng trong việc đảm bảo tính chính xác, an toàn và khả năng mở rộng của quy trình điểm danh, hỗ trợ các tính năng như xác thực QR, kiểm tra đăng ký khóa học, xử lý trùng lặp, và tích hợp với hệ thống notification thông qua Kafka.
+Attendance Service là một microservice độc lập thuộc hệ sinh thái **membership-hub**, chịu trách nhiệm quản lý, điều phối và xác nhận toàn bộ quy trình điểm danh học viên tại các trung tâm thành viên thông qua việc quét mã QR thời gian thực. Hệ thống được thiết kế theo tiêu chuẩn phản ứng sự kiện (Event-Driven Architecture) với khả năng mở rộng đàn hồi, đảm bảo tính bất biến dữ liệu, loại bỏ trùng lặp thông qua cơ chế idempotency nghiêm ngặt và xử lý chịu lỗi ngoại tuyến (offline-first fault tolerance).
 
-### 1.2 Kiến Trúc Tổng Thể
-- **Công nghệ chính**: Quarkus 3.15 LTS, Hibernate ORM Panache, SmallRye Reactive Messaging Kafka
-- **Cơ sở dữ liệu**: PostgreSQL với bảng `attendance` phân vùng theo `attendance_date`
-- **Giao tiếp**: REST API + Kafka events
-- **Xác thực**: JWT Bearer token qua API Gateway
-- **Cache**: Redis cho session và counters
-- **Observability**: SLF4J + OpenTelemetry
+### 1.2 Kiến Trúc Tổng Thể & Hạ Tầng Runtime
+- **Mã định danh gói lõi (Java Package Base)**: `org.nlh4j.membershiphub.attendanceservice`
+- **Nền tảng thực thi**: Quarkus 3.15.1 LTS (RESTEasy Reactive, Hibernate ORM Panache, SmallRye Reactive Messaging Kafka, SmallRye JWT, SmallRye Health)
+- **Tối ưu hóa máy ảo**: Hỗ trợ GraalVM Native Image cho thời gian khởi động < 50ms và tiêu thụ bộ nhớ thấp (`[NFR-005]`)
+- **Tầng lưu trữ bền vững (Persistence Layer)**: PostgreSQL 16 phân vùng dữ liệu theo `attendance_date` với các chỉ mục tổng hợp tối ưu (`[NFR-001]`, `[NFR-004]`)
+- **Tầng đệm và chống trùng lặp**: Redis Cluster kết hợp Caffeine local cache để lưu trữ Idempotency Keys và Session
+- **Hệ thống truyền tải sự kiện (Event Streaming)**: Apache Kafka (Kafka Topic: `attendance.scan.requested`, `attendance-events`)
+- **Cơ chế bảo mật**: Zero-Trust, JWT Bearer Token (RS256 với 2048-bit keypair), chuẩn xác thực Jakarta Validation 3.0 (`[ARC-006]`, `[NFR-003]`)
+
+---
 
 ## 2. C4 Container Architecture Components
 
 ### 2.1 Container: Attendance Service (Backend Microservice)
+Attendance Service bao gồm các phân tầng kiến trúc chuyên biệt tuân thủ nguyên tắc Single Responsibility Principle (SRP) và mô hình Clean Architecture:

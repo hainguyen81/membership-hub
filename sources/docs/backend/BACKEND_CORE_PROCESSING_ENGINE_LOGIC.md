@@ -1,7 +1,7 @@
 # BACKEND CORE PROCESSING ENGINE LOGIC — Attendance Service
 **Document ID:** DOC-ATT-001  
 **Project:** membership-hub  
-**Version:** 1.1  
+**Version:** 1.2  
 **Last Updated:** 2026/08/29  
 **Author:** Enterprise System Architect (SA Agent)  
 **Status:** Production Ready  
