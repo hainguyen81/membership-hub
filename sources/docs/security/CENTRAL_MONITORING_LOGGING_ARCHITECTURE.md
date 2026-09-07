@@ -34,8 +34,5 @@ The service is composed of the following core components:
 | `AttendanceRepository` | `org.nlh4j.membershiphub.attendanceservice.repository` | Panache repository for database operations |
 | `KafkaAttendanceProducer` | `org.nlh4j.membershiphub.attendanceservice.messaging` | Publishes attendance events to Kafka topics |
 
-### ⚙️ 2.2. QR SCAN PROCESSING ARCHITECTURE
-The attendance processing pipeline is designed for high availability and idempotency, ensuring that duplicate scans do not result in multiple attendance records.
-
-#### 2.2.1. Processing Flowchart
-The following flowchart illustrates the end-to-end processing of a QR scan request, from the initial mobile scan to database persistence and event streaming.
+#### 2.1.2. C4 Container Diagram
+The following Mermaid diagram illustrates the container-level architecture of the attendance-service and its interactions with external systems.
