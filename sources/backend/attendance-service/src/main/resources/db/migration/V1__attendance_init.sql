@@ -1,114 +1,87 @@
 <!-- 
   [ARC-000], [REQ-012]
   ====================================================================================
-  FILE: ./sources/backend/attendance-service/pom.xml
-  SCOPE: Attendance Service Build Descriptor
+  FILE: ./sources/backend/attendance-service/src/main/resources/db/migration/V1__attendance_init.sql
+  SCOPE: Attendance Service Initial Migration
   TRACEABILITY: [ARC-000] (System Architecture), [REQ-012] (QR Attendance Scan)
-  DESCRIPTION: Maven POM configuration for the attendance-service microservice.
-               Defines dependencies for Quarkus 3.15.1, Hibernate Panache, Kafka,
-               and Testcontainers for integration testing.
+  DESCRIPTION: ANSI SQL DDL for attendance tracking tables with idempotency constraints,
+               composite unique keys, and indexed performance optimization for QR scan
+               processing in membership-hub enterprise system.
   ====================================================================================
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.nlh4j.membershiphub</groupId>
-        <artifactId>membership-hub-backend</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
+-- ============================================
+-- FLYWAY MIGRATION V1: Attendance Core Tables
+-- ============================================
 
-    <artifactId>attendance-service</artifactId>
-    <name>Membership Hub :: Attendance Service</name>
+-- Create attendance table with idempotency guarantee
+-- Composite unique (student_id, course_id, attendance_date) ensures 
+-- a student cannot be marked present twice for the same course on same day
+CREATE TABLE attendance (
+    attendance_id UUID NOT NULL,
+    student_id UUID NOT NULL,
+    course_id UUID NOT NULL,
+    attendance_date DATE NOT NULL,
+    timestamp TIMESTAMP NOT NULL DEFAULT now(),
+    idempotency_key VARCHAR(100),
+    CONSTRAINT pk_attendance PRIMARY KEY (attendance_id),
+    CONSTRAINT uq_attendance_student_course_date 
+        UNIQUE (student_id, course_id, attendance_date),
+    CONSTRAINT fk_attendance_student 
+        FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_attendance_course 
+        FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
+);
 
-    <dependencies>
-        <!-- Quarkus Core & Web -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
-        </dependency>
-        
-        <!-- Persistence & Database -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-hibernate-orm-panache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-jdbc-postgresql</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-flyway</artifactId>
-        </dependency>
+-- Index for course-based attendance queries (reporting, dashboards)
+CREATE INDEX idx_attendance_course_date 
+    ON attendance (course_id, attendance_date);
 
-        <!-- Messaging & Integration -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-openapi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-cache</artifactId>
-        </dependency>
+-- Index for student-based attendance queries (per-student reports)
+CREATE INDEX idx_attendance_student_date 
+    ON attendance (student_id, attendance_date);
 
-        <!-- Validation -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-hibernate-validator</artifactId>
-        </dependency>
+-- Index for idempotency key lookups (retry scenarios, network recovery)
+CREATE INDEX idx_attendance_idempotency_key 
+    ON attendance (idempotency_key)
+    WHERE idempotency_key IS NOT NULL;
 
-        <!-- Testing Dependencies -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-junit5</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>1.20.4</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>kafka</artifactId>
-            <version>1.20.4</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+-- Grant/revoke permissions comment block
+-- Application layer must ensure: 
+--   - Student role can only INSERT own attendance records
+--   - Center Admin can SELECT attendance for their center's courses
+--   - System Admin has full read/write access across all centers
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>io.quarkus.platform</groupId>
-                <artifactId>quarkus-maven-plugin</artifactId>
-                <version>${quarkus.platform.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-</project>
+-- ============================================
+-- SEQUENCE FOR AUTOMATIC ID GENERATION (PostgreSQL)
+-- ============================================
+-- Note: Quarkus Panache typically handles UUID generation via 
+--        @GeneratedValue or custom UUID generator in entity class
+--        This sequence is provided for raw SQL operations if needed
+CREATE SEQUENCE attendance_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 20;
+
+-- ============================================
+-- PERFORMANCE & OPTIMIZATION NOTES
+-- ============================================
+-- Rationale for composite unique constraint [REQ-013]:
+--   - Guarantees idempotency for QR code scanning
+--   - Prevents duplicate attendance records at DB level
+--   - Enables efficient upsert patterns in application layer
+--
+-- Index strategy:
+--   - idx_attendance_course_date: Optimized for 
+--     "Get attendance records for course X on date Y" queries
+--   - idx_attendance_student_date: Optimized for 
+--     "Get attendance history for student S" queries
+--   - idx_attendance_idempotency_key: Supports retry queue 
+--     mechanism [EXC-001] when network connectivity is lost
+--
+-- All indexes use B-tree for optimal point-query performance
+-- compatible with PostgreSQL 16+ and Quarkus Hibernate Reactive.
+
+-- End of Migration V1

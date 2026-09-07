@@ -22,6 +22,8 @@ import org.jboss.logging.Logger;
  * - Proper package declaration under org.nlh4j.membershiphub.attendanceservice
  * - Disabling startup banner in production via configuration or programmatic flags
  * - Integration with SmallRye Health endpoints (/q/health/live, /q/health/ready) for Kubernetes probes
+ * 
+ * @traceability [ARC-000], [REQ-012]
  */
 @QuarkusMain
 public class AttendanceServiceApplication {
@@ -32,8 +34,10 @@ public class AttendanceServiceApplication {
         LOG.info("Initializing Membership Hub - Attendance Service Microservice...");
         
         // Ensure production runtime configurations are honored
+        // Tag [NFR-005]: Disable startup banner for lean production container images
         System.setProperty("quarkus.banner.enabled", "false");
         
+        // Tag [NFR-004]: Initialize Quarkus with health check endpoints for Kubernetes probe readiness
         Quarkus.run(args);
     }
 }
